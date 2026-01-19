@@ -12,6 +12,12 @@ import {
   useStoreyById,
   useWallOpeningById
 } from '@/building/store'
+import { Button } from '@/components/ui/button'
+import { Callout, CalloutIcon, CalloutText } from '@/components/ui/callout'
+import { Kbd } from '@/components/ui/kbd'
+import { SegmentedControl } from '@/components/ui/segmented-control'
+import { Separator } from '@/components/ui/separator'
+import { Tooltip } from '@/components/ui/tooltip'
 import { OpeningAssemblySelectWithEdit } from '@/construction/config/components/OpeningAssemblySelectWithEdit'
 import { useWallAssemblyById } from '@/construction/config/store'
 import { resolveOpeningConfig } from '@/construction/openings/resolver'
@@ -185,7 +191,7 @@ export function OpeningInspector({ openingId }: { openingId: OpeningId }): React
           <div className="flex gap-1 items-center">
             <span className="text-sm font-medium text-gray-900">{t($ => $.opening.type)}</span>
             <Tooltip content={t($ => $.opening.typeTooltip)}>
-              <InfoCircledIcon cursor="help" width={12} height={12} style={{ color: 'var(--gray-9)' }} />
+              <InfoCircledIcon cursor="help" width={12} height={12} style={{ color: 'var(--color-gray-900)' }} />
             </Tooltip>
           </div>
           <SegmentedControl.Root
@@ -193,7 +199,6 @@ export function OpeningInspector({ openingId }: { openingId: OpeningId }): React
             onValueChange={(value: OpeningType) => {
               handleTypeChange({ target: { value } } as React.ChangeEvent<HTMLSelectElement>)
             }}
-            size="2"
           >
             <SegmentedControl.Item value="door">
               <Tooltip content={t($ => $.opening.typeDoorTooltip)}>
@@ -232,7 +237,7 @@ export function OpeningInspector({ openingId }: { openingId: OpeningId }): React
                   : t($ => $.opening.dimensionModeFinishedTooltip)
               }
             >
-              <InfoCircledIcon cursor="help" width={12} height={12} style={{ color: 'var(--gray-9)' }} />
+              <InfoCircledIcon cursor="help" width={12} height={12} style={{ color: 'var(--color-gray-900)' }} />
             </Tooltip>
           </div>
           <SegmentedControl.Root
@@ -240,7 +245,7 @@ export function OpeningInspector({ openingId }: { openingId: OpeningId }): React
             onValueChange={(value: 'fitting' | 'finished') => {
               setDimensionInputMode(value)
             }}
-            size="1"
+            size="sm"
           >
             <SegmentedControl.Item value="fitting">{t($ => $.opening.dimensionModeFitting)}</SegmentedControl.Item>
             <SegmentedControl.Item value="finished">{t($ => $.opening.dimensionModeFinished)}</SegmentedControl.Item>
@@ -252,7 +257,7 @@ export function OpeningInspector({ openingId }: { openingId: OpeningId }): React
         </div>
 
         {/* Dimension inputs in Radix Grid layout */}
-        <div className="grid grid-cols-[auto_min-content_auto_min-content] grid-rows-2 gap-2 gap-x-3 items-center grow-1">
+        <div className="grid grid-cols-[auto_min-content_auto_min-content] grid-rows-2 gap-2 gap-x-3 items-center grow">
           {/* Row 1, Column 1: Width Label */}
           <Label.Root htmlFor="opening-width">
             <span className="text-sm font-medium text-gray-900">{t($ => $.opening.width)}</span>
@@ -269,7 +274,7 @@ export function OpeningInspector({ openingId }: { openingId: OpeningId }): React
             min={dimensionInputMode === 'fitting' ? 100 : 50}
             max={5000}
             step={100}
-            size="1"
+            size="sm"
             style={{ width: '80px' }}
             onFocus={() => {
               setFocusedField('width')
@@ -295,7 +300,7 @@ export function OpeningInspector({ openingId }: { openingId: OpeningId }): React
             min={dimensionInputMode === 'fitting' ? 100 : 50}
             max={4000}
             step={100}
-            size="1"
+            size="sm"
             style={{ width: '80px' }}
             onFocus={() => {
               setFocusedField('height')
@@ -323,7 +328,7 @@ export function OpeningInspector({ openingId }: { openingId: OpeningId }): React
             min={0}
             max={2000}
             step={100}
-            size="1"
+            size="sm"
             style={{ width: '80px' }}
             onFocus={() => {
               setFocusedField('sillHeight')
@@ -351,7 +356,7 @@ export function OpeningInspector({ openingId }: { openingId: OpeningId }): React
             min={Math.max(opening.sillHeight ?? 0, 100)}
             max={5000}
             step={100}
-            size="1"
+            size="sm"
             style={{ width: '80px' }}
             onFocus={() => {
               setFocusedField('topHeight')
@@ -369,7 +374,7 @@ export function OpeningInspector({ openingId }: { openingId: OpeningId }): React
             <span className="text-sm font-medium text-gray-900">{t($ => $.opening.openingAssembly)}</span>
           </Label.Root>
           <Tooltip content={t($ => $.opening.openingAssemblyTooltip)}>
-            <InfoCircledIcon cursor="help" width={12} height={12} style={{ color: 'var(--gray-9)' }} />
+            <InfoCircledIcon cursor="help" width={12} height={12} style={{ color: 'var(--color-gray-900)' }} />
           </Tooltip>
         </div>
         <OpeningAssemblySelectWithEdit
@@ -381,7 +386,7 @@ export function OpeningInspector({ openingId }: { openingId: OpeningId }): React
           }}
           allowDefault
           showDefaultIndicator
-          size="1"
+          size="sm"
         />
       </div>
       <Separator />
@@ -392,8 +397,7 @@ export function OpeningInspector({ openingId }: { openingId: OpeningId }): React
         </Button>
         <Button
           size="icon"
-          size="2"
-         className="text-destructive"
+          className="text-destructive"
           title={t($ => $.opening.deleteOpening)}
           onClick={handleRemoveOpening}
         >

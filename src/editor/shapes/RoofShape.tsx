@@ -63,10 +63,10 @@ export function RoofShape({ roof }: { roof: Roof }): React.JSX.Element {
   return (
     <g data-entity-id={roof.id} data-entity-type="roof" data-parent-ids="[]">
       <path d={roofPath} fill={MATERIAL_COLORS.roof} opacity={0.6} />
-      <path d={roofPath} fill="none" stroke="var(--gray-11)" strokeWidth={20} />
+      <path d={roofPath} fill="none" stroke="var(--color-gray-900)" strokeWidth={20} />
 
       {/* Eave polygon - dashed outline */}
-      <path d={eavePath} fill="none" stroke="var(--gray-11)" strokeWidth={10} strokeDasharray="200 100" />
+      <path d={eavePath} fill="none" stroke="var(--color-gray-900)" strokeWidth={10} strokeDasharray="200 100" />
 
       {/* Individual overhang sides - rendered as trapezoids */}
       {overhangs.map(overhang => (
@@ -79,7 +79,7 @@ export function RoofShape({ roof }: { roof: Roof }): React.JSX.Element {
         y1={roof.ridgeLine.start[1]}
         x2={roof.ridgeLine.end[0]}
         y2={roof.ridgeLine.end[1]}
-        stroke="var(--accent-9)"
+        stroke="var(--color-primary-900)"
         strokeWidth={60}
       />
 
@@ -90,7 +90,7 @@ export function RoofShape({ roof }: { roof: Roof }): React.JSX.Element {
             key={index}
             arrowStart={arrow.start}
             arrowEnd={arrow.end}
-            color="var(--gray-1)"
+            color="var(--color-gray-100)"
             strokeWidth={400}
             pointerLength={200}
             pointerWidth={200}

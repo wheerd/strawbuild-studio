@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 
+import { TextField } from '@/components/ui/text-field'
 import { useStageHeight, useStageWidth } from '@/editor/hooks/useViewportStore'
 
 import { lengthInputService } from './LengthInputService'
@@ -141,12 +142,12 @@ export function LengthInputComponent(): React.JSX.Element | null {
         onKeyDown={handleKeyDown}
         onBlur={handleBlur}
         placeholder={placeholder ?? 'Enter length...'}
-        size="3"
+        size="lg"
         variant="soft"
         color={state.isValid ? undefined : 'red'}
         className="w-20 text-center shadow-lg"
         style={{
-          border: state.isValid ? '2px solid var(--accent-9)' : '2px solid var(--red-9)'
+          border: state.isValid ? '2px solid var(--color-primary-900)' : '2px solid var(--color-red-900)'
         }}
       />
 

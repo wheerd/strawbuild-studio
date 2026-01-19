@@ -6,6 +6,12 @@ import { Trans, useTranslation } from 'react-i18next'
 import type { WallPostType } from '@/building/model'
 import type { WallPostId } from '@/building/model/ids'
 import { useModelActions, usePerimeterWallById, useWallPostById } from '@/building/store'
+import { Button } from '@/components/ui/button'
+import { Callout, CalloutIcon, CalloutText } from '@/components/ui/callout'
+import { Kbd } from '@/components/ui/kbd'
+import { SegmentedControl } from '@/components/ui/segmented-control'
+import { Separator } from '@/components/ui/separator'
+import { Switch } from '@/components/ui/switch'
 import { MaterialSelectWithEdit } from '@/construction/materials/components/MaterialSelectWithEdit'
 import { type MaterialId } from '@/construction/materials/material'
 import { useSelectionStore } from '@/editor/hooks/useSelectionStore'
@@ -79,7 +85,7 @@ export function WallPostInspector({ postId }: { postId: WallPostId }): React.JSX
       <div className="flex flex-col gap-3">
         <div className="items-center justify-between gap-2">
           <span className="text-sm font-medium text-gray-900">{t($ => $.wallPost.type)}</span>
-          <SegmentedControl.Root value={post.postType} onValueChange={handleTypeChange} size="1">
+          <SegmentedControl.Root value={post.postType} onValueChange={handleTypeChange} size="sm">
             <SegmentedControl.Item value="inside">{t($ => $.wallPost.typeInside)}</SegmentedControl.Item>
             <SegmentedControl.Item value="center">{t($ => $.wallPost.typeCenter)}</SegmentedControl.Item>
             <SegmentedControl.Item value="outside">{t($ => $.wallPost.typeOutside)}</SegmentedControl.Item>
@@ -91,13 +97,13 @@ export function WallPostInspector({ postId }: { postId: WallPostId }): React.JSX
           <span className="text-sm font-medium text-gray-900">{t($ => $.wallPost.behavior)}</span>
           <div className="flex items-center gap-2">
             <span className="text-sm text-gray-900">{t($ => $.wallPost.actsAsPost)}</span>
-            <Switch checked={!post.replacesPosts} size="1" onCheckedChange={handleReplacesPostsChange} />
+            <Switch checked={!post.replacesPosts} size="sm" onCheckedChange={handleReplacesPostsChange} />
             <span className="text-sm text-gray-900">{t($ => $.wallPost.flankedByPosts)}</span>
           </div>
         </div>
 
         {/* Dimension inputs in Radix Grid layout */}
-        <div className="grid grid-cols-[auto_1fr_auto_1fr] grid-rows-1 gap-2 gap-x-3 items-center grow-1">
+        <div className="grid grid-cols-[auto_1fr_auto_1fr] grid-rows-1 gap-2 gap-x-3 items-center grow">
           {/* Width Label */}
           <Label.Root htmlFor="post-width">
             <span className="text-sm font-medium text-gray-900">{t($ => $.wallPost.width)}</span>
@@ -113,7 +119,7 @@ export function WallPostInspector({ postId }: { postId: WallPostId }): React.JSX
             min={10}
             max={500}
             step={10}
-            size="1"
+            size="sm"
             style={{ width: '80px' }}
           />
 
@@ -132,7 +138,7 @@ export function WallPostInspector({ postId }: { postId: WallPostId }): React.JSX
             min={50}
             max={1000}
             step={10}
-            size="1"
+            size="sm"
             style={{ width: '80px' }}
           />
         </div>
@@ -145,7 +151,7 @@ export function WallPostInspector({ postId }: { postId: WallPostId }): React.JSX
         <MaterialSelectWithEdit
           value={post.material}
           onValueChange={handleMaterialChange}
-          size="1"
+          size="sm"
           preferredTypes={['dimensional']}
         />
       </div>
@@ -154,7 +160,7 @@ export function WallPostInspector({ postId }: { postId: WallPostId }): React.JSX
         <Label.Root>
           <span className="text-sm font-medium text-gray-900">{t($ => $.wallPost.infillMaterial)}</span>
         </Label.Root>
-        <MaterialSelectWithEdit value={post.infillMaterial} onValueChange={handleInfillMaterialChange} size="1" />
+        <MaterialSelectWithEdit value={post.infillMaterial} onValueChange={handleInfillMaterialChange} size="sm" />
       </div>
       <Separator />
       {/* Action Buttons */}
@@ -162,7 +168,12 @@ export function WallPostInspector({ postId }: { postId: WallPostId }): React.JSX
         <Button size="icon" title={t($ => $.wallPost.fitToView)} onClick={handleFitToView}>
           <FitToViewIcon />
         </Button>
-        <Button size="icon"className="text-destructive" title={t($ => $.wallPost.deletePost)} onClick={handleRemovePost}>
+        <Button
+          size="icon"
+          className="text-destructive"
+          title={t($ => $.wallPost.deletePost)}
+          onClick={handleRemovePost}
+        >
           <TrashIcon />
         </Button>
       </div>

@@ -2,6 +2,8 @@ import React, { Suspense, lazy, use, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { FullScreenModal } from '@/components/ui/full-screen-modal'
+import { Skeleton } from '@/components/ui/skeleton'
+import { Spinner } from '@/components/ui/spinner'
 import type { ConstructionModel } from '@/construction/model'
 import { elementSizeRef } from '@/shared/hooks/useElementSize'
 
@@ -53,7 +55,7 @@ export function ConstructionViewer3DModal({
           ref={containerRef}
           className="relative flex-1 min-h-0 overflow-hidden border rounded-md"
           style={{
-            borderColor: 'var(--gray-6)'
+            borderColor: 'var(--color-gray-600)'
           }}
         >
           {modelPromise ? (
@@ -70,7 +72,7 @@ export function ConstructionViewer3DModal({
                       zIndex: 10
                     }}
                   >
-                    <Spinner size="3" />
+                    <Spinner size="lg" />
                   </div>
                   <div
                     style={{
@@ -152,7 +154,7 @@ function ConstructionViewer3DContent({
   if (!shouldRenderCanvas) {
     return (
       <div className="flex items-center justify-center h-full">
-        <Spinner size="3" />
+        <Spinner size="lg" />
       </div>
     )
   }

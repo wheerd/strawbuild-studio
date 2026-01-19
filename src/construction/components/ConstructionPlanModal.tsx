@@ -2,7 +2,11 @@ import { CrossCircledIcon } from '@radix-ui/react-icons'
 import React, { Suspense, use, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
+import { Callout, CalloutIcon, CalloutText } from '@/components/ui/callout'
 import { FullScreenModal } from '@/components/ui/full-screen-modal'
+import { Skeleton } from '@/components/ui/skeleton'
+import { Spinner } from '@/components/ui/spinner'
+import { Tabs } from '@/components/ui/tabs'
 import { ConstructionPartsList } from '@/construction/components/parts/ConstructionPartsList'
 import { ConstructionVirtualPartsList } from '@/construction/components/parts/ConstructionVirtualPartsList'
 import { IssueDescriptionPanel } from '@/construction/components/plan/IssueDescriptionPanel'
@@ -172,7 +176,7 @@ function ModalContent({
             className="flex flex-1 min-h-0 overflow-hidden border rounded-md"
             style={{
               position: 'relative',
-              borderColor: 'var(--gray-6)'
+              borderColor: 'var(--color-gray-600)'
             }}
           >
             {modelPromise ? (
@@ -244,7 +248,7 @@ function ConstructionPlanModalContent({
   if (!constructionModel) {
     return (
       <div className="flex items-center justify-center">
-        <Callout className="text-destructive" size="2">
+        <Callout className="text-destructive">
           <CalloutIcon>
             <CrossCircledIcon />
           </CalloutIcon>
@@ -279,7 +283,7 @@ function PartsTabContent({
   if (partsData == null) {
     return (
       <div className="flex">
-        <Callout className="text-destructive" size="2">
+        <Callout className="text-destructive">
           <CalloutIcon>
             <CrossCircledIcon />
           </CalloutIcon>
@@ -305,7 +309,7 @@ function ModulesTabContent({
   if (partsData == null) {
     return (
       <div className="flex">
-        <Callout className="text-destructive" size="2">
+        <Callout className="text-destructive">
           <CalloutIcon>
             <CrossCircledIcon />
           </CalloutIcon>
@@ -331,7 +335,7 @@ function PlanSkeleton() {
           zIndex: 10
         }}
       >
-        <Spinner size="3" />
+        <Spinner size="lg" />
       </div>
       <div
         style={{

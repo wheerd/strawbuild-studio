@@ -35,7 +35,7 @@ export function RoofPreview({ slope, type }: { slope: number; type: RoofType }):
 
   return (
     <svg width={svgWidth} height={svgHeight} viewBox={`0 0 ${svgWidth} ${svgHeight}`}>
-      <path d={roofPath} fill="var(--gray-5)" stroke="var(--gray-10)" strokeWidth="1" />
+      <path d={roofPath} fill="var(--color-gray-500)" stroke="var(--color-gray-1000)" strokeWidth="1" />
     </svg>
   )
 }

@@ -12,6 +12,13 @@ import {
   usePerimeterWallsById,
   useRoofsOfActiveStorey
 } from '@/building/store'
+import { Button } from '@/components/ui/button'
+import { Callout, CalloutIcon, CalloutText } from '@/components/ui/callout'
+import { DataList } from '@/components/ui/data-list'
+import { DropdownMenu } from '@/components/ui/dropdown-menu'
+import { SegmentedControl } from '@/components/ui/segmented-control'
+import { Separator } from '@/components/ui/separator'
+import { Tooltip } from '@/components/ui/tooltip'
 import TopDownPlanModal from '@/construction/components/TopDownPlanModal'
 import { useDefaultRoofAssemblyId } from '@/construction/config'
 import { RingBeamAssemblySelectWithEdit } from '@/construction/config/components/RingBeamAssemblySelectWithEdit'
@@ -82,7 +89,7 @@ function detectMixedRingBeams(
 function MixedStateIndicator({ tooltip }: { tooltip: string }) {
   return (
     <Tooltip content={tooltip}>
-      <ExclamationTriangleIcon width={14} height={14} style={{ color: 'var(--amber-9)' }} />
+      <ExclamationTriangleIcon width={14} height={14} style={{ color: 'var(--color-orange-900)' }} />
     </Tooltip>
   )
 }
@@ -186,7 +193,7 @@ export function PerimeterInspector({ selectedId }: PerimeterInspectorProps): Rea
     <div className="p-2">
       <div className="flex flex-col gap-3">
         {/* Basic Information */}
-        <DataList.Root size="1">
+        <DataList.Root size="sm">
           <DataList.Item>
             <DataList.Label minWidth="88px">{t($ => $.perimeter.totalInnerPerimeter)}</DataList.Label>
             <DataList.Value>{formatLength(totalInnerPerimeter)}</DataList.Value>
@@ -208,7 +215,7 @@ export function PerimeterInspector({ selectedId }: PerimeterInspectorProps): Rea
         <div className="flex items-center gap-2">
           <span className="text-sm text-gray-900 font-medium">{t($ => $.perimeter.referenceSide)}</span>
           <SegmentedControl.Root
-            size="1"
+            size="sm"
             value={perimeter.referenceSide}
             onValueChange={value => {
               setPerimeterReferenceSide(perimeter.id, value as PerimeterReferenceSide)
@@ -221,7 +228,7 @@ export function PerimeterInspector({ selectedId }: PerimeterInspectorProps): Rea
 
         {/* Non-standard angle warning */}
         {hasNonStandardAngles && (
-          <Callout color="amber">
+          <Callout color="orange">
             <CalloutIcon>
               <ExclamationTriangleIcon />
             </CalloutIcon>
@@ -283,7 +290,7 @@ export function PerimeterInspector({ selectedId }: PerimeterInspectorProps): Rea
                     ? t($ => $.perimeter.mixedPlaceholder)
                     : t($ => $.perimeter.selectAssemblyPlaceholder)
                 }
-                size="1"
+                size="sm"
               />
             </div>
 
@@ -309,7 +316,7 @@ export function PerimeterInspector({ selectedId }: PerimeterInspectorProps): Rea
                 min={50}
                 max={1500}
                 step={10}
-                size="1"
+                size="sm"
                 unit="cm"
                 style={{ width: '5rem' }}
               />
@@ -351,7 +358,7 @@ export function PerimeterInspector({ selectedId }: PerimeterInspectorProps): Rea
                 placeholder={
                   baseRingBeamState.isMixed ? t($ => $.perimeter.mixedPlaceholder) : t($ => $.perimeter.nonePlaceholder)
                 }
-                size="1"
+                size="sm"
                 allowNone
               />
             </div>
@@ -385,7 +392,7 @@ export function PerimeterInspector({ selectedId }: PerimeterInspectorProps): Rea
                 placeholder={
                   topRingBeamState.isMixed ? t($ => $.perimeter.mixedPlaceholder) : t($ => $.perimeter.nonePlaceholder)
                 }
-                size="1"
+                size="sm"
                 allowNone
               />
             </div>
@@ -397,12 +404,7 @@ export function PerimeterInspector({ selectedId }: PerimeterInspectorProps): Rea
         {/* Action Buttons */}
         <div className="flex justify-end gap-2">
           {associatedRoof ? (
-            <Button
-              size="icon"
-              size="2"
-              title={t($ => $.perimeter.viewAssociatedRoof)}
-              onClick={handleNavigateToRoof}
-            >
+            <Button size="icon" title={t($ => $.perimeter.viewAssociatedRoof)} onClick={handleNavigateToRoof}>
               <RoofIcon />
             </Button>
           ) : (
@@ -435,8 +437,7 @@ export function PerimeterInspector({ selectedId }: PerimeterInspectorProps): Rea
           </Button>
           <Button
             size="icon"
-            size="2"
-           className="text-destructive"
+            className="text-destructive"
             title={t($ => $.perimeter.deletePerimeter)}
             onClick={handleDelete}
           >

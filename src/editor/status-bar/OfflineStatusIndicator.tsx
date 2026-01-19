@@ -21,7 +21,7 @@ export function OfflineStatusIndicator(): React.JSX.Element {
             progress.total > 0
               ? t($ => $.offlineStatus.loading, { loaded: progress.loaded, total: progress.total })
               : t($ => $.offlineStatus.loadingUnknown),
-          colorClass: 'bg-amber-500'
+          colorClass: 'bg-orange-500'
         }
       case 'ready':
         return {

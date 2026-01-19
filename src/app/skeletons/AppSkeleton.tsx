@@ -11,11 +11,11 @@ export function AppSkeleton(): React.JSX.Element {
         margin: 0,
         padding: 0,
         overflow: 'hidden',
-        backgroundColor: 'var(--gray-2)'
+        backgroundColor: 'var(--color-gray-200)'
       }}
       data-testid="app-skeleton"
     >
-      <div style={{ flexShrink: 0, zIndex: 100, borderBottom: '1px solid var(--gray-6)' }}>
+      <div style={{ flexShrink: 0, zIndex: 100, borderBottom: '1px solid var(--color-gray-600)' }}>
         <ToolbarSkeleton />
       </div>
 
@@ -26,7 +26,7 @@ export function AppSkeleton(): React.JSX.Element {
           style={{
             width: '320px',
             flexShrink: 0,
-            backgroundColor: 'var(--gray-2)',
+            backgroundColor: 'var(--color-gray-200)',
             overflowY: 'auto'
           }}
         >

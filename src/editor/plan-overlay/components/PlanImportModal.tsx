@@ -286,7 +286,7 @@ export function PlanImportModal({
                 </span>
                 {pixelDistanceWarning && (
                   <Tooltip content={pixelDistanceWarning}>
-                    <ExclamationTriangleIcon width={20} height={20} style={{ color: 'var(--amber-9)' }} />
+                    <ExclamationTriangleIcon width={20} height={20} style={{ color: 'var(--color-orange-900)' }} />
                   </Tooltip>
                 )}
               </div>
@@ -305,7 +305,7 @@ export function PlanImportModal({
               >
                 <Button
                   size="sm"
-                  variant={showOriginHint ? 'solid' : 'soft'}
+                  variant={showOriginHint ? 'default' : 'soft'}
                   onClick={handleSelectOriginClick}
                   disabled={!imageElement}
                 >

@@ -2,6 +2,7 @@ import { Pencil1Icon } from '@radix-ui/react-icons'
 import React from 'react'
 import { useTranslation } from 'react-i18next'
 
+import { Button } from '@/components/ui/button'
 import { useConfigurationModal } from '@/construction/config/context/ConfigurationModalContext'
 
 import { RoofAssemblySelect, type RoofAssemblySelectProps } from './RoofAssemblySelect'
@@ -12,14 +13,13 @@ export function RoofAssemblySelectWithEdit(props: RoofAssemblySelectProps): Reac
 
   return (
     <div className="flex gap-1 items-center">
-      <div className="flex flex-col gap-1 grow-1 mr-1">
+      <div className="flex flex-col gap-1 grow mr-1">
         <RoofAssemblySelect {...props} />
       </div>
       <Button
         size="icon"
         title={t($ => $.roofs.configure)}
         variant="ghost"
-        size={props.size}
         onClick={() => {
           openConfiguration('roofs', props.value ?? undefined)
         }}

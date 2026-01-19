@@ -9,23 +9,20 @@ import {
   TrashIcon
 } from '@radix-ui/react-icons'
 import * as Label from '@radix-ui/react-label'
-import {
-  AlertDialog,
-  Badge,
-  Button,
-  Checkbox,
-  DropdownMenu,
-  IconButton,
-  Select,
-  Separator,
-  TextField,
-  Tooltip
-} from '@radix-ui/themes'
 import React, { useCallback, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import type { OpeningAssemblyId, WallAssemblyId } from '@/building/model/ids'
 import { usePerimeterWalls } from '@/building/store'
+import { AlertDialog } from '@/components/ui/alert-dialog'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Checkbox } from '@/components/ui/checkbox'
+import { DropdownMenu } from '@/components/ui/dropdown-menu'
+import { Select } from '@/components/ui/select'
+import { Separator } from '@/components/ui/separator'
+import { TextField } from '@/components/ui/text-field'
+import { Tooltip } from '@/components/ui/tooltip'
 import { OpeningAssemblySelectWithEdit } from '@/construction/config/components/OpeningAssemblySelectWithEdit'
 import { type EntityId, useEntityLabel } from '@/construction/config/components/useEntityLabel'
 import { useConfigActions, useDefaultWallAssemblyId, useWallAssemblies } from '@/construction/config/store'
@@ -77,7 +74,7 @@ function InfillConfigForm({ config, onUpdate }: InfillConfigFormProps): React.JS
               onUpdate({ ...config, desiredPostSpacing: value })
             }}
             unit="mm"
-            size="1"
+            size="sm"
             min={config.minStrawSpace}
             max={config.maxPostSpacing}
           />
@@ -93,7 +90,7 @@ function InfillConfigForm({ config, onUpdate }: InfillConfigFormProps): React.JS
               onUpdate({ ...config, maxPostSpacing: value })
             }}
             unit="mm"
-            size="1"
+            size="sm"
             min={config.desiredPostSpacing}
           />
         </div>
@@ -108,7 +105,7 @@ function InfillConfigForm({ config, onUpdate }: InfillConfigFormProps): React.JS
               onUpdate({ ...config, minStrawSpace: value })
             }}
             unit="mm"
-            size="1"
+            size="sm"
             min={0}
             max={config.desiredPostSpacing}
           />
@@ -125,7 +122,7 @@ function InfillConfigForm({ config, onUpdate }: InfillConfigFormProps): React.JS
             onValueChange={strawMaterial => {
               onUpdate({ ...config, strawMaterial: strawMaterial ?? undefined })
             }}
-            size="1"
+            size="sm"
             preferredTypes={['strawbale']}
           />
         </div>
@@ -135,7 +132,7 @@ function InfillConfigForm({ config, onUpdate }: InfillConfigFormProps): React.JS
             <div className="flex gap-1 items-center">
               <span className="text-sm font-medium text-gray-900">{t($ => $.walls.infillMaterial)}</span>
               <Tooltip content={t($ => $.walls.infillMaterialTooltip)}>
-                <InfoCircledIcon cursor="help" width={12} height={12} style={{ color: 'var(--gray-9)' }} />
+                <InfoCircledIcon cursor="help" width={12} height={12} style={{ color: 'var(--color-gray-900)' }} />
               </Tooltip>
             </div>
             <MaterialSelectWithEdit
@@ -145,7 +142,7 @@ function InfillConfigForm({ config, onUpdate }: InfillConfigFormProps): React.JS
               onValueChange={infillMaterial => {
                 onUpdate({ ...config, infillMaterial: infillMaterial ?? undefined })
               }}
-              size="1"
+              size="sm"
             />
           </div>
         </Label.Root>
@@ -201,7 +198,6 @@ function PostsConfigSection({ posts, onUpdate }: PostsConfigSectionProps): React
               })
             }
           }}
-          size="1"
         >
           <Select.Trigger />
           <Select.Content>
@@ -220,7 +216,7 @@ function PostsConfigSection({ posts, onUpdate }: PostsConfigSectionProps): React
             onUpdate({ ...posts, width: value })
           }}
           unit="mm"
-          size="1"
+          size="sm"
         />
 
         {posts.type === 'double' && (
@@ -234,7 +230,7 @@ function PostsConfigSection({ posts, onUpdate }: PostsConfigSectionProps): React
                 onUpdate({ ...posts, thickness: value })
               }}
               unit="mm"
-              size="1"
+              size="sm"
             />
           </>
         )}
@@ -249,7 +245,7 @@ function PostsConfigSection({ posts, onUpdate }: PostsConfigSectionProps): React
             if (!material) return
             onUpdate({ ...posts, material })
           }}
-          size="1"
+          size="sm"
           preferredTypes={['dimensional']}
         />
 
@@ -264,7 +260,7 @@ function PostsConfigSection({ posts, onUpdate }: PostsConfigSectionProps): React
                 if (!infillMaterial) return
                 onUpdate({ ...posts, infillMaterial })
               }}
-              size="1"
+              size="sm"
             />
           </>
         )}
@@ -302,7 +298,7 @@ function TriangularBattensConfigSection({
             onUpdate({ ...triangularBattens, size: value })
           }}
           unit="mm"
-          size="1"
+          size="sm"
         />
 
         <Label.Root>
@@ -314,7 +310,7 @@ function TriangularBattensConfigSection({
             onUpdate({ ...triangularBattens, minLength: value })
           }}
           unit="mm"
-          size="1"
+          size="sm"
         />
       </div>
 
@@ -328,7 +324,7 @@ function TriangularBattensConfigSection({
             if (!material) return
             onUpdate({ ...triangularBattens, material })
           }}
-          size="1"
+          size="sm"
           preferredTypes={['dimensional']}
         />
       </div>
@@ -406,7 +402,6 @@ function ModuleConfigSection({ module, onUpdate }: ModuleConfigSectionProps): Re
               })
             }
           }}
-          size="1"
         >
           <Select.Trigger />
           <Select.Content>
@@ -425,7 +420,7 @@ function ModuleConfigSection({ module, onUpdate }: ModuleConfigSectionProps): Re
             onUpdate({ ...module, minWidth: value })
           }}
           unit="mm"
-          size="1"
+          size="sm"
         />
 
         <Label.Root>
@@ -437,7 +432,7 @@ function ModuleConfigSection({ module, onUpdate }: ModuleConfigSectionProps): Re
             onUpdate({ ...module, maxWidth: value })
           }}
           unit="mm"
-          size="1"
+          size="sm"
         />
 
         <Label.Root>
@@ -449,7 +444,7 @@ function ModuleConfigSection({ module, onUpdate }: ModuleConfigSectionProps): Re
             onUpdate({ ...module, frameThickness: value })
           }}
           unit="mm"
-          size="1"
+          size="sm"
         />
 
         {module.type === 'double' && (
@@ -463,7 +458,7 @@ function ModuleConfigSection({ module, onUpdate }: ModuleConfigSectionProps): Re
                 onUpdate({ ...module, frameWidth: value })
               }}
               unit="mm"
-              size="1"
+              size="sm"
             />
 
             <Label.Root>
@@ -475,7 +470,7 @@ function ModuleConfigSection({ module, onUpdate }: ModuleConfigSectionProps): Re
                 onUpdate({ ...module, spacerSize: value })
               }}
               unit="mm"
-              size="1"
+              size="sm"
             />
 
             <Label.Root>
@@ -483,14 +478,15 @@ function ModuleConfigSection({ module, onUpdate }: ModuleConfigSectionProps): Re
             </Label.Root>
             <TextField.Root
               type="number"
-              min={2}
               value={module.spacerCount.toString()}
               onChange={event => {
                 const next = Number.parseInt(event.target.value, 10)
                 onUpdate({ ...module, spacerCount: Number.isFinite(next) ? Math.max(2, next) : module.spacerCount })
               }}
-              size="1"
-            />
+              size="sm"
+            >
+              <TextField.Input min={2} />
+            </TextField.Root>
           </>
         )}
       </div>
@@ -505,7 +501,7 @@ function ModuleConfigSection({ module, onUpdate }: ModuleConfigSectionProps): Re
               if (!frameMaterial) return
               onUpdate({ ...module, frameMaterial })
             }}
-            size="1"
+            size="sm"
             preferredTypes={['dimensional']}
           />
         </div>
@@ -521,7 +517,7 @@ function ModuleConfigSection({ module, onUpdate }: ModuleConfigSectionProps): Re
             onValueChange={strawMaterial => {
               onUpdate({ ...module, strawMaterial: strawMaterial ?? undefined })
             }}
-            size="1"
+            size="sm"
             preferredTypes={['strawbale']}
           />
         </div>
@@ -538,7 +534,7 @@ function ModuleConfigSection({ module, onUpdate }: ModuleConfigSectionProps): Re
                   if (!spacerMaterial) return
                   onUpdate({ ...module, spacerMaterial })
                 }}
-                size="1"
+                size="sm"
                 preferredTypes={['dimensional']}
               />
             </div>
@@ -553,7 +549,7 @@ function ModuleConfigSection({ module, onUpdate }: ModuleConfigSectionProps): Re
                   if (!infillMaterial) return
                   onUpdate({ ...module, infillMaterial })
                 }}
-                size="1"
+                size="sm"
               />
             </div>
           </>
@@ -640,7 +636,7 @@ function NonStrawbaleConfigForm({ config, onUpdate }: NonStrawbaleConfigFormProp
             if (!material) return
             onUpdate({ ...config, material })
           }}
-          size="1"
+          size="sm"
           preferredTypes={['volume']}
         />
       </div>
@@ -714,7 +710,7 @@ function CommonConfigSections({ assemblyId, config }: CommonConfigSectionsProps)
           allowDefault
           showDefaultIndicator
           placeholder={t($ => $.common.placeholder)}
-          size="1"
+          size="sm"
         />
       </div>
       <Separator />
@@ -832,7 +828,7 @@ function ConfigForm({ assembly }: ConfigFormProps): React.JSX.Element {
       gap-3
       p-3
       "
-      style={{ border: '1px solid var(--gray-6)', borderRadius: 'var(--radius-2)' }}
+      style={{ border: '1px solid var(--color-gray-600)', borderRadius: 'var(--radius-2)' }}
     >
       {/* Basic Info - Full Width */}
       <div className="grid grid-cols-2 gap-2 gap-x-3 items-center">
@@ -848,7 +844,6 @@ function ConfigForm({ assembly }: ConfigFormProps): React.JSX.Element {
             onBlur={nameInput.handleBlur}
             onKeyDown={nameInput.handleKeyDown}
             placeholder={t($ => $.common.placeholders.name)}
-            size="2"
           />
         </div>
 
@@ -1100,7 +1095,7 @@ export function WallAssemblyContent({ initialSelectionId }: WallAssemblyContentP
       <div className="flex flex-col gap-2">
         <div className="grid grid-cols-2 gap-2">
           <div className="flex gap-2 items-end">
-            <div className="flex flex-col gap-1 grow-1">
+            <div className="flex flex-col gap-1 grow">
               <WallAssemblySelect
                 value={selectedAssemblyId as WallAssemblyId | undefined}
                 onValueChange={setSelectedAssemblyId}
@@ -1174,7 +1169,7 @@ export function WallAssemblyContent({ initialSelectionId }: WallAssemblyContentP
                 <Button
                   size="icon"
                   disabled={!selectedAssembly || usage.isUsed}
-                 className="text-destructive"
+                  className="text-destructive"
                   title={usage.isUsed ? t($ => $.common.inUseCannotDelete) : t($ => $.common.delete)}
                 >
                   <TrashIcon />
@@ -1202,7 +1197,12 @@ export function WallAssemblyContent({ initialSelectionId }: WallAssemblyContentP
 
             <AlertDialog.Root>
               <AlertDialog.Trigger>
-                <Button size="icon"className="text-destructive" variant="outline" title={t($ => $.common.resetToDefaults)}>
+                <Button
+                  size="icon"
+                  className="text-destructive"
+                  variant="outline"
+                  title={t($ => $.common.resetToDefaults)}
+                >
                   <ResetIcon />
                 </Button>
               </AlertDialog.Trigger>
@@ -1238,7 +1238,6 @@ export function WallAssemblyContent({ initialSelectionId }: WallAssemblyContentP
                 setDefaultWallAssembly(value)
               }}
               placeholder={t($ => $.walls.selectDefault)}
-              size="2"
             />
           </div>
         </div>
@@ -1258,7 +1257,7 @@ export function WallAssemblyContent({ initialSelectionId }: WallAssemblyContentP
 function UsageBadge({ id }: { id: EntityId }) {
   const label = useEntityLabel(id)
   return (
-    <Badge key={id} size="2" variant="soft">
+    <Badge key={id} variant="soft">
       {label}
     </Badge>
   )
@@ -1274,7 +1273,7 @@ function UsageDisplay({ usage }: { usage: WallAssemblyUsage }): React.JSX.Elemen
       </Label.Root>
       <div className="flex gap-1 flex-wrap">
         {usage.isDefault && (
-          <Badge size="2" variant="soft" color="blue">
+          <Badge variant="soft" color="blue">
             {t($ => $.usage.globalDefault_wall)}
           </Badge>
         )}

@@ -33,9 +33,15 @@ export function AddOpeningToolOverlay({ tool }: ToolOverlayComponentProps<AddOpe
         y={0}
         width={state.width}
         height={wall.thickness}
-        fill={state.canPlace ? (tool.getNeedsConversion() ? 'var(--amber-10)' : 'var(--green-9)') : 'var(--red-9)'}
+        fill={
+          state.canPlace
+            ? tool.getNeedsConversion()
+              ? 'var(--color-orange-1000)'
+              : 'var(--color-green-900)'
+            : 'var(--color-red-900)'
+        }
         opacity={0.6}
-        stroke="var(--gray-1)"
+        stroke="var(--color-gray-100)"
         strokeWidth={3}
       />
       <g transform={`translate(0 ${wall.thickness}) scale(1, -1)`}>
@@ -45,7 +51,7 @@ export function AddOpeningToolOverlay({ tool }: ToolOverlayComponentProps<AddOpe
           fontSize={wall.thickness * 0.7}
           textAnchor="middle"
           dominantBaseline="central"
-          fill="var(--gray-1)"
+          fill="var(--color-gray-100)"
           fontFamily="Arial"
         >
           {tool.getNeedsConversion() ? '⚠' : getOpeningIcon(state.openingType)}
@@ -58,8 +64,8 @@ export function AddOpeningToolOverlay({ tool }: ToolOverlayComponentProps<AddOpe
           cx={state.snapDirection === 'right' ? -halfWidth : halfWidth}
           cy={wall.thickness / 2}
           r={wall.thickness * 0.15}
-          fill="var(--accent-9)"
-          stroke="var(--gray-1)"
+          fill="var(--color-primary-900)"
+          stroke="var(--color-gray-100)"
           strokeWidth={2}
           opacity={0.9}
         />

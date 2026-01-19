@@ -5,19 +5,14 @@ import { useCallback, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { OpeningPreview } from '@/building/components/inspectors/OpeningPreview'
-import { Button } from '@/components/ui/button'
-import { Callout, CalloutIcon, CalloutText } from '@/components/ui/callout'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger
-} from '@/components/ui/dropdown-menu'
-import { SegmentedControl } from '@/components/ui/segmented-control'
-import { Separator } from '@/components/ui/separator'
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import type { OpeningAssemblyId, OpeningType } from '@/building/model'
 import { useActiveStoreyId, useModelActions, useWallOpenings } from '@/building/store'
+import { Button } from '@/components/ui/button'
+import { Callout, CalloutIcon, CalloutText } from '@/components/ui/callout'
+import { DropdownMenu } from '@/components/ui/dropdown-menu'
+import { SegmentedControl } from '@/components/ui/segmented-control'
+import { Separator } from '@/components/ui/separator'
+import { Tooltip } from '@/components/ui/tooltip'
 import { OpeningAssemblySelectWithEdit } from '@/construction/config/components/OpeningAssemblySelectWithEdit'
 import { useDefaultOpeningAssemblyId, useOpeningAssemblyById } from '@/construction/config/store'
 import { createWallStoreyContext } from '@/construction/storeys/context'
@@ -258,10 +253,10 @@ function AddOpeningToolInspectorImpl({ tool }: AddOpeningToolInspectorImplProps)
                 : t($ => $.addOpening.dimensionModeFittingTooltip)
             }
           >
-            <InfoCircledIcon cursor="help" width={12} height={12} style={{ color: 'var(--gray-9)' }} />
+            <InfoCircledIcon cursor="help" width={12} height={12} style={{ color: 'var(--color-gray-900)' }} />
           </Tooltip>
         </div>
-        <SegmentedControl.Root value={state.dimensionMode} onValueChange={handleDimensionModeChange} size="1">
+        <SegmentedControl.Root value={state.dimensionMode} onValueChange={handleDimensionModeChange} size="sm">
           <SegmentedControl.Item value="finished">{t($ => $.addOpening.dimensionModeFinished)}</SegmentedControl.Item>
           <SegmentedControl.Item value="fitting">{t($ => $.addOpening.dimensionModeFitting)}</SegmentedControl.Item>
         </SegmentedControl.Root>
@@ -286,7 +281,7 @@ function AddOpeningToolInspectorImpl({ tool }: AddOpeningToolInspectorImplProps)
         <div className="flex gap-1 items-center">
           <span className="text-sm font-medium text-gray-900">{t($ => $.addOpening.openingType)}</span>
         </div>
-        <SegmentedControl.Root value={state.openingType} onValueChange={handleTypeChange} size="2">
+        <SegmentedControl.Root value={state.openingType} onValueChange={handleTypeChange}>
           <SegmentedControl.Item value="door">
             <Tooltip content={t($ => $.addOpening.typeDoor)}>
               <div>
@@ -333,7 +328,7 @@ function AddOpeningToolInspectorImpl({ tool }: AddOpeningToolInspectorImplProps)
           min={100}
           max={5000}
           step={100}
-          size="1"
+          size="sm"
           style={{ width: '80px' }}
           onFocus={() => {
             setFocusedField('width')
@@ -358,7 +353,7 @@ function AddOpeningToolInspectorImpl({ tool }: AddOpeningToolInspectorImplProps)
           min={100}
           max={4000}
           step={100}
-          size="1"
+          size="sm"
           style={{ width: '80px' }}
           onFocus={() => {
             setFocusedField('height')
@@ -383,7 +378,7 @@ function AddOpeningToolInspectorImpl({ tool }: AddOpeningToolInspectorImplProps)
           min={0}
           max={2000}
           step={100}
-          size="1"
+          size="sm"
           style={{ width: '80px' }}
           onFocus={() => {
             setFocusedField('sillHeight')
@@ -410,7 +405,7 @@ function AddOpeningToolInspectorImpl({ tool }: AddOpeningToolInspectorImplProps)
           min={getDisplayValue(state.sillHeight ?? 0, 'sillHeight') + 100}
           max={5000}
           step={100}
-          size="1"
+          size="sm"
           style={{ width: '80px' }}
           onFocus={() => {
             setFocusedField('topHeight')
@@ -454,7 +449,6 @@ function AddOpeningToolInspectorImpl({ tool }: AddOpeningToolInspectorImplProps)
               size="icon"
               key={index}
               variant="soft"
-              size="3"
               onClick={() => {
                 handlePresetOrCopyClick(preset)
               }}
@@ -484,7 +478,7 @@ function AddOpeningToolInspectorImpl({ tool }: AddOpeningToolInspectorImplProps)
         <div className="flex gap-1 items-center">
           <span className="text-sm font-medium text-gray-900">{t($ => $.addOpening.openingAssembly)}</span>
           <Tooltip content={t($ => $.addOpening.openingAssemblyTooltip)}>
-            <InfoCircledIcon cursor="help" width={12} height={12} style={{ color: 'var(--gray-9)' }} />
+            <InfoCircledIcon cursor="help" width={12} height={12} style={{ color: 'var(--color-gray-900)' }} />
           </Tooltip>
         </div>
         <OpeningAssemblySelectWithEdit
@@ -492,7 +486,6 @@ function AddOpeningToolInspectorImpl({ tool }: AddOpeningToolInspectorImplProps)
           onValueChange={handleAssemblyChange}
           allowDefault
           showDefaultIndicator
-          size="2"
         />
       </div>
     </div>

@@ -73,6 +73,7 @@ export function MainToolbar({ onInfoClick }: MainToolbarProps): React.JSX.Elemen
                             onClick={() => {
                               handleToolSelect(toolId)
                             }}
+                            className="h-8 w-8"
                           >
                             <toolInfo.iconComponent width={20} height={20} aria-hidden />
                           </Button>

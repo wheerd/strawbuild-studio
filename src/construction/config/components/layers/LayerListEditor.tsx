@@ -13,6 +13,13 @@ import {
 import React, { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
+import { Button } from '@/components/ui/button'
+import { Card } from '@/components/ui/card'
+import { Checkbox } from '@/components/ui/checkbox'
+import { DropdownMenu } from '@/components/ui/dropdown-menu'
+import { Select } from '@/components/ui/select'
+import { TextField } from '@/components/ui/text-field'
+import { Tooltip } from '@/components/ui/tooltip'
 import { sumLayerThickness } from '@/construction/config/store/layerUtils'
 import type { LayerPreset } from '@/construction/layers/defaults'
 import type {
@@ -299,7 +306,7 @@ function LayerCard({
           <LayerTypeIcon type={layer.type} />
           <TextField.Root
             title={t($ => $.common.name)}
-            size="1"
+            size="sm"
             value={nameInput}
             onChange={event => {
               setNameInput(event.target.value)
@@ -319,7 +326,7 @@ function LayerCard({
               onUpdateLayer(index, { thickness: value })
             }}
             unit="mm"
-            size="1"
+            size="sm"
             style={{ width: '8em' }}
           >
             <TextField.Slot title={t($ => $.common.thickness)} side="left" className="pl-1 pr-0">
@@ -338,7 +345,6 @@ function LayerCard({
           <div className="flex gap-1">
             <Button
               size="icon"
-              size="sm"
               variant="soft"
               onClick={() => {
                 onMoveLayer(index, index - 1)
@@ -350,7 +356,6 @@ function LayerCard({
             </Button>
             <Button
               size="icon"
-              size="sm"
               variant="soft"
               onClick={() => {
                 onMoveLayer(index, index + 1)
@@ -362,9 +367,8 @@ function LayerCard({
             </Button>
             <Button
               size="icon"
-              size="sm"
               variant="soft"
-             className="text-destructive"
+              className="text-destructive"
               onClick={() => {
                 onRemoveLayer(index)
               }}
@@ -415,7 +419,7 @@ function MonolithicLayerFields({
             onUpdateLayer(index, { material })
           }}
           placeholder={t($ => $.layers.selectMaterial)}
-          size="1"
+          size="sm"
           preferredTypes={['sheet', 'volume']}
         />
       }
@@ -443,7 +447,6 @@ function StripedLayerFields({
             onValueChange={value => {
               onUpdateLayer(index, { direction: value as StripeDirection })
             }}
-            size="1"
           >
             <Select.Trigger />
             <Select.Content>
@@ -462,7 +465,7 @@ function StripedLayerFields({
             onUpdateLayer(index, { stripeWidth: value })
           }}
           unit="mm"
-          size="1"
+          size="sm"
           style={{ width: '8em' }}
         >
           <TextField.Slot title={t($ => $.common.width)} side="left" className="pl-1 pr-0">
@@ -478,7 +481,7 @@ function StripedLayerFields({
             onUpdateLayer(index, { stripeMaterial: material })
           }}
           placeholder={t($ => $.layers.selectMaterial)}
-          size="1"
+          size="sm"
           preferredTypes={['dimensional']}
         />
 
@@ -489,7 +492,7 @@ function StripedLayerFields({
             onUpdateLayer(index, { gapWidth: value })
           }}
           unit="mm"
-          size="1"
+          size="sm"
           style={{ width: '8em' }}
         >
           <TextField.Slot title={t($ => $.common.width)} side="left" className="pl-1 pr-0">
@@ -506,7 +509,7 @@ function StripedLayerFields({
             onUpdateLayer(index, { gapMaterial: material ?? undefined })
           }}
           placeholder={t($ => $.layers.selectMaterial)}
-          size="1"
+          size="sm"
           preferredTypes={['sheet', 'volume']}
         />
       </div>

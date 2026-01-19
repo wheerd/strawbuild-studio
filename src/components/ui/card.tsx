@@ -12,9 +12,9 @@ const cardVariants = cva('rounded-lg border bg-card text-card-foreground shadow-
       soft: 'bg-accent/50 border-accent'
     },
     size: {
-      '1': 'p-2',
-      '2': 'p-3',
-      '3': 'p-4',
+      sm: 'p-2',
+      base: 'p-3',
+      lg: 'p-4',
       '4': 'p-5',
       '5': 'p-6'
     }

@@ -13,7 +13,7 @@ export function ViewModeToggle(): React.JSX.Element {
     <div className="absolute top-2 left-2 z-10" data-testid="viewmode-toggle">
       <Card className="shadow-md p-1">
         <SegmentedControl.Root
-          size="1"
+          size="sm"
           value={mode}
           onValueChange={value => {
             setMode(value as 'walls' | 'floors' | 'roofs')

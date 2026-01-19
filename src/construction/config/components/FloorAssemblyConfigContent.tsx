@@ -5,6 +5,13 @@ import { useTranslation } from 'react-i18next'
 
 import type { FloorAssemblyId } from '@/building/model/ids'
 import { useStoreysOrderedByLevel } from '@/building/store'
+import { AlertDialog } from '@/components/ui/alert-dialog'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { DropdownMenu } from '@/components/ui/dropdown-menu'
+import { Separator } from '@/components/ui/separator'
+import { TextField } from '@/components/ui/text-field'
+import { Tooltip } from '@/components/ui/tooltip'
 import type { FloorAssemblyConfig } from '@/construction/config'
 import { type EntityId, useEntityLabel } from '@/construction/config/components/useEntityLabel'
 import { useConfigActions, useDefaultFloorAssemblyId, useFloorAssemblies } from '@/construction/config/store'
@@ -204,7 +211,7 @@ export function FloorAssemblyConfigContent({ initialSelectionId }: FloorAssembly
       {/* Selector + Actions */}
       <div className="flex flex-col gap-2">
         <div className="flex gap-2 items-end">
-          <div className="flex flex-col gap-1 grow-1">
+          <div className="flex flex-col gap-1 grow">
             <FloorAssemblySelect
               value={selectedConfigId as FloorAssemblyId | undefined}
               onValueChange={value => {
@@ -280,7 +287,7 @@ export function FloorAssemblyConfigContent({ initialSelectionId }: FloorAssembly
               <Button
                 size="icon"
                 disabled={!selectedConfig || usage.isUsed || floorAssemblies.length === 1}
-               className="text-destructive"
+                className="text-destructive"
                 title={
                   !selectedConfig
                     ? t($ => $.floors.delete.noConfigSelected)
@@ -316,7 +323,12 @@ export function FloorAssemblyConfigContent({ initialSelectionId }: FloorAssembly
 
           <AlertDialog.Root>
             <AlertDialog.Trigger>
-              <Button size="icon"className="text-destructive" variant="outline" title={t($ => $.common.resetToDefaults)}>
+              <Button
+                size="icon"
+                className="text-destructive"
+                variant="outline"
+                title={t($ => $.common.resetToDefaults)}
+              >
                 <ResetIcon />
               </Button>
             </AlertDialog.Trigger>
@@ -356,7 +368,7 @@ export function FloorAssemblyConfigContent({ initialSelectionId }: FloorAssembly
             </Label.Root>
             <MeasurementInfo highlightedAssembly="floorAssembly" />
           </div>
-          <FloorAssemblySelect value={defaultConfigId} onValueChange={setDefaultFloorAssembly} size="2" />
+          <FloorAssemblySelect value={defaultConfigId} onValueChange={setDefaultFloorAssembly} />
         </div>
 
         {usage.isUsed && <UsageDisplay usage={usage} />}
@@ -368,7 +380,7 @@ export function FloorAssemblyConfigContent({ initialSelectionId }: FloorAssembly
 function UsageBadge({ id }: { id: EntityId }) {
   const label = useEntityLabel(id)
   return (
-    <Badge key={id} size="2" variant="soft">
+    <Badge key={id} variant="soft">
       {label}
     </Badge>
   )
@@ -384,7 +396,7 @@ function UsageDisplay({ usage }: { usage: FloorAssemblyUsage }): React.JSX.Eleme
       </Label.Root>
       <div className="flex gap-1 flex-wrap">
         {usage.isDefault && (
-          <Badge size="2" variant="soft" color="blue">
+          <Badge variant="soft" color="blue">
             {t($ => $.usage.globalDefault_floor)}
           </Badge>
         )}
@@ -428,7 +440,7 @@ function ConfigForm({ assembly }: { assembly: FloorAssemblyConfig }): React.JSX.
   return (
     <div
       className="flex flex-col      gap-3      p-3"
-      style={{ border: '1px solid var(--gray-6)', borderRadius: 'var(--radius-2)' }}
+      style={{ border: '1px solid var(--color-gray-600)', borderRadius: 'var(--radius-2)' }}
     >
       <div className="grid grid-cols-2 gap-2 gap-x-3 items-center">
         <div className="grid grid-cols-[auto_1fr] gap-x-2 items-center">
@@ -443,7 +455,6 @@ function ConfigForm({ assembly }: { assembly: FloorAssemblyConfig }): React.JSX.
             onBlur={nameInput.handleBlur}
             onKeyDown={nameInput.handleKeyDown}
             placeholder={t($ => $.common.placeholders.name)}
-            size="2"
           />
         </div>
 
@@ -513,7 +524,6 @@ function MonolithicConfigFields({
             onUpdate({ material })
           }}
           placeholder={t($ => $.common.placeholders.selectMaterial)}
-          size="2"
           preferredTypes={['sheet', 'volume']}
         />
 
@@ -529,7 +539,6 @@ function MonolithicConfigFields({
             onUpdate({ thickness })
           }}
           unit="mm"
-          size="2"
         />
       </div>
     </>
@@ -555,7 +564,7 @@ function JoistConfigFields({
             <span className="text-base font-medium ">{t($ => $.floors.labels.beamHeight)}</span>
           </Label.Root>
           <Tooltip content={t($ => $.floors.tips.beamHeight)}>
-            <Button size="icon" style={{ cursor: 'help' }}  className="rounded-full" variant="ghost">
+            <Button size="icon" style={{ cursor: 'help' }} className="rounded-full" variant="ghost">
               <InfoCircledIcon width={12} height={12} />
             </Button>
           </Tooltip>
@@ -566,7 +575,6 @@ function JoistConfigFields({
             onUpdate({ constructionHeight })
           }}
           unit="mm"
-          size="2"
         />
       </div>
 
@@ -585,7 +593,6 @@ function JoistConfigFields({
             onUpdate({ joistMaterial })
           }}
           placeholder={t($ => $.common.placeholders.selectMaterial)}
-          size="2"
           preferredTypes={['dimensional']}
         />
 
@@ -598,7 +605,6 @@ function JoistConfigFields({
             onUpdate({ joistThickness })
           }}
           unit="mm"
-          size="2"
         />
 
         <Label.Root>
@@ -610,7 +616,6 @@ function JoistConfigFields({
             onUpdate({ joistSpacing })
           }}
           unit="mm"
-          size="2"
         />
       </div>
 
@@ -629,7 +634,6 @@ function JoistConfigFields({
             onUpdate({ wallBeamMaterial })
           }}
           placeholder={t($ => $.common.placeholders.selectMaterial)}
-          size="2"
           preferredTypes={['dimensional']}
         />
 
@@ -642,7 +646,6 @@ function JoistConfigFields({
             onUpdate({ wallBeamThickness })
           }}
           unit="mm"
-          size="2"
         />
 
         <Label.Root>
@@ -654,7 +657,6 @@ function JoistConfigFields({
             onUpdate({ wallBeamInsideOffset })
           }}
           unit="mm"
-          size="2"
         />
 
         <Label.Root>
@@ -667,7 +669,6 @@ function JoistConfigFields({
             onUpdate({ wallInfillMaterial })
           }}
           placeholder={t($ => $.common.placeholders.selectMaterial)}
-          size="2"
         />
       </div>
 
@@ -686,7 +687,6 @@ function JoistConfigFields({
             onUpdate({ subfloorMaterial })
           }}
           placeholder={t($ => $.common.placeholders.selectMaterial)}
-          size="2"
           preferredTypes={['sheet']}
         />
 
@@ -699,7 +699,6 @@ function JoistConfigFields({
             onUpdate({ subfloorThickness })
           }}
           unit="mm"
-          size="2"
         />
       </div>
 
@@ -718,7 +717,6 @@ function JoistConfigFields({
             onUpdate({ openingSideMaterial })
           }}
           placeholder={t($ => $.common.placeholders.selectMaterial)}
-          size="2"
           preferredTypes={['dimensional']}
         />
 
@@ -731,7 +729,6 @@ function JoistConfigFields({
             onUpdate({ openingSideThickness })
           }}
           unit="mm"
-          size="2"
         />
       </div>
     </>
@@ -756,7 +753,7 @@ function FilledConfigFields({
             <span className="text-base font-medium ">{t($ => $.floors.labels.constructionHeight)}</span>
           </Label.Root>
           <Tooltip content={t($ => $.floors.tips.constructionHeight)}>
-            <Button size="icon" style={{ cursor: 'help' }}  className="rounded-full" variant="ghost">
+            <Button size="icon" style={{ cursor: 'help' }} className="rounded-full" variant="ghost">
               <InfoCircledIcon width={12} height={12} />
             </Button>
           </Tooltip>
@@ -767,7 +764,6 @@ function FilledConfigFields({
             onUpdate({ constructionHeight })
           }}
           unit="mm"
-          size="2"
         />
       </div>
 
@@ -786,7 +782,6 @@ function FilledConfigFields({
             onUpdate({ joistMaterial })
           }}
           placeholder={t($ => $.common.placeholders.selectMaterial)}
-          size="2"
           preferredTypes={['dimensional']}
         />
 
@@ -799,7 +794,6 @@ function FilledConfigFields({
             onUpdate({ joistThickness })
           }}
           unit="mm"
-          size="2"
         />
 
         <Label.Root>
@@ -811,7 +805,6 @@ function FilledConfigFields({
             onUpdate({ joistSpacing })
           }}
           unit="mm"
-          size="2"
         />
       </div>
 
@@ -830,7 +823,6 @@ function FilledConfigFields({
             onUpdate({ frameMaterial })
           }}
           placeholder={t($ => $.common.placeholders.selectMaterial)}
-          size="2"
           preferredTypes={['dimensional']}
         />
 
@@ -843,7 +835,6 @@ function FilledConfigFields({
             onUpdate({ frameThickness })
           }}
           unit="mm"
-          size="2"
         />
       </div>
 
@@ -862,7 +853,6 @@ function FilledConfigFields({
             onUpdate({ subfloorMaterial })
           }}
           placeholder={t($ => $.common.placeholders.selectMaterial)}
-          size="2"
           preferredTypes={['sheet']}
         />
 
@@ -875,7 +865,6 @@ function FilledConfigFields({
             onUpdate({ subfloorThickness })
           }}
           unit="mm"
-          size="2"
         />
       </div>
 
@@ -894,7 +883,6 @@ function FilledConfigFields({
             onUpdate({ ceilingSheathingMaterial })
           }}
           placeholder={t($ => $.common.placeholders.selectMaterial)}
-          size="2"
           preferredTypes={['sheet']}
         />
 
@@ -907,7 +895,6 @@ function FilledConfigFields({
             onUpdate({ ceilingSheathingThickness })
           }}
           unit="mm"
-          size="2"
         />
       </div>
 
@@ -926,7 +913,6 @@ function FilledConfigFields({
             onUpdate({ openingFrameMaterial })
           }}
           placeholder={t($ => $.common.placeholders.selectMaterial)}
-          size="2"
           preferredTypes={['dimensional']}
         />
 
@@ -939,7 +925,6 @@ function FilledConfigFields({
             onUpdate({ openingFrameThickness })
           }}
           unit="mm"
-          size="2"
         />
       </div>
 
@@ -953,7 +938,7 @@ function FilledConfigFields({
             <span className="text-base font-medium ">{t($ => $.common.strawMaterialOverride)}</span>
           </Label.Root>
           <Tooltip content={t($ => $.floors.tips.strawMaterialOverride)}>
-            <Button size="icon" style={{ cursor: 'help' }}  className="rounded-full" variant="ghost">
+            <Button size="icon" style={{ cursor: 'help' }} className="rounded-full" variant="ghost">
               <InfoCircledIcon width={12} height={12} />
             </Button>
           </Tooltip>
@@ -966,7 +951,6 @@ function FilledConfigFields({
             onUpdate({ strawMaterial: strawMaterial ?? undefined })
           }}
           placeholder={t($ => $.common.placeholders.selectMaterial)}
-          size="2"
           preferredTypes={['strawbale']}
         />
       </div>
@@ -999,7 +983,6 @@ function HangingJoistConfigFields({
             onUpdate({ joistMaterial })
           }}
           placeholder={t($ => $.common.placeholders.selectMaterial)}
-          size="2"
           preferredTypes={['dimensional']}
         />
 
@@ -1008,7 +991,7 @@ function HangingJoistConfigFields({
             <span className="text-base font-medium ">{t($ => $.common.height)}</span>
           </Label.Root>
           <Tooltip content={t($ => $.floors.tips.joistHeight)}>
-            <Button size="icon" style={{ cursor: 'help' }}  className="rounded-full" variant="ghost">
+            <Button size="icon" style={{ cursor: 'help' }} className="rounded-full" variant="ghost">
               <InfoCircledIcon width={12} height={12} />
             </Button>
           </Tooltip>
@@ -1019,7 +1002,6 @@ function HangingJoistConfigFields({
             onUpdate({ joistHeight })
           }}
           unit="mm"
-          size="2"
         />
 
         <Label.Root>
@@ -1031,7 +1013,6 @@ function HangingJoistConfigFields({
             onUpdate({ joistThickness })
           }}
           unit="mm"
-          size="2"
         />
 
         <Label.Root>
@@ -1043,7 +1024,6 @@ function HangingJoistConfigFields({
             onUpdate({ joistSpacing })
           }}
           unit="mm"
-          size="2"
         />
       </div>
 
@@ -1054,7 +1034,7 @@ function HangingJoistConfigFields({
             <span className="text-base font-medium ">{t($ => $.floors.labels.verticalOffset)}</span>
           </Label.Root>
           <Tooltip content={t($ => $.floors.tips.verticalOffset)}>
-            <Button size="icon" style={{ cursor: 'help' }}  className="rounded-full" variant="ghost">
+            <Button size="icon" style={{ cursor: 'help' }} className="rounded-full" variant="ghost">
               <InfoCircledIcon width={12} height={12} />
             </Button>
           </Tooltip>
@@ -1065,7 +1045,6 @@ function HangingJoistConfigFields({
             onUpdate({ verticalOffset })
           }}
           unit="mm"
-          size="2"
         />
       </div>
 
@@ -1084,7 +1063,6 @@ function HangingJoistConfigFields({
             onUpdate({ subfloorMaterial })
           }}
           placeholder={t($ => $.common.placeholders.selectMaterial)}
-          size="2"
           preferredTypes={['sheet']}
         />
 
@@ -1097,7 +1075,6 @@ function HangingJoistConfigFields({
             onUpdate({ subfloorThickness })
           }}
           unit="mm"
-          size="2"
         />
       </div>
 
@@ -1116,7 +1093,6 @@ function HangingJoistConfigFields({
             onUpdate({ openingSideMaterial })
           }}
           placeholder={t($ => $.common.placeholders.selectMaterial)}
-          size="2"
           preferredTypes={['dimensional']}
         />
 
@@ -1129,7 +1105,6 @@ function HangingJoistConfigFields({
             onUpdate({ openingSideThickness })
           }}
           unit="mm"
-          size="2"
         />
       </div>
     </>

@@ -3,8 +3,6 @@ import * as React from 'react'
 
 import { cn } from '@/lib/utils'
 
-const HoverCard = HoverCardPrimitive.Root
-
 const HoverCardTrigger = HoverCardPrimitive.Trigger
 
 const HoverCardContent = React.forwardRef<

@@ -14,7 +14,7 @@ export function RoofOverhangShape({ overhang }: { overhang: RoofOverhang }): Rea
       data-entity-type="roof-overhang"
       data-parent-ids={JSON.stringify([overhang.roofId])}
     >
-      <path d={pathD} fill={MATERIAL_COLORS.roof} opacity={0.3} stroke="var(--gray-11)" strokeWidth={10} />
+      <path d={pathD} fill={MATERIAL_COLORS.roof} opacity={0.3} stroke="var(--color-gray-900)" strokeWidth={10} />
 
       {/* Invisible trigger area when overhang is 0 so that side can still be selected */}
       <path d={triggerArea} fill="black" opacity={0} />

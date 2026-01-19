@@ -5,6 +5,10 @@ import { useTheme } from 'next-themes'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
+import { AlertDialog } from '@/components/ui/alert-dialog'
+import { Button } from '@/components/ui/button'
+import { Card } from '@/components/ui/card'
+import { Code } from '@/components/ui/code'
 import type { ConstructionModel } from '@/construction/model'
 import { matAppToThree, toThreeTransform } from '@/construction/viewer3d/utils/geometry'
 import { type SketchUpErrorCode, SketchUpExportError } from '@/exporters/sketchup'
@@ -137,7 +141,7 @@ function ConstructionViewer3D({ model, containerSize }: ConstructionViewer3DProp
       </Canvas>
 
       <div className="absolute top-3 left-3 z-10">
-        <Card size="1" variant="soft" className="shadow-md">
+        <Card size="sm" variant="soft" className="shadow-md">
           <div className="flex flex-row items-center gap-1 m--2 p-0">
             <TagOpacityMenu model={model} />
             <GridToggleButton />
@@ -146,7 +150,7 @@ function ConstructionViewer3D({ model, containerSize }: ConstructionViewer3DProp
       </div>
 
       <div className="absolute top-3 right-3 z-10">
-        <Card size="1" variant="soft" className="shadow-md">
+        <Card size="sm" variant="soft" className="shadow-md">
           <div className="flex flex-col items-center gap-2 m--2 p-0">
             <ExportButton
               onExport={format => {
@@ -166,7 +170,7 @@ function ConstructionViewer3D({ model, containerSize }: ConstructionViewer3DProp
         <AlertDialog.Content maxWidth="450px">
           <AlertDialog.Title>
             <div className="flex items-center gap-2">
-              <ExclamationTriangleIcon color="var(--red-9)" />
+              <ExclamationTriangleIcon color="var(--color-red-900)" />
               <span className="text-red-800">{t($ => $.export.exportError.title)}</span>
             </div>
           </AlertDialog.Title>
@@ -176,7 +180,7 @@ function ConstructionViewer3D({ model, containerSize }: ConstructionViewer3DProp
               {exportError?.details && (
                 <div className="flex flex-col gap-1">
                   <span className="text-base font-bold">{t($ => $.export.exportError.details)}</span>
-                  <Code size="1" style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
+                  <Code size="sm" style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
                     {exportError.details}
                   </Code>
                 </div>

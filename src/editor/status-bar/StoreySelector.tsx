@@ -18,7 +18,7 @@ export function getLevelColor(level: number): string {
   } else if (level > 0) {
     return 'text-indigo-600 dark:text-indigo-400'
   } else {
-    return 'text-amber-700 dark:text-amber-400'
+    return 'text-orange-700 dark:text-orange-400'
   }
 }
 

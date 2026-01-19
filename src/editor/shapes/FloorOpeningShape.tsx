@@ -8,7 +8,7 @@ export function FloorOpeningShape({ opening }: { opening: FloorOpening }): React
     <path
       d={d}
       fill="url(#hatch)"
-      stroke="var(--amber-10)"
+      stroke="var(--color-orange-1000)"
       strokeWidth={10}
       strokeDasharray="80 40"
       data-entity-id={opening.id}

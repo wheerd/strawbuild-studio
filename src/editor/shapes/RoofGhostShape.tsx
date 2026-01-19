@@ -7,8 +7,22 @@ export function SvgRoofGhostShape({ roof }: { roof: Roof }): React.JSX.Element {
 
   return (
     <g className="pointer-events-none">
-      <path d={roofPath} stroke="var(--gray-12)" fill="none" strokeWidth={20} strokeDasharray="40 80" opacity={0.3} />
-      <path d={eavePath} stroke="var(--gray-12)" fill="none" strokeWidth={20} strokeDasharray="40 80" opacity={0.3} />
+      <path
+        d={roofPath}
+        stroke="var(--color-gray-900)"
+        fill="none"
+        strokeWidth={20}
+        strokeDasharray="40 80"
+        opacity={0.3}
+      />
+      <path
+        d={eavePath}
+        stroke="var(--color-gray-900)"
+        fill="none"
+        strokeWidth={20}
+        strokeDasharray="40 80"
+        opacity={0.3}
+      />
     </g>
   )
 }

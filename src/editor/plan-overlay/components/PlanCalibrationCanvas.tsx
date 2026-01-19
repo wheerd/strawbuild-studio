@@ -1,6 +1,7 @@
 import React, { type PointerEvent, useCallback, useMemo, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 
+import { Card } from '@/components/ui/card'
 import type { ImagePoint } from '@/editor/plan-overlay/types'
 import { SVGViewport, type SVGViewportRef } from '@/shared/components/SVGViewport'
 import { Bounds2D, ZERO_VEC2, newVec2 } from '@/shared/geometry'
@@ -88,7 +89,7 @@ export function PlanCalibrationCanvas({
         y1={start.y}
         x2={end.x}
         y2={end.y}
-        stroke="var(--accent-9)"
+        stroke="var(--color-primary-900)"
         strokeWidth={2}
         strokeDasharray="12 8"
         pointerEvents="none"
@@ -104,7 +105,7 @@ export function PlanCalibrationCanvas({
         y1={point.y - 12}
         x2={point.x + 12}
         y2={point.y + 12}
-        stroke="var(--gray-12)"
+        stroke="var(--color-gray-900)"
         strokeWidth={3}
         opacity={0.4}
       />
@@ -113,7 +114,7 @@ export function PlanCalibrationCanvas({
         y1={point.y + 12}
         x2={point.x + 12}
         y2={point.y - 12}
-        stroke="var(--gray-12)"
+        stroke="var(--color-gray-900)"
         strokeWidth={3}
         opacity={0.4}
       />
@@ -122,7 +123,7 @@ export function PlanCalibrationCanvas({
         y1={point.y - 12}
         x2={point.x + 12}
         y2={point.y + 12}
-        stroke="var(--gray-1)"
+        stroke="var(--color-gray-100)"
         strokeWidth={1.5}
       />
       <line
@@ -130,7 +131,7 @@ export function PlanCalibrationCanvas({
         y1={point.y + 12}
         x2={point.x + 12}
         y2={point.y - 12}
-        stroke="var(--gray-1)"
+        stroke="var(--color-gray-100)"
         strokeWidth={1.5}
       />
     </g>
@@ -139,7 +140,7 @@ export function PlanCalibrationCanvas({
   return (
     <div
       ref={setContainerRef}
-      style={{ borderColor: 'var(--gray-6)' }}
+      style={{ borderColor: 'var(--color-gray-600)' }}
       className="border rounded-md relative w-full h-full flex items-center justify-center overflow-hidden p0"
     >
       {image ? (
@@ -149,7 +150,7 @@ export function PlanCalibrationCanvas({
             y={0}
             width={image.naturalWidth}
             height={image.naturalHeight}
-            fill="var(--gray-2)"
+            fill="var(--color-gray-200)"
             pointerEvents="none"
           />
           <image
@@ -164,15 +165,15 @@ export function PlanCalibrationCanvas({
             onPointerUp={handlePointerUp}
           />
           {renderReferenceLine()}
-          {referencePoints.map(point => renderCrosshair(point, 'var(--accent-9)'))}
-          {originPoint && renderCrosshair(originPoint, 'var(--red-9)')}
+          {referencePoints.map(point => renderCrosshair(point, 'var(--color-primary-900)'))}
+          {originPoint && renderCrosshair(originPoint, 'var(--color-red-900)')}
         </SVGViewport>
       ) : (
         <span className="text-gray-900">{t($ => $.canvas.uploadToBegin)}</span>
       )}
       {image && (
         <div className="absolute bottom-3 right-3 z-10">
-          <Card size="1" variant="soft" className="shadow-md">
+          <Card size="sm" variant="soft" className="shadow-md">
             <div className="items-center gap-3 m--2 p-1">
               <span className="text-sm">{t($ => $.canvas.scrollToZoom)}</span>
               <span className="text-sm">Shift + drag to pan</span>

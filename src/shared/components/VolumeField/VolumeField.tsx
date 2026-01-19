@@ -22,11 +22,11 @@ export interface VolumeFieldProps extends Omit<React.ComponentPropsWithoutRef<'i
   min?: number
   max?: number
   step?: number
-  size?: '1' | '2' | '3'
+  size?: 'sm' | 'base' | 'lg'
 }
 
 export const VolumeField = forwardRef<HTMLInputElement, VolumeFieldProps>(function VolumeField(
-  { value, onChange, unit = 'liter', min, max, step, size = '2', placeholder, disabled, style, className, ...props },
+  { value, onChange, unit = 'liter', min, max, step, size = 'base', placeholder, disabled, style, className, ...props },
   ref
 ) {
   const { label, factor } = UNIT_CONFIG[unit]
@@ -52,9 +52,9 @@ export const VolumeField = forwardRef<HTMLInputElement, VolumeFieldProps>(functi
   }
 
   const sizeClasses = {
-    '1': 'h-7 text-xs',
-    '2': 'h-9 <Text text-sm',
-    '3': 'h-10 <Text text-base'
+    sm: 'h-7 text-xs',
+    base: 'h-9 <Text text-sm',
+    lg: 'h-10 <Text text-base'
   }
 
   return (

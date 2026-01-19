@@ -109,8 +109,8 @@ function AddPostToolInspectorImpl({ tool }: AddPostToolInspectorImplProps): Reac
 
   // Event handlers
   const handleTypeChange = useCallback(
-    (newType: WallPostType) => {
-      tool.setPostType(newType)
+    (newType: string) => {
+      tool.setPostType(newType as WallPostType)
     },
     [tool]
   )
@@ -165,7 +165,7 @@ function AddPostToolInspectorImpl({ tool }: AddPostToolInspectorImplProps): Reac
       {/* Type Selection */}
       <div className="items-center justify-between gap-2">
         <span className="text-sm font-medium text-gray-900">{t($ => $.addPost.type)}</span>
-        <SegmentedControl.Root value={state.type} onValueChange={handleTypeChange} size="1">
+        <SegmentedControl.Root value={state.type} onValueChange={handleTypeChange} size="sm">
           <SegmentedControl.Item value="inside">{t($ => $.addPost.types.inside)}</SegmentedControl.Item>
           <SegmentedControl.Item value="center">{t($ => $.addPost.types.center)}</SegmentedControl.Item>
           <SegmentedControl.Item value="outside">{t($ => $.addPost.types.outside)}</SegmentedControl.Item>
@@ -176,7 +176,7 @@ function AddPostToolInspectorImpl({ tool }: AddPostToolInspectorImplProps): Reac
         <span className="text-sm font-medium text-gray-900">{t($ => $.addPost.behavior)}</span>
         <div className="flex items-center gap-2">
           <span className="text-sm text-gray-900">{t($ => $.addPost.actsAsPost)}</span>
-          <Switch checked={!state.replacesPosts} size="1" onCheckedChange={handleReplacesPostsChange} />
+          <Switch checked={!state.replacesPosts} size="sm" onCheckedChange={handleReplacesPostsChange} />
           <span className="text-sm text-gray-900">{t($ => $.addPost.flankedByPosts)}</span>
         </div>
       </div>
@@ -197,7 +197,7 @@ function AddPostToolInspectorImpl({ tool }: AddPostToolInspectorImplProps): Reac
           min={10}
           max={500}
           step={10}
-          size="1"
+          size="sm"
           style={{ width: '80px' }}
         />
 
@@ -216,7 +216,7 @@ function AddPostToolInspectorImpl({ tool }: AddPostToolInspectorImplProps): Reac
           min={50}
           max={1000}
           step={10}
-          size="1"
+          size="sm"
           style={{ width: '80px' }}
         />
       </div>
@@ -226,14 +226,14 @@ function AddPostToolInspectorImpl({ tool }: AddPostToolInspectorImplProps): Reac
         <MaterialSelectWithEdit
           value={state.material}
           onValueChange={handleMaterialChange}
-          size="1"
+          size="sm"
           preferredTypes={['dimensional']}
         />
       </div>
       {/* Infill Material Selection */}
       <div className="flex flex-col gap-2">
         <span className="text-sm font-medium text-gray-900">{t($ => $.addPost.infillMaterial)}</span>
-        <MaterialSelectWithEdit value={state.infillMaterial} onValueChange={handleInfillMaterialChange} size="1" />
+        <MaterialSelectWithEdit value={state.infillMaterial} onValueChange={handleInfillMaterialChange} size="sm" />
       </div>
       <Separator />
       {/* Quick presets */}

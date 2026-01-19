@@ -91,7 +91,7 @@ export function LShapedPresetDialog({ onConfirm, trigger }: PresetDialogProps): 
                     step={100}
                     unit="m"
                     precision={3}
-                    size="1"
+                    size="sm"
                     style={{ width: '100%' }}
                   />
                 </div>
@@ -108,7 +108,7 @@ export function LShapedPresetDialog({ onConfirm, trigger }: PresetDialogProps): 
                     step={100}
                     unit="m"
                     precision={3}
-                    size="1"
+                    size="sm"
                     style={{ width: '100%' }}
                   />
                 </div>
@@ -134,7 +134,7 @@ export function LShapedPresetDialog({ onConfirm, trigger }: PresetDialogProps): 
                     step={100}
                     unit="m"
                     precision={3}
-                    size="1"
+                    size="sm"
                     style={{ width: '100%' }}
                   />
                 </div>
@@ -152,7 +152,7 @@ export function LShapedPresetDialog({ onConfirm, trigger }: PresetDialogProps): 
                     step={100}
                     unit="m"
                     precision={3}
-                    size="1"
+                    size="sm"
                     style={{ width: '100%' }}
                   />
                 </div>
@@ -167,7 +167,7 @@ export function LShapedPresetDialog({ onConfirm, trigger }: PresetDialogProps): 
                 onValueChange={value => {
                   setConfig(prev => ({ ...prev, rotation: parseInt(value) as 0 | 90 | 180 | 270 }))
                 }}
-                size="1"
+                size="sm"
               >
                 <SegmentedControl.Item value="0">
                   <LShape0Icon />
@@ -201,7 +201,7 @@ export function LShapedPresetDialog({ onConfirm, trigger }: PresetDialogProps): 
                   max={1500}
                   step={10}
                   unit="cm"
-                  size="1"
+                  size="sm"
                   style={{ width: '100%' }}
                 />
               </div>
@@ -218,7 +218,7 @@ export function LShapedPresetDialog({ onConfirm, trigger }: PresetDialogProps): 
                     setConfig(prev => ({ ...prev, wallAssemblyId: value }))
                   }}
                   placeholder={t($ => $.presetDialogs.lShaped.selectAssembly)}
-                  size="1"
+                  size="sm"
                 />
               </div>
 
@@ -234,7 +234,7 @@ export function LShapedPresetDialog({ onConfirm, trigger }: PresetDialogProps): 
                     setConfig(prev => ({ ...prev, baseRingBeamAssemblyId: value }))
                   }}
                   placeholder={t($ => $.presetDialogs.lShaped.none)}
-                  size="1"
+                  size="sm"
                   allowNone
                 />
               </div>
@@ -251,7 +251,7 @@ export function LShapedPresetDialog({ onConfirm, trigger }: PresetDialogProps): 
                     setConfig(prev => ({ ...prev, topRingBeamAssemblyId: value }))
                   }}
                   placeholder={t($ => $.presetDialogs.lShaped.none)}
-                  size="1"
+                  size="sm"
                   allowNone
                 />
               </div>
@@ -266,7 +266,7 @@ export function LShapedPresetDialog({ onConfirm, trigger }: PresetDialogProps): 
             <div className="flex flex-col gap-1">
               <span className="text-sm text-gray-900">{t($ => $.presetDialogs.lShaped.referenceSide)}</span>
               <SegmentedControl.Root
-                size="1"
+                size="sm"
                 value={config.referenceSide}
                 onValueChange={value => {
                   setConfig(prev => ({ ...prev, referenceSide: value as PerimeterReferenceSide }))

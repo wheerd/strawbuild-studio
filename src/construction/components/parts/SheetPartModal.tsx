@@ -76,9 +76,9 @@ export function SheetPartModal({
           {/* Render the polygon */}
           <use
             href={`#${polygonId}`}
-            stroke="var(--accent-9)"
+            stroke="var(--color-primary-900)"
             strokeWidth={Math.max(1, scaleFactor)}
-            fill="var(--accent-9)"
+            fill="var(--color-primary-900)"
             fillOpacity="0.5"
             strokeLinejoin="miter"
           />

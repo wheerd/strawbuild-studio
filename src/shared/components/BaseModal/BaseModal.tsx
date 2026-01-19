@@ -13,7 +13,7 @@ export interface BaseModalProps {
   titleIcon?: React.ReactNode
   children: React.ReactNode
   trigger?: React.ReactNode
-  size?: '1' | '2' | '3' | '4'
+  size?: 'sm' | 'base' | 'lg' | '4'
   width?: string
   maxWidth?: string
   height?: string
@@ -27,9 +27,9 @@ export interface BaseModalProps {
 }
 
 const sizeClasses = {
-  '1': 'max-w-sm',
-  '2': 'max-w-lg',
-  '3': 'max-w-2xl',
+  sm: 'max-w-sm',
+  base: 'max-w-lg',
+  lg: 'max-w-2xl',
   '4': 'max-w-4xl'
 }
 
@@ -40,7 +40,7 @@ export function BaseModal({
   titleIcon,
   children,
   trigger,
-  size = '2',
+  size = 'base',
   width,
   maxWidth,
   height,

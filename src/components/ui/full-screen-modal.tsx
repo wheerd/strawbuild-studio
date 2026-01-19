@@ -48,7 +48,7 @@ export function FullScreenModal({
             maxWidth: 'calc(100vw - 2rem)',
             maxHeight: 'calc(100vh - 2rem)',
             backgroundColor: 'var(--color-panel-solid)',
-            borderColor: 'var(--gray-6)',
+            borderColor: 'var(--color-gray-600)',
             borderWidth: '1px',
             borderStyle: 'solid'
           }}
@@ -57,12 +57,12 @@ export function FullScreenModal({
           <div
             className="flex items-center justify-between px-4 py-2 shrink-0"
             style={{
-              borderBottom: '1px solid var(--gray-6)'
+              borderBottom: '1px solid var(--color-gray-600)'
             }}
           >
             <div className="flex items-center gap-2">
               {titleIcon}
-              <DialogPrimitive.Title className="text-lg font-semibold" style={{ color: 'var(--gray-12)' }}>
+              <DialogPrimitive.Title className="text-lg font-semibold" style={{ color: 'var(--color-gray-900)' }}>
                 {title}
               </DialogPrimitive.Title>
             </div>
@@ -70,7 +70,7 @@ export function FullScreenModal({
             <DialogPrimitive.Close
               className="rounded-sm opacity-70 hover:opacity-100 transition-opacity h-8 w-8 inline-flex items-center justify-center"
               style={{
-                color: 'var(--gray-12)'
+                color: 'var(--color-gray-900)'
               }}
             >
               <Cross2Icon className="h-4 w-4" />

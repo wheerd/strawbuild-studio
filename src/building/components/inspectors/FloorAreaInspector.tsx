@@ -4,6 +4,9 @@ import { useTranslation } from 'react-i18next'
 
 import type { FloorAreaId } from '@/building/model/ids'
 import { useFloorAreaById, useModelActions } from '@/building/store'
+import { Button } from '@/components/ui/button'
+import { DataList } from '@/components/ui/data-list'
+import { Separator } from '@/components/ui/separator'
 import { popSelection } from '@/editor/hooks/useSelectionStore'
 import { useViewportActions } from '@/editor/hooks/useViewportStore'
 import { FitToViewIcon } from '@/shared/components/Icons'
@@ -48,7 +51,7 @@ export function FloorAreaInspector({ floorAreaId }: FloorAreaInspectorProps): Re
   return (
     <div className="p-2">
       <div className="flex flex-col gap-3">
-        <DataList.Root size="1">
+        <DataList.Root>
           <DataList.Item>
             <DataList.Label>{t($ => $.floorArea.perimeter)}</DataList.Label>
             <DataList.Value>{formatLength(perimeterLength)}</DataList.Value>
@@ -67,8 +70,7 @@ export function FloorAreaInspector({ floorAreaId }: FloorAreaInspectorProps): Re
           </Button>
           <Button
             size="icon"
-            size="2"
-           className="text-destructive"
+            className="text-destructive"
             title={t($ => $.floorArea.removeFloorArea)}
             onClick={() => {
               removeFloorArea(floorArea.id)

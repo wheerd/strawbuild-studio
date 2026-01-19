@@ -10,7 +10,7 @@ export function EditorSkeleton(): React.JSX.Element {
         position: 'relative',
         overflow: 'hidden',
         backgroundColor: 'white',
-        borderRight: '1px solid var(--gray-6)'
+        borderRight: '1px solid var(--color-gray-600)'
       }}
       data-testid="editor-skeleton"
     >
@@ -22,11 +22,11 @@ export function EditorSkeleton(): React.JSX.Element {
           left: 0,
           right: 0,
           bottom: 0,
-          backgroundColor: 'var(--gray-1)'
+          backgroundColor: 'var(--color-gray-100)'
         }}
       >
         <div className="flex flex-col items-center gap-3">
-          <Skeleton className="w-[200px] h-[200px] rounded-lg" />
+          <Skeleton className="w-50 h-50 rounded-lg" />
 
           <span className="text-base text-muted-foreground">Loading editor...</span>
         </div>

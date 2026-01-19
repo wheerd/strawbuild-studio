@@ -3,14 +3,14 @@ import React, { useCallback, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { useStoreyName } from '@/building/hooks/useStoreyName'
+import type { Storey } from '@/building/model'
+import { useActiveStoreyId, useModelActions } from '@/building/store'
+import { defaultStoreyManagementService } from '@/building/store/services/StoreyManagementService'
 import { AlertDialog } from '@/components/ui/alert-dialog'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Code } from '@/components/ui/code'
 import { TextField } from '@/components/ui/text-field'
-import type { Storey } from '@/building/model'
-import { useActiveStoreyId, useModelActions } from '@/building/store'
-import { defaultStoreyManagementService } from '@/building/store/services/StoreyManagementService'
 import { FloorAssemblySelectWithEdit } from '@/construction/config/components/FloorAssemblySelectWithEdit'
 import { MeasurementInfo } from '@/editor/components/MeasurementInfo'
 import { LengthField } from '@/shared/components/LengthField'
@@ -138,14 +138,14 @@ export function StoreyListItem({
   }, [storeyName, storey.useDefaultName])
 
   return (
-    <Card style={isActive ? { background: 'var(--accent-5)' } : {}}>
+    <Card style={isActive ? { background: 'var(--color-primary-500)' } : {}}>
       <div className="flex items-center gap-2">
         {/* Level indicator */}
         <div className="flex flex-col items-center gap-0 w-[4rem]">
-          <Code variant="ghost" size="2" color={getLevelColor(storey.level)} font-bold>
+          <Code variant="ghost" color={getLevelColor(storey.level)} font-bold>
             L{storey.level}
           </Code>
-          <Code variant="ghost" size="1" className="text-gray-900">
+          <Code variant="ghost" size="sm" className="text-gray-900">
             {storey.level === 0
               ? t($ => $.storeys.ground)
               : storey.level > 0
@@ -155,7 +155,7 @@ export function StoreyListItem({
         </div>
 
         {/* Editable name */}
-        <div className="flex flex-col gap-1 grow-1">
+        <div className="flex flex-col gap-1 grow">
           <span className="text-sm font-medium text-gray-900">{t($ => $.storeys.name)}</span>
           <TextField.Root
             ref={nameFieldRef}
@@ -205,30 +205,17 @@ export function StoreyListItem({
             onValueChange={value => {
               updateStoreyFloorAssembly(storey.id, value)
             }}
-            size="2"
           />
         </div>
 
         {/* Action buttons */}
         <div className="flex gap-1 items-center">
           <div className="flex flex-col gap-1">
-            <Button
-              size="icon"
-              size="sm"
-              onClick={handleMoveUp}
-              disabled={!canMoveUp}
-              title={t($ => $.storeys.moveUp)}
-            >
+            <Button size="icon" onClick={handleMoveUp} disabled={!canMoveUp} title={t($ => $.storeys.moveUp)}>
               <ChevronUpIcon />
             </Button>
 
-            <Button
-              size="icon"
-              size="sm"
-              onClick={handleMoveDown}
-              disabled={!canMoveDown}
-              title={t($ => $.storeys.moveDown)}
-            >
+            <Button size="icon" onClick={handleMoveDown} disabled={!canMoveDown} title={t($ => $.storeys.moveDown)}>
               <ChevronDownIcon />
             </Button>
           </div>
@@ -239,13 +226,18 @@ export function StoreyListItem({
 
           <AlertDialog.Root>
             <AlertDialog.Trigger>
-              <Button size="icon" disabled={isOnlyStorey} title={t($ => $.storeys.deleteFloor)}className="text-destructive">
+              <Button
+                size="icon"
+                disabled={isOnlyStorey}
+                title={t($ => $.storeys.deleteFloor)}
+                className="text-destructive"
+              >
                 <TrashIcon />
               </Button>
             </AlertDialog.Trigger>
             <AlertDialog.Content>
               <AlertDialog.Title>{t($ => $.storeys.deleteFloorTitle)}</AlertDialog.Title>
-              <AlertDialog.Description size="2">{t($ => $.storeys.deleteFloorConfirm)}</AlertDialog.Description>
+              <AlertDialog.Description>{t($ => $.storeys.deleteFloorConfirm)}</AlertDialog.Description>
 
               <div className="flex gap-3 justify-end">
                 <AlertDialog.Cancel>

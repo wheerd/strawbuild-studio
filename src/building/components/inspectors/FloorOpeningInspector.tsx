@@ -4,6 +4,9 @@ import { useTranslation } from 'react-i18next'
 
 import type { FloorOpeningId } from '@/building/model/ids'
 import { useFloorOpeningById, useModelActions } from '@/building/store'
+import { Button } from '@/components/ui/button'
+import { DataList } from '@/components/ui/data-list'
+import { Separator } from '@/components/ui/separator'
 import { popSelection } from '@/editor/hooks/useSelectionStore'
 import { useViewportActions } from '@/editor/hooks/useViewportStore'
 import { FitToViewIcon } from '@/shared/components/Icons'
@@ -48,7 +51,7 @@ export function FloorOpeningInspector({ floorOpeningId }: FloorOpeningInspectorP
   return (
     <div className="p-2">
       <div className="flex flex-col gap-3">
-        <DataList.Root size="1">
+        <DataList.Root size="sm">
           <DataList.Item>
             <DataList.Label>{t($ => $.floorOpening.perimeter)}</DataList.Label>
             <DataList.Value>{formatLength(perimeterLength)}</DataList.Value>
@@ -67,7 +70,7 @@ export function FloorOpeningInspector({ floorOpeningId }: FloorOpeningInspectorP
           </Button>
           <Button
             size="icon"
-           className="text-destructive"
+            className="text-destructive"
             title={t($ => $.floorOpening.removeFloorOpening)}
             onClick={() => {
               removeFloorOpening(opening.id)

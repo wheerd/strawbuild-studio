@@ -4,6 +4,9 @@ import { useTranslation } from 'react-i18next'
 
 import type { RoofOverhangId } from '@/building/model/ids'
 import { useModelActions, useRoofOverhangById } from '@/building/store'
+import { Button } from '@/components/ui/button'
+import { Callout, CalloutText } from '@/components/ui/callout'
+import { Separator } from '@/components/ui/separator'
 import { useViewportActions } from '@/editor/hooks/useViewportStore'
 import { FitToViewIcon } from '@/shared/components/Icons'
 import { LengthField } from '@/shared/components/LengthField'
@@ -55,7 +58,7 @@ export function RoofOverhangInspector({ overhangId }: { overhangId: RoofOverhang
             min={0}
             max={2000}
             step={10}
-            size="1"
+            size="sm"
             unit="cm"
             style={{ width: '7em' }}
           />

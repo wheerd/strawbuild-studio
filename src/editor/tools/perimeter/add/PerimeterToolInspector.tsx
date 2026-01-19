@@ -68,7 +68,7 @@ export function PerimeterToolInspector({ tool }: ToolInspectorProps<PerimeterToo
             onValueChange={(value: WallAssemblyId) => {
               tool.setAssembly(value)
             }}
-            size="1"
+            size="sm"
           />
 
           {/* Wall Thickness */}
@@ -87,7 +87,7 @@ export function PerimeterToolInspector({ tool }: ToolInspectorProps<PerimeterToo
             min={50}
             max={1000}
             step={10}
-            size="1"
+            size="sm"
             unit="mm"
           />
 
@@ -97,7 +97,7 @@ export function PerimeterToolInspector({ tool }: ToolInspectorProps<PerimeterToo
             </Label.Root>
           </div>
           <SegmentedControl.Root
-            size="1"
+            size="sm"
             value={state.referenceSide}
             onValueChange={value => {
               tool.setReferenceSide(value as PerimeterReferenceSide)
@@ -120,7 +120,7 @@ export function PerimeterToolInspector({ tool }: ToolInspectorProps<PerimeterToo
               tool.setBaseRingBeam(value)
             }}
             placeholder={t($ => $.perimeter.nonePlaceholder)}
-            size="1"
+            size="sm"
             allowNone
           />
 
@@ -137,7 +137,7 @@ export function PerimeterToolInspector({ tool }: ToolInspectorProps<PerimeterToo
               tool.setTopRingBeam(value)
             }}
             placeholder={t($ => $.perimeter.nonePlaceholder)}
-            size="1"
+            size="sm"
             allowNone
           />
         </div>
@@ -175,7 +175,7 @@ export function PerimeterToolInspector({ tool }: ToolInspectorProps<PerimeterToo
           <span className="text-xs text-muted-foreground">• {t($ => $.perimeter.controlNumbers)}</span>
           {state.lengthOverride ? (
             <span className="text-xs text-muted-foreground">
-              • <Kbd size="1">{t($ => $.keyboard.esc)}</Kbd>{' '}
+              • <Kbd size="sm">{t($ => $.keyboard.esc)}</Kbd>{' '}
               {t($ => $.perimeter.controlEscOverride, {
                 key: ''
               })
@@ -184,7 +184,7 @@ export function PerimeterToolInspector({ tool }: ToolInspectorProps<PerimeterToo
             </span>
           ) : (
             <span className="text-xs text-muted-foreground">
-              • <Kbd size="1">{t($ => $.keyboard.esc)}</Kbd>{' '}
+              • <Kbd size="sm">{t($ => $.keyboard.esc)}</Kbd>{' '}
               {t($ => $.perimeter.controlEscAbort, {
                 key: ''
               })
@@ -195,7 +195,7 @@ export function PerimeterToolInspector({ tool }: ToolInspectorProps<PerimeterToo
           {state.points.length >= 3 && (
             <>
               <span className="text-xs text-muted-foreground">
-                • <Kbd size="1">{t($ => $.keyboard.enter)}</Kbd>{' '}
+                • <Kbd size="sm">{t($ => $.keyboard.enter)}</Kbd>{' '}
                 {t($ => $.perimeter.controlEnter, {
                   key: ''
                 })
@@ -223,7 +223,7 @@ export function PerimeterToolInspector({ tool }: ToolInspectorProps<PerimeterToo
                   title={t($ => $.perimeter.completeTooltip)}
                 >
                   <span className="text-xs">{t($ => $.perimeter.completePerimeter)}</span>
-                  <Kbd size="1" className="ml-auto">
+                  <Kbd size="sm" className="ml-auto">
                     {t($ => $.keyboard.enter)}
                   </Kbd>
                 </Button>
@@ -238,7 +238,7 @@ export function PerimeterToolInspector({ tool }: ToolInspectorProps<PerimeterToo
                 title={t($ => $.perimeter.cancelTooltip)}
               >
                 <span className="text-xs">{t($ => $.perimeter.cancelPerimeter)}</span>
-                <Kbd size="1" className="ml-auto">
+                <Kbd size="sm" className="ml-auto">
                   {t($ => $.keyboard.esc)}
                 </Kbd>
               </Button>

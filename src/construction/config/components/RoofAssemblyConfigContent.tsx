@@ -5,6 +5,12 @@ import { useTranslation } from 'react-i18next'
 
 import type { RoofAssemblyId } from '@/building/model/ids'
 import { useRoofs } from '@/building/store'
+import { AlertDialog } from '@/components/ui/alert-dialog'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { DropdownMenu } from '@/components/ui/dropdown-menu'
+import { Separator } from '@/components/ui/separator'
+import { TextField } from '@/components/ui/text-field'
 import { type EntityId, useEntityLabel } from '@/construction/config/components/useEntityLabel'
 import { useConfigActions, useDefaultRoofAssemblyId, useRoofAssemblies } from '@/construction/config/store'
 import type { RoofAssemblyConfig } from '@/construction/config/types'
@@ -45,7 +51,7 @@ function MonolithicRoofConfigForm({ config, onUpdate }: MonolithicRoofConfigForm
               if (!material) return
               onUpdate({ ...config, material })
             }}
-            size="1"
+            size="sm"
             preferredTypes={['sheet']}
           />
         </div>
@@ -62,7 +68,7 @@ function MonolithicRoofConfigForm({ config, onUpdate }: MonolithicRoofConfigForm
             unit="cm"
             min={0}
             step={10}
-            size="1"
+            size="sm"
           />
         </div>
       </div>
@@ -96,7 +102,7 @@ function PurlinRoofConfigForm({ config, onUpdate }: PurlinRoofConfigFormProps): 
             unit="cm"
             min={0}
             step={10}
-            size="1"
+            size="sm"
           />
         </div>
 
@@ -111,7 +117,7 @@ function PurlinRoofConfigForm({ config, onUpdate }: PurlinRoofConfigFormProps): 
             onValueChange={strawMaterial => {
               onUpdate({ ...config, strawMaterial: strawMaterial ?? undefined })
             }}
-            size="1"
+            size="sm"
             preferredTypes={['strawbale']}
           />
         </div>
@@ -132,7 +138,7 @@ function PurlinRoofConfigForm({ config, onUpdate }: PurlinRoofConfigFormProps): 
               if (!material) return
               onUpdate({ ...config, purlinMaterial: material })
             }}
-            size="1"
+            size="sm"
             preferredTypes={['dimensional']}
           />
         </div>
@@ -149,7 +155,7 @@ function PurlinRoofConfigForm({ config, onUpdate }: PurlinRoofConfigFormProps): 
             unit="cm"
             min={0}
             step={10}
-            size="1"
+            size="sm"
           />
         </div>
 
@@ -164,7 +170,7 @@ function PurlinRoofConfigForm({ config, onUpdate }: PurlinRoofConfigFormProps): 
             }}
             unit="mm"
             min={0}
-            size="1"
+            size="sm"
           />
         </div>
 
@@ -180,7 +186,7 @@ function PurlinRoofConfigForm({ config, onUpdate }: PurlinRoofConfigFormProps): 
             unit="cm"
             min={0}
             step={10}
-            size="1"
+            size="sm"
           />
         </div>
 
@@ -196,7 +202,7 @@ function PurlinRoofConfigForm({ config, onUpdate }: PurlinRoofConfigFormProps): 
             unit="cm"
             min={0}
             step={100}
-            size="1"
+            size="sm"
           />
         </div>
       </div>
@@ -216,7 +222,7 @@ function PurlinRoofConfigForm({ config, onUpdate }: PurlinRoofConfigFormProps): 
               if (!material) return
               onUpdate({ ...config, rafterMaterial: material })
             }}
-            size="1"
+            size="sm"
             preferredTypes={['dimensional']}
           />
         </div>
@@ -233,7 +239,7 @@ function PurlinRoofConfigForm({ config, onUpdate }: PurlinRoofConfigFormProps): 
             unit="cm"
             min={0}
             step={10}
-            size="1"
+            size="sm"
           />
         </div>
 
@@ -249,7 +255,7 @@ function PurlinRoofConfigForm({ config, onUpdate }: PurlinRoofConfigFormProps): 
             unit="cm"
             min={0}
             step={10}
-            size="1"
+            size="sm"
           />
         </div>
 
@@ -265,7 +271,7 @@ function PurlinRoofConfigForm({ config, onUpdate }: PurlinRoofConfigFormProps): 
             unit="cm"
             min={0}
             step={100}
-            size="1"
+            size="sm"
           />
         </div>
       </div>
@@ -285,7 +291,7 @@ function PurlinRoofConfigForm({ config, onUpdate }: PurlinRoofConfigFormProps): 
               if (!material) return
               onUpdate({ ...config, deckingMaterial: material })
             }}
-            size="1"
+            size="sm"
             preferredTypes={['sheet']}
           />
         </div>
@@ -301,7 +307,7 @@ function PurlinRoofConfigForm({ config, onUpdate }: PurlinRoofConfigFormProps): 
             }}
             unit="mm"
             min={0}
-            size="1"
+            size="sm"
           />
         </div>
       </div>
@@ -321,7 +327,7 @@ function PurlinRoofConfigForm({ config, onUpdate }: PurlinRoofConfigFormProps): 
               if (!material) return
               onUpdate({ ...config, ceilingSheathingMaterial: material })
             }}
-            size="1"
+            size="sm"
             preferredTypes={['sheet']}
           />
         </div>
@@ -337,7 +343,7 @@ function PurlinRoofConfigForm({ config, onUpdate }: PurlinRoofConfigFormProps): 
             }}
             unit="mm"
             min={0}
-            size="1"
+            size="sm"
           />
         </div>
       </div>
@@ -543,7 +549,7 @@ function ConfigForm({ assembly }: ConfigFormProps): React.JSX.Element {
       gap-3
       p-3
       "
-      style={{ border: '1px solid var(--gray-6)', borderRadius: 'var(--radius-2)' }}
+      style={{ border: '1px solid var(--color-gray-600)', borderRadius: 'var(--radius-2)' }}
     >
       {/* Basic Info - Full Width */}
       <div className="grid grid-cols-2 gap-2 gap-x-3 items-center">
@@ -559,7 +565,6 @@ function ConfigForm({ assembly }: ConfigFormProps): React.JSX.Element {
             onBlur={nameInput.handleBlur}
             onKeyDown={nameInput.handleKeyDown}
             placeholder={t($ => $.common.placeholders.name)}
-            size="2"
           />
         </div>
 
@@ -734,7 +739,7 @@ export function RoofAssemblyConfigContent({ initialSelectionId }: RoofAssemblyCo
       <div className="flex flex-col gap-2">
         <div className="grid grid-cols-2 gap-2">
           <div className="flex gap-2 items-end">
-            <div className="flex flex-col gap-1 grow-1">
+            <div className="flex flex-col gap-1 grow">
               <RoofAssemblySelect
                 value={selectedAssemblyId as RoofAssemblyId | undefined}
                 onValueChange={setSelectedAssemblyId}
@@ -788,7 +793,7 @@ export function RoofAssemblyConfigContent({ initialSelectionId }: RoofAssemblyCo
                 <Button
                   size="icon"
                   disabled={!selectedAssembly || usage.isUsed}
-                 className="text-destructive"
+                  className="text-destructive"
                   title={usage.isUsed ? t($ => $.common.inUseCannotDelete) : t($ => $.common.delete)}
                 >
                   <TrashIcon />
@@ -816,7 +821,12 @@ export function RoofAssemblyConfigContent({ initialSelectionId }: RoofAssemblyCo
 
             <AlertDialog.Root>
               <AlertDialog.Trigger>
-                <Button size="icon"className="text-destructive" variant="outline" title={t($ => $.common.resetToDefaults)}>
+                <Button
+                  size="icon"
+                  className="text-destructive"
+                  variant="outline"
+                  title={t($ => $.common.resetToDefaults)}
+                >
                   <ResetIcon />
                 </Button>
               </AlertDialog.Trigger>
@@ -852,7 +862,6 @@ export function RoofAssemblyConfigContent({ initialSelectionId }: RoofAssemblyCo
                 setDefaultRoofAssembly(value)
               }}
               placeholder={t($ => $.common.placeholders.selectDefault)}
-              size="2"
             />
           </div>
         </div>
@@ -872,7 +881,7 @@ export function RoofAssemblyConfigContent({ initialSelectionId }: RoofAssemblyCo
 function UsageBadge({ id }: { id: EntityId }) {
   const label = useEntityLabel(id)
   return (
-    <Badge key={id} size="2" variant="soft">
+    <Badge key={id} variant="soft">
       {label}
     </Badge>
   )
@@ -888,7 +897,7 @@ function UsageDisplay({ usage }: { usage: RoofAssemblyUsage }): React.JSX.Elemen
       </Label.Root>
       <div className="flex gap-1 flex-wrap">
         {usage.isDefault && (
-          <Badge size="2" variant="soft" color="blue">
+          <Badge variant="soft" color="blue">
             {t($ => $.usage.globalDefault_roof)}
           </Badge>
         )}

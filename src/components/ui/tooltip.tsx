@@ -50,7 +50,11 @@ const Tooltip = React.forwardRef<HTMLDivElement, TooltipProps>(
       )
     }
     // Otherwise, pass through to Root for manual composition
-    return <TooltipRoot delayDuration={delayDuration} {...props}>{children}</TooltipRoot>
+    return (
+      <TooltipRoot delayDuration={delayDuration} {...props}>
+        {children}
+      </TooltipRoot>
+    )
   }
 )
 Tooltip.displayName = 'Tooltip'

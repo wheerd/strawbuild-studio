@@ -11,23 +11,23 @@ export interface OpeningAssemblySelectProps {
   value: OpeningAssemblyId | null | undefined
   onValueChange: (assemblyId: OpeningAssemblyId | undefined) => void
   placeholder?: string
-  size?: '1' | '2' | '3'
+  size?: 'sm' | 'base' | 'lg'
   disabled?: boolean
   allowDefault?: boolean
   showDefaultIndicator?: boolean
 }
 
 const sizeClasses = {
-  '1': 'h-7 text-xs',
-  '2': 'h-9 <Text text-sm',
-  '3': 'h-10 <Text text-base'
+  sm: 'h-7 text-xs',
+  base: 'h-9 <Text text-sm',
+  lg: 'h-10 <Text text-base'
 }
 
 export function OpeningAssemblySelect({
   value,
   onValueChange,
   placeholder = 'Select opening assembly...',
-  size = '2',
+  size = 'base',
   disabled = false,
   allowDefault = false,
   showDefaultIndicator = false

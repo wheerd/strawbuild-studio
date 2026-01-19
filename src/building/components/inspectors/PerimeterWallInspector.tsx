@@ -5,6 +5,10 @@ import { useTranslation } from 'react-i18next'
 
 import type { PerimeterWallId, RingBeamAssemblyId, WallAssemblyId } from '@/building/model/ids'
 import { useModelActions, usePerimeterWallById, useWallOpeningsById } from '@/building/store'
+import { Button } from '@/components/ui/button'
+import { Card } from '@/components/ui/card'
+import { DataList } from '@/components/ui/data-list'
+import { Separator } from '@/components/ui/separator'
 import { ConstructionPlanModal } from '@/construction/components/ConstructionPlanModal'
 import { BACK_VIEW, FRONT_VIEW, TOP_VIEW } from '@/construction/components/plan/ConstructionPlan'
 import { RingBeamAssemblySelectWithEdit } from '@/construction/config/components/RingBeamAssemblySelectWithEdit'
@@ -79,7 +83,7 @@ export function PerimeterWallInspector({ wallId }: { wallId: PerimeterWallId }):
             updateOuterWallAssembly(wallId, value)
           }}
           placeholder={t($ => $.perimeterWall.selectAssemblyPlaceholder)}
-          size="1"
+          size="sm"
         />
 
         {/* Thickness Input */}
@@ -98,7 +102,7 @@ export function PerimeterWallInspector({ wallId }: { wallId: PerimeterWallId }):
           min={50}
           max={1500}
           step={10}
-          size="1"
+          size="sm"
           unit="cm"
           style={{ width: '5rem' }}
         />
@@ -120,7 +124,7 @@ export function PerimeterWallInspector({ wallId }: { wallId: PerimeterWallId }):
             }
           }}
           placeholder={t($ => $.perimeterWall.nonePlaceholder)}
-          size="1"
+          size="sm"
           allowNone
         />
 
@@ -141,7 +145,7 @@ export function PerimeterWallInspector({ wallId }: { wallId: PerimeterWallId }):
             }
           }}
           placeholder={t($ => $.perimeterWall.nonePlaceholder)}
-          size="1"
+          size="sm"
           allowNone
         />
       </div>
@@ -149,7 +153,7 @@ export function PerimeterWallInspector({ wallId }: { wallId: PerimeterWallId }):
       {/* Measurements */}
       <div className="flex flex-col gap-2">
         <h2>{t($ => $.perimeterWall.measurements)}</h2>
-        <DataList.Root size="1">
+        <DataList.Root size="sm">
           <DataList.Item>
             <DataList.Label minWidth="88px">{t($ => $.perimeterWall.insideLength)}</DataList.Label>
             <DataList.Value>{formatLength(wall.insideLength)}</DataList.Value>
@@ -202,7 +206,7 @@ export function PerimeterWallInspector({ wallId }: { wallId: PerimeterWallId }):
       <div className="flex flex-col gap-2">
         <h2>{t($ => $.perimeterWall.openings)}</h2>
         <div className="grid grid-cols-3 gap-2">
-          <Card size="1" variant="soft">
+          <Card size="sm" variant="soft">
             <div className="flex flex-col gap-0 m--1">
               <span className="items-center text-base font-bold">
                 {openings.filter(o => o.openingType === 'door').length}
@@ -210,7 +214,7 @@ export function PerimeterWallInspector({ wallId }: { wallId: PerimeterWallId }):
               <span className="items-center text-sm text-gray-900">{t($ => $.perimeterWall.doors)}</span>
             </div>
           </Card>
-          <Card size="1" variant="soft">
+          <Card size="sm" variant="soft">
             <div className="flex flex-col gap-0 m--1">
               <span className="items-center text-base font-bold">
                 {openings.filter(o => o.openingType === 'window').length}
@@ -218,7 +222,7 @@ export function PerimeterWallInspector({ wallId }: { wallId: PerimeterWallId }):
               <span className="items-center text-sm text-gray-900">{t($ => $.perimeterWall.windows)}</span>
             </div>
           </Card>
-          <Card size="1" variant="soft">
+          <Card size="sm" variant="soft">
             <div className="flex flex-col gap-0 m--1">
               <span className="items-center text-base font-bold">
                 {openings.filter(o => o.openingType === 'passage').length}
@@ -251,7 +255,6 @@ export function PerimeterWallInspector({ wallId }: { wallId: PerimeterWallId }):
 
           <Button
             size="icon"
-            size="2"
             title={t($ => $.perimeterWall.splitWall)}
             onClick={() => {
               pushTool('perimeter.split-wall')
@@ -264,8 +267,7 @@ export function PerimeterWallInspector({ wallId }: { wallId: PerimeterWallId }):
           </Button>
           <Button
             size="icon"
-            size="2"
-           className="text-destructive"
+            className="text-destructive"
             title={canDeleteWall.reason ? t(canDeleteWall.reason) : t($ => $.perimeterWall.deleteWall)}
             onClick={handleDelete}
             disabled={!canDeleteWall.canDelete}

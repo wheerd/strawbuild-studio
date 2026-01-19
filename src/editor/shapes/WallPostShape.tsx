@@ -124,9 +124,9 @@ export function WallPostShape({ postId }: { postId: WallPostId }): React.JSX.Ele
       {/* Post rectangle - render as brown colored shape */}
       <polygon
         points={postPolygonPoints}
-        fill="var(--gray-4)"
+        fill="var(--color-gray-400)"
         fillOpacity={0.8}
-        stroke="var(--gray-11)"
+        stroke="var(--color-gray-900)"
         strokeWidth={10}
         strokeLinejoin="miter"
       />
@@ -136,7 +136,7 @@ export function WallPostShape({ postId }: { postId: WallPostId }): React.JSX.Ele
         <polygon
           points={insidePolygonPoints}
           fill={MATERIAL_COLORS.woodSupport}
-          stroke="var(--gray-11)"
+          stroke="var(--color-gray-900)"
           strokeWidth={5}
           strokeLinejoin="miter"
         />
@@ -146,7 +146,7 @@ export function WallPostShape({ postId }: { postId: WallPostId }): React.JSX.Ele
         <polygon
           points={centerPolygonPoints}
           fill={MATERIAL_COLORS.woodSupport}
-          stroke="var(--gray-11)"
+          stroke="var(--color-gray-900)"
           strokeWidth={5}
           strokeLinejoin="miter"
         />
@@ -156,7 +156,7 @@ export function WallPostShape({ postId }: { postId: WallPostId }): React.JSX.Ele
         <polygon
           points={outsidePolygonPoints}
           fill={MATERIAL_COLORS.woodSupport}
-          stroke="var(--gray-11)"
+          stroke="var(--color-gray-900)"
           strokeWidth={5}
           strokeLinejoin="miter"
         />
@@ -171,7 +171,7 @@ export function WallPostShape({ postId }: { postId: WallPostId }): React.JSX.Ele
               startPoint={previousObstacle.outsideLine.end}
               endPoint={post.outsideLine.start}
               offset={60}
-              color="var(--gray-11)"
+              color="var(--color-gray-900)"
               fontSize={50}
               strokeWidth={4}
               onClick={measurement => {
@@ -185,7 +185,7 @@ export function WallPostShape({ postId }: { postId: WallPostId }): React.JSX.Ele
               startPoint={post.outsideLine.end}
               endPoint={nextObstacle.outsideLine.start}
               offset={60}
-              color="var(--gray-11)"
+              color="var(--color-gray-900)"
               fontSize={50}
               strokeWidth={4}
               onClick={measurement => {
@@ -200,7 +200,7 @@ export function WallPostShape({ postId }: { postId: WallPostId }): React.JSX.Ele
             endPoint={insidePostEnd}
             label={formatLength(post.width)}
             offset={-60}
-            color="var(--accent-9)"
+            color="var(--color-primary-900)"
             fontSize={50}
             strokeWidth={4}
           />
@@ -209,7 +209,7 @@ export function WallPostShape({ postId }: { postId: WallPostId }): React.JSX.Ele
             endPoint={outsidePostEnd}
             label={formatLength(post.width)}
             offset={hasNeighbors ? 90 : 60}
-            color="var(--accent-9)"
+            color="var(--color-primary-900)"
             fontSize={50}
             strokeWidth={4}
           />
@@ -219,7 +219,7 @@ export function WallPostShape({ postId }: { postId: WallPostId }): React.JSX.Ele
             startPoint={startCorner.insidePoint}
             endPoint={insidePostStart}
             offset={-60}
-            color="var(--gray-12)"
+            color="var(--color-gray-900)"
             fontSize={50}
             strokeWidth={4}
             onClick={measurement => {
@@ -230,7 +230,7 @@ export function WallPostShape({ postId }: { postId: WallPostId }): React.JSX.Ele
             startPoint={insidePostEnd}
             endPoint={endCorner.insidePoint}
             offset={-60}
-            color="var(--gray-12)"
+            color="var(--color-gray-900)"
             fontSize={50}
             strokeWidth={4}
             onClick={measurement => {
@@ -241,7 +241,7 @@ export function WallPostShape({ postId }: { postId: WallPostId }): React.JSX.Ele
             startPoint={startCorner.outsidePoint}
             endPoint={outsidePostStart}
             offset={hasNeighbors ? 120 : 60}
-            color="var(--gray-12)"
+            color="var(--color-gray-900)"
             fontSize={50}
             strokeWidth={4}
             onClick={measurement => {
@@ -252,7 +252,7 @@ export function WallPostShape({ postId }: { postId: WallPostId }): React.JSX.Ele
             startPoint={outsidePostEnd}
             endPoint={endCorner.outsidePoint}
             offset={hasNeighbors ? 120 : 60}
-            color="var(--gray-12)"
+            color="var(--color-gray-900)"
             fontSize={50}
             strokeWidth={4}
             onClick={measurement => {

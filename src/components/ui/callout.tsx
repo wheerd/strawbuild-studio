@@ -16,19 +16,19 @@ const calloutVariants = cva('flex gap-3 rounded-lg border p-4', {
       gray: 'border-border bg-muted text-foreground'
     },
     size: {
-      '1': 'text-xs p-2 gap-2',
-      '2': 'text-sm p-3 gap-3',
-      '3': 'text-base p-4 gap-3'
+      sm: 'text-xs p-2 gap-2',
+      base: 'text-sm p-3 gap-3',
+      lg: 'text-base p-4 gap-3'
     }
   },
   defaultVariants: {
     color: 'gray',
-    size: '2'
+    size: 'base'
   }
 })
 
 type CalloutColor = 'blue' | 'red' | 'yellow' | 'green' | 'orange' | 'gray'
-type CalloutSize = '1' | '2' | '3'
+type CalloutSize = 'sm' | 'base' | 'lg'
 
 export interface CalloutProps extends Omit<React.HTMLAttributes<HTMLDivElement>, 'color'> {
   color?: CalloutColor | null

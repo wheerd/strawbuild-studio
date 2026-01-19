@@ -172,9 +172,9 @@ export function PartCutModal({
                 <g transform={`translate(${xOffset}, 0)`}>
                   <use
                     href={`#${polygonId}`}
-                    stroke="var(--accent-9)"
+                    stroke="var(--color-primary-900)"
                     strokeWidth="1"
-                    fill="var(--accent-9)"
+                    fill="var(--color-primary-900)"
                     fillOpacity="0.5"
                     strokeLinejoin="miter"
                   />
@@ -187,7 +187,7 @@ export function PartCutModal({
             <path
               key={`zigzag-${i}`}
               d={pointsToSvgPath(z, false)}
-              stroke="var(--gray-7)"
+              stroke="var(--color-gray-700)"
               strokeWidth="5"
               fill="none"
               opacity={0.8}

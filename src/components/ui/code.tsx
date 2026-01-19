@@ -14,15 +14,15 @@ const codeVariants = cva('font-mono', {
       ghost: ''
     },
     size: {
-      '1': 'text-xs',
-      '2': 'text-sm',
-      '3': 'text-base'
+      sm: 'text-xs',
+      base: 'text-sm',
+      lg: 'text-base'
     },
     color: {
       gray: 'text-muted-foreground',
       grass: 'text-green-600 dark:text-green-400',
       indigo: 'text-indigo-600 dark:text-indigo-400',
-      brown: 'text-amber-700 dark:text-amber-400',
+      brown: 'text-orange-700 dark:text-orange-400',
       blue: 'text-blue-600 dark:text-blue-400',
       red: 'text-red-600 dark:text-red-400'
     },
@@ -40,16 +40,17 @@ const codeVariants = cva('font-mono', {
 })
 
 export interface CodeProps
-  extends Omit<React.HTMLAttributes<HTMLElement>, 'color'>,
-    VariantProps<typeof codeVariants> {}
+  extends Omit<React.HTMLAttributes<HTMLElement>, 'color'>, VariantProps<typeof codeVariants> {}
 
 type CodeColor = 'gray' | 'grass' | 'indigo' | 'brown' | 'blue' | 'red'
 
-const Code = React.forwardRef<HTMLElement, CodeProps>(
-  ({ className, variant, size, color, weight, ...props }, ref) => (
-    <code ref={ref} className={cn(codeVariants({ variant, size, color: color as CodeColor | null | undefined, weight }), className)} {...props} />
-  )
-)
+const Code = React.forwardRef<HTMLElement, CodeProps>(({ className, variant, size, color, weight, ...props }, ref) => (
+  <code
+    ref={ref}
+    className={cn(codeVariants({ variant, size, color: color as CodeColor | null | undefined, weight }), className)}
+    {...props}
+  />
+))
 Code.displayName = 'Code'
 
 export { Code, codeVariants }

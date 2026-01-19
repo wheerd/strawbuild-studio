@@ -9,13 +9,13 @@ const segmentedControlVariants = cva(
   {
     variants: {
       size: {
-        '1': 'h-8 text-xs',
-        '2': 'h-9 text-sm',
-        '3': 'h-10 text-sm'
+        sm: 'h-8 text-xs',
+        base: 'h-9 text-sm',
+        lg: 'h-10 text-sm'
       }
     },
     defaultVariants: {
-      size: '2'
+      size: 'base'
     }
   }
 )
@@ -25,18 +25,18 @@ const segmentedControlItemVariants = cva(
   {
     variants: {
       size: {
-        '1': 'text-xs px-2 py-1',
-        '2': 'text-sm px-3 py-1.5',
-        '3': 'text-sm px-4 py-2'
+        sm: 'text-xs px-2 py-1',
+        base: 'text-sm px-3 py-1.5',
+        lg: 'text-sm px-4 py-2'
       }
     },
     defaultVariants: {
-      size: '2'
+      size: 'base'
     }
   }
 )
 
-type SegmentedControlSizeVariant = '1' | '2' | '3'
+type SegmentedControlSizeVariant = 'sm' | 'base' | 'lg'
 
 interface SegmentedControlRootProps
   extends

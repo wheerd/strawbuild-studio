@@ -23,7 +23,7 @@ export interface LengthFieldProps {
   max?: Length
 
   // Standard TextField props
-  size?: '1' | '2' | '3'
+  size?: 'sm' | 'base' | 'lg'
   placeholder?: string
   disabled?: boolean
   className?: string

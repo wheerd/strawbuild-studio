@@ -1,20 +1,17 @@
 import { CopyIcon, PlusIcon, ResetIcon, TrashIcon } from '@radix-ui/react-icons'
 import * as Label from '@radix-ui/react-label'
-import {
-  AlertDialog,
-  Badge,
-  Button,
-  DropdownMenu,
-  IconButton,
-  SegmentedControl,
-  Separator,
-  TextField
-} from '@radix-ui/themes'
 import React, { useCallback, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import type { RingBeamAssemblyId } from '@/building/model/ids'
 import { usePerimeterWalls } from '@/building/store'
+import { AlertDialog } from '@/components/ui/alert-dialog'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { DropdownMenu } from '@/components/ui/dropdown-menu'
+import { SegmentedControl } from '@/components/ui/segmented-control'
+import { Separator } from '@/components/ui/separator'
+import { TextField } from '@/components/ui/text-field'
 import type { RingBeamAssemblyConfig } from '@/construction/config'
 import { type EntityId, useEntityLabel } from '@/construction/config/components/useEntityLabel'
 import {
@@ -162,7 +159,7 @@ export function RingBeamAssemblyContent({ initialSelectionId }: RingBeamAssembly
       {/* Selector + Actions */}
       <div className="flex flex-col gap-2">
         <div className="flex gap-2 items-end">
-          <div className="flex flex-col gap-1 grow-1">
+          <div className="flex flex-col gap-1 grow">
             <RingBeamAssemblySelect
               value={selectedAssemblyId as RingBeamAssemblyId | undefined}
               onValueChange={value => {
@@ -228,7 +225,7 @@ export function RingBeamAssemblyContent({ initialSelectionId }: RingBeamAssembly
               <Button
                 size="icon"
                 disabled={!selectedAssembly || usage.isUsed}
-               className="text-destructive"
+                className="text-destructive"
                 title={usage.isUsed ? t($ => $.common.inUseCannotDelete) : t($ => $.common.delete)}
               >
                 <TrashIcon />
@@ -256,7 +253,12 @@ export function RingBeamAssemblyContent({ initialSelectionId }: RingBeamAssembly
 
           <AlertDialog.Root>
             <AlertDialog.Trigger>
-              <Button size="icon"className="text-destructive" variant="outline" title={t($ => $.common.resetToDefaults)}>
+              <Button
+                size="icon"
+                className="text-destructive"
+                variant="outline"
+                title={t($ => $.common.resetToDefaults)}
+              >
                 <ResetIcon />
               </Button>
             </AlertDialog.Trigger>
@@ -300,7 +302,6 @@ export function RingBeamAssemblyContent({ initialSelectionId }: RingBeamAssembly
             value={defaultBaseId}
             onValueChange={setDefaultBaseRingBeamAssembly}
             placeholder={t($ => $.common.placeholders.selectDefault)}
-            size="2"
             allowNone
           />
 
@@ -314,7 +315,6 @@ export function RingBeamAssemblyContent({ initialSelectionId }: RingBeamAssembly
             value={defaultTopId}
             onValueChange={setDefaultTopRingBeamAssembly}
             placeholder={t($ => $.common.placeholders.selectDefault)}
-            size="2"
             allowNone
           />
         </div>
@@ -357,7 +357,7 @@ function ConfigForm({ assembly }: { assembly: RingBeamAssemblyConfig }): React.R
       gap-3
       p-3
       "
-      style={{ border: '1px solid var(--gray-6)', borderRadius: 'var(--radius-2)' }}
+      style={{ border: '1px solid var(--color-gray-600)', borderRadius: 'var(--radius-2)' }}
     >
       <div className="grid grid-cols-2 gap-2 gap-x-3 items-center">
         <div className="grid grid-cols-[auto_1fr] gap-x-2 items-center">
@@ -372,7 +372,6 @@ function ConfigForm({ assembly }: { assembly: RingBeamAssemblyConfig }): React.R
             onBlur={nameInput.handleBlur}
             onKeyDown={nameInput.handleKeyDown}
             placeholder={t($ => $.ringBeams.placeholders.name)}
-            size="2"
           />
         </div>
 
@@ -426,7 +425,6 @@ function FullRingBeamFields({
             onUpdate({ material })
           }}
           placeholder={t($ => $.common.placeholders.selectMaterial)}
-          size="2"
           preferredTypes={['dimensional']}
         />
 
@@ -442,7 +440,6 @@ function FullRingBeamFields({
             onUpdate({ height })
           }}
           unit="mm"
-          size="2"
         />
 
         <Label.Root>
@@ -454,7 +451,6 @@ function FullRingBeamFields({
             onUpdate({ width })
           }}
           unit="mm"
-          size="2"
         />
 
         <Label.Root>
@@ -466,7 +462,6 @@ function FullRingBeamFields({
             onUpdate({ offsetFromEdge })
           }}
           unit="mm"
-          size="2"
         />
       </div>
     </>
@@ -493,7 +488,6 @@ function DoubleRingBeamFields({
           onUpdate({ material })
         }}
         placeholder={t($ => $.common.placeholders.selectMaterial)}
-        size="2"
         preferredTypes={['dimensional']}
       />
 
@@ -507,7 +501,6 @@ function DoubleRingBeamFields({
           onUpdate({ infillMaterial })
         }}
         placeholder={t($ => $.common.placeholders.selectMaterial)}
-        size="2"
       />
 
       <div className="flex items-center gap-1">
@@ -522,7 +515,6 @@ function DoubleRingBeamFields({
           onUpdate({ height })
         }}
         unit="mm"
-        size="2"
       />
 
       <div className="flex items-center gap-1">
@@ -537,7 +529,6 @@ function DoubleRingBeamFields({
           onUpdate({ thickness })
         }}
         unit="mm"
-        size="2"
       />
 
       <div className="flex items-center gap-1">
@@ -552,7 +543,6 @@ function DoubleRingBeamFields({
           onUpdate({ spacing })
         }}
         unit="mm"
-        size="2"
       />
 
       <div className="flex items-center gap-1">
@@ -567,7 +557,6 @@ function DoubleRingBeamFields({
           onUpdate({ offsetFromEdge })
         }}
         unit="mm"
-        size="2"
       />
 
       <span className="text-base font-medium text-gray-900">{t($ => $.ringBeams.labels.cornerHandling)}</span>
@@ -578,7 +567,6 @@ function DoubleRingBeamFields({
           onValueChange={value => {
             onUpdate({ cornerHandling: value as CornerHandling })
           }}
-          size="2"
         >
           <SegmentedControl.Item value="cut">{t($ => $.ringBeams.labels.cornerHandlingCut)}</SegmentedControl.Item>
           <SegmentedControl.Item value="interweave">
@@ -613,7 +601,6 @@ function BrickRingBeamFields({
           }}
           unit="cm"
           min={0}
-          size="2"
         />
 
         <Label.Root>
@@ -626,7 +613,6 @@ function BrickRingBeamFields({
           }}
           unit="cm"
           min={0}
-          size="2"
         />
 
         <Label.Root>
@@ -639,7 +625,6 @@ function BrickRingBeamFields({
             onUpdate({ wallMaterial })
           }}
           placeholder={t($ => $.common.placeholders.selectMaterial)}
-          size="2"
           preferredTypes={['dimensional']}
         />
       </div>
@@ -659,7 +644,6 @@ function BrickRingBeamFields({
           }}
           unit="cm"
           min={0}
-          size="2"
         />
 
         <Label.Root>
@@ -672,7 +656,6 @@ function BrickRingBeamFields({
             onUpdate({ insulationMaterial })
           }}
           placeholder={t($ => $.common.placeholders.selectMaterial)}
-          size="2"
         />
       </div>
 
@@ -691,7 +674,6 @@ function BrickRingBeamFields({
           }}
           unit="cm"
           min={0}
-          size="2"
         />
 
         <Label.Root>
@@ -704,7 +686,6 @@ function BrickRingBeamFields({
           }}
           unit="cm"
           min={0}
-          size="2"
         />
 
         <Label.Root>
@@ -717,7 +698,6 @@ function BrickRingBeamFields({
             onUpdate({ beamMaterial })
           }}
           placeholder={t($ => $.common.placeholders.selectMaterial)}
-          size="2"
           preferredTypes={['dimensional']}
         />
       </div>
@@ -737,7 +717,6 @@ function BrickRingBeamFields({
           }}
           unit="mm"
           min={0}
-          size="2"
         />
 
         <Label.Root>
@@ -750,7 +729,6 @@ function BrickRingBeamFields({
             onUpdate({ waterproofingMaterial })
           }}
           placeholder={t($ => $.common.placeholders.selectMaterial)}
-          size="2"
           preferredTypes={['sheet']}
         />
       </div>
@@ -761,7 +739,7 @@ function BrickRingBeamFields({
 function UsageBadge({ id }: { id: EntityId }) {
   const label = useEntityLabel(id)
   return (
-    <Badge key={id} size="2" variant="soft">
+    <Badge key={id} variant="soft">
       {label}
     </Badge>
   )
@@ -777,12 +755,12 @@ function UsageDisplay({ usage }: { usage: RingBeamAssemblyUsage }): React.JSX.El
       </Label.Root>
       <div className="flex gap-1 flex-wrap">
         {usage.isDefaultBase && (
-          <Badge size="2" variant="soft" color="blue">
+          <Badge variant="soft" color="blue">
             {t($ => $.usage.globalDefault_ringBeamBase)}
           </Badge>
         )}
         {usage.isDefaultTop && (
-          <Badge size="2" variant="soft" color="blue">
+          <Badge variant="soft" color="blue">
             {t($ => $.usage.globalDefault_ringBeamTop)}
           </Badge>
         )}

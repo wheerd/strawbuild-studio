@@ -2,6 +2,7 @@ import { CircleIcon, CubeIcon, LayersIcon, OpacityIcon } from '@radix-ui/react-i
 import React from 'react'
 import { useTranslation } from 'react-i18next'
 
+import { Select } from '@/components/ui/select'
 import type { Material, MaterialId, MaterialType } from '@/construction/materials/material'
 import { useMaterials } from '@/construction/materials/store'
 
@@ -11,7 +12,7 @@ export interface MaterialSelectProps {
   value: MaterialId | null | undefined
   onValueChange: (materialId: MaterialId | null) => void
   placeholder?: string
-  size?: '1' | '2' | '3'
+  size?: 'sm' | 'base' | 'lg'
   disabled?: boolean
   materials?: Material[]
   allowEmpty?: boolean
@@ -87,7 +88,7 @@ export function MaterialSelect({
   value,
   onValueChange,
   placeholder,
-  size = '2',
+  size = 'base',
   disabled = false,
   materials: materialsProp,
   allowEmpty = false,
@@ -155,7 +156,7 @@ export function MaterialSelect({
                       height: '16px',
                       backgroundColor: material.color,
                       borderRadius: '2px',
-                      border: '1px solid var(--gray-7)',
+                      border: '1px solid var(--color-gray-700)',
                       flexShrink: 0,
                       display: 'flex',
                       alignItems: 'center',

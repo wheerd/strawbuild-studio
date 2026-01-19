@@ -28,7 +28,7 @@ export function PerimeterShape({ perimeter }: { perimeter: PerimeterWithGeometry
         <path
           d={outerPath}
           fill="none"
-          stroke="var(--gray-11)"
+          stroke="var(--color-gray-900)"
           strokeWidth={40}
           strokeDasharray="120 60"
           opacity={0.6}
@@ -38,7 +38,7 @@ export function PerimeterShape({ perimeter }: { perimeter: PerimeterWithGeometry
         <path
           d={innerPath}
           fill="none"
-          stroke="var(--gray-11)"
+          stroke="var(--color-gray-900)"
           strokeWidth={40}
           strokeDasharray="120 60"
           opacity={0.6}

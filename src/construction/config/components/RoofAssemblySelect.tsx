@@ -13,23 +13,23 @@ export interface RoofAssemblySelectProps {
   value: RoofAssemblyId | null | undefined
   onValueChange: (assemblyId: RoofAssemblyId) => void
   placeholder?: string
-  size?: '1' | '2' | '3'
+  size?: 'sm' | 'base' | 'lg'
   disabled?: boolean
   showDefaultIndicator?: boolean
   defaultAssemblyId?: RoofAssemblyId
 }
 
 const sizeClasses = {
-  '1': 'h-7 text-xs',
-  '2': 'h-9 <Text text-sm',
-  '3': 'h-10 <Text text-base'
+  sm: 'h-7 text-xs',
+  base: 'h-9 <Text text-sm',
+  lg: 'h-10 <Text text-base'
 }
 
 export function RoofAssemblySelect({
   value,
   onValueChange,
   placeholder = 'Select roof assembly...',
-  size = '2',
+  size = 'base',
   disabled = false,
   showDefaultIndicator = false,
   defaultAssemblyId

@@ -2,6 +2,9 @@ import { EyeOpenIcon } from '@radix-ui/react-icons'
 import React, { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 
+import { Button } from '@/components/ui/button'
+import { Card } from '@/components/ui/card'
+import { Table } from '@/components/ui/table'
 import type { PartId, VirtualPartsList } from '@/construction/parts'
 import { useFormatters } from '@/shared/i18n/useFormatters'
 
@@ -22,7 +25,7 @@ export function ConstructionVirtualPartsList({
 
   if (parts.length === 0) {
     return (
-      <Card variant="soft" size="2">
+      <Card variant="soft">
         <div className="flex justify-center">
           <span className="text-lg text-gray-900">{t($ => $.modulesList.noModules)}</span>
         </div>
@@ -31,10 +34,10 @@ export function ConstructionVirtualPartsList({
   }
 
   return (
-    <Card variant="soft" size="2">
+    <Card variant="soft">
       <div className="flex flex-col gap-3">
         <h4>{t($ => $.modulesList.title)}</h4>
-        <Table.Root variant="soft" size="2" className="min-w-full">
+        <Table.Root variant="soft" className="min-w-full">
           <Table.Header>
             <Table.Row>
               <Table.ColumnHeaderCell width="5em" justify-center>
@@ -71,7 +74,6 @@ export function ConstructionVirtualPartsList({
                   {canHighlightPart(part.partId) && onViewInPlan && (
                     <Button
                       size="icon"
-                      size="sm"
                       variant="ghost"
                       onClick={() => {
                         onViewInPlan(part.partId)

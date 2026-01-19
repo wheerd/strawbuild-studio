@@ -4,7 +4,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 
 export function SidePanelSkeleton(): React.JSX.Element {
   return (
-    <div className="h-full" style={{ borderLeft: '1px solid var(--gray-6)' }} data-testid="side-panel-skeleton">
+    <div className="h-full" style={{ borderLeft: '1px solid var(--color-gray-600)' }} data-testid="side-panel-skeleton">
       <div className="flex flex-col p-2 gap-2">
         <Skeleton className="h-10" />
         <Skeleton className="h-6 w-3/5" />

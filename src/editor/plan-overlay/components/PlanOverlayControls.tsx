@@ -3,6 +3,9 @@ import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { useActiveStoreyId, useStoreyById } from '@/building/store'
+import { AlertDialog } from '@/components/ui/alert-dialog'
+import { Button } from '@/components/ui/button'
+import { DropdownMenu } from '@/components/ui/dropdown-menu'
 import { PlanImportModal } from '@/editor/plan-overlay/components/PlanImportModal'
 import { useFloorPlanActions, useFloorPlanForStorey } from '@/editor/plan-overlay/store'
 import type { FloorPlanPlacement } from '@/editor/plan-overlay/types'
@@ -55,7 +58,7 @@ export function PlanOverlayControls(): React.JSX.Element | null {
                 {t($ => $.planControls.recalibrate)}
               </DropdownMenu.Item>
               <DropdownMenu.Item
-               className="text-destructive"
+                className="text-destructive"
                 onSelect={() => {
                   setConfirmOpen(true)
                 }}
@@ -66,7 +69,7 @@ export function PlanOverlayControls(): React.JSX.Element | null {
           </DropdownMenu>
 
           <AlertDialog.Root open={confirmOpen} onOpenChange={setConfirmOpen}>
-            <AlertDialog.Content maxWidth="400px">
+            <AlertDialog.Content>
               <div className="flex flex-col gap-3">
                 <AlertDialog.Title>
                   <div className="flex items-center gap-2">
@@ -92,7 +95,7 @@ export function PlanOverlayControls(): React.JSX.Element | null {
                   </AlertDialog.Cancel>
                   <AlertDialog.Action>
                     <Button
-                     className="text-destructive"
+                      className="text-destructive"
                       onClick={() => {
                         clearPlan(activeStoreyId)
                         setConfirmOpen(false)
@@ -109,7 +112,6 @@ export function PlanOverlayControls(): React.JSX.Element | null {
       ) : (
         <Button
           size="icon"
-          size="sm"
           variant="soft"
           onClick={() => {
             setModalOpen(true)

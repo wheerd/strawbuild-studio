@@ -9,14 +9,21 @@ export function PerimeterGhostShape({ perimeter }: { perimeter: PerimeterWithGeo
     <g className="pointer-events-none">
       <path
         d={innerPath}
-        stroke="var(--gray-12)"
-        fill="var(--gray-2)"
+        stroke="var(--color-gray-900)"
+        fill="var(--color-gray-200)"
         strokeWidth={20}
         strokeDasharray="40 80"
         opacity={0.3}
       />
 
-      <path d={outerPath} stroke="var(--gray-12)" fill="none" strokeWidth={20} strokeDasharray="40 80" opacity={0.3} />
+      <path
+        d={outerPath}
+        stroke="var(--color-gray-900)"
+        fill="none"
+        strokeWidth={20}
+        strokeDasharray="40 80"
+        opacity={0.3}
+      />
     </g>
   )
 }

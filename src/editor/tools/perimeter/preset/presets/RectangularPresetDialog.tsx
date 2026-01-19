@@ -65,7 +65,7 @@ export function RectangularPresetDialog({ onConfirm, trigger }: PresetDialogProp
   const referencePoints = useMemo(() => preset.getPolygonPoints(config), [preset, config.width, config.length])
 
   return (
-    <BaseModal title={t($ => $.presetDialogs.rectangular.title)} trigger={trigger} size="3" maxWidth="700px">
+    <BaseModal title={t($ => $.presetDialogs.rectangular.title)} trigger={trigger} size="lg" maxWidth="700px">
       <div className="flex flex-col gap-4">
         <div className="grid grid-cols-[1fr_auto] gap-5">
           {/* Left Column - Properties in 2x3 Grid */}
@@ -85,7 +85,7 @@ export function RectangularPresetDialog({ onConfirm, trigger }: PresetDialogProp
                   step={100}
                   unit="m"
                   precision={3}
-                  size="1"
+                  size="sm"
                   style={{ width: '100%' }}
                 />
               </div>
@@ -102,7 +102,7 @@ export function RectangularPresetDialog({ onConfirm, trigger }: PresetDialogProp
                   step={100}
                   unit="m"
                   precision={3}
-                  size="1"
+                  size="sm"
                   style={{ width: '100%' }}
                 />
               </div>
@@ -122,7 +122,7 @@ export function RectangularPresetDialog({ onConfirm, trigger }: PresetDialogProp
                   max={1500}
                   step={10}
                   unit="cm"
-                  size="1"
+                  size="sm"
                   style={{ width: '100%' }}
                 />
               </div>
@@ -139,7 +139,7 @@ export function RectangularPresetDialog({ onConfirm, trigger }: PresetDialogProp
                     setConfig(prev => ({ ...prev, wallAssemblyId: value }))
                   }}
                   placeholder={t($ => $.presetDialogs.rectangular.selectAssembly)}
-                  size="1"
+                  size="sm"
                 />
               </div>
 
@@ -155,7 +155,7 @@ export function RectangularPresetDialog({ onConfirm, trigger }: PresetDialogProp
                     setConfig(prev => ({ ...prev, baseRingBeamAssemblyId: value }))
                   }}
                   placeholder={t($ => $.presetDialogs.rectangular.none)}
-                  size="1"
+                  size="sm"
                   allowNone
                 />
               </div>
@@ -172,7 +172,7 @@ export function RectangularPresetDialog({ onConfirm, trigger }: PresetDialogProp
                     setConfig(prev => ({ ...prev, topRingBeamAssemblyId: value }))
                   }}
                   placeholder={t($ => $.presetDialogs.rectangular.none)}
-                  size="1"
+                  size="sm"
                   allowNone
                 />
               </div>
@@ -187,7 +187,7 @@ export function RectangularPresetDialog({ onConfirm, trigger }: PresetDialogProp
             <div className="flex flex-col gap-1">
               <span className="text-sm text-gray-900">{t($ => $.presetDialogs.rectangular.referenceSide)}</span>
               <SegmentedControl.Root
-                size="1"
+                size="sm"
                 value={config.referenceSide}
                 onValueChange={value => {
                   setConfig(prev => ({ ...prev, referenceSide: value as PerimeterReferenceSide }))

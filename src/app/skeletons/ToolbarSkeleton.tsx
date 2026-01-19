@@ -9,7 +9,7 @@ export function ToolbarSkeleton(): React.JSX.Element {
   return (
     <div
       className="flex items-center gap-4 p-3"
-      style={{ borderBottom: '1px solid var(--gray-6)' }}
+      style={{ borderBottom: '1px solid var(--color-gray-600)' }}
       data-testid="toolbar-skeleton"
     >
       {/* Logo - Real logo loads immediately */}

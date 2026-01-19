@@ -3,6 +3,7 @@ import React, { useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { useModelActions, useStoreysOrderedByLevel } from '@/building/store'
+import { Button } from '@/components/ui/button'
 import { useConfigActions } from '@/construction/config/store'
 import { BaseModal } from '@/shared/components/BaseModal'
 

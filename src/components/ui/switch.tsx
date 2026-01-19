@@ -9,9 +9,9 @@ const switchVariants = cva(
   {
     variants: {
       size: {
-        '1': 'h-4 w-7',
-        '2': 'h-5 w-9',
-        '3': 'h-6 w-11',
+        sm: 'h-4 w-7',
+        base: 'h-5 w-9',
+        lg: 'h-6 w-11',
         default: 'h-6 w-11'
       }
     },
@@ -26,9 +26,9 @@ const thumbVariants = cva(
   {
     variants: {
       size: {
-        '1': 'h-3 w-3 data-[state=checked]:translate-x-3',
-        '2': 'h-4 w-4 data-[state=checked]:translate-x-4',
-        '3': 'h-5 w-5 data-[state=checked]:translate-x-5',
+        sm: 'h-3 w-3 data-[state=checked]:translate-x-3',
+        base: 'h-4 w-4 data-[state=checked]:translate-x-4',
+        lg: 'h-5 w-5 data-[state=checked]:translate-x-5',
         default: 'h-5 w-5 data-[state=checked]:translate-x-5'
       }
     },
@@ -39,7 +39,8 @@ const thumbVariants = cva(
 )
 
 interface SwitchProps
-  extends Omit<React.ComponentPropsWithoutRef<typeof SwitchPrimitives.Root>, 'size'>,
+  extends
+    Omit<React.ComponentPropsWithoutRef<typeof SwitchPrimitives.Root>, 'size'>,
     VariantProps<typeof switchVariants> {}
 
 const Switch = React.forwardRef<React.ComponentRef<typeof SwitchPrimitives.Root>, SwitchProps>(

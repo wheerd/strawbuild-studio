@@ -47,7 +47,7 @@ export function SplitWallToolInspector({ tool }: ToolInspectorProps<SplitWallToo
       )}
       {/* Action Buttons */}
       <div className="flex flex-col gap-2">
-        <Button onClick={() => tool.commitSplit()} disabled={!state.isValidSplit} size="2">
+        <Button onClick={() => tool.commitSplit()} disabled={!state.isValidSplit}>
           {t($ => $.splitWall.splitWall)} <Kbd>{t($ => $.keyboard.enter)}</Kbd>
         </Button>
         <Button
@@ -55,7 +55,6 @@ export function SplitWallToolInspector({ tool }: ToolInspectorProps<SplitWallToo
           onClick={() => {
             tool.cancel()
           }}
-          size="2"
         >
           {t($ => $.splitWall.cancel)} <Kbd>{t($ => $.keyboard.esc)}</Kbd>
         </Button>

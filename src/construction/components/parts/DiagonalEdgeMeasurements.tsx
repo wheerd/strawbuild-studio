@@ -82,7 +82,7 @@ export function DiagonalEdgeMeasurements({
           endPoint={edge.endDisplay}
           label={edge.length.toFixed(0)}
           offset={-SCALED.offset}
-          color="var(--gray-11)"
+          color="var(--color-gray-900)"
           fontSize={SCALED.fontSize}
           strokeWidth={SCALED.strokeWidth}
         />

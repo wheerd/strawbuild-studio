@@ -93,7 +93,7 @@ export function SimplePolygonToolInspector<TTool extends BasePolygonTool<Polygon
           <span className="text-xs text-muted-foreground">• {t($ => $.simplePolygon.controlSnap)}</span>
           <span className="text-xs text-muted-foreground">• {t($ => $.simplePolygon.controlNumbers)}</span>
           <span className="text-xs text-muted-foreground">
-            • <Kbd size="1">{t($ => $.keyboard.esc)}</Kbd>{' '}
+            • <Kbd size="sm">{t($ => $.keyboard.esc)}</Kbd>{' '}
             {state.lengthOverride
               ? t($ => $.simplePolygon.controlEscOverride, {
                   key: ''
@@ -108,7 +108,7 @@ export function SimplePolygonToolInspector<TTool extends BasePolygonTool<Polygon
           </span>
           {state.points.length >= minimumPoints && (
             <span className="text-xs text-muted-foreground">
-              • <Kbd size="1">{t($ => $.keyboard.enter)}</Kbd>{' '}
+              • <Kbd size="sm">{t($ => $.keyboard.enter)}</Kbd>{' '}
               {t($ => $.simplePolygon.controlEnter, {
                 key: ''
               })
@@ -132,7 +132,7 @@ export function SimplePolygonToolInspector<TTool extends BasePolygonTool<Polygon
                   title={t($ => $.simplePolygon.completeShape)}
                 >
                   <span className="text-xs">{completeLabel}</span>
-                  <Kbd size="1" className="ml-auto">
+                  <Kbd size="sm" className="ml-auto">
                     {t($ => $.keyboard.enter)}
                   </Kbd>
                 </Button>
@@ -146,7 +146,7 @@ export function SimplePolygonToolInspector<TTool extends BasePolygonTool<Polygon
                 title={t($ => $.simplePolygon.cancelDrawing)}
               >
                 <span className="text-xs">{cancelLabel}</span>
-                <Kbd size="1" className="ml-auto">
+                <Kbd size="sm" className="ml-auto">
                   {t($ => $.keyboard.esc)}
                 </Kbd>
               </Button>

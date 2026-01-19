@@ -35,7 +35,7 @@ export function LengthIndicator({
 }: LengthIndicatorProps): React.JSX.Element {
   const { formatLength } = useFormatters()
   const textRef = useRef<SVGTextElement>(null)
-  const actualColor = color ?? 'var(--gray-11)'
+  const actualColor = color ?? 'var(--color-gray-900)'
 
   // Calculate the measurement vector and length
   const measurementVector = subVec2(endPoint, startPoint)
@@ -180,7 +180,7 @@ export function LengthIndicator({
           dominantBaseline="central"
           transform={`translate(0 ${-verticalOffset})`}
           style={{
-            filter: 'drop-shadow(0 0 0.1em var(--gray-1))'
+            filter: 'drop-shadow(0 0 0.1em var(--color-gray-100))'
           }}
         >
           {lines.map((line, index) => (

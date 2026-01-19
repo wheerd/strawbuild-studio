@@ -23,7 +23,7 @@ export function SvgMeasurementIndicator({
   className,
   offset = 50,
   labelOrientation = 'parallel',
-  color = 'var(--accent-9)',
+  color = 'var(--color-primary-900)',
   fontSize = 40,
   strokeWidth = 10
 }: SvgMeasurementIndicatorProps): React.JSX.Element {
@@ -215,7 +215,7 @@ export function SvgMeasurementIndicator({
           }
           transform={`translate(0 ${-verticalOffset})`}
           style={{
-            filter: 'drop-shadow(0 0 0.1em var(--gray-1))'
+            filter: 'drop-shadow(0 0 0.1em var(--color-gray-100))'
           }}
         >
           {lines.map((line, index) => (

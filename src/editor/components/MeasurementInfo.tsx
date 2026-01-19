@@ -2,6 +2,8 @@ import { InfoCircledIcon } from '@radix-ui/react-icons'
 import { type ComponentProps, type JSX, useId } from 'react'
 import { useTranslation } from 'react-i18next'
 
+import { Button } from '@/components/ui/button'
+import { HoverCard } from '@/components/ui/hover-card'
 import { SvgMeasurementIndicator } from '@/construction/components/SvgMeasurementIndicator'
 import { newVec2 } from '@/shared/geometry'
 
@@ -119,7 +121,7 @@ e | y +--------------+ s | Floor top layers                 }
   const inside = wallRight + insideThickness
   const floorWidth = 1100
   const floorMeasurementX = inside + floorWidth / 2 - 100
-  const textFill = 'var(--gray-12)'
+  const textFill = 'var(--color-gray-900)'
 
   const storeyHeight = 3000
   const floorConstructionThickness = 100
@@ -196,9 +198,9 @@ e | y +--------------+ s | Floor top layers                 }
     bottomFloorConstructionTopY + floorConstructionThickness + floorConstructionTopOverlap
   const insideLayerMiddleBottomY = topFloorConstructionBottomY + insideLayerMiddleHeight
 
-  const highlightFill = 'var(--accent-4)'
-  const highlightStroke = 'var(--accent-10)'
-  const measurementNeutralColor = 'var(--gray-10)'
+  const highlightFill = 'var(--color-primary-400)'
+  const highlightStroke = 'var(--color-primary-1000)'
+  const measurementNeutralColor = 'var(--color-gray-1000)'
   const finishedLevelColor = 'var(--teal-10)'
   const finishedSideColor = 'var(--sky-11)'
 
@@ -210,7 +212,7 @@ e | y +--------------+ s | Floor top layers                 }
   const getPartFill = (part: ConstructionPart | undefined, defaultFill: string): string =>
     partIsHighlighted(part) ? highlightFill : defaultFill
 
-  const getPartStroke = (part: ConstructionPart | undefined, defaultStroke = 'var(--gray-12)'): string =>
+  const getPartStroke = (part: ConstructionPart | undefined, defaultStroke = 'var(--color-gray-900)'): string =>
     partIsHighlighted(part) ? highlightStroke : defaultStroke
 
   const partLabelVisible = (part: ConstructionPart): boolean =>
@@ -294,7 +296,7 @@ e | y +--------------+ s | Floor top layers                 }
           y={floorTopY}
           width={floorWidth + floorProjection}
           height={floorTopThickness}
-          fill={getPartFill('floorTopLayers', 'var(--gray-6)')}
+          fill={getPartFill('floorTopLayers', 'var(--color-gray-600)')}
           stroke={getPartStroke('floorTopLayers')}
           strokeWidth="5"
         />
@@ -308,7 +310,7 @@ e | y +--------------+ s | Floor top layers                 }
               H ${wallRight}
               v -${floorConstructionBottomOverlap}
               H ${wallLeft} Z`}
-          fill={getPartFill('floorConstruction', 'var(--gray-7)')}
+          fill={getPartFill('floorConstruction', 'var(--color-gray-700)')}
           stroke={getPartStroke('floorConstruction')}
           strokeWidth="5"
         />
@@ -318,7 +320,7 @@ e | y +--------------+ s | Floor top layers                 }
           y={topFloorBottomLayersTopY}
           width={floorWidth + floorProjection}
           height={floorBottomThickness}
-          fill={getPartFill('floorBottomLayers', 'var(--gray-6)')}
+          fill={getPartFill('floorBottomLayers', 'var(--color-gray-600)')}
           stroke={getPartStroke('floorBottomLayers')}
           strokeWidth="5"
         />
@@ -330,7 +332,7 @@ e | y +--------------+ s | Floor top layers                 }
           y={bottomFloorTopY}
           width={floorWidth + floorProjection}
           height={floorTopThickness}
-          fill={getPartFill('floorTopLayers', 'var(--gray-6)')}
+          fill={getPartFill('floorTopLayers', 'var(--color-gray-600)')}
           stroke={getPartStroke('floorTopLayers')}
           strokeWidth="5"
         />
@@ -344,7 +346,7 @@ e | y +--------------+ s | Floor top layers                 }
               H ${wallRight}
               v -${floorConstructionBottomOverlap}
               H ${wallLeft} Z`}
-          fill={getPartFill('floorConstruction', 'var(--gray-7)')}
+          fill={getPartFill('floorConstruction', 'var(--color-gray-700)')}
           stroke={getPartStroke('floorConstruction')}
           strokeWidth="5"
         />
@@ -354,7 +356,7 @@ e | y +--------------+ s | Floor top layers                 }
           y={bottomFloorBottomLayersTopY}
           width={floorWidth + floorProjection}
           height={floorBottomThickness}
-          fill={getPartFill('floorBottomLayers', 'var(--gray-6)')}
+          fill={getPartFill('floorBottomLayers', 'var(--color-gray-600)')}
           stroke={getPartStroke('floorBottomLayers')}
           strokeWidth="5"
         />
@@ -370,8 +372,8 @@ e | y +--------------+ s | Floor top layers                 }
         y={-wallVerticalExtension}
         width={wallWidth}
         height={topFloorConstructionTopY + floorConstructionTopOverlap - basePlateThickness + wallVerticalExtension}
-        fill="var(--gray-7)"
-        stroke="var(--gray-12)"
+        fill="var(--color-gray-700)"
+        stroke="var(--color-gray-900)"
         strokeWidth="5"
       />
       <rect
@@ -380,7 +382,7 @@ e | y +--------------+ s | Floor top layers                 }
         y={-wallVerticalExtension}
         width={insideThickness}
         height={topFloorConstructionTopY + wallVerticalExtension}
-        fill={getPartFill('insideLayer', 'var(--gray-5)')}
+        fill={getPartFill('insideLayer', 'var(--color-gray-500)')}
         stroke={getPartStroke('insideLayer')}
         strokeWidth="5"
       />
@@ -390,7 +392,7 @@ e | y +--------------+ s | Floor top layers                 }
         y={topFloorConstructionTopY + floorConstructionTopOverlap - basePlateThickness}
         width={wallWidth}
         height={basePlateThickness}
-        fill={getPartFill('basePlate', 'var(--gray-8)')}
+        fill={getPartFill('basePlate', 'var(--color-gray-800)')}
         stroke={getPartStroke('basePlate')}
         strokeWidth="5"
       />
@@ -400,7 +402,7 @@ e | y +--------------+ s | Floor top layers                 }
         y={wallAssemblyTopY}
         width={wallWidth}
         height={topPlateThickness}
-        fill={getPartFill('topPlate', 'var(--gray-8)')}
+        fill={getPartFill('topPlate', 'var(--color-gray-800)')}
         stroke={getPartStroke('topPlate')}
         strokeWidth="5"
       />
@@ -410,7 +412,7 @@ e | y +--------------+ s | Floor top layers                 }
         y={wallCoreTopY}
         width={wallWidth}
         height={wallCoreHeight}
-        fill={getPartFill('wallConstruction', 'var(--gray-7)')}
+        fill={getPartFill('wallConstruction', 'var(--color-gray-700)')}
         stroke={getPartStroke('wallConstruction')}
         strokeWidth="5"
       />
@@ -420,7 +422,7 @@ e | y +--------------+ s | Floor top layers                 }
         y={basePlateTopY}
         width={wallWidth}
         height={basePlateThickness}
-        fill={getPartFill('basePlate', 'var(--gray-8)')}
+        fill={getPartFill('basePlate', 'var(--color-gray-800)')}
         stroke={getPartStroke('basePlate')}
         strokeWidth="5"
       />
@@ -430,7 +432,7 @@ e | y +--------------+ s | Floor top layers                 }
         y={topFloorBottomLayersTopY}
         width={insideThickness}
         height={insideLayerMiddleHeight}
-        fill={getPartFill('insideLayer', 'var(--gray-5)')}
+        fill={getPartFill('insideLayer', 'var(--color-gray-500)')}
         stroke={getPartStroke('insideLayer')}
         strokeWidth="5"
       />
@@ -440,7 +442,7 @@ e | y +--------------+ s | Floor top layers                 }
         y={bottomFloorConstructionTopY + floorConstructionThickness + floorConstructionTopOverlap}
         width={wallWidth}
         height={topPlateThickness}
-        fill={getPartFill('topPlate', 'var(--gray-8)')}
+        fill={getPartFill('topPlate', 'var(--color-gray-800)')}
         stroke={getPartStroke('topPlate')}
         strokeWidth="5"
       />
@@ -450,8 +452,8 @@ e | y +--------------+ s | Floor top layers                 }
         y={bottomWallTopY}
         width={wallWidth}
         height={wallHeight}
-        fill="var(--gray-7)"
-        stroke="var(--gray-12)"
+        fill="var(--color-gray-700)"
+        stroke="var(--color-gray-900)"
         strokeWidth="5"
       />
       <rect
@@ -460,7 +462,7 @@ e | y +--------------+ s | Floor top layers                 }
         y={bottomFloorConstructionTopY + floorTotalConstructionThickness}
         width={insideThickness}
         height={wallHeight}
-        fill={getPartFill('insideLayer', 'var(--gray-5)')}
+        fill={getPartFill('insideLayer', 'var(--color-gray-500)')}
         stroke={getPartStroke('insideLayer')}
         strokeWidth="5"
       />
@@ -470,7 +472,7 @@ e | y +--------------+ s | Floor top layers                 }
         y={-1}
         width={outsideThickness}
         height={totalHeight + 1}
-        fill={getPartFill('outsideLayer', 'var(--gray-5)')}
+        fill={getPartFill('outsideLayer', 'var(--color-gray-500)')}
         stroke={getPartStroke('outsideLayer')}
         strokeWidth="5"
       />
@@ -606,7 +608,7 @@ e | y +--------------+ s | Floor top layers                 }
           fontSize={60}
           text-anchor="middle"
           dominantBaseline="text-before-edge"
-          fill={assemblyOutlineStroke('floorAssembly', 'var(--amber-10)')}
+          fill={assemblyOutlineStroke('floorAssembly', 'var(--color-orange-1000)')}
         >
           {t($ => $.measurements.floorAssembly)}
         </text>
@@ -883,7 +885,7 @@ e | y +--------------+ s | Floor top layers                 }
           href={`#${upperFloorPathId}`}
           clipPath={`url(#${upperFloorClipId})`}
           fill="none"
-          stroke="var(--amber-10)"
+          stroke="var(--color-orange-1000)"
           strokeWidth={50}
           strokeLinejoin="round"
           opacity={0.4}
@@ -894,7 +896,7 @@ e | y +--------------+ s | Floor top layers                 }
           href={`#${lowerFloorPathId}`}
           clipPath={`url(#${lowerFloorClipId})`}
           fill="none"
-          stroke={assemblyOutlineStroke('floorAssembly', 'var(--amber-10)')}
+          stroke={assemblyOutlineStroke('floorAssembly', 'var(--color-orange-1000)')}
           strokeWidth={50}
           strokeLinejoin="round"
           opacity={0.4}
@@ -975,11 +977,9 @@ export function MeasurementInfo(config: MeasurementDisplayConfig): React.JSX.Ele
         <Button
           size="icon"
           style={{ cursor: 'help' }}
-          
           className="rounded-full"
           title={t($ => $.measurements.measurements)}
           variant="ghost"
-          size="1"
         >
           <InfoCircledIcon width={12} height={12} />
         </Button>

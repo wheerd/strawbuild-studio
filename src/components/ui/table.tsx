@@ -7,12 +7,13 @@ const tableVariants = cva('w-full caption-bottom text-sm', {
   variants: {
     variant: {
       ghost: '',
-      surface: 'border rounded-lg'
+      surface: 'border rounded-lg',
+      soft: ''
     },
     size: {
-      '1': 'text-xs [&_th]:h-8 [&_th]:px-2 [&_td]:p-2',
-      '2': 'text-sm [&_th]:h-10 [&_th]:px-3 [&_td]:p-3',
-      '3': 'text-base [&_th]:h-12 [&_th]:px-4 [&_td]:p-4'
+      sm: 'text-xs [&_th]:h-8 [&_th]:px-2 [&_td]:p-2',
+      base: 'text-sm [&_th]:h-10 [&_th]:px-3 [&_td]:p-3',
+      lg: 'text-base [&_th]:h-12 [&_th]:px-4 [&_td]:p-4'
     }
   },
   defaultVariants: {
@@ -126,13 +127,4 @@ const TableCompound = Object.assign(Table, {
   Caption: TableCaption
 })
 
-export {
-  TableCompound as Table,
-  TableHeader,
-  TableBody,
-  TableFooter,
-  TableHead,
-  TableRow,
-  TableCell,
-  TableCaption
-}
+export { TableCompound as Table, TableHeader, TableBody, TableFooter, TableHead, TableRow, TableCell, TableCaption }

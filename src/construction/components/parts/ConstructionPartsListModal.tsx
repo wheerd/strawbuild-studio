@@ -2,7 +2,11 @@ import { CrossCircledIcon } from '@radix-ui/react-icons'
 import React, { Suspense, use, useCallback, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
+import { Callout, CalloutIcon, CalloutText } from '@/components/ui/callout'
 import { FullScreenModal } from '@/components/ui/full-screen-modal'
+import { Skeleton } from '@/components/ui/skeleton'
+import { Spinner } from '@/components/ui/spinner'
+import { Tabs } from '@/components/ui/tabs'
 import { ConstructionPartsList } from '@/construction/components/parts/ConstructionPartsList'
 import { ConstructionVirtualPartsList } from '@/construction/components/parts/ConstructionVirtualPartsList'
 import type { ConstructionModel } from '@/construction/model'
@@ -110,7 +114,7 @@ function MaterialPartsContent({ partsDataPromise }: { partsDataPromise: Promise<
   if (!partsData) {
     return (
       <div className="flex">
-        <Callout className="text-destructive" size="2">
+        <Callout className="text-destructive">
           <CalloutIcon>
             <CrossCircledIcon />
           </CalloutIcon>
@@ -130,7 +134,7 @@ function ModulePartsContent({ partsDataPromise }: { partsDataPromise: Promise<Pa
   if (!partsData) {
     return (
       <div className="flex">
-        <Callout className="text-destructive" size="2">
+        <Callout className="text-destructive">
           <CalloutIcon>
             <CrossCircledIcon />
           </CalloutIcon>
@@ -148,7 +152,7 @@ function PartsSkeleton() {
     <div className="flex flex-col gap-4">
       <CardSkeleton />
       <CardSkeleton />
-      <Spinner size="2" style={{ alignSelf: 'center' }} />
+      <Spinner style={{ alignSelf: 'center' }} />
     </div>
   )
 }

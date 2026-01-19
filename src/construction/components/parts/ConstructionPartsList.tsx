@@ -265,7 +265,7 @@ function MaterialTypeIndicator({ material, size = 18 }: { material: Material; si
         height: `${size}px`,
         backgroundColor: material.color,
         borderRadius: '4px',
-        border: '1px solid var(--gray-7)',
+        border: '1px solid var(--color-gray-700)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
@@ -332,15 +332,15 @@ function SpecialCutTooltip({ polygon }: { polygon: Polygon2D }): React.JSX.Eleme
           width={preview.rectWidth}
           height={preview.rectHeight}
           fill="none"
-          stroke="var(--gray-10)"
+          stroke="var(--color-gray-1000)"
           strokeDasharray="3 1"
           strokeWidth="1"
         />
         <polygon
           points={preview.pointsAttribute}
-          stroke="var(--accent-9)"
+          stroke="var(--color-primary-900)"
           strokeWidth="2"
-          fill="var(--accent-9)"
+          fill="var(--color-primary-900)"
           fillOpacity="0.2"
           strokeLinejoin="miter"
         />
@@ -376,13 +376,7 @@ function MaterialSummaryRow({
       <Table.RowHeaderCell>
         <div className="items-center gap-2 justify-between">
           <span className="font-medium">{materialName}</span>
-          <Button
-            size="icon"
-            title={t($ => $.partsList.actions.jumpToDetails)}
-            size="1"
-            variant="ghost"
-            onClick={onNavigate}
-          >
+          <Button size="icon" title={t($ => $.partsList.actions.jumpToDetails)} variant="ghost" onClick={onNavigate}>
             <PinBottomIcon />
           </Button>
         </div>
@@ -425,13 +419,7 @@ function MaterialGroupSummaryRow({
       <Table.Cell>
         <div className="items-center gap-2 justify-between">
           <Badge color={group.badgeColor}>{group.badgeLabel}</Badge>
-          <Button
-            size="icon"
-            title={t($ => $.partsList.actions.jumpToDetails)}
-            size="1"
-            variant="ghost"
-            onClick={onNavigate}
-          >
+          <Button size="icon" title={t($ => $.partsList.actions.jumpToDetails)} variant="ghost" onClick={onNavigate}>
             <PinBottomIcon />
           </Button>
         </div>
@@ -464,7 +452,7 @@ function MaterialGroupCard({ material, group, onBackToTop, onViewInPlan, formatt
   const materialName = useMaterialName(material)
 
   return (
-    <Card variant="soft" size="2">
+    <Card variant="soft">
       <div className="flex flex-col gap-3">
         <div className="items-center justify-between gap-3">
           <div className="flex items-center gap-3">
@@ -474,7 +462,6 @@ function MaterialGroupCard({ material, group, onBackToTop, onViewInPlan, formatt
               size="icon"
               title={t($ => $.partsList.actions.configureMaterial)}
               variant="ghost"
-              size="1"
               onClick={() => {
                 openConfiguration('materials', material.id)
               }}
@@ -489,18 +476,12 @@ function MaterialGroupCard({ material, group, onBackToTop, onViewInPlan, formatt
               )}
               {group.hasIssue && (
                 <Tooltip content={group.issueMessage ?? t($ => $.partsList.issues.groupMismatch)}>
-                  <ExclamationTriangleIcon style={{ color: 'var(--red-9)' }} />
+                  <ExclamationTriangleIcon style={{ color: 'var(--color-red-900)' }} />
                 </Tooltip>
               )}
             </div>
           </div>
-          <Button
-            size="icon"
-            title={t($ => $.partsList.actions.backToSummary)}
-            size="1"
-            variant="ghost"
-            onClick={onBackToTop}
-          >
+          <Button size="icon" title={t($ => $.partsList.actions.backToSummary)} variant="ghost" onClick={onBackToTop}>
             <PinTopIcon />
           </Button>
         </div>
@@ -555,7 +536,7 @@ function DimensionalPartsTable({
     return formatters.formatWeight(weight)
   }
   return (
-    <Table.Root variant="soft" size="2" className="min-w-full">
+    <Table.Root variant="soft" className="min-w-full">
       <Table.Header>
         <Table.Row>
           <Table.ColumnHeaderCell width="5em" justify-center>
@@ -588,7 +569,10 @@ function DimensionalPartsTable({
           const partWeight = calculateWeight(part.totalVolume, material)
           const severity = getIssueSeverity(part)
           return (
-            <Table.Row key={part.partId} style={{ background: severity === 'error' ? 'var(--red-3)' : undefined }}>
+            <Table.Row
+              key={part.partId}
+              style={{ background: severity === 'error' ? 'var(--color-red-300)' : undefined }}
+            >
               <Table.RowHeaderCell justify-center>
                 <span className="font-medium">{part.label}</span>
               </Table.RowHeaderCell>
@@ -602,7 +586,7 @@ function DimensionalPartsTable({
                         key="special-cut"
                         content={<SpecialCutTooltip polygon={part.sideFaces[0].polygon.outer} />}
                       >
-                        <ExclamationTriangleIcon aria-hidden style={{ color: 'var(--amber-9)' }} />
+                        <ExclamationTriangleIcon aria-hidden style={{ color: 'var(--color-orange-900)' }} />
                       </Tooltip>
                       <PartCutModal
                         trigger={
@@ -629,7 +613,9 @@ function DimensionalPartsTable({
                       }
                     >
                       <ExclamationTriangleIcon
-                        style={{ color: part.requiresSinglePiece ? 'var(--red-9)' : 'var(--amber-9)' }}
+                        style={{
+                          color: part.requiresSinglePiece ? 'var(--color-red-900)' : 'var(--color-orange-900)'
+                        }}
                       />
                     </Tooltip>
                   )}
@@ -645,7 +631,6 @@ function DimensionalPartsTable({
                 {canHighlightPart(part.partId) && onViewInPlan && (
                   <Button
                     size="icon"
-                    size="sm"
                     variant="ghost"
                     onClick={() => {
                       onViewInPlan(part.partId)
@@ -681,7 +666,7 @@ function SheetPartsTable({
     return formatters.formatWeight(weight)
   }
   return (
-    <Table.Root variant="soft" size="2" className="min-w-full">
+    <Table.Root variant="soft" className="min-w-full">
       <Table.Header>
         <Table.Row>
           <Table.ColumnHeaderCell width="5em" justify-center>
@@ -717,7 +702,10 @@ function SheetPartsTable({
           const partWeight = calculateWeight(part.totalVolume, material)
           const severity = getIssueSeverity(part)
           return (
-            <Table.Row key={part.partId} style={{ background: severity === 'error' ? 'var(--red-3)' : undefined }}>
+            <Table.Row
+              key={part.partId}
+              style={{ background: severity === 'error' ? 'var(--color-red-300)' : undefined }}
+            >
               <Table.RowHeaderCell justify-center>
                 <span className="font-medium">{part.label}</span>
               </Table.RowHeaderCell>
@@ -741,7 +729,7 @@ function SheetPartsTable({
                 <div className="items-center gap-2 justify-end">
                   {part.issue === 'ThicknessMismatch' && (
                     <Tooltip key="thickness-missmatch" content={t($ => $.partsList.issues.dimensionsMismatchThickness)}>
-                      <ExclamationTriangleIcon style={{ color: 'var(--red-9)' }} />
+                      <ExclamationTriangleIcon style={{ color: 'var(--color-red-900)' }} />
                     </Tooltip>
                   )}
                   {part.issue === 'SheetSizeExceeded' && (
@@ -755,7 +743,9 @@ function SheetPartsTable({
                     >
                       <ExclamationTriangleIcon
                         aria-hidden
-                        style={{ color: part.requiresSinglePiece ? 'var(--red-9)' : 'var(--amber-9)' }}
+                        style={{
+                          color: part.requiresSinglePiece ? 'var(--color-red-900)' : 'var(--color-orange-900)'
+                        }}
                       />
                     </Tooltip>
                   )}
@@ -775,7 +765,6 @@ function SheetPartsTable({
                 {canHighlightPart(part.partId) && onViewInPlan && (
                   <Button
                     size="icon"
-                    size="sm"
                     variant="ghost"
                     onClick={() => {
                       onViewInPlan(part.partId)
@@ -811,7 +800,7 @@ function VolumePartsTable({
     return formatters.formatWeight(weight)
   }
   return (
-    <Table.Root variant="soft" size="2" className="min-w-full">
+    <Table.Root variant="soft" className="min-w-full">
       <Table.Header>
         <Table.Row>
           <Table.ColumnHeaderCell width="5em" justify-center>
@@ -844,7 +833,10 @@ function VolumePartsTable({
           const partWeight = calculateWeight(part.totalVolume, material)
           const severity = getIssueSeverity(part)
           return (
-            <Table.Row key={part.partId} style={{ background: severity === 'error' ? 'var(--red-3)' : undefined }}>
+            <Table.Row
+              key={part.partId}
+              style={{ background: severity === 'error' ? 'var(--color-red-300)' : undefined }}
+            >
               <Table.RowHeaderCell justify-center>
                 <span className="font-medium">{part.label}</span>
               </Table.RowHeaderCell>
@@ -863,7 +855,6 @@ function VolumePartsTable({
                 {canHighlightPart(part.partId) && onViewInPlan && (
                   <Button
                     size="icon"
-                    size="sm"
                     variant="ghost"
                     onClick={() => {
                       onViewInPlan(part.partId)
@@ -891,7 +882,7 @@ function GenericPartsTable({
 }) {
   const { t } = useTranslation('construction')
   return (
-    <Table.Root variant="soft" size="2" className="min-w-full">
+    <Table.Root variant="soft" className="min-w-full">
       <Table.Header>
         <Table.Row>
           <Table.ColumnHeaderCell width="5em" justify-center>
@@ -920,7 +911,6 @@ function GenericPartsTable({
               {canHighlightPart(part.partId) && onViewInPlan && (
                 <Button
                   size="icon"
-                  size="sm"
                   variant="ghost"
                   onClick={() => {
                     onViewInPlan(part.partId)
@@ -1011,7 +1001,7 @@ function StrawbalePartsTable({
   )
 
   return (
-    <Table.Root variant="soft" size="2" className="min-w-full">
+    <Table.Root variant="soft" className="min-w-full">
       <Table.Header>
         <Table.Row>
           <Table.ColumnHeaderCell>{t($ => $.partsList.tableHeaders.category)}</Table.ColumnHeaderCell>
@@ -1250,7 +1240,7 @@ export function ConstructionPartsList({ partsList, onViewInPlan }: ConstructionP
 
   if (materialIds.length === 0) {
     return (
-      <Card variant="ghost" size="2">
+      <Card variant="ghost">
         <span className="text-base text-gray-900">{t($ => $.partsList.noPartsAvailable)}</span>
       </Card>
     )
@@ -1285,10 +1275,10 @@ export function ConstructionPartsList({ partsList, onViewInPlan }: ConstructionP
 
   return (
     <div className="flex flex-col gap-4">
-      <Card ref={topRef} variant="soft" size="2">
+      <Card ref={topRef} variant="soft">
         <div className="flex flex-col gap-3">
           <h4>{t($ => $.partsList.summary)}</h4>
-          <Table.Root variant="soft" size="2" className="min-w-full">
+          <Table.Root variant="soft" className="min-w-full">
             <Table.Header>
               <Table.Row>
                 <Table.ColumnHeaderCell width="4em" justify-center>

@@ -67,7 +67,7 @@ export function RoofToolInspector({ tool }: ToolInspectorProps<RoofTool>): React
               }}
               showDefaultIndicator
               defaultAssemblyId={defaultAssemblyId}
-              size="1"
+              size="sm"
             />
           </div>
 
@@ -77,7 +77,7 @@ export function RoofToolInspector({ tool }: ToolInspectorProps<RoofTool>): React
               <span className="text-xs font-medium text-muted-foreground">{t($ => $.roof.type)}</span>
             </Label.Root>
             <SegmentedControl.Root
-              size="1"
+              size="sm"
               value={state.type}
               onValueChange={value => {
                 tool.setType(value as RoofType)
@@ -159,7 +159,7 @@ export function RoofToolInspector({ tool }: ToolInspectorProps<RoofTool>): React
               min={-10000}
               max={10000}
               step={10}
-              size="1"
+              size="sm"
               unit="mm"
               style={{ width: '5rem' }}
             />
@@ -179,7 +179,7 @@ export function RoofToolInspector({ tool }: ToolInspectorProps<RoofTool>): React
               min={0}
               max={2000}
               step={10}
-              size="1"
+              size="sm"
               unit="mm"
               style={{ width: '5rem' }}
             />
@@ -193,7 +193,7 @@ export function RoofToolInspector({ tool }: ToolInspectorProps<RoofTool>): React
           <span className="text-xs text-muted-foreground">• {t($ => $.roof.controlPlace)}</span>
           <span className="text-xs text-muted-foreground">• {t($ => $.roof.controlSnap)}</span>
           <span className="text-xs text-muted-foreground">
-            • <Kbd size="1">{t($ => $.keyboard.esc)}</Kbd>{' '}
+            • <Kbd size="sm">{t($ => $.keyboard.esc)}</Kbd>{' '}
             {t($ => $.roof.controlEsc, {
               key: ''
             })
@@ -203,7 +203,7 @@ export function RoofToolInspector({ tool }: ToolInspectorProps<RoofTool>): React
           {state.points.length >= 3 && (
             <>
               <span className="text-xs text-muted-foreground">
-                • <Kbd size="1">{t($ => $.keyboard.enter)}</Kbd>{' '}
+                • <Kbd size="sm">{t($ => $.keyboard.enter)}</Kbd>{' '}
                 {t($ => $.roof.controlEnter, {
                   key: ''
                 })
@@ -231,7 +231,7 @@ export function RoofToolInspector({ tool }: ToolInspectorProps<RoofTool>): React
                   title={t($ => $.roof.completeTooltip)}
                 >
                   <span className="text-xs">{t($ => $.roof.completeRoof)}</span>
-                  <Kbd size="1" className="ml-auto">
+                  <Kbd size="sm" className="ml-auto">
                     {t($ => $.keyboard.enter)}
                   </Kbd>
                 </Button>
@@ -246,7 +246,7 @@ export function RoofToolInspector({ tool }: ToolInspectorProps<RoofTool>): React
                 title={t($ => $.roof.cancelTooltip)}
               >
                 <span className="text-xs">{t($ => $.roof.cancelRoof)}</span>
-                <Kbd size="1" className="ml-auto">
+                <Kbd size="sm" className="ml-auto">
                   {t($ => $.keyboard.esc)}
                 </Kbd>
               </Button>

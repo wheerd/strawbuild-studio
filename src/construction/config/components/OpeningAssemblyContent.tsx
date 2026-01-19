@@ -1,22 +1,19 @@
 import { CopyIcon, PlusIcon, ResetIcon, TrashIcon } from '@radix-ui/react-icons'
 import * as Label from '@radix-ui/react-label'
-import {
-  AlertDialog,
-  Badge,
-  Button,
-  Callout,
-  Checkbox,
-  DropdownMenu,
-  IconButton,
-  Select,
-  Separator,
-  Switch,
-  TextField
-} from '@radix-ui/themes'
 import React, { useCallback, useId, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import type { OpeningAssemblyId } from '@/building/model/ids'
+import { AlertDialog } from '@/components/ui/alert-dialog'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Callout, CalloutText } from '@/components/ui/callout'
+import { Checkbox } from '@/components/ui/checkbox'
+import { DropdownMenu } from '@/components/ui/dropdown-menu'
+import { Select } from '@/components/ui/select'
+import { Separator } from '@/components/ui/separator'
+import { Switch } from '@/components/ui/switch'
+import { TextField } from '@/components/ui/text-field'
 import type { OpeningAssemblyConfig } from '@/construction/config'
 import { type EntityId, useEntityLabel } from '@/construction/config/components/useEntityLabel'
 import {
@@ -185,14 +182,13 @@ export function OpeningAssemblyContent({ initialSelectionId }: OpeningAssemblyCo
       {/* Selector + Actions */}
       <div className="flex flex-col gap-2">
         <div className="flex gap-2 items-end">
-          <div className="flex flex-col gap-1 grow-1">
+          <div className="flex flex-col gap-1 grow">
             <OpeningAssemblySelect
               value={(selectedAssemblyId as OpeningAssemblyId | null) ?? undefined}
               onValueChange={value => {
                 setSelectedAssemblyId(value ?? null)
               }}
               showDefaultIndicator
-              size="2"
             />
           </div>
 
@@ -242,7 +238,7 @@ export function OpeningAssemblyContent({ initialSelectionId }: OpeningAssemblyCo
             <AlertDialog.Trigger>
               <Button
                 size="icon"
-               className="text-destructive"
+                className="text-destructive"
                 variant="soft"
                 disabled={usage.isUsed}
                 title={usage.isUsed ? t($ => $.common.inUseCannotDelete) : t($ => $.common.delete)}
@@ -272,7 +268,12 @@ export function OpeningAssemblyContent({ initialSelectionId }: OpeningAssemblyCo
 
           <AlertDialog.Root>
             <AlertDialog.Trigger>
-              <Button size="icon"className="text-destructive" variant="outline" title={t($ => $.common.resetToDefaults)}>
+              <Button
+                size="icon"
+                className="text-destructive"
+                variant="outline"
+                title={t($ => $.common.resetToDefaults)}
+              >
                 <ResetIcon />
               </Button>
             </AlertDialog.Trigger>
@@ -308,7 +309,6 @@ export function OpeningAssemblyContent({ initialSelectionId }: OpeningAssemblyCo
             if (assemblyId) setDefaultOpeningAssembly(assemblyId)
           }}
           placeholder={t($ => $.common.placeholders.selectDefault)}
-          size="2"
         />
       </div>
       {usage.isUsed && <UsageDisplay usage={usage} />}
@@ -319,7 +319,7 @@ export function OpeningAssemblyContent({ initialSelectionId }: OpeningAssemblyCo
 function UsageBadge({ id }: { id: EntityId }) {
   const label = useEntityLabel(id)
   return (
-    <Badge key={id} size="2" variant="soft">
+    <Badge key={id} variant="soft">
       {label}
     </Badge>
   )
@@ -335,7 +335,7 @@ function UsageDisplay({ usage }: { usage: OpeningAssemblyUsage }): React.JSX.Ele
       </Label.Root>
       <div className="flex gap-1 flex-wrap">
         {usage.isDefault && (
-          <Badge size="2" variant="soft" color="blue">
+          <Badge variant="soft" color="blue">
             {t($ => $.usage.globalDefault_opening)}
           </Badge>
         )}
@@ -379,7 +379,7 @@ function ConfigForm({ assembly }: { assembly: OpeningAssemblyConfig }): React.JS
       gap-3
       p-3
       "
-      style={{ border: '1px solid var(--gray-6)', borderRadius: 'var(--radius-2)' }}
+      style={{ border: '1px solid var(--color-gray-600)', borderRadius: 'var(--radius-2)' }}
     >
       <div className="grid grid-cols-2 gap-2 gap-x-3 items-center">
         <div className="grid grid-cols-[auto_1fr] gap-x-2 items-center">
@@ -394,7 +394,6 @@ function ConfigForm({ assembly }: { assembly: OpeningAssemblyConfig }): React.JS
             onBlur={nameInput.handleBlur}
             onKeyDown={nameInput.handleKeyDown}
             placeholder={t($ => $.openings.placeholders.name)}
-            size="2"
           />
         </div>
 
@@ -477,7 +476,6 @@ const SimpleOpeningContent = ({
           if (!headerMaterial) return
           update({ headerMaterial })
         }}
-        size="2"
         preferredTypes={['dimensional']}
       />
 
@@ -501,7 +499,6 @@ const SimpleOpeningContent = ({
           if (!sillMaterial) return
           update({ sillMaterial })
         }}
-        size="2"
         preferredTypes={['dimensional']}
       />
     </div>
@@ -551,7 +548,6 @@ const PostOpeningContent = ({
             if (!headerMaterial) return
             update({ headerMaterial })
           }}
-          size="2"
           preferredTypes={['dimensional']}
         />
 
@@ -575,7 +571,6 @@ const PostOpeningContent = ({
             if (!sillMaterial) return
             update({ sillMaterial })
           }}
-          size="2"
           preferredTypes={['dimensional']}
         />
       </div>
@@ -627,7 +622,6 @@ function PostsConfigSection({
               })
             }
           }}
-          size="2"
         >
           <Select.Trigger id={typeSelectId} />
           <Select.Content>
@@ -659,7 +653,6 @@ function PostsConfigSection({
             updatePosts({ ...posts, width: value })
           }}
           unit="mm"
-          size="2"
         />
 
         {posts.type === 'double' && (
@@ -673,7 +666,6 @@ function PostsConfigSection({
                 updatePosts({ ...posts, thickness: value })
               }}
               unit="mm"
-              size="2"
             />
           </>
         )}
@@ -687,7 +679,6 @@ function PostsConfigSection({
             if (!material) return
             updatePosts({ ...posts, material })
           }}
-          size="2"
           preferredTypes={['dimensional']}
         />
 
@@ -702,7 +693,6 @@ function PostsConfigSection({
                 if (!infillMaterial) return
                 updatePosts({ ...posts, infillMaterial })
               }}
-              size="2"
             />
           </>
         )}
@@ -775,7 +765,6 @@ const PlankedOpeningContent = ({
             if (!headerMaterial) return
             update({ headerMaterial })
           }}
-          size="2"
           preferredTypes={['dimensional']}
         />
 
@@ -799,7 +788,6 @@ const PlankedOpeningContent = ({
             if (!sillMaterial) return
             update({ sillMaterial })
           }}
-          size="2"
           preferredTypes={['dimensional']}
         />
 
@@ -823,7 +811,6 @@ const PlankedOpeningContent = ({
             if (!plankMaterial) return
             update({ plankMaterial })
           }}
-          size="2"
           preferredTypes={['dimensional']}
         />
       </div>

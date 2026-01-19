@@ -2,6 +2,9 @@ import { CubeIcon, ExclamationTriangleIcon, GroupIcon, RulerHorizontalIcon } fro
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
+import { Button } from '@/components/ui/button'
+import { Card } from '@/components/ui/card'
+import { SegmentedControl } from '@/components/ui/segmented-control'
 import { CutAreaShape } from '@/construction/components/plan/CutAreaShape'
 import { Measurements } from '@/construction/components/plan/Measurements'
 import { sanitizeForCssClass } from '@/construction/components/plan/cssHelpers'
@@ -234,9 +237,9 @@ export function ConstructionPlan({
   const partHighlightStyles = highlightedPartId
     ? `
     .part-${sanitizeForCssClass(highlightedPartId)} path {
-      fill: var(--accent-8) !important;
-      stroke: var(--accent-10) !important;
-      outline: var(--accent-9);
+      fill: var(--color-primary-800) !important;
+      stroke: var(--color-primary-1000) !important;
+      outline: var(--color-primary-900);
       outline-width: 40;
       filter: drop-shadow(0 0 20px var(--accent-a6));
       animation: pulse-part-highlight 2s ease-in-out infinite;
@@ -376,7 +379,7 @@ export function ConstructionPlan({
       {/* Overlay controls in top-left corner */}
 
       <div className="absolute top-3 left-3 z-10">
-        <Card size="1" variant="soft" className="shadow-md">
+        <Card size="sm" variant="soft" className="shadow-md">
           <div className="flex flex-col gap-2 m--2">
             {/* View selector - only show if multiple views */}
             {views.length > 1 && (
@@ -385,7 +388,7 @@ export function ConstructionPlan({
                 onValueChange={value => {
                   setCurrentViewIndex(parseInt(value, 10))
                 }}
-                size="1"
+                size="sm"
               >
                 {views.map((viewOption, index) => (
                   <SegmentedControl.Item key={index} value={index.toString()}>
@@ -399,8 +402,7 @@ export function ConstructionPlan({
               {/* Mid-cut toggle */}
               <Button
                 size="icon"
-                variant={midCutEnabled ? 'solid' : 'outline'}
-                size="sm"
+                variant={midCutEnabled ? 'default' : 'outline'}
                 title={t($ => $.plan.midCut)}
                 onClick={() => {
                   setMidCutEnabled(!midCutEnabled)
@@ -412,8 +414,7 @@ export function ConstructionPlan({
               {/* Area toggle */}
               <Button
                 size="icon"
-                variant={hideAreas ? 'outline' : 'solid'}
-                size="sm"
+                variant={hideAreas ? 'outline' : 'default'}
                 title={t($ => $.plan.hideAreas)}
                 onClick={() => {
                   setHideAreas(!hideAreas)
@@ -425,8 +426,7 @@ export function ConstructionPlan({
               {/* Issues toggle */}
               <Button
                 size="icon"
-                variant={hideIssues ? 'outline' : 'solid'}
-                size="sm"
+                variant={hideIssues ? 'outline' : 'default'}
                 title={t($ => $.plan.hideIssues)}
                 onClick={() => {
                   setHideIssues(!hideIssues)
@@ -438,8 +438,7 @@ export function ConstructionPlan({
               {/* Measurements toggle */}
               <Button
                 size="icon"
-                variant={hideMeasurements ? 'outline' : 'solid'}
-                size="sm"
+                variant={hideMeasurements ? 'outline' : 'default'}
                 title={t($ => $.plan.hideMeasurements)}
                 onClick={() => {
                   setHideMeasurements(!hideMeasurements)
@@ -451,8 +450,7 @@ export function ConstructionPlan({
               {/* Straw types toggle */}
               <Button
                 size="icon"
-                variant={showStrawTypes ? 'solid' : 'outline'}
-                size="sm"
+                variant={showStrawTypes ? 'default' : 'outline'}
                 title={t($ => $.plan.showStrawTypes)}
                 onClick={() => {
                   setShowStrawTypes(!showStrawTypes)

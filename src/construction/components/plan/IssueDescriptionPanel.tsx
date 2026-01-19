@@ -2,6 +2,7 @@ import { CheckCircledIcon, CrossCircledIcon, ExclamationTriangleIcon } from '@ra
 import { use } from 'react'
 import { useTranslation } from 'react-i18next'
 
+import { Callout, CalloutIcon, CalloutText } from '@/components/ui/callout'
 import type { ConstructionModel } from '@/construction/model'
 
 import { usePlanHighlight } from './PlanHighlightContext'
@@ -20,7 +21,7 @@ export const IssueDescriptionPanel = ({ modelPromise }: IssueDescriptionPanelPro
       {model ? (
         <>
           {model.errors.length > 0 && (
-            <Callout className="text-destructive" size="1">
+            <Callout className="text-destructive" size="sm">
               <CalloutIcon>
                 <CrossCircledIcon />
               </CalloutIcon>
@@ -57,7 +58,7 @@ export const IssueDescriptionPanel = ({ modelPromise }: IssueDescriptionPanelPro
           )}
 
           {model.warnings.length > 0 && (
-            <Callout color="amber" size="1">
+            <Callout color="orange" size="sm">
               <CalloutIcon>
                 <ExclamationTriangleIcon />
               </CalloutIcon>
@@ -81,7 +82,7 @@ export const IssueDescriptionPanel = ({ modelPromise }: IssueDescriptionPanelPro
                         padding: 'var(--space-1)',
                         margin: 'calc(-1 * var(--space-1))',
                         borderRadius: 'var(--radius-1)',
-                        backgroundColor: hoveredIssueId === warning.id ? 'var(--amber-a3)' : 'transparent',
+                        backgroundColor: hoveredIssueId === warning.id ? 'var(--orange-a3)' : 'transparent',
                         transition: 'background-color 0.15s ease'
                       }}
                     >
@@ -94,7 +95,7 @@ export const IssueDescriptionPanel = ({ modelPromise }: IssueDescriptionPanelPro
           )}
 
           {model.errors.length === 0 && model.warnings.length === 0 && (
-            <Callout color="green" size="1">
+            <Callout color="green" size="sm">
               <CalloutIcon>
                 <CheckCircledIcon />
               </CalloutIcon>
@@ -106,7 +107,7 @@ export const IssueDescriptionPanel = ({ modelPromise }: IssueDescriptionPanelPro
           )}
         </>
       ) : (
-        <Callout className="text-destructive" size="1">
+        <Callout className="text-destructive" size="sm">
           <CalloutIcon>
             <CrossCircledIcon />
           </CalloutIcon>

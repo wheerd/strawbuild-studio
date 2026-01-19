@@ -5,7 +5,7 @@ import { cn } from '@/lib/utils'
 // Radix Themes compatible TextField wrapper
 
 interface TextFieldRootProps extends React.HTMLAttributes<HTMLDivElement> {
-  size?: '1' | '2' | '3'
+  size?: 'sm' | 'base' | 'lg'
   disabled?: boolean
   value?: string
   defaultValue?: string
@@ -17,7 +17,7 @@ interface TextFieldRootProps extends React.HTMLAttributes<HTMLDivElement> {
 }
 
 const TextFieldContext = React.createContext<{
-  size?: '1' | '2' | '3'
+  size?: 'sm' | 'base' | 'lg'
   disabled?: boolean
   inputProps: Omit<TextFieldRootProps, 'className' | 'style' | 'children' | 'size'>
 }>({
@@ -25,9 +25,9 @@ const TextFieldContext = React.createContext<{
 })
 
 const sizeClasses = {
-  '1': 'h-7 text-xs',
-  '2': 'h-9 text-sm',
-  '3': 'h-10 text-base'
+  sm: 'h-7 text-xs',
+  base: 'h-9 text-sm',
+  lg: 'h-10 text-base'
 }
 
 const TextFieldRoot = React.forwardRef<HTMLDivElement, TextFieldRootProps>(
@@ -35,7 +35,7 @@ const TextFieldRoot = React.forwardRef<HTMLDivElement, TextFieldRootProps>(
     {
       className,
       children,
-      size = '2',
+      size = 'base',
       disabled,
       value,
       defaultValue,
@@ -75,20 +75,18 @@ interface TextFieldSlotProps extends React.HTMLAttributes<HTMLDivElement> {
   side?: 'left' | 'right'
 }
 
-const TextFieldSlot = React.forwardRef<HTMLDivElement, TextFieldSlotProps>(
-  ({ className, side, ...props }, ref) => (
-    <div
-      ref={ref}
-      className={cn(
-        'flex items-center text-muted-foreground',
-        side === 'left' && 'pl-2',
-        side === 'right' && 'pr-2',
-        className
-      )}
-      {...props}
-    />
-  )
-)
+const TextFieldSlot = React.forwardRef<HTMLDivElement, TextFieldSlotProps>(({ className, side, ...props }, ref) => (
+  <div
+    ref={ref}
+    className={cn(
+      'flex items-center text-muted-foreground',
+      side === 'left' && 'pl-2',
+      side === 'right' && 'pr-2',
+      className
+    )}
+    {...props}
+  />
+))
 TextFieldSlot.displayName = 'TextField.Slot'
 
 const TextFieldInput = React.forwardRef<HTMLInputElement, React.InputHTMLAttributes<HTMLInputElement>>(
@@ -98,11 +96,7 @@ const TextFieldInput = React.forwardRef<HTMLInputElement, React.InputHTMLAttribu
     return (
       <input
         ref={ref}
-        className={cn(
-          'flex-1 bg-transparent px-2 outline-none min-w-0',
-          sizeClasses[size ?? '2'],
-          className
-        )}
+        className={cn('flex-1 bg-transparent px-2 outline-none min-w-0', sizeClasses[size ?? 'base'], className)}
         disabled={disabled}
         {...inputProps}
         {...props}

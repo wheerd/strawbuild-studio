@@ -7,6 +7,11 @@ import { RoofPreview } from '@/building/components/inspectors/RoofPreview'
 import type { RoofOverhang } from '@/building/model'
 import type { RoofId } from '@/building/model/ids'
 import { useModelActions, useRoofById, useRoofOverhangsByRoof } from '@/building/store'
+import { Button } from '@/components/ui/button'
+import { DataList } from '@/components/ui/data-list'
+import { Separator } from '@/components/ui/separator'
+import { TextField } from '@/components/ui/text-field'
+import { Tooltip } from '@/components/ui/tooltip'
 import { ConstructionPlanModal } from '@/construction/components/ConstructionPlanModal'
 import { FRONT_VIEW, LEFT_VIEW, TOP_VIEW } from '@/construction/components/plan/ConstructionPlan'
 import { RoofAssemblySelectWithEdit } from '@/construction/config/components/RoofAssemblySelectWithEdit'
@@ -53,7 +58,7 @@ function detectMixedOverhangs(overhangs: RoofOverhang[]): MixedState<Length> {
 function MixedStateIndicator({ tooltip }: { tooltip: string }) {
   return (
     <Tooltip content={tooltip}>
-      <ExclamationTriangleIcon width={14} height={14} style={{ color: 'var(--amber-9)' }} />
+      <ExclamationTriangleIcon width={14} height={14} style={{ color: 'var(--color-orange-900)' }} />
     </Tooltip>
   )
 }
@@ -126,7 +131,7 @@ export function RoofInspector({ roofId }: RoofInspectorProps): React.JSX.Element
         </div>
 
         {/* Basic Information */}
-        <DataList.Root size="1">
+        <DataList.Root size="sm">
           <DataList.Item>
             <DataList.Label>{t($ => $.roof.type)}</DataList.Label>
             <DataList.Value>
@@ -157,7 +162,7 @@ export function RoofInspector({ roofId }: RoofInspectorProps): React.JSX.Element
               onValueChange={assemblyId => updateRoofProperties(roof.id, { assemblyId })}
               showDefaultIndicator
               defaultAssemblyId={defaultAssemblyId}
-              size="1"
+              size="sm"
             />
           </div>
 
@@ -178,7 +183,7 @@ export function RoofInspector({ roofId }: RoofInspectorProps): React.JSX.Element
                     handleSlopeChange(value)
                   }
                 }}
-                size="1"
+                size="sm"
                 min={0}
                 max={90}
                 style={{ width: '6em', textAlign: 'right' }}
@@ -196,7 +201,7 @@ export function RoofInspector({ roofId }: RoofInspectorProps): React.JSX.Element
                     handleSlopeChange(radiansToDegrees(Math.atan(value / 100)))
                   }
                 }}
-                size="1"
+                size="sm"
                 min={0}
                 max={100}
                 step={1}
@@ -218,7 +223,7 @@ export function RoofInspector({ roofId }: RoofInspectorProps): React.JSX.Element
               onCommit={handleVerticalOffsetChange}
               min={-10000}
               max={10000}
-              size="1"
+              size="sm"
               unit="cm"
               style={{ width: '7em' }}
             />
@@ -241,7 +246,7 @@ export function RoofInspector({ roofId }: RoofInspectorProps): React.JSX.Element
               min={0}
               max={2000}
               step={10}
-              size="1"
+              size="sm"
               unit="cm"
               style={{ width: '7em' }}
             />
@@ -287,12 +292,7 @@ export function RoofInspector({ roofId }: RoofInspectorProps): React.JSX.Element
         {/* Action Buttons */}
         <div className="flex justify-end gap-2">
           {roof.referencePerimeter && (
-            <Button
-              size="icon"
-              size="2"
-              title={t($ => $.roof.viewAssociatedPerimeter)}
-              onClick={handleNavigateToPerimeter}
-            >
+            <Button size="icon" title={t($ => $.roof.viewAssociatedPerimeter)} onClick={handleNavigateToPerimeter}>
               <SquareIcon />
             </Button>
           )}
@@ -306,8 +306,7 @@ export function RoofInspector({ roofId }: RoofInspectorProps): React.JSX.Element
           </Button>
           <Button
             size="icon"
-            size="2"
-           className="text-destructive"
+            className="text-destructive"
             title={t($ => $.roof.removeRoof)}
             onClick={() => {
               removeRoof(roof.id)

@@ -40,7 +40,7 @@ export const LengthField = forwardRef<HTMLInputElement, LengthFieldProps>(functi
     precision,
     min,
     max,
-    size = '2',
+    size = 'base',
     placeholder,
     disabled = false,
     className,
@@ -79,9 +79,9 @@ export const LengthField = forwardRef<HTMLInputElement, LengthFieldProps>(functi
   }
 
   const sizeClasses = {
-    '1': 'h-7 text-xs',
-    '2': 'h-9 <Text text-sm',
-    '3': 'h-10 <Text text-base'
+    sm: 'h-7 text-xs',
+    base: 'h-9 <Text text-sm',
+    lg: 'h-10 <Text text-base'
   }
 
   return (

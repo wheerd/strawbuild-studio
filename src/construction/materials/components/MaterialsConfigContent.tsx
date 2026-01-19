@@ -11,19 +11,16 @@ import {
   TrashIcon
 } from '@radix-ui/react-icons'
 import * as Label from '@radix-ui/react-label'
-import {
-  AlertDialog,
-  Badge,
-  Button,
-  Callout,
-  DropdownMenu,
-  IconButton,
-  SegmentedControl,
-  TextField
-} from '@radix-ui/themes'
 import React, { useCallback, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
+import { AlertDialog } from '@/components/ui/alert-dialog'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Callout, CalloutIcon, CalloutText } from '@/components/ui/callout'
+import { DropdownMenu } from '@/components/ui/dropdown-menu'
+import { SegmentedControl } from '@/components/ui/segmented-control'
+import { TextField } from '@/components/ui/text-field'
 import { type EntityId, useEntityLabel } from '@/construction/config/components/useEntityLabel'
 import { useConfigActions, useDefaultStrawMaterialId } from '@/construction/config/store'
 import type {
@@ -187,7 +184,7 @@ export function MaterialsConfigContent({ initialSelectionId }: MaterialsConfigCo
       <div className="grid grid-cols-2 gap-2">
         {/* Selector + Actions */}
         <div className="flex gap-2 items-center w-full">
-          <div className="flex flex-col grow-1">
+          <div className="flex flex-col grow">
             <MaterialSelect
               value={selectedMaterialId ?? null}
               onValueChange={materialId => {
@@ -269,7 +266,7 @@ export function MaterialsConfigContent({ initialSelectionId }: MaterialsConfigCo
               <Button
                 size="icon"
                 disabled={!selectedMaterial || usage.isUsed}
-               className="text-destructive"
+                className="text-destructive"
                 title={usage.isUsed ? t($ => $.common.inUseCannotDelete) : t($ => $.common.delete)}
               >
                 <TrashIcon />
@@ -298,7 +295,12 @@ export function MaterialsConfigContent({ initialSelectionId }: MaterialsConfigCo
           </AlertDialog.Root>
           <AlertDialog.Root>
             <AlertDialog.Trigger>
-              <Button size="icon"className="text-destructive" variant="outline" title={t($ => $.common.resetToDefaults)}>
+              <Button
+                size="icon"
+                className="text-destructive"
+                variant="outline"
+                title={t($ => $.common.resetToDefaults)}
+              >
                 <ResetIcon />
               </Button>
             </AlertDialog.Trigger>
@@ -333,7 +335,6 @@ export function MaterialsConfigContent({ initialSelectionId }: MaterialsConfigCo
               }
             }}
             placeholder={t($ => $.materials.selectStrawMaterial)}
-            size="2"
             materials={materials}
           />
         </div>
@@ -345,7 +346,7 @@ export function MaterialsConfigContent({ initialSelectionId }: MaterialsConfigCo
           gap-3
           p-3
           "
-          style={{ border: '1px solid var(--gray-6)', borderRadius: 'var(--radius-2)' }}
+          style={{ border: '1px solid var(--color-gray-600)', borderRadius: 'var(--radius-2)' }}
         >
           <div className="grid grid-cols-[4em_1fr] gap-2 gap-x-3 items-center">
             <Label.Root>
@@ -357,7 +358,6 @@ export function MaterialsConfigContent({ initialSelectionId }: MaterialsConfigCo
                 handleUpdate({ name: e.target.value })
               }}
               placeholder={t($ => $.materials.materialName)}
-              size="2"
             />
           </div>
           <div className="grid grid-cols-[4em_1fr_auto_1fr_auto_auto] gap-2 gap-x-3 items-center">
@@ -392,7 +392,6 @@ export function MaterialsConfigContent({ initialSelectionId }: MaterialsConfigCo
                 handleUpdate({ density: Number.isNaN(parsed) || parsed === 0 ? undefined : parsed })
               }}
               placeholder="—"
-              size="2"
               min="0"
               step="1"
               style={{ textAlign: 'right', width: '6em' }}
@@ -433,7 +432,7 @@ export function MaterialsConfigContent({ initialSelectionId }: MaterialsConfigCo
 function UsageBadge({ id }: { id: EntityId }) {
   const label = useEntityLabel(id)
   return (
-    <Badge key={id} size="2" variant="soft">
+    <Badge key={id} variant="soft">
       {label}
     </Badge>
   )
@@ -449,18 +448,14 @@ function UsageDisplay({ usage }: { usage: MaterialUsage }): React.JSX.Element {
       </Label.Root>
       <div className="flex gap-1 flex-wrap">
         {usage.isDefaultStraw && (
-          <Badge size="2" variant="soft" color="blue">
+          <Badge variant="soft" color="blue">
             {t($ => $.usage.globalDefault_straw)}
           </Badge>
         )}
         {usage.assemblyIds.map(id => (
           <UsageBadge key={id} id={id} />
         ))}
-        {usage.usedInWallPosts && (
-          <Badge size="2" variant="soft">
-            {t($ => $.usage.usedInWallPosts)}
-          </Badge>
-        )}
+        {usage.usedInWallPosts && <Badge variant="soft">{t($ => $.usage.usedInWallPosts)}</Badge>}
       </div>
     </div>
   )
@@ -538,14 +533,13 @@ function DimensionalMaterialFields({
           </span>
           <div className="flex gap-2 flex-wrap" role="list" aria-labelledby="crossSections">
             {material.crossSections.map(section => (
-              <Badge role="listitem" key={`${section.smallerLength}x${section.biggerLength}`} size="2" variant="soft">
+              <Badge role="listitem" key={`${section.smallerLength}x${section.biggerLength}`} variant="soft">
                 <div className="flex items-center gap-1">
                   {formatDimensions2D([section.smallerLength, section.biggerLength], false)}
                   <Button
                     size="icon"
-                    size="sm"
                     variant="ghost"
-                    text-gray-900
+                    className="text-gray-900"
                     onClick={() => {
                       handleRemoveCrossSection(section)
                     }}
@@ -558,7 +552,7 @@ function DimensionalMaterialFields({
               </Badge>
             ))}
             {material.crossSections.length === 0 && (
-              <Callout color="amber" size="1">
+              <Callout color="orange" size="sm">
                 <CalloutIcon>
                   <ExclamationTriangleIcon />
                 </CalloutIcon>
@@ -572,7 +566,6 @@ function DimensionalMaterialFields({
             value={newDim1}
             onChange={setNewDim1}
             unit="cm"
-            size="2"
             aria-label={t($ => $.materials.crossSectionSmaller)}
           />
           <span>x</span>
@@ -580,7 +573,6 @@ function DimensionalMaterialFields({
             value={newDim2}
             onChange={setNewDim2}
             unit="cm"
-            size="2"
             aria-label={t($ => $.materials.crossSectionLarger)}
           />
           <Button
@@ -589,7 +581,6 @@ function DimensionalMaterialFields({
             aria-label={t($ => $.materials.addCrossSection)}
             onClick={handleAddCrossSection}
             variant="soft"
-            size="2"
           >
             <PlusIcon />
           </Button>
@@ -602,14 +593,13 @@ function DimensionalMaterialFields({
           </span>
           <div className="flex gap-2 flex-wrap" role="list" aria-labelledby="stock-lengths">
             {material.lengths.map(length => (
-              <Badge role="listitem" key={length} size="2" variant="soft">
+              <Badge role="listitem" key={length} variant="soft">
                 <div className="flex items-center gap-1">
                   {formatLength(length)}
                   <Button
                     size="icon"
-                    size="sm"
                     variant="ghost"
-                    text-gray-900
+                    className="text-gray-900"
                     onClick={() => {
                       handleRemoveLength(length)
                     }}
@@ -622,7 +612,7 @@ function DimensionalMaterialFields({
               </Badge>
             ))}
             {material.lengths.length === 0 && (
-              <Callout color="amber" size="1">
+              <Callout color="orange" size="sm">
                 <CalloutIcon>
                   <ExclamationTriangleIcon />
                 </CalloutIcon>
@@ -636,7 +626,6 @@ function DimensionalMaterialFields({
             value={newLengthInput}
             onChange={setNewLengthInput}
             unit="cm"
-            size="2"
             style={{ width: '8em' }}
             aria-label={t($ => $.materials.stockLengthInput)}
           />
@@ -646,7 +635,6 @@ function DimensionalMaterialFields({
             aria-label={t($ => $.materials.addStockLength)}
             onClick={handleAddLength}
             variant="soft"
-            size="2"
           >
             <PlusIcon />
           </Button>
@@ -723,14 +711,13 @@ function SheetMaterialFields({
           </span>
           <div className="flex gap-2 flex-wrap" role="list" aria-labelledby="sheet-sizes">
             {material.sizes.map(size => (
-              <Badge role="listitem" key={`${size.smallerLength}x${size.biggerLength}`} size="2" variant="soft">
+              <Badge role="listitem" key={`${size.smallerLength}x${size.biggerLength}`} variant="soft">
                 <div className="flex items-center gap-1">
                   {formatDimensions2D([size.smallerLength, size.biggerLength], false)}
                   <Button
                     size="icon"
-                    size="sm"
                     variant="ghost"
-                    text-gray-900
+                    className="text-gray-900"
                     onClick={() => {
                       handleRemoveSize(size)
                     }}
@@ -743,7 +730,7 @@ function SheetMaterialFields({
               </Badge>
             ))}
             {material.sizes.length === 0 && (
-              <Callout color="amber" size="1">
+              <Callout color="orange" size="sm">
                 <CalloutIcon>
                   <ExclamationTriangleIcon />
                 </CalloutIcon>
@@ -753,19 +740,12 @@ function SheetMaterialFields({
           </div>
         </div>
         <div className="grid grid-cols-[6em_auto_6em_auto] gap-2 items-center justify-end">
-          <LengthField
-            value={newWidth}
-            onChange={setNewWidth}
-            unit="cm"
-            size="2"
-            aria-label={t($ => $.materials.sheetWidth)}
-          />
+          <LengthField value={newWidth} onChange={setNewWidth} unit="cm" aria-label={t($ => $.materials.sheetWidth)} />
           <span>x</span>
           <LengthField
             value={newLength}
             onChange={setNewLength}
             unit="cm"
-            size="2"
             aria-label={t($ => $.materials.sheetLength)}
           />
           <Button
@@ -774,7 +754,6 @@ function SheetMaterialFields({
             aria-label={t($ => $.materials.addSheetSize)}
             onClick={handleAddSize}
             variant="soft"
-            size="2"
           >
             <PlusIcon />
           </Button>
@@ -787,14 +766,13 @@ function SheetMaterialFields({
           </span>
           <div className="flex gap-2 flex-wrap" role="list" aria-labelledby="sheet-thicknesses">
             {material.thicknesses.map(thickness => (
-              <Badge role="listitem" key={thickness} size="2" variant="soft">
+              <Badge role="listitem" key={thickness} variant="soft">
                 <div className="flex items-center gap-1">
                   {formatLength(thickness)}
                   <Button
                     size="icon"
-                    size="sm"
                     variant="ghost"
-                    text-gray-900
+                    className="text-gray-900"
                     onClick={() => {
                       handleRemoveThickness(thickness)
                     }}
@@ -807,7 +785,7 @@ function SheetMaterialFields({
               </Badge>
             ))}
             {material.thicknesses.length === 0 && (
-              <Callout color="amber" size="1">
+              <Callout color="orange" size="sm">
                 <CalloutIcon>
                   <ExclamationTriangleIcon />
                 </CalloutIcon>
@@ -821,7 +799,6 @@ function SheetMaterialFields({
             value={newThickness}
             onChange={setNewThickness}
             unit="mm"
-            size="2"
             style={{ width: '8em' }}
             aria-label={t($ => $.materials.thicknessInput)}
           />
@@ -831,7 +808,6 @@ function SheetMaterialFields({
             aria-label={t($ => $.materials.addThickness)}
             onClick={handleAddThickness}
             variant="soft"
-            size="2"
           >
             <PlusIcon />
           </Button>
@@ -844,7 +820,6 @@ function SheetMaterialFields({
           onValueChange={value => {
             onUpdate({ sheetType: value as SheetMaterial['sheetType'] })
           }}
-          size="2"
         >
           <SegmentedControl.Item value="solid">{t($ => $.materials.sheetTypeSolid)}</SegmentedControl.Item>
           <SegmentedControl.Item value="tongueAndGroove">
@@ -896,14 +871,13 @@ function VolumeMaterialFields({
           </span>
           <div className="flex gap-2 flex-wrap" role="list" aria-labelledby="available-volumes">
             {material.availableVolumes.map(volume => (
-              <Badge role="listitem" key={volume} size="2" variant="soft">
+              <Badge role="listitem" key={volume} variant="soft">
                 <div className="flex items-center gap-1">
                   {volumeUnit === 'liter' ? formatVolumeInLiters(volume) : formatVolume(volume)}
                   <Button
                     size="icon"
-                    size="sm"
                     variant="ghost"
-                    text-gray-900
+                    className="text-gray-900"
                     onClick={() => {
                       handleRemoveVolume(volume)
                     }}
@@ -916,7 +890,7 @@ function VolumeMaterialFields({
               </Badge>
             ))}
             {material.availableVolumes.length === 0 && (
-              <Callout color="amber" size="1">
+              <Callout color="orange" size="sm">
                 <CalloutIcon>
                   <ExclamationTriangleIcon />
                 </CalloutIcon>
@@ -932,7 +906,7 @@ function VolumeMaterialFields({
             onValueChange={value => {
               setVolumeUnit(value as 'liter' | 'm3')
             }}
-            size="1"
+            size="sm"
           >
             <SegmentedControl.Item value="liter">{t($ => $.units.liter, { ns: 'common' })}</SegmentedControl.Item>
             <SegmentedControl.Item value="m3">{t($ => $.units.m3, { ns: 'common' })}</SegmentedControl.Item>
@@ -942,7 +916,6 @@ function VolumeMaterialFields({
               value={newVolumeInput}
               onChange={setNewVolumeInput}
               unit={volumeUnit}
-              size="2"
               style={{ width: '8em' }}
               aria-label={t($ => $.materials.volumeInput)}
             />
@@ -952,7 +925,6 @@ function VolumeMaterialFields({
               aria-label={t($ => $.materials.addVolumeOption)}
               onClick={handleAddVolume}
               variant="soft"
-              size="2"
             >
               <PlusIcon />
             </Button>
@@ -983,7 +955,6 @@ function StrawbaleMaterialFields({
             onUpdate({ baleMinLength })
           }}
           unit="cm"
-          size="2"
         />
 
         <Label.Root>
@@ -995,7 +966,6 @@ function StrawbaleMaterialFields({
             onUpdate({ baleMaxLength })
           }}
           unit="cm"
-          size="2"
         />
 
         <Label.Root>
@@ -1007,7 +977,6 @@ function StrawbaleMaterialFields({
             onUpdate({ baleHeight })
           }}
           unit="cm"
-          size="2"
         />
 
         <Label.Root>
@@ -1019,7 +988,6 @@ function StrawbaleMaterialFields({
             onUpdate({ baleWidth })
           }}
           unit="cm"
-          size="2"
         />
       </div>
       <div className="grid grid-cols-[8em_1fr_8em_1fr] gap-3 gap-x-4">
@@ -1032,7 +1000,6 @@ function StrawbaleMaterialFields({
             onUpdate({ tolerance })
           }}
           unit="mm"
-          size="2"
         />
 
         <Label.Root>
@@ -1044,7 +1011,6 @@ function StrawbaleMaterialFields({
             onUpdate({ topCutoffLimit })
           }}
           unit="cm"
-          size="2"
         />
 
         <Label.Root>
@@ -1056,7 +1022,6 @@ function StrawbaleMaterialFields({
             onUpdate({ flakeSize })
           }}
           unit="cm"
-          size="2"
         />
       </div>
     </div>

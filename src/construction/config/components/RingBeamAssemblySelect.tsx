@@ -13,7 +13,7 @@ export interface RingBeamAssemblySelectProps {
   value: RingBeamAssemblyId | null | undefined
   onValueChange: (assemblyId: RingBeamAssemblyId | undefined) => void
   placeholder?: string
-  size?: '1' | '2' | '3'
+  size?: 'sm' | 'base' | 'lg'
   disabled?: boolean
   allowNone?: boolean
   showDefaultIndicator?: boolean
@@ -21,16 +21,16 @@ export interface RingBeamAssemblySelectProps {
 }
 
 const sizeClasses = {
-  '1': 'h-7 text-xs',
-  '2': 'h-9 <Text text-sm',
-  '3': 'h-10 <Text text-base'
+  sm: 'h-7 text-xs',
+  base: 'h-9 <Text text-sm',
+  lg: 'h-10 <Text text-base'
 }
 
 export function RingBeamAssemblySelect({
   value,
   onValueChange,
   placeholder = 'Select ring beam assembly...',
-  size = '2',
+  size = 'base',
   disabled = false,
   allowNone = false,
   showDefaultIndicator = false,
