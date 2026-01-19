@@ -264,9 +264,9 @@ export function MaterialsConfigContent({ initialSelectionId }: MaterialsConfigCo
           <AlertDialog.Root>
             <AlertDialog.Trigger>
               <Button
+                variant="destructive"
                 size="icon"
                 disabled={!selectedMaterial || usage.isUsed}
-                className="text-destructive"
                 title={usage.isUsed ? t($ => $.common.inUseCannotDelete) : t($ => $.common.delete)}
               >
                 <TrashIcon />
@@ -385,19 +385,18 @@ export function MaterialsConfigContent({ initialSelectionId }: MaterialsConfigCo
             </Label.Root>
             <TextField.Root
               type="number"
-              value={selectedMaterial.density ?? ''}
+              value={selectedMaterial.density?.toString() ?? ''}
               onChange={e => {
                 const next = e.target.value
                 const parsed = Number(next)
                 handleUpdate({ density: Number.isNaN(parsed) || parsed === 0 ? undefined : parsed })
               }}
               placeholder="—"
-              min="0"
-              step="1"
               style={{ textAlign: 'right', width: '6em' }}
             >
-              <TextField.Slot side="right" style={{ paddingInline: '6px' }}>
-                <span className="text-sm text-gray-900">{t($ => $.common.densityUnit)}</span>
+              <TextField.Input min="0" step="1" />
+              <TextField.Slot side="right" style={{ paddingInline: '6px', pointerEvents: 'none' }}>
+                <span className="text-sm text-gray-900 pointer-events-none">{t($ => $.common.densityUnit)}</span>
               </TextField.Slot>
             </TextField.Root>
           </div>
@@ -533,11 +532,11 @@ function DimensionalMaterialFields({
           </span>
           <div className="flex gap-2 flex-wrap" role="list" aria-labelledby="crossSections">
             {material.crossSections.map(section => (
-              <Badge role="listitem" key={`${section.smallerLength}x${section.biggerLength}`} variant="soft">
+              <Badge size="sm" role="listitem" key={`${section.smallerLength}x${section.biggerLength}`} variant="soft">
                 <div className="flex items-center gap-1">
                   {formatDimensions2D([section.smallerLength, section.biggerLength], false)}
                   <Button
-                    size="icon"
+                    size="icon-xs"
                     variant="ghost"
                     className="text-gray-900"
                     onClick={() => {
@@ -576,7 +575,7 @@ function DimensionalMaterialFields({
             aria-label={t($ => $.materials.crossSectionLarger)}
           />
           <Button
-            size="icon"
+            size="icon-sm"
             title={t($ => $.common.add)}
             aria-label={t($ => $.materials.addCrossSection)}
             onClick={handleAddCrossSection}
@@ -593,11 +592,11 @@ function DimensionalMaterialFields({
           </span>
           <div className="flex gap-2 flex-wrap" role="list" aria-labelledby="stock-lengths">
             {material.lengths.map(length => (
-              <Badge role="listitem" key={length} variant="soft">
+              <Badge role="listitem" key={length} variant="soft" size="sm">
                 <div className="flex items-center gap-1">
                   {formatLength(length)}
                   <Button
-                    size="icon"
+                    size="icon-xs"
                     variant="ghost"
                     className="text-gray-900"
                     onClick={() => {
@@ -630,7 +629,7 @@ function DimensionalMaterialFields({
             aria-label={t($ => $.materials.stockLengthInput)}
           />
           <Button
-            size="icon"
+            size="icon-sm"
             title={t($ => $.materials.add)}
             aria-label={t($ => $.materials.addStockLength)}
             onClick={handleAddLength}
@@ -711,11 +710,11 @@ function SheetMaterialFields({
           </span>
           <div className="flex gap-2 flex-wrap" role="list" aria-labelledby="sheet-sizes">
             {material.sizes.map(size => (
-              <Badge role="listitem" key={`${size.smallerLength}x${size.biggerLength}`} variant="soft">
+              <Badge size="sm" role="listitem" key={`${size.smallerLength}x${size.biggerLength}`} variant="soft">
                 <div className="flex items-center gap-1">
                   {formatDimensions2D([size.smallerLength, size.biggerLength], false)}
                   <Button
-                    size="icon"
+                    size="icon-xs"
                     variant="ghost"
                     className="text-gray-900"
                     onClick={() => {
@@ -749,7 +748,7 @@ function SheetMaterialFields({
             aria-label={t($ => $.materials.sheetLength)}
           />
           <Button
-            size="icon"
+            size="icon-sm"
             title={t($ => $.materials.addSize)}
             aria-label={t($ => $.materials.addSheetSize)}
             onClick={handleAddSize}
@@ -766,11 +765,11 @@ function SheetMaterialFields({
           </span>
           <div className="flex gap-2 flex-wrap" role="list" aria-labelledby="sheet-thicknesses">
             {material.thicknesses.map(thickness => (
-              <Badge role="listitem" key={thickness} variant="soft">
+              <Badge role="listitem" key={thickness} variant="soft" size="sm">
                 <div className="flex items-center gap-1">
                   {formatLength(thickness)}
                   <Button
-                    size="icon"
+                    size="icon-xs"
                     variant="ghost"
                     className="text-gray-900"
                     onClick={() => {
@@ -803,7 +802,7 @@ function SheetMaterialFields({
             aria-label={t($ => $.materials.thicknessInput)}
           />
           <Button
-            size="icon"
+            size="icon-sm"
             title={t($ => $.materials.addThickness)}
             aria-label={t($ => $.materials.addThickness)}
             onClick={handleAddThickness}
@@ -871,11 +870,11 @@ function VolumeMaterialFields({
           </span>
           <div className="flex gap-2 flex-wrap" role="list" aria-labelledby="available-volumes">
             {material.availableVolumes.map(volume => (
-              <Badge role="listitem" key={volume} variant="soft">
+              <Badge role="listitem" key={volume} variant="soft" size="sm">
                 <div className="flex items-center gap-1">
                   {volumeUnit === 'liter' ? formatVolumeInLiters(volume) : formatVolume(volume)}
                   <Button
-                    size="icon"
+                    size="icon-xs"
                     variant="ghost"
                     className="text-gray-900"
                     onClick={() => {
@@ -920,7 +919,7 @@ function VolumeMaterialFields({
               aria-label={t($ => $.materials.volumeInput)}
             />
             <Button
-              size="icon"
+              size="icon-sm"
               title={t($ => $.materials.addVolume)}
               aria-label={t($ => $.materials.addVolumeOption)}
               onClick={handleAddVolume}

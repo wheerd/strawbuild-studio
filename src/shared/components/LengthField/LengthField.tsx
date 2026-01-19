@@ -110,17 +110,17 @@ export const LengthField = forwardRef<HTMLInputElement, LengthFieldProps>(functi
         className={cn('flex-1 bg-transparent px-2 text-right outline-none min-w-0', sizeClasses[size])}
         {...props}
       />
-      <div className="flex items-center gap-px px-1">
+      <div className="flex items-center gap-px pl-1">
         <span className="text-xs text-muted-foreground">{unit}</span>
 
         <div className="flex flex-col ml-1">
           <Button
             type="button"
-            variant="ghost"
+            variant="outline"
             size="icon"
             disabled={disabled || !canStepUp}
             onClick={stepUp}
-            className="h-[10px] w-3 p-0 leading-none"
+            className="w-8 h-1/2 rounded-l-none rounded-br-none border-input border-l border-b-[0.5px] focus-visible:relative"
             tabIndex={-1}
           >
             <ChevronUpIcon className="h-2.5 w-2.5" />
@@ -128,11 +128,11 @@ export const LengthField = forwardRef<HTMLInputElement, LengthFieldProps>(functi
 
           <Button
             type="button"
-            variant="ghost"
+            className="w-8 h-1/2 rounded-l-none rounded-tr-none border-input border-l border-t-[0.5px] focus-visible:relative"
+            variant="outline"
             size="icon"
             disabled={disabled || !canStepDown}
             onClick={stepDown}
-            className="h-[10px] w-3 p-0 leading-none"
             tabIndex={-1}
           >
             <ChevronDownIcon className="h-2.5 w-2.5" />

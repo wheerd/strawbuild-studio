@@ -2,7 +2,7 @@ import { CircleIcon, CubeIcon, LayersIcon, OpacityIcon } from '@radix-ui/react-i
 import React from 'react'
 import { useTranslation } from 'react-i18next'
 
-import { Select } from '@/components/ui/select'
+import { Select, SelectValue } from '@/components/ui/select'
 import type { Material, MaterialId, MaterialType } from '@/construction/materials/material'
 import { useMaterials } from '@/construction/materials/store'
 
@@ -88,7 +88,6 @@ export function MaterialSelect({
   value,
   onValueChange,
   placeholder,
-  size = 'base',
   disabled = false,
   materials: materialsProp,
   allowEmpty = false,
@@ -130,18 +129,19 @@ export function MaterialSelect({
         onValueChange(val === NONE_VALUE ? null : (val as MaterialId))
       }}
       disabled={disabled}
-      size={size}
     >
-      <Select.Trigger placeholder={translatedPlaceholder} />
+      <Select.Trigger>
+        <SelectValue placeholder={<span className="text-muted-foreground">{translatedPlaceholder}</span>} />
+      </Select.Trigger>
       <Select.Content>
         {allowEmpty && (
           <Select.Item value={NONE_VALUE}>
-            <span className="text-gray-900">{translatedEmptyLabel}</span>
+            <span className="text-muted-foreground">{translatedEmptyLabel}</span>
           </Select.Item>
         )}
         {materials.length === 0 ? (
           <Select.Item value="-" disabled>
-            <span className="text-gray-900">{tConstruction($ => $.materialSelect.noMaterialsAvailable)}</span>
+            <span className="text-muted-foreground">{tConstruction($ => $.materialSelect.noMaterialsAvailable)}</span>
           </Select.Item>
         ) : (
           sortedMaterials.map(material => {

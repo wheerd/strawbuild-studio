@@ -28,8 +28,6 @@ const badgeVariants = cva(
         purple:
           'bg-purple-100 text-purple-800 border-purple-200 dark:bg-purple-900 dark:text-purple-100 dark:border-purple-800',
         pink: 'bg-pink-100 text-pink-800 border-pink-200 dark:bg-pink-900 dark:text-pink-100 dark:border-pink-800',
-        orange:
-          'bg-orange-100 text-orange-800 border-orange-200 dark:bg-orange-900 dark:text-orange-100 dark:border-orange-800',
         grass:
           'bg-green-100 text-green-800 border-green-200 dark:bg-green-900 dark:text-green-100 dark:border-green-800'
       },
@@ -41,12 +39,12 @@ const badgeVariants = cva(
     },
     defaultVariants: {
       variant: 'default',
-      size: '2'
+      size: 'base'
     }
   }
 )
 
-type BadgeColor = 'gray' | 'red' | 'orange' | 'yellow' | 'green' | 'blue' | 'purple' | 'pink' | 'orange' | 'grass'
+type BadgeColor = 'gray' | 'red' | 'orange' | 'yellow' | 'green' | 'blue' | 'purple' | 'pink' | 'grass'
 
 export interface BadgeProps
   extends Omit<React.HTMLAttributes<HTMLDivElement>, 'color'>, VariantProps<typeof badgeVariants> {

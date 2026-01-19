@@ -193,21 +193,21 @@ export function PerimeterInspector({ selectedId }: PerimeterInspectorProps): Rea
     <div className="p-2">
       <div className="flex flex-col gap-3">
         {/* Basic Information */}
-        <DataList.Root size="sm">
+        <DataList.Root>
           <DataList.Item>
-            <DataList.Label minWidth="88px">{t($ => $.perimeter.totalInnerPerimeter)}</DataList.Label>
+            <DataList.Label>{t($ => $.perimeter.totalInnerPerimeter)}</DataList.Label>
             <DataList.Value>{formatLength(totalInnerPerimeter)}</DataList.Value>
           </DataList.Item>
           <DataList.Item>
-            <DataList.Label minWidth="88px">{t($ => $.perimeter.totalInsideArea)}</DataList.Label>
+            <DataList.Label>{t($ => $.perimeter.totalInsideArea)}</DataList.Label>
             <DataList.Value>{formatArea(totalInnerArea)}</DataList.Value>
           </DataList.Item>
           <DataList.Item>
-            <DataList.Label minWidth="88px">{t($ => $.perimeter.totalOuterPerimeter)}</DataList.Label>
+            <DataList.Label>{t($ => $.perimeter.totalOuterPerimeter)}</DataList.Label>
             <DataList.Value>{formatLength(totalOuterPerimeter)}</DataList.Value>
           </DataList.Item>
           <DataList.Item>
-            <DataList.Label minWidth="88px">{t($ => $.perimeter.totalOverbuiltArea)}</DataList.Label>
+            <DataList.Label>{t($ => $.perimeter.totalOverbuiltArea)}</DataList.Label>
             <DataList.Value>{formatArea(totalOuterArea)}</DataList.Value>
           </DataList.Item>
         </DataList.Root>
@@ -264,14 +264,14 @@ export function PerimeterInspector({ selectedId }: PerimeterInspectorProps): Rea
 
         {/* Wall Configuration */}
         <div className="pt-1 border-t border-gray-600">
-          <h2 className="mb-2">{t($ => $.perimeter.wallConfiguration)}</h2>
+          <h4 className="mb-1">{t($ => $.perimeter.wallConfiguration)}</h4>
 
           <div className="flex flex-col gap-2">
             {/* Wall Assembly */}
             <div className="items-center justify-between gap-3">
               <div className="flex items-center gap-1">
                 <Label.Root htmlFor="wall-assembly">
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-1">
                     <span className="text-sm font-medium text-gray-900">{t($ => $.perimeter.wallAssembly)}</span>
                     <MeasurementInfo highlightedAssembly="wallAssembly" />
                     {wallAssemblyState.isMixed && (
@@ -298,7 +298,7 @@ export function PerimeterInspector({ selectedId }: PerimeterInspectorProps): Rea
             <div className="items-center justify-between gap-3">
               <div className="flex items-center gap-1">
                 <Label.Root htmlFor="perimeter-thickness">
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-1">
                     <span className="text-sm font-medium text-gray-900">{t($ => $.perimeter.wallThickness)}</span>
                     <MeasurementInfo highlightedMeasurement="totalWallThickness" showFinishedSides />
                     {thicknessState.isMixed && <MixedStateIndicator tooltip={t($ => $.perimeter.mixedValuesTooltip)} />}
@@ -333,7 +333,7 @@ export function PerimeterInspector({ selectedId }: PerimeterInspectorProps): Rea
             <div className="items-center justify-between gap-3">
               <div className="flex items-center gap-1">
                 <Label.Root htmlFor="base-ring-beam">
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-1">
                     <span className="text-sm font-medium text-gray-900">{t($ => $.perimeter.basePlate)}</span>
                     <MeasurementInfo highlightedPart="basePlate" />
                     {baseRingBeamState.isMixed && (
@@ -367,7 +367,7 @@ export function PerimeterInspector({ selectedId }: PerimeterInspectorProps): Rea
             <div className="items-center justify-between gap-3">
               <div className="flex items-center gap-1">
                 <Label.Root htmlFor="top-ring-beam">
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-1">
                     <span className="text-sm font-medium text-gray-900">{t($ => $.perimeter.topPlate)}</span>
                     <MeasurementInfo highlightedPart="topPlate" />
                     {topRingBeamState.isMixed && (
@@ -404,13 +404,13 @@ export function PerimeterInspector({ selectedId }: PerimeterInspectorProps): Rea
         {/* Action Buttons */}
         <div className="flex justify-end gap-2">
           {associatedRoof ? (
-            <Button size="icon" title={t($ => $.perimeter.viewAssociatedRoof)} onClick={handleNavigateToRoof}>
+            <Button size="icon-sm" title={t($ => $.perimeter.viewAssociatedRoof)} onClick={handleNavigateToRoof}>
               <RoofIcon />
             </Button>
           ) : (
             <DropdownMenu>
               <DropdownMenu.Trigger>
-                <Button size="icon" title={t($ => $.perimeter.addRoofBasedOnPerimeter)}>
+                <Button size="icon-sm" title={t($ => $.perimeter.addRoofBasedOnPerimeter)}>
                   <RoofIcon />
                 </Button>
               </DropdownMenu.Trigger>
@@ -432,12 +432,12 @@ export function PerimeterInspector({ selectedId }: PerimeterInspectorProps): Rea
               </DropdownMenu.Content>
             </DropdownMenu>
           )}
-          <Button size="icon" title={t($ => $.perimeter.fitToView)} onClick={handleFitToView}>
+          <Button size="icon-sm" title={t($ => $.perimeter.fitToView)} onClick={handleFitToView}>
             <FitToViewIcon />
           </Button>
           <Button
-            size="icon"
-            className="text-destructive"
+            variant="destructive"
+            size="icon-sm"
             title={t($ => $.perimeter.deletePerimeter)}
             onClick={handleDelete}
           >

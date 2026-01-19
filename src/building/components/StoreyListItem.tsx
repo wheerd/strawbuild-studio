@@ -9,20 +9,19 @@ import { defaultStoreyManagementService } from '@/building/store/services/Storey
 import { AlertDialog } from '@/components/ui/alert-dialog'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
-import { Code } from '@/components/ui/code'
 import { TextField } from '@/components/ui/text-field'
 import { FloorAssemblySelectWithEdit } from '@/construction/config/components/FloorAssemblySelectWithEdit'
 import { MeasurementInfo } from '@/editor/components/MeasurementInfo'
 import { LengthField } from '@/shared/components/LengthField'
 import { useFormatters } from '@/shared/i18n/useFormatters'
 
-export function getLevelColor(level: number): 'grass' | 'indigo' | 'brown' {
+export function getLevelColor(level: number): string {
   if (level === 0) {
-    return 'grass'
+    return 'text-green-600'
   } else if (level > 0) {
-    return 'indigo'
+    return 'text-indigo-600'
   } else {
-    return 'brown'
+    return 'text-amber-900'
   }
 }
 
@@ -138,35 +137,33 @@ export function StoreyListItem({
   }, [storeyName, storey.useDefaultName])
 
   return (
-    <Card style={isActive ? { background: 'var(--color-primary-500)' } : {}}>
+    <Card className="p-2" style={isActive ? { background: 'var(--color-primary-500)' } : {}}>
       <div className="flex items-center gap-2">
         {/* Level indicator */}
-        <div className="flex flex-col items-center gap-0 w-[4rem]">
-          <Code variant="ghost" color={getLevelColor(storey.level)} font-bold>
-            L{storey.level}
-          </Code>
-          <Code variant="ghost" size="sm" className="text-gray-900">
+        <div className="flex flex-col items-center gap-0 w-20 font-mono p-2">
+          <span className={`font-bold ${getLevelColor(storey.level)}`}>L{storey.level}</span>
+          <span className="text-gray-600 font-mono text-xs">
             {storey.level === 0
               ? t($ => $.storeys.ground)
               : storey.level > 0
                 ? t($ => $.storeys.floor, { level: storey.level })
                 : t($ => $.storeys.basement, { level: Math.abs(storey.level) })}
-          </Code>
+          </span>
         </div>
 
         {/* Editable name */}
         <div className="flex flex-col gap-1 grow">
           <span className="text-sm font-medium text-gray-900">{t($ => $.storeys.name)}</span>
           <TextField.Root
-            ref={nameFieldRef}
             value={editName}
             onChange={handleNameChange}
             onBlur={handleNameSave}
             onKeyDown={handleKeyDown}
             placeholder={t($ => $.storeys.floorName)}
-            required
             style={{ minWidth: '150px', flexGrow: 1 }}
-          />
+          >
+            <TextField.Input ref={nameFieldRef} required />
+          </TextField.Root>
         </div>
 
         {/* Floor height input */}
@@ -211,11 +208,11 @@ export function StoreyListItem({
         {/* Action buttons */}
         <div className="flex gap-1 items-center">
           <div className="flex flex-col gap-1">
-            <Button size="icon" onClick={handleMoveUp} disabled={!canMoveUp} title={t($ => $.storeys.moveUp)}>
+            <Button size="icon-sm" onClick={handleMoveUp} disabled={!canMoveUp} title={t($ => $.storeys.moveUp)}>
               <ChevronUpIcon />
             </Button>
 
-            <Button size="icon" onClick={handleMoveDown} disabled={!canMoveDown} title={t($ => $.storeys.moveDown)}>
+            <Button size="icon-sm" onClick={handleMoveDown} disabled={!canMoveDown} title={t($ => $.storeys.moveDown)}>
               <ChevronDownIcon />
             </Button>
           </div>
@@ -226,12 +223,7 @@ export function StoreyListItem({
 
           <AlertDialog.Root>
             <AlertDialog.Trigger>
-              <Button
-                size="icon"
-                disabled={isOnlyStorey}
-                title={t($ => $.storeys.deleteFloor)}
-                className="text-destructive"
-              >
+              <Button size="icon" variant="destructive" disabled={isOnlyStorey} title={t($ => $.storeys.deleteFloor)}>
                 <TrashIcon />
               </Button>
             </AlertDialog.Trigger>

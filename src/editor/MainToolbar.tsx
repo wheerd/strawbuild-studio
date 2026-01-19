@@ -44,7 +44,7 @@ export function MainToolbar({ onInfoClick }: MainToolbarProps): React.JSX.Elemen
   }, [])
 
   return (
-    <div className="flex items-center gap-4 border-b border-border p-3" data-testid="main-toolbar">
+    <div className="flex items-center gap-4 border-b border-border p-2" data-testid="main-toolbar">
       {/* Logo - Compact version */}
       <Logo />
       {/* Tools positioned next to logo on the left */}
@@ -68,12 +68,11 @@ export function MainToolbar({ onInfoClick }: MainToolbarProps): React.JSX.Elemen
                         <Toolbar.Button asChild>
                           <Button
                             aria-label={t($ => $.tools[toolInfo.nameKey])}
-                            size="icon"
+                            size="icon-sm"
                             variant={activeToolId === toolId ? 'default' : 'outline'}
                             onClick={() => {
                               handleToolSelect(toolId)
                             }}
-                            className="h-8 w-8"
                           >
                             <toolInfo.iconComponent width={20} height={20} aria-hidden />
                           </Button>
@@ -149,7 +148,7 @@ export function MainToolbar({ onInfoClick }: MainToolbarProps): React.JSX.Elemen
         >
           <GearIcon width={20} height={20} aria-hidden />
         </Button>
-        <Button title={t($ => $.about)} variant="ghost" size="icon" onClick={onInfoClick}>
+        <Button title={t($ => $.about)} variant="ghost" size="icon-sm" onClick={onInfoClick} className="w-6 h-6">
           <InfoCircledIcon aria-hidden />
         </Button>
       </div>

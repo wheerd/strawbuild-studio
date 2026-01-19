@@ -973,11 +973,11 @@ export function MeasurementInfo(config: MeasurementDisplayConfig): React.JSX.Ele
 
   return (
     <HoverCard.Root>
-      <HoverCard.Trigger>
+      <HoverCard.Trigger asChild>
         <Button
-          size="icon"
+          size="icon-sm"
           style={{ cursor: 'help' }}
-          className="rounded-full"
+          className="rounded-full w-6 h-6 text-gray-500"
           title={t($ => $.measurements.measurements)}
           variant="ghost"
         >

@@ -12,12 +12,12 @@ export function FloorAssemblySelectWithEdit(props: FloorAssemblySelectProps): Re
   const { openConfiguration } = useConfigurationModal()
 
   return (
-    <div className="flex gap-1 items-center">
-      <div className="flex flex-col gap-1 grow mr-1">
+    <div className="flex gap-0.5 items-center">
+      <div className="grow mr-1">
         <FloorAssemblySelect {...props} />
       </div>
       <Button
-        size="icon"
+        size="icon-xs"
         title={t($ => $.floors.configure)}
         variant="ghost"
         onClick={() => {

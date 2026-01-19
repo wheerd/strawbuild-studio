@@ -73,7 +73,7 @@ export function FloorAssemblySelect({
                         i18nKey={$ => $.floors.defaultLabel}
                         components={{ gray: <span className="text-muted-foreground" /> }}
                       >
-                        <>{label}</> <span className="text-muted-foreground"> (default)</span>
+                        <>{{ label }}</> <span className="text-muted-foreground"> (default)</span>
                       </Trans>
                     ) : (
                       <>{label}</>

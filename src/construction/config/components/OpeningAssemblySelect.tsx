@@ -80,7 +80,7 @@ export function OpeningAssemblySelect({
                       i18nKey={$ => $.openings.defaultLabel}
                       components={{ gray: <span className="text-muted-foreground" /> }}
                     >
-                      <>{label}</> <span className="text-muted-foreground"> (default)</span>
+                      <>{{ label }}</> <span className="text-muted-foreground"> (default)</span>
                     </Trans>
                   ) : (
                     <>{label}</>
