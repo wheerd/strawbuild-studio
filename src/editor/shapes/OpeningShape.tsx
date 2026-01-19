@@ -161,7 +161,7 @@ export function OpeningShape({ openingId }: { openingId: OpeningId }): React.JSX
             endPoint={opening.insideLine.end}
             label={formatLength(opening.width)}
             offset={-60}
-            color="var(--color-primary-900)"
+            color="var(--color-primary)"
             fontSize={50}
             strokeWidth={4}
           />
@@ -170,7 +170,7 @@ export function OpeningShape({ openingId }: { openingId: OpeningId }): React.JSX
             endPoint={opening.outsideLine.end}
             label={formatLength(opening.width)}
             offset={hasNeighbors ? 90 : 60}
-            color="var(--color-primary-900)"
+            color="var(--color-primary)"
             fontSize={50}
             strokeWidth={4}
           />

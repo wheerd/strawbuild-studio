@@ -1,8 +1,8 @@
 import { useTranslation } from 'react-i18next'
 
 import { Card } from '@/components/ui/card'
-import { SegmentedControl } from '@/components/ui/segmented-control'
-import { useViewMode, useViewModeActions } from '@/editor/hooks/useViewMode'
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
+import { type ViewMode, useViewMode, useViewModeActions } from '@/editor/hooks/useViewMode'
 
 export function ViewModeToggle(): React.JSX.Element {
   const { t } = useTranslation('common')
@@ -12,17 +12,21 @@ export function ViewModeToggle(): React.JSX.Element {
   return (
     <div className="absolute top-2 left-2 z-10" data-testid="viewmode-toggle">
       <Card className="p-1 shadow-md">
-        <SegmentedControl.Root
+        <ToggleGroup
+          type="single"
+          variant="outline"
           size="sm"
           value={mode}
           onValueChange={value => {
-            setMode(value)
+            if (value) {
+              setMode(value as ViewMode)
+            }
           }}
         >
-          <SegmentedControl.Item value="walls">{t($ => $.viewMode.walls)}</SegmentedControl.Item>
-          <SegmentedControl.Item value="floors">{t($ => $.viewMode.floors)}</SegmentedControl.Item>
-          <SegmentedControl.Item value="roofs">{t($ => $.viewMode.roofs)}</SegmentedControl.Item>
-        </SegmentedControl.Root>
+          <ToggleGroupItem value="walls">{t($ => $.viewMode.walls)}</ToggleGroupItem>
+          <ToggleGroupItem value="floors">{t($ => $.viewMode.floors)}</ToggleGroupItem>
+          <ToggleGroupItem value="roofs">{t($ => $.viewMode.roofs)}</ToggleGroupItem>
+        </ToggleGroup>
       </Card>
     </div>
   )

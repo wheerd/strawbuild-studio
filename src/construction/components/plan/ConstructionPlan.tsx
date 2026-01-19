@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next'
 
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
-import { SegmentedControl } from '@/components/ui/segmented-control'
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 import { CutAreaShape } from '@/construction/components/plan/CutAreaShape'
 import { Measurements } from '@/construction/components/plan/Measurements'
 import { sanitizeForCssClass } from '@/construction/components/plan/cssHelpers'
@@ -237,10 +237,11 @@ export function ConstructionPlan({
   const partHighlightStyles = highlightedPartId
     ? `
     .part-${sanitizeForCssClass(highlightedPartId)} path {
-      fill: var(--color-primary-800) !important;
-      stroke: var(--color-primary-1000) !important;
-      outline: var(--color-primary-900);
-      outline-width: 40;
+      fill: var(--color-accent) !important;
+      stroke: var(--color-accent-foreground) !important;
+      outline-style: solid;
+      outline-color: var(--color-primary);
+      outline-width: 40px;
       filter: drop-shadow(0 0 20px var(--accent-a6));
       animation: pulse-part-highlight 2s ease-in-out infinite;
     }
@@ -383,19 +384,23 @@ export function ConstructionPlan({
           <div className="m--2 flex flex-col gap-2">
             {/* View selector - only show if multiple views */}
             {views.length > 1 && (
-              <SegmentedControl.Root
+              <ToggleGroup
+                type="single"
+                variant="outline"
                 value={currentViewIndex.toString()}
                 onValueChange={value => {
-                  setCurrentViewIndex(parseInt(value, 10))
+                  if (value) {
+                    setCurrentViewIndex(parseInt(value, 10))
+                  }
                 }}
                 size="sm"
               >
                 {views.map((viewOption, index) => (
-                  <SegmentedControl.Item key={index} value={index.toString()}>
+                  <ToggleGroupItem key={index} value={index.toString()}>
                     {viewOption.label}
-                  </SegmentedControl.Item>
+                  </ToggleGroupItem>
                 ))}
-              </SegmentedControl.Root>
+              </ToggleGroup>
             )}
 
             <div className="grid grid-cols-6 items-center justify-center gap-1">

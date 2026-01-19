@@ -137,7 +137,7 @@ export function StoreyListItem({
   }, [storeyName, storey.useDefaultName])
 
   return (
-    <Card className="p-2" style={isActive ? { background: 'var(--color-primary-500)' } : {}}>
+    <Card className={`p-2 ${isActive ? 'bg-accent' : ''}`}>
       <div className="flex items-center gap-2">
         {/* Level indicator */}
         <div className="flex w-20 flex-col items-center gap-0 p-2 font-mono">

@@ -100,7 +100,7 @@ export function ClickableLengthIndicator({
 
   // Visual feedback colors
   const actualColor = color ?? 'var(--color-gray-900)'
-  const displayColor = isHovered ? 'var(--color-primary-900)' : actualColor
+  const displayColor = isHovered ? 'var(--color-primary)' : actualColor
 
   const handleClick = () => {
     onClick(measurementLength)

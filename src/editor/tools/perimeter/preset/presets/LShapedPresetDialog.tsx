@@ -5,7 +5,7 @@ import type { PerimeterReferenceSide } from '@/building/model'
 import type { WallAssemblyId } from '@/building/model/ids'
 import { Button } from '@/components/ui/button'
 import { DialogClose } from '@/components/ui/dialog'
-import { SegmentedControl } from '@/components/ui/segmented-control'
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 import { RingBeamAssemblySelectWithEdit } from '@/construction/config/components/RingBeamAssemblySelectWithEdit'
 import { WallAssemblySelectWithEdit } from '@/construction/config/components/WallAssemblySelectWithEdit'
 import {
@@ -162,26 +162,30 @@ export function LShapedPresetDialog({ onConfirm, trigger }: PresetDialogProps): 
             {/* Rotation */}
             <div className="flex flex-col gap-2">
               <span className="text-sm text-gray-900">{t($ => $.presetDialogs.lShaped.rotation)}</span>
-              <SegmentedControl.Root
+              <ToggleGroup
+                type="single"
+                variant="outline"
                 value={config.rotation.toString()}
                 onValueChange={value => {
-                  setConfig(prev => ({ ...prev, rotation: parseInt(value) as 0 | 90 | 180 | 270 }))
+                  if (value) {
+                    setConfig(prev => ({ ...prev, rotation: parseInt(value) as 0 | 90 | 180 | 270 }))
+                  }
                 }}
                 size="sm"
               >
-                <SegmentedControl.Item value="0">
+                <ToggleGroupItem value="0">
                   <LShape0Icon />
-                </SegmentedControl.Item>
-                <SegmentedControl.Item value="90">
+                </ToggleGroupItem>
+                <ToggleGroupItem value="90">
                   <LShape90Icon />
-                </SegmentedControl.Item>
-                <SegmentedControl.Item value="180">
+                </ToggleGroupItem>
+                <ToggleGroupItem value="180">
                   <LShape180Icon />
-                </SegmentedControl.Item>
-                <SegmentedControl.Item value="270">
+                </ToggleGroupItem>
+                <ToggleGroupItem value="270">
                   <LShape270Icon />
-                </SegmentedControl.Item>
-              </SegmentedControl.Root>
+                </ToggleGroupItem>
+              </ToggleGroup>
             </div>
 
             {/* Construction Settings */}
@@ -265,16 +269,20 @@ export function LShapedPresetDialog({ onConfirm, trigger }: PresetDialogProps): 
             {/* Reference Side */}
             <div className="flex flex-col gap-1">
               <span className="text-sm text-gray-900">{t($ => $.presetDialogs.lShaped.referenceSide)}</span>
-              <SegmentedControl.Root
+              <ToggleGroup
+                type="single"
+                variant="outline"
                 size="sm"
                 value={config.referenceSide}
                 onValueChange={value => {
-                  setConfig(prev => ({ ...prev, referenceSide: value as PerimeterReferenceSide }))
+                  if (value) {
+                    setConfig(prev => ({ ...prev, referenceSide: value as PerimeterReferenceSide }))
+                  }
                 }}
               >
-                <SegmentedControl.Item value="inside">{t($ => $.presetDialogs.lShaped.inside)}</SegmentedControl.Item>
-                <SegmentedControl.Item value="outside">{t($ => $.presetDialogs.lShaped.outside)}</SegmentedControl.Item>
-              </SegmentedControl.Root>
+                <ToggleGroupItem value="inside">{t($ => $.presetDialogs.lShaped.inside)}</ToggleGroupItem>
+                <ToggleGroupItem value="outside">{t($ => $.presetDialogs.lShaped.outside)}</ToggleGroupItem>
+              </ToggleGroup>
             </div>
 
             {isValid ? (
@@ -284,7 +292,7 @@ export function LShapedPresetDialog({ onConfirm, trigger }: PresetDialogProps): 
                 referenceSide={config.referenceSide}
               />
             ) : (
-              <div className="items-center justify-center" style={{ height: '240px' }}>
+              <div className="flex items-center justify-center" style={{ height: '240px' }}>
                 <span className="text-sm text-red-900">{t($ => $.presetDialogs.lShaped.invalidConfig)}</span>
               </div>
             )}

@@ -10,8 +10,8 @@ import { useActiveStoreyId, useModelActions, useWallOpenings } from '@/building/
 import { Button } from '@/components/ui/button'
 import { Callout, CalloutIcon, CalloutText } from '@/components/ui/callout'
 import { DropdownMenu } from '@/components/ui/dropdown-menu'
-import { SegmentedControl } from '@/components/ui/segmented-control'
 import { Separator } from '@/components/ui/separator'
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 import { Tooltip } from '@/components/ui/tooltip'
 import { OpeningAssemblySelectWithEdit } from '@/construction/config/components/OpeningAssemblySelectWithEdit'
 import { useDefaultOpeningAssemblyId, useOpeningAssemblyById } from '@/construction/config/store'
@@ -193,8 +193,10 @@ function AddOpeningToolInspectorImpl({ tool }: AddOpeningToolInspectorImplProps)
 
   // Event handlers with stable references
   const handleTypeChange = useCallback(
-    (newType: OpeningType) => {
-      tool.setOpeningType(newType)
+    (newType: OpeningType | '') => {
+      if (newType) {
+        tool.setOpeningType(newType)
+      }
     },
     [tool]
   )
@@ -218,8 +220,10 @@ function AddOpeningToolInspectorImpl({ tool }: AddOpeningToolInspectorImplProps)
   )
 
   const handleDimensionModeChange = useCallback(
-    (mode: 'fitting' | 'finished') => {
-      tool.setDimensionMode(mode)
+    (mode: 'fitting' | 'finished' | '') => {
+      if (value) {
+        tool.setDimensionMode(mode)
+      }
     },
     [tool]
   )
@@ -243,7 +247,7 @@ function AddOpeningToolInspectorImpl({ tool }: AddOpeningToolInspectorImplProps)
         </CalloutText>
       </Callout>
       {/* Dimension Mode Toggle */}
-      <div className="items-center justify-between gap-2">
+      <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-1">
           <span className="text-sm font-medium text-gray-900">{t($ => $.addOpening.dimensionMode)}</span>
           <Tooltip
@@ -256,10 +260,16 @@ function AddOpeningToolInspectorImpl({ tool }: AddOpeningToolInspectorImplProps)
             <InfoCircledIcon cursor="help" width={12} height={12} style={{ color: 'var(--color-gray-900)' }} />
           </Tooltip>
         </div>
-        <SegmentedControl.Root value={state.dimensionMode} onValueChange={handleDimensionModeChange} size="sm">
-          <SegmentedControl.Item value="finished">{t($ => $.addOpening.dimensionModeFinished)}</SegmentedControl.Item>
-          <SegmentedControl.Item value="fitting">{t($ => $.addOpening.dimensionModeFitting)}</SegmentedControl.Item>
-        </SegmentedControl.Root>
+        <ToggleGroup
+          type="single"
+          variant="outline"
+          value={state.dimensionMode}
+          onValueChange={handleDimensionModeChange}
+          size="sm"
+        >
+          <ToggleGroupItem value="finished">{t($ => $.addOpening.dimensionModeFinished)}</ToggleGroupItem>
+          <ToggleGroupItem value="fitting">{t($ => $.addOpening.dimensionModeFitting)}</ToggleGroupItem>
+        </ToggleGroup>
       </div>
       {/* Preview */}
       <div className="flex flex-col items-center">
@@ -277,35 +287,35 @@ function AddOpeningToolInspectorImpl({ tool }: AddOpeningToolInspectorImplProps)
         />
       </div>
       {/* Type Selection */}
-      <div className="items-center justify-between gap-2">
+      <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-1">
           <span className="text-sm font-medium text-gray-900">{t($ => $.addOpening.openingType)}</span>
         </div>
-        <SegmentedControl.Root value={state.openingType} onValueChange={handleTypeChange}>
-          <SegmentedControl.Item value="door">
+        <ToggleGroup type="single" variant="outline" value={state.openingType} onValueChange={handleTypeChange}>
+          <ToggleGroupItem value="door">
             <Tooltip content={t($ => $.addOpening.typeDoor)}>
               <div>
                 <DoorIcon width={20} height={20} />
               </div>
             </Tooltip>
-          </SegmentedControl.Item>
+          </ToggleGroupItem>
 
-          <SegmentedControl.Item value="window">
+          <ToggleGroupItem value="window">
             <Tooltip content={t($ => $.addOpening.typeWindow)}>
               <div>
                 <WindowIcon width={20} height={20} />
               </div>
             </Tooltip>
-          </SegmentedControl.Item>
+          </ToggleGroupItem>
 
-          <SegmentedControl.Item value="passage">
+          <ToggleGroupItem value="passage">
             <Tooltip content={t($ => $.addOpening.typePassage)}>
               <div>
                 <PassageIcon width={20} height={20} />
               </div>
             </Tooltip>
-          </SegmentedControl.Item>
-        </SegmentedControl.Root>
+          </ToggleGroupItem>
+        </ToggleGroup>
       </div>
       <div className="flex items-center gap-2">
         <span className="text-sm font-medium text-gray-900">{t($ => $.addOpening.padding)}</span>
@@ -415,7 +425,7 @@ function AddOpeningToolInspectorImpl({ tool }: AddOpeningToolInspectorImplProps)
           }}
         />
       </div>
-      <div className="items-center justify-end gap-2">
+      <div className="flex items-center justify-end gap-2">
         <DropdownMenu>
           <DropdownMenu.Trigger disabled={allOpeningConfigs.length === 0}>
             <Button size="icon" title={t($ => $.addOpening.copyConfigurationTooltip)}>

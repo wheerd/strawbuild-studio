@@ -8,8 +8,8 @@ import type { RingBeamAssemblyId, WallAssemblyId } from '@/building/model/ids'
 import { Button } from '@/components/ui/button'
 import { Callout, CalloutIcon, CalloutText } from '@/components/ui/callout'
 import { Kbd } from '@/components/ui/kbd'
-import { SegmentedControl } from '@/components/ui/segmented-control'
 import { Separator } from '@/components/ui/separator'
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 import { RingBeamAssemblySelectWithEdit } from '@/construction/config/components/RingBeamAssemblySelectWithEdit'
 import { WallAssemblySelectWithEdit } from '@/construction/config/components/WallAssemblySelectWithEdit'
 import { MeasurementInfo } from '@/editor/components/MeasurementInfo'
@@ -96,16 +96,20 @@ export function PerimeterToolInspector({ tool }: ToolInspectorProps<PerimeterToo
               <span className="text-muted-foreground text-xs font-medium">{t($ => $.perimeter.referenceSide)}</span>
             </Label.Root>
           </div>
-          <SegmentedControl.Root
+          <ToggleGroup
+            type="single"
+            variant="outline"
             size="sm"
             value={state.referenceSide}
             onValueChange={value => {
-              tool.setReferenceSide(value as PerimeterReferenceSide)
+              if (value) {
+                tool.setReferenceSide(value as PerimeterReferenceSide)
+              }
             }}
           >
-            <SegmentedControl.Item value="inside">{t($ => $.perimeter.referenceSideInside)}</SegmentedControl.Item>
-            <SegmentedControl.Item value="outside">{t($ => $.perimeter.referenceSideOutside)}</SegmentedControl.Item>
-          </SegmentedControl.Root>
+            <ToggleGroupItem value="inside">{t($ => $.perimeter.referenceSideInside)}</ToggleGroupItem>
+            <ToggleGroupItem value="outside">{t($ => $.perimeter.referenceSideOutside)}</ToggleGroupItem>
+          </ToggleGroup>
 
           {/* Base Ring Beam */}
           <div className="flex items-center gap-1">

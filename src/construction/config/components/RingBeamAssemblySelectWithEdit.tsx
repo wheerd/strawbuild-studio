@@ -13,11 +13,11 @@ export function RingBeamAssemblySelectWithEdit(props: RingBeamAssemblySelectProp
 
   return (
     <div className="flex items-center gap-1">
-      <div className="mr-1 flex grow flex-col gap-1">
+      <div className="grow">
         <RingBeamAssemblySelect {...props} />
       </div>
       <Button
-        size="icon"
+        size="icon-xs"
         title={t($ => $.ringBeams.configure)}
         variant="ghost"
         onClick={() => {

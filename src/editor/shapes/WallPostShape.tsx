@@ -200,7 +200,7 @@ export function WallPostShape({ postId }: { postId: WallPostId }): React.JSX.Ele
             endPoint={insidePostEnd}
             label={formatLength(post.width)}
             offset={-60}
-            color="var(--color-primary-900)"
+            color="var(--color-primary)"
             fontSize={50}
             strokeWidth={4}
           />
@@ -209,7 +209,7 @@ export function WallPostShape({ postId }: { postId: WallPostId }): React.JSX.Ele
             endPoint={outsidePostEnd}
             label={formatLength(post.width)}
             offset={hasNeighbors ? 90 : 60}
-            color="var(--color-primary-900)"
+            color="var(--color-primary)"
             fontSize={50}
             strokeWidth={4}
           />

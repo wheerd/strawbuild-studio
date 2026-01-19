@@ -142,7 +142,7 @@ function ConstructionViewer3DContent({
   if (!constructionModel) {
     return (
       <div className="flex h-full items-center justify-center">
-        <span className="items-center text-gray-900">
+        <span className="flex items-center text-gray-900">
           <span className="text-6xl">⚠</span>
           <br />
           <span className="text-base">{t($ => $.planModal.errors.failedModel)}</span>

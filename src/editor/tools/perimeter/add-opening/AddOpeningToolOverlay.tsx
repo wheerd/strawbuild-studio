@@ -64,7 +64,7 @@ export function AddOpeningToolOverlay({ tool }: ToolOverlayComponentProps<AddOpe
           cx={state.snapDirection === 'right' ? -halfWidth : halfWidth}
           cy={wall.thickness / 2}
           r={wall.thickness * 0.15}
-          fill="var(--color-primary-900)"
+          fill="var(--color-primary)"
           stroke="var(--color-gray-100)"
           strokeWidth={2}
           opacity={0.9}

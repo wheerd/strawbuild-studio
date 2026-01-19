@@ -8,9 +8,9 @@ import { useWallPosts } from '@/building/store'
 import { Button } from '@/components/ui/button'
 import { Callout, CalloutIcon, CalloutText } from '@/components/ui/callout'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
-import { SegmentedControl } from '@/components/ui/segmented-control'
 import { Separator } from '@/components/ui/separator'
 import { Switch } from '@/components/ui/switch'
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 import { useWallAssemblies } from '@/construction/config/store'
 import { MaterialSelectWithEdit } from '@/construction/materials/components/MaterialSelectWithEdit'
 import { type MaterialId } from '@/construction/materials/material'
@@ -110,7 +110,9 @@ function AddPostToolInspectorImpl({ tool }: AddPostToolInspectorImplProps): Reac
   // Event handlers
   const handleTypeChange = useCallback(
     (newType: string) => {
-      tool.setPostType(newType as WallPostType)
+      if (value) {
+        tool.setPostType(newType as WallPostType)
+      }
     },
     [tool]
   )
@@ -163,16 +165,16 @@ function AddPostToolInspectorImpl({ tool }: AddPostToolInspectorImplProps): Reac
         </CalloutText>
       </Callout>
       {/* Type Selection */}
-      <div className="items-center justify-between gap-2">
+      <div className="flex items-center justify-between gap-2">
         <span className="text-sm font-medium text-gray-900">{t($ => $.addPost.type)}</span>
-        <SegmentedControl.Root value={state.type} onValueChange={handleTypeChange} size="sm">
-          <SegmentedControl.Item value="inside">{t($ => $.addPost.types.inside)}</SegmentedControl.Item>
-          <SegmentedControl.Item value="center">{t($ => $.addPost.types.center)}</SegmentedControl.Item>
-          <SegmentedControl.Item value="outside">{t($ => $.addPost.types.outside)}</SegmentedControl.Item>
-          <SegmentedControl.Item value="double">{t($ => $.addPost.types.double)}</SegmentedControl.Item>
-        </SegmentedControl.Root>
+        <ToggleGroup type="single" variant="outline" value={state.type} onValueChange={handleTypeChange} size="sm">
+          <ToggleGroupItem value="inside">{t($ => $.addPost.types.inside)}</ToggleGroupItem>
+          <ToggleGroupItem value="center">{t($ => $.addPost.types.center)}</ToggleGroupItem>
+          <ToggleGroupItem value="outside">{t($ => $.addPost.types.outside)}</ToggleGroupItem>
+          <ToggleGroupItem value="double">{t($ => $.addPost.types.double)}</ToggleGroupItem>
+        </ToggleGroup>
       </div>
-      <div className="items-center justify-between gap-2">
+      <div className="flex items-center justify-between gap-2">
         <span className="text-sm font-medium text-gray-900">{t($ => $.addPost.behavior)}</span>
         <div className="flex items-center gap-2">
           <span className="text-sm text-gray-900">{t($ => $.addPost.actsAsPost)}</span>
@@ -239,7 +241,7 @@ function AddPostToolInspectorImpl({ tool }: AddPostToolInspectorImplProps): Reac
       {/* Quick presets */}
       <div className="flex flex-col gap-2">
         {/* Copy Existing Configuration */}
-        <div className="items-center justify-between gap-2">
+        <div className="flex items-center justify-between gap-2">
           <span className="text-sm font-medium text-gray-900">{t($ => $.addPost.presets.title)}</span>
           <DropdownMenu>
             <DropdownMenuTrigger disabled={allPostConfigs.length === 0}>

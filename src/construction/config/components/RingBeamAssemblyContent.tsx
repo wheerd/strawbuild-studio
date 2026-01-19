@@ -9,9 +9,9 @@ import { AlertDialog } from '@/components/ui/alert-dialog'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { DropdownMenu } from '@/components/ui/dropdown-menu'
-import { SegmentedControl } from '@/components/ui/segmented-control'
 import { Separator } from '@/components/ui/separator'
 import { TextField } from '@/components/ui/text-field'
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 import type { RingBeamAssemblyConfig } from '@/construction/config'
 import { type EntityId, useEntityLabel } from '@/construction/config/components/useEntityLabel'
 import {
@@ -284,7 +284,7 @@ export function RingBeamAssemblyContent({ initialSelectionId }: RingBeamAssembly
       {/* Form */}
       {selectedAssembly && <ConfigForm assembly={selectedAssembly} />}
       {!selectedAssembly && ringBeamAssemblies.length === 0 && (
-        <div className="items-center justify-center p-5">
+        <div className="flex items-center justify-center p-5">
           <span className="text-gray-900">No ring beam assemblies yet. Create one using the "New" button above.</span>
         </div>
       )}
@@ -559,17 +559,19 @@ function DoubleRingBeamFields({
       <span className="text-base font-medium text-gray-900">{t($ => $.ringBeams.labels.cornerHandling)}</span>
 
       <div className="col-span-3">
-        <SegmentedControl.Root
+        <ToggleGroup
+          type="single"
+          variant="outline"
           value={config.cornerHandling}
           onValueChange={value => {
-            onUpdate({ cornerHandling: value as CornerHandling })
+            if (value) {
+              onUpdate({ cornerHandling: value as CornerHandling })
+            }
           }}
         >
-          <SegmentedControl.Item value="cut">{t($ => $.ringBeams.labels.cornerHandlingCut)}</SegmentedControl.Item>
-          <SegmentedControl.Item value="interweave">
-            {t($ => $.ringBeams.labels.cornerHandlingInterweave)}
-          </SegmentedControl.Item>
-        </SegmentedControl.Root>
+          <ToggleGroupItem value="cut">{t($ => $.ringBeams.labels.cornerHandlingCut)}</ToggleGroupItem>
+          <ToggleGroupItem value="interweave">{t($ => $.ringBeams.labels.cornerHandlingInterweave)}</ToggleGroupItem>
+        </ToggleGroup>
       </div>
     </div>
   )

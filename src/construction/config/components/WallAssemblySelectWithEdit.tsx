@@ -14,11 +14,11 @@ export function WallAssemblySelectWithEdit(props: WallAssemblySelectProps): Reac
 
   return (
     <div className="flex items-center gap-1">
-      <div className="mr-1 flex grow flex-col gap-1">
+      <div className="grow">
         <WallAssemblySelect {...props} />
       </div>
       <Button
-        size="icon"
+        size="icon-xs"
         title={t($ => $.walls.configure)}
         variant="ghost"
         onClick={() => {

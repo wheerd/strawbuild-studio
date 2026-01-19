@@ -109,7 +109,7 @@ export function LayerListEditor({
 
   return (
     <div className="flex flex-col gap-2">
-      <div className="items-center justify-between">
+      <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <span className="text-base font-bold">{title}</span>
           {measurementInfo}

@@ -47,7 +47,7 @@ export function WelcomeModal({ isOpen, mode, onAccept, trigger }: WelcomeModalPr
       >
         <div className="flex flex-col gap-4">
           <DialogTitle>
-            <div className="items-center justify-between">
+            <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Logo />
               </div>
@@ -163,9 +163,9 @@ export function WelcomeModal({ isOpen, mode, onAccept, trigger }: WelcomeModalPr
               <Button size="lg" onClick={onAccept} style={{ width: '100%' }}>
                 {t($ => $.continueButton)}
               </Button>
-              {isFirstVisit && <span className="items-center text-sm text-gray-900">{t($ => $.reviewInfo)}</span>}
+              {isFirstVisit && <span className="flex items-center text-sm text-gray-900">{t($ => $.reviewInfo)}</span>}
               <div className="mt-2 flex flex-col items-center gap-1">
-                <span className="items-center text-sm text-gray-900">
+                <span className="flex items-center text-sm text-gray-900">
                   {t($ => $.version, {
                     version: VERSION_INFO.version
                   })}

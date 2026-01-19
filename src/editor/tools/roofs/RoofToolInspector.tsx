@@ -8,8 +8,8 @@ import type { RoofType } from '@/building/model'
 import { Button } from '@/components/ui/button'
 import { Callout, CalloutIcon, CalloutText } from '@/components/ui/callout'
 import { Kbd } from '@/components/ui/kbd'
-import { SegmentedControl } from '@/components/ui/segmented-control'
 import { Separator } from '@/components/ui/separator'
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 import { RoofAssemblySelectWithEdit } from '@/construction/config/components/RoofAssemblySelectWithEdit'
 import { useDefaultRoofAssemblyId } from '@/construction/config/store'
 import { useReactiveTool } from '@/editor/tools/system/hooks/useReactiveTool'
@@ -76,16 +76,20 @@ export function RoofToolInspector({ tool }: ToolInspectorProps<RoofTool>): React
             <Label.Root>
               <span className="text-muted-foreground text-xs font-medium">{t($ => $.roof.type)}</span>
             </Label.Root>
-            <SegmentedControl.Root
+            <ToggleGroup
+              type="single"
+              variant="outline"
               size="sm"
               value={state.type}
               onValueChange={value => {
-                tool.setType(value as RoofType)
+                if (value) {
+                  tool.setType(value as RoofType)
+                }
               }}
             >
-              <SegmentedControl.Item value="gable">{t($ => $.roof.typeGable)}</SegmentedControl.Item>
-              <SegmentedControl.Item value="shed">{t($ => $.roof.typeShed)}</SegmentedControl.Item>
-            </SegmentedControl.Root>
+              <ToggleGroupItem value="gable">{t($ => $.roof.typeGable)}</ToggleGroupItem>
+              <ToggleGroupItem value="shed">{t($ => $.roof.typeShed)}</ToggleGroupItem>
+            </ToggleGroup>
           </div>
 
           {/* Slope */}

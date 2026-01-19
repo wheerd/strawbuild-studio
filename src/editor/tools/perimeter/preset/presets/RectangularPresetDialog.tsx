@@ -5,7 +5,7 @@ import type { PerimeterReferenceSide } from '@/building/model'
 import type { WallAssemblyId } from '@/building/model/ids'
 import { Button } from '@/components/ui/button'
 import { DialogClose } from '@/components/ui/dialog'
-import { SegmentedControl } from '@/components/ui/segmented-control'
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 import { RingBeamAssemblySelectWithEdit } from '@/construction/config/components/RingBeamAssemblySelectWithEdit'
 import { WallAssemblySelectWithEdit } from '@/construction/config/components/WallAssemblySelectWithEdit'
 import {
@@ -186,20 +186,20 @@ export function RectangularPresetDialog({ onConfirm, trigger }: PresetDialogProp
             {/* Reference Side */}
             <div className="flex flex-col gap-1">
               <span className="text-sm text-gray-900">{t($ => $.presetDialogs.rectangular.referenceSide)}</span>
-              <SegmentedControl.Root
+              <ToggleGroup
+                type="single"
+                variant="outline"
                 size="sm"
                 value={config.referenceSide}
                 onValueChange={value => {
-                  setConfig(prev => ({ ...prev, referenceSide: value as PerimeterReferenceSide }))
+                  if (value) {
+                    setConfig(prev => ({ ...prev, referenceSide: value as PerimeterReferenceSide }))
+                  }
                 }}
               >
-                <SegmentedControl.Item value="inside">
-                  {t($ => $.presetDialogs.rectangular.inside)}
-                </SegmentedControl.Item>
-                <SegmentedControl.Item value="outside">
-                  {t($ => $.presetDialogs.rectangular.outside)}
-                </SegmentedControl.Item>
-              </SegmentedControl.Root>
+                <ToggleGroupItem value="inside">{t($ => $.presetDialogs.rectangular.inside)}</ToggleGroupItem>
+                <ToggleGroupItem value="outside">{t($ => $.presetDialogs.rectangular.outside)}</ToggleGroupItem>
+              </ToggleGroup>
             </div>
 
             <PolygonReferencePreview

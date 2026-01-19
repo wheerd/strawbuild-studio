@@ -89,7 +89,7 @@ export function PlanCalibrationCanvas({
         y1={start.y}
         x2={end.x}
         y2={end.y}
-        stroke="var(--color-primary-900)"
+        stroke="var(--color-primary)"
         strokeWidth={2}
         strokeDasharray="12 8"
         pointerEvents="none"
@@ -165,7 +165,7 @@ export function PlanCalibrationCanvas({
             onPointerUp={handlePointerUp}
           />
           {renderReferenceLine()}
-          {referencePoints.map(point => renderCrosshair(point, 'var(--color-primary-900)'))}
+          {referencePoints.map(point => renderCrosshair(point, 'var(--color-primary)'))}
           {originPoint && renderCrosshair(originPoint, 'var(--color-red-900)')}
         </SVGViewport>
       ) : (

@@ -9,9 +9,9 @@ import { useModelActions, usePerimeterWallById, useWallPostById } from '@/buildi
 import { Button } from '@/components/ui/button'
 import { Callout, CalloutIcon, CalloutText } from '@/components/ui/callout'
 import { Kbd } from '@/components/ui/kbd'
-import { SegmentedControl } from '@/components/ui/segmented-control'
 import { Separator } from '@/components/ui/separator'
 import { Switch } from '@/components/ui/switch'
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 import { MaterialSelectWithEdit } from '@/construction/materials/components/MaterialSelectWithEdit'
 import { type MaterialId } from '@/construction/materials/material'
 import { useSelectionStore } from '@/editor/hooks/useSelectionStore'
@@ -34,8 +34,10 @@ export function WallPostInspector({ postId }: { postId: WallPostId }): React.JSX
 
   // Event handlers with stable references
   const handleTypeChange = useCallback(
-    (newType: WallPostType) => {
-      updatePost(postId, { postType: newType })
+    (newType: WallPostType | '') => {
+      if (newType) {
+        updatePost(postId, { postType: newType })
+      }
     },
     [updatePost, postId]
   )
@@ -83,17 +85,17 @@ export function WallPostInspector({ postId }: { postId: WallPostId }): React.JSX
     <div className="flex flex-col gap-4">
       {/* Basic Properties */}
       <div className="flex flex-col gap-3">
-        <div className="items-center justify-between gap-2">
+        <div className="flex items-center justify-between gap-2">
           <span className="text-sm font-medium text-gray-900">{t($ => $.wallPost.type)}</span>
-          <SegmentedControl.Root value={post.postType} onValueChange={handleTypeChange} size="sm">
-            <SegmentedControl.Item value="inside">{t($ => $.wallPost.typeInside)}</SegmentedControl.Item>
-            <SegmentedControl.Item value="center">{t($ => $.wallPost.typeCenter)}</SegmentedControl.Item>
-            <SegmentedControl.Item value="outside">{t($ => $.wallPost.typeOutside)}</SegmentedControl.Item>
-            <SegmentedControl.Item value="double">{t($ => $.wallPost.typeDouble)}</SegmentedControl.Item>
-          </SegmentedControl.Root>
+          <ToggleGroup type="single" variant="outline" value={post.postType} onValueChange={handleTypeChange} size="sm">
+            <ToggleGroupItem value="inside">{t($ => $.wallPost.typeInside)}</ToggleGroupItem>
+            <ToggleGroupItem value="center">{t($ => $.wallPost.typeCenter)}</ToggleGroupItem>
+            <ToggleGroupItem value="outside">{t($ => $.wallPost.typeOutside)}</ToggleGroupItem>
+            <ToggleGroupItem value="double">{t($ => $.wallPost.typeDouble)}</ToggleGroupItem>
+          </ToggleGroup>
         </div>
 
-        <div className="items-center justify-between gap-2">
+        <div className="flex items-center justify-between gap-2">
           <span className="text-sm font-medium text-gray-900">{t($ => $.wallPost.behavior)}</span>
           <div className="flex items-center gap-2">
             <span className="text-sm text-gray-900">{t($ => $.wallPost.actsAsPost)}</span>

@@ -49,11 +49,13 @@ export interface SheetSize {
   biggerLength: Length
 }
 
+export type SheetType = 'solid' | 'tongueAndGroove' | 'flexible'
+
 export interface SheetMaterial extends BaseMaterial {
   type: 'sheet'
   sizes: SheetSize[]
   thicknesses: Length[]
-  sheetType: 'solid' | 'tongueAndGroove' | 'flexible'
+  sheetType: SheetType
 }
 
 export interface VolumeMaterial extends BaseMaterial {

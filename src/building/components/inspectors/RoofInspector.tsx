@@ -167,7 +167,7 @@ export function RoofInspector({ roofId }: RoofInspectorProps): React.JSX.Element
           </div>
 
           {/* Slope */}
-          <div className="items-center justify-between gap-2">
+          <div className="flex items-center justify-between gap-2">
             <Label.Root htmlFor="roof-slope">
               <span className="text-sm font-medium text-gray-900">{t($ => $.roof.slope)}</span>
             </Label.Root>
@@ -213,7 +213,7 @@ export function RoofInspector({ roofId }: RoofInspectorProps): React.JSX.Element
           </div>
 
           {/* Vertical Offset */}
-          <div className="items-center justify-between gap-2">
+          <div className="flex items-center justify-between gap-2">
             <Label.Root htmlFor="vertical-offset">
               <span className="text-sm font-medium text-gray-900">{t($ => $.roof.verticalOffset)}</span>
             </Label.Root>
@@ -230,7 +230,7 @@ export function RoofInspector({ roofId }: RoofInspectorProps): React.JSX.Element
           </div>
 
           {/* Global Overhang with MixedState */}
-          <div className="items-center justify-between gap-2">
+          <div className="flex items-center justify-between gap-2">
             <Label.Root htmlFor="roof-overhang">
               <div className="flex items-center gap-1">
                 <span className="text-sm font-medium text-gray-900">{t($ => $.roof.overhang)}</span>

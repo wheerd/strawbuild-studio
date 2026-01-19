@@ -81,15 +81,15 @@ export function OpeningPreview({
 
   // Styling based on highlight mode and focus
   const getFittingStyle = () => ({
-    fill: highlightMode === 'fitting' ? 'var(--color-blue-300)' : 'var(--color-gray-300)',
-    stroke: highlightMode === 'fitting' ? 'var(--color-blue-800)' : 'var(--color-gray-600)',
+    fill: highlightMode === 'fitting' ? 'var(--color-blue-300)' : 'var(--color-gray-200)',
+    stroke: highlightMode === 'fitting' ? 'var(--color-blue-600)' : 'var(--color-gray-600)',
     strokeWidth: highlightMode === 'fitting' ? 2 : 1,
     strokeDasharray: '4,2'
   })
 
   const getFinishedStyle = () => ({
-    fill: highlightMode === 'finished' ? 'var(--color-green-300)' : 'var(--color-gray-200)',
-    stroke: highlightMode === 'finished' ? 'var(--color-green-800)' : 'var(--color-gray-700)',
+    fill: highlightMode === 'finished' ? 'var(--color-green-200)' : 'var(--color-gray-100)',
+    stroke: highlightMode === 'finished' ? 'var(--color-green-600)' : 'var(--color-gray-700)',
     strokeWidth: highlightMode === 'finished' ? 2 : 1
   })
 
@@ -101,11 +101,11 @@ export function OpeningPreview({
     const isFocused = focusedField === field
     const isHighlighted = highlightMode === type
 
-    if (isFocused && isHighlighted) return 'var(--color-primary-1100)'
+    if (isFocused && isHighlighted) return 'var(--color-orange-400)'
     if (isHighlighted) {
-      return type === 'fitting' ? 'var(--color-blue-1100)' : 'var(--color-green-1100)'
+      return type === 'fitting' ? 'var(--color-blue-600)' : 'var(--color-green-600)'
     }
-    return 'var(--color-gray-800)'
+    return 'var(--color-gray-500)'
   }
 
   return (
@@ -129,8 +129,7 @@ export function OpeningPreview({
         y={wallTop}
         width={svgWidth}
         height={wallHeightSvg}
-        fill="var(--color-gray-400)"
-        stroke="var(--color-gray-800)"
+        className="fill-gray-300 stroke-gray-600"
         strokeWidth="1"
       />
 

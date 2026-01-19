@@ -15,8 +15,8 @@ import {
 import { Button } from '@/components/ui/button'
 import { Callout, CalloutIcon, CalloutText } from '@/components/ui/callout'
 import { Kbd } from '@/components/ui/kbd'
-import { SegmentedControl } from '@/components/ui/segmented-control'
 import { Separator } from '@/components/ui/separator'
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 import { Tooltip } from '@/components/ui/tooltip'
 import { OpeningAssemblySelectWithEdit } from '@/construction/config/components/OpeningAssemblySelectWithEdit'
 import { useWallAssemblyById } from '@/construction/config/store'
@@ -187,49 +187,53 @@ export function OpeningInspector({ openingId }: { openingId: OpeningId }): React
       )}
       {/* Basic Properties */}
       <div className="flex flex-col gap-3">
-        <div className="items-center justify-between gap-2">
+        <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-1">
-            <span className="text-sm font-medium text-gray-900">{t($ => $.opening.type)}</span>
+            <span className="text-sm font-medium">{t($ => $.opening.type)}</span>
             <Tooltip content={t($ => $.opening.typeTooltip)}>
               <InfoCircledIcon cursor="help" width={12} height={12} style={{ color: 'var(--color-gray-900)' }} />
             </Tooltip>
           </div>
-          <SegmentedControl.Root
+          <ToggleGroup
+            type="single"
+            variant="outline"
             value={opening.openingType}
-            onValueChange={(value: OpeningType) => {
-              handleTypeChange({ target: { value } } as React.ChangeEvent<HTMLSelectElement>)
+            onValueChange={(value: OpeningType | '') => {
+              if (value) {
+                handleTypeChange({ target: { value } } as React.ChangeEvent<HTMLSelectElement>)
+              }
             }}
           >
-            <SegmentedControl.Item value="door">
+            <ToggleGroupItem value="door">
               <Tooltip content={t($ => $.opening.typeDoorTooltip)}>
                 <div>
                   <DoorIcon width={20} height={20} />
                 </div>
               </Tooltip>
-            </SegmentedControl.Item>
+            </ToggleGroupItem>
 
-            <SegmentedControl.Item value="window">
+            <ToggleGroupItem value="window">
               <Tooltip content={t($ => $.opening.typeWindowTooltip)}>
                 <div>
                   <WindowIcon width={20} height={20} />
                 </div>
               </Tooltip>
-            </SegmentedControl.Item>
+            </ToggleGroupItem>
 
-            <SegmentedControl.Item value="passage">
+            <ToggleGroupItem value="passage">
               <Tooltip content={t($ => $.opening.typePassageTooltip)}>
                 <div>
                   <PassageIcon width={20} height={20} />
                 </div>
               </Tooltip>
-            </SegmentedControl.Item>
-          </SegmentedControl.Root>
+            </ToggleGroupItem>
+          </ToggleGroup>
         </div>
 
         {/* Dimension Input Mode Toggle - Compact Layout */}
-        <div className="items-center justify-between gap-2">
+        <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-1">
-            <span className="text-sm font-medium text-gray-900">{t($ => $.opening.dimensionMode)}</span>
+            <span className="text-sm font-medium">{t($ => $.opening.dimensionMode)}</span>
             <Tooltip
               content={
                 dimensionInputMode === 'fitting'
@@ -240,27 +244,31 @@ export function OpeningInspector({ openingId }: { openingId: OpeningId }): React
               <InfoCircledIcon cursor="help" width={12} height={12} style={{ color: 'var(--color-gray-900)' }} />
             </Tooltip>
           </div>
-          <SegmentedControl.Root
+          <ToggleGroup
+            type="single"
+            variant="outline"
             value={dimensionInputMode}
-            onValueChange={(value: 'fitting' | 'finished') => {
-              setDimensionInputMode(value)
+            onValueChange={(value: 'fitting' | 'finished' | '') => {
+              if (value) {
+                setDimensionInputMode(value)
+              }
             }}
             size="sm"
           >
-            <SegmentedControl.Item value="fitting">{t($ => $.opening.dimensionModeFitting)}</SegmentedControl.Item>
-            <SegmentedControl.Item value="finished">{t($ => $.opening.dimensionModeFinished)}</SegmentedControl.Item>
-          </SegmentedControl.Root>
+            <ToggleGroupItem value="fitting">{t($ => $.opening.dimensionModeFitting)}</ToggleGroupItem>
+            <ToggleGroupItem value="finished">{t($ => $.opening.dimensionModeFinished)}</ToggleGroupItem>
+          </ToggleGroup>
         </div>
-        <div className="items-center justify-between gap-1">
-          <span className="text-sm font-medium text-gray-900">{t($ => $.opening.padding)}</span>
-          <span className="text-sm text-gray-900">{formatLength(openingConfig.padding)}</span>
+        <div className="flex items-center justify-between gap-1">
+          <span className="text-sm font-medium">{t($ => $.opening.padding)}</span>
+          <span className="text-sm">{formatLength(openingConfig.padding)}</span>
         </div>
 
         {/* Dimension inputs in Radix Grid layout */}
         <div className="grid grow grid-cols-[auto_min-content_auto_min-content] grid-rows-2 items-center gap-2 gap-x-3">
           {/* Row 1, Column 1: Width Label */}
           <Label.Root htmlFor="opening-width">
-            <span className="text-sm font-medium text-gray-900">{t($ => $.opening.width)}</span>
+            <span className="text-sm font-medium">{t($ => $.opening.width)}</span>
           </Label.Root>
 
           {/* Row 1, Column 2: Width Input */}
@@ -286,7 +294,7 @@ export function OpeningInspector({ openingId }: { openingId: OpeningId }): React
 
           {/* Row 1, Column 3: Height Label */}
           <Label.Root htmlFor="opening-height">
-            <span className="text-sm font-medium text-gray-900">{t($ => $.opening.height)}</span>
+            <span className="text-sm font-medium">{t($ => $.opening.height)}</span>
           </Label.Root>
 
           {/* Row 1, Column 4: Height Input */}
@@ -312,7 +320,7 @@ export function OpeningInspector({ openingId }: { openingId: OpeningId }): React
 
           {/* Row 2, Column 1: Sill Height Label */}
           <Label.Root htmlFor="opening-sill-height">
-            <span className="text-sm font-medium text-gray-900">{t($ => $.opening.sill)}</span>
+            <span className="text-sm font-medium">{t($ => $.opening.sill)}</span>
           </Label.Root>
 
           {/* Row 2, Column 2: Sill Height Input */}
@@ -340,7 +348,7 @@ export function OpeningInspector({ openingId }: { openingId: OpeningId }): React
 
           {/* Row 2, Column 3: Top Height Label */}
           <Label.Root htmlFor="opening-top-height">
-            <span className="text-sm font-medium text-gray-900">{t($ => $.opening.top)}</span>
+            <span className="text-sm font-medium">{t($ => $.opening.top)}</span>
           </Label.Root>
 
           {/* Row 2, Column 4: Top Height Input */}
@@ -371,7 +379,7 @@ export function OpeningInspector({ openingId }: { openingId: OpeningId }): React
       <div className="flex flex-col gap-1">
         <div className="flex items-center gap-1">
           <Label.Root>
-            <span className="text-sm font-medium text-gray-900">{t($ => $.opening.openingAssembly)}</span>
+            <span className="text-sm font-medium">{t($ => $.opening.openingAssembly)}</span>
           </Label.Root>
           <Tooltip content={t($ => $.opening.openingAssemblyTooltip)}>
             <InfoCircledIcon cursor="help" width={12} height={12} style={{ color: 'var(--color-gray-900)' }} />
@@ -395,12 +403,7 @@ export function OpeningInspector({ openingId }: { openingId: OpeningId }): React
         <Button size="icon" title={t($ => $.opening.fitToView)} onClick={handleFitToView}>
           <FitToViewIcon />
         </Button>
-        <Button
-          size="icon"
-          className="text-destructive"
-          title={t($ => $.opening.deleteOpening)}
-          onClick={handleRemoveOpening}
-        >
+        <Button size="icon" variant="destructive" title={t($ => $.opening.deleteOpening)} onClick={handleRemoveOpening}>
           <TrashIcon />
         </Button>
       </div>

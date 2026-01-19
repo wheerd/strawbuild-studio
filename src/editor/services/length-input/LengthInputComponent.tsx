@@ -147,7 +147,7 @@ export function LengthInputComponent(): React.JSX.Element | null {
         color={state.isValid ? undefined : 'red'}
         className="w-20 text-center shadow-lg"
         style={{
-          border: state.isValid ? '2px solid var(--color-primary-900)' : '2px solid var(--color-red-900)'
+          border: state.isValid ? '2px solid var(--color-primary)' : '2px solid var(--color-red-900)'
         }}
       />
 

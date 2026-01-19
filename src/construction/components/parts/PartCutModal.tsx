@@ -172,9 +172,9 @@ export function PartCutModal({
                 <g transform={`translate(${xOffset}, 0)`}>
                   <use
                     href={`#${polygonId}`}
-                    stroke="var(--color-primary-900)"
+                    stroke="var(--color-primary)"
                     strokeWidth="1"
-                    fill="var(--color-primary-900)"
+                    fill="var(--color-primary)"
                     fillOpacity="0.5"
                     strokeLinejoin="miter"
                   />

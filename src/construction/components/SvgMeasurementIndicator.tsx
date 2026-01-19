@@ -23,7 +23,7 @@ export function SvgMeasurementIndicator({
   className,
   offset = 50,
   labelOrientation = 'parallel',
-  color = 'var(--color-primary-900)',
+  color = 'var(--color-primary)',
   fontSize = 40,
   strokeWidth = 10
 }: SvgMeasurementIndicatorProps): React.JSX.Element {

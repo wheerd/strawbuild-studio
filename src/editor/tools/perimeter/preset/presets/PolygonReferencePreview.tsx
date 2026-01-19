@@ -142,7 +142,7 @@ export function PolygonReferencePreview({
       scaledReferencePoints,
       referencePolygon.points,
       referenceSide === 'inside' ? 'inward' : 'outward',
-      'var(--color-primary-1200)',
+      'var(--color-primary)',
       formatLength
     )
 
@@ -165,8 +165,9 @@ export function PolygonReferencePreview({
     }
   }, [referencePoints, thickness, referenceSide, size])
 
-  const referenceFill = referenceSide === 'inside' ? 'var(--color-primary-300)' : 'var(--color-primary-300)'
-  const referenceStroke = referenceSide === 'inside' ? 'var(--color-primary-800)' : 'var(--color-primary-800)'
+  const referenceFill = referenceSide === 'inside' ? 'var(--color-accent)' : 'var(--color-accent)'
+  const referenceStroke =
+    referenceSide === 'inside' ? 'var(--color-accent-foreground)' : 'var(--color-accent-foreground)'
 
   const derivedFill = referenceSide === 'inside' ? 'var(--color-gray-300)' : 'var(--color-gray-200)'
   const derivedStroke = referenceSide === 'inside' ? 'var(--color-gray-800)' : 'var(--color-gray-800)'

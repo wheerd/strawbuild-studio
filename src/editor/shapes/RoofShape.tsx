@@ -79,7 +79,7 @@ export function RoofShape({ roof }: { roof: Roof }): React.JSX.Element {
         y1={roof.ridgeLine.start[1]}
         x2={roof.ridgeLine.end[0]}
         y2={roof.ridgeLine.end[1]}
-        stroke="var(--color-primary-900)"
+        stroke="var(--color-primary)"
         strokeWidth={60}
       />
 

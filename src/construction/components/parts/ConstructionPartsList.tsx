@@ -338,9 +338,9 @@ function SpecialCutTooltip({ polygon }: { polygon: Polygon2D }): React.JSX.Eleme
         />
         <polygon
           points={preview.pointsAttribute}
-          stroke="var(--color-primary-900)"
+          stroke="var(--color-primary)"
           strokeWidth="2"
-          fill="var(--color-primary-900)"
+          fill="var(--color-primary)"
           fillOpacity="0.2"
           strokeLinejoin="miter"
         />
@@ -374,7 +374,7 @@ function MaterialSummaryRow({
         <MaterialTypeIndicator material={material} />
       </Table.RowHeaderCell>
       <Table.RowHeaderCell>
-        <div className="items-center justify-between gap-2">
+        <div className="flex items-center justify-between gap-2">
           <span className="font-medium">{materialName}</span>
           <Button size="icon" title={t($ => $.partsList.actions.jumpToDetails)} variant="ghost" onClick={onNavigate}>
             <PinBottomIcon />
@@ -417,7 +417,7 @@ function MaterialGroupSummaryRow({
         <span className="text</span>00">↳</span>
       </Table.Cell>
       <Table.Cell>
-        <div className="items-center justify-between gap-2">
+        <div className="flex items-center justify-between gap-2">
           <Badge color={group.badgeColor}>{group.badgeLabel}</Badge>
           <Button size="icon" title={t($ => $.partsList.actions.jumpToDetails)} variant="ghost" onClick={onNavigate}>
             <PinBottomIcon />
@@ -454,7 +454,7 @@ function MaterialGroupCard({ material, group, onBackToTop, onViewInPlan, formatt
   return (
     <Card variant="soft">
       <div className="flex flex-col gap-3">
-        <div className="items-center justify-between gap-3">
+        <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-3">
             <MaterialTypeIndicator material={material} size={24} />
             <h4>{materialName}</h4>
@@ -602,7 +602,7 @@ function DimensionalPartsTable({
               </Table.Cell>
               <Table.Cell justify-center>{part.quantity}</Table.Cell>
               <Table.Cell justify-end>
-                <div className="items-center justify-end gap-2">
+                <div className="flex items-center justify-end gap-2">
                   {part.issue === 'LengthExceedsAvailable' && material.lengths.length > 0 && (
                     <Tooltip
                       key="length-exceeds-available"
@@ -726,7 +726,7 @@ function SheetPartsTable({
                 </div>
               </Table.Cell>
               <Table.Cell justify-end>
-                <div className="items-center justify-end gap-2">
+                <div className="flex items-center justify-end gap-2">
                   {part.issue === 'ThicknessMismatch' && (
                     <Tooltip key="thickness-missmatch" content={t($ => $.partsList.issues.dimensionsMismatchThickness)}>
                       <ExclamationTriangleIcon style={{ color: 'var(--color-red-900)' }} />

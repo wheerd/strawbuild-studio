@@ -208,26 +208,26 @@ export function PerimeterWallInspector({ wallId }: { wallId: PerimeterWallId }):
         <div className="grid grid-cols-3 gap-2">
           <Card size="sm" variant="soft">
             <div className="m--1 flex flex-col gap-0">
-              <span className="items-center text-base font-bold">
+              <span className="flex items-center text-base font-bold">
                 {openings.filter(o => o.openingType === 'door').length}
               </span>
-              <span className="items-center text-sm text-gray-900">{t($ => $.perimeterWall.doors)}</span>
+              <span className="flex items-center text-sm text-gray-900">{t($ => $.perimeterWall.doors)}</span>
             </div>
           </Card>
           <Card size="sm" variant="soft">
             <div className="m--1 flex flex-col gap-0">
-              <span className="items-center text-base font-bold">
+              <span className="flex items-center text-base font-bold">
                 {openings.filter(o => o.openingType === 'window').length}
               </span>
-              <span className="items-center text-sm text-gray-900">{t($ => $.perimeterWall.windows)}</span>
+              <span className="flex items-center text-sm text-gray-900">{t($ => $.perimeterWall.windows)}</span>
             </div>
           </Card>
           <Card size="sm" variant="soft">
             <div className="m--1 flex flex-col gap-0">
-              <span className="items-center text-base font-bold">
+              <span className="flex items-center text-base font-bold">
                 {openings.filter(o => o.openingType === 'passage').length}
               </span>
-              <span className="items-center text-sm text-gray-900">{t($ => $.perimeterWall.passages)}</span>
+              <span className="flex items-center text-sm text-gray-900">{t($ => $.perimeterWall.passages)}</span>
             </div>
           </Card>
         </div>

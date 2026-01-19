@@ -68,7 +68,7 @@ export function MainToolbar({ onInfoClick }: MainToolbarProps): React.JSX.Elemen
                         <Toolbar.Button asChild>
                           <Button
                             aria-label={t($ => $.tools[toolInfo.nameKey])}
-                            size="icon-sm"
+                            size="icon"
                             variant={activeToolId === toolId ? 'default' : 'outline'}
                             onClick={() => {
                               handleToolSelect(toolId)

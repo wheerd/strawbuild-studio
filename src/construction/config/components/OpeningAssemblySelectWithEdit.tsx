@@ -13,11 +13,11 @@ export function OpeningAssemblySelectWithEdit(props: OpeningAssemblySelectProps)
 
   return (
     <div className="flex items-center gap-1">
-      <div className="mr-1 flex grow flex-col gap-1">
+      <div className="grow">
         <OpeningAssemblySelect {...props} />
       </div>
       <Button
-        size="icon"
+        size="icon-xs"
         title={t($ => $.openings.configure)}
         variant="ghost"
         onClick={() => {

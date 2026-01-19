@@ -354,7 +354,7 @@ export function FloorAssemblyConfigContent({ initialSelectionId }: FloorAssembly
       {/* Form */}
       {selectedConfig && <ConfigForm assembly={selectedConfig} />}
       {!selectedConfig && floorAssemblies.length === 0 && (
-        <div className="items-center justify-center p-5">
+        <div className="flex items-center justify-center p-5">
           <span className="text-gray-900">{t($ => $.floors.emptyList)}</span>
         </div>
       )}

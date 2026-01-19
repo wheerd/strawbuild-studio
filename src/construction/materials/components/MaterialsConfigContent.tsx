@@ -20,8 +20,8 @@ import { Button } from '@/components/ui/button'
 import { Callout, CalloutIcon, CalloutText } from '@/components/ui/callout'
 import { Card } from '@/components/ui/card'
 import { DropdownMenu } from '@/components/ui/dropdown-menu'
-import { SegmentedControl } from '@/components/ui/segmented-control'
 import { TextField } from '@/components/ui/text-field'
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 import { type EntityId, useEntityLabel } from '@/construction/config/components/useEntityLabel'
 import { useConfigActions, useDefaultStrawMaterialId } from '@/construction/config/store'
 import type {
@@ -30,6 +30,7 @@ import type {
   Material,
   MaterialId,
   SheetMaterial,
+  SheetType,
   StrawbaleMaterial,
   VolumeMaterial
 } from '@/construction/materials/material'
@@ -413,7 +414,7 @@ export function MaterialsConfigContent({ initialSelectionId }: MaterialsConfigCo
         </Card>
       )}
       {!selectedMaterial && materials.length === 0 && (
-        <div className="items-center justify-center p-5">
+        <div className="flex items-center justify-center p-5">
           <span className="text-gray-900">{t($ => $.materials.noMaterialsYet)}</span>
         </div>
       )}
@@ -808,18 +809,20 @@ function SheetMaterialFields({
       </div>
       <div className="flex flex-col gap-2">
         <span className="text-base font-medium text-gray-900">{t($ => $.materials.sheetType)}</span>
-        <SegmentedControl.Root
+        <ToggleGroup
+          type="single"
+          variant="outline"
           value={material.sheetType}
           onValueChange={value => {
-            onUpdate({ sheetType: value })
+            if (value) {
+              onUpdate({ sheetType: value as SheetType })
+            }
           }}
         >
-          <SegmentedControl.Item value="solid">{t($ => $.materials.sheetTypeSolid)}</SegmentedControl.Item>
-          <SegmentedControl.Item value="tongueAndGroove">
-            {t($ => $.materials.sheetTypeTongueAndGroove)}
-          </SegmentedControl.Item>
-          <SegmentedControl.Item value="flexible">{t($ => $.materials.sheetTypeFlexible)}</SegmentedControl.Item>
-        </SegmentedControl.Root>
+          <ToggleGroupItem value="solid">{t($ => $.materials.sheetTypeSolid)}</ToggleGroupItem>
+          <ToggleGroupItem value="tongueAndGroove">{t($ => $.materials.sheetTypeTongueAndGroove)}</ToggleGroupItem>
+          <ToggleGroupItem value="flexible">{t($ => $.materials.sheetTypeFlexible)}</ToggleGroupItem>
+        </ToggleGroup>
       </div>
     </div>
   )
@@ -894,16 +897,20 @@ function VolumeMaterialFields({
         </div>
 
         <div className="flex flex-col items-end gap-2" style={{ minWidth: '14em' }}>
-          <SegmentedControl.Root
+          <ToggleGroup
+            type="single"
+            variant="outline"
             value={volumeUnit}
             onValueChange={value => {
-              setVolumeUnit(value)
+              if (value) {
+                setVolumeUnit(value as 'liter' | 'm3')
+              }
             }}
             size="sm"
           >
-            <SegmentedControl.Item value="liter">{t($ => $.units.liter, { ns: 'common' })}</SegmentedControl.Item>
-            <SegmentedControl.Item value="m3">{t($ => $.units.m3, { ns: 'common' })}</SegmentedControl.Item>
-          </SegmentedControl.Root>
+            <ToggleGroupItem value="liter">{t($ => $.units.liter, { ns: 'common' })}</ToggleGroupItem>
+            <ToggleGroupItem value="m3">{t($ => $.units.m3, { ns: 'common' })}</ToggleGroupItem>
+          </ToggleGroup>
           <div className="flex items-end gap-2">
             <VolumeField
               value={newVolumeInput}

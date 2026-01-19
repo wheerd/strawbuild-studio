@@ -866,7 +866,7 @@ export function RoofAssemblyConfigContent({ initialSelectionId }: RoofAssemblyCo
       {/* Form */}
       {selectedAssembly && <ConfigForm assembly={selectedAssembly} />}
       {!selectedAssembly && roofAssemblies.length === 0 && (
-        <div className="items-center justify-center p-5">
+        <div className="flex items-center justify-center p-5">
           <span className="text-gray-900">{t($ => $.roofs.emptyList)}</span>
         </div>
       )}
