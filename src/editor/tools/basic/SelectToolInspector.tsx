@@ -34,7 +34,7 @@ export function SelectToolInspector(): React.JSX.Element {
   const storeyId = useActiveStoreyId()
 
   return (
-    <div className="flex flex-col p-2 gap-2">
+    <div className="flex flex-col gap-2 p-2">
       {!selectedId && <StoreyInspector key="storey" selectedId={storeyId} />}
 
       {/* Perimeter entities */}

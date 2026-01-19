@@ -48,7 +48,7 @@ export function RoofOverhangInspector({ overhangId }: { overhangId: RoofOverhang
         <Separator />
 
         {/* Overhang Value */}
-        <div className="items-center gap-2 justify-between">
+        <div className="items-center justify-between gap-2">
           <Label.Root>
             <span className="text-sm font-medium text-gray-900">{t($ => $.roofOverhang.overhang)}</span>
           </Label.Root>

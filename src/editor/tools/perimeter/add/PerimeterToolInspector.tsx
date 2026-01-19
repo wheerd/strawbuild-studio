@@ -59,7 +59,7 @@ export function PerimeterToolInspector({ tool }: ToolInspectorProps<PerimeterToo
           {/* Wall Assembly */}
           <div className="flex items-center gap-1">
             <Label.Root>
-              <span className="text-xs font-medium text-muted-foreground">{t($ => $.perimeter.wallAssembly)}</span>
+              <span className="text-muted-foreground text-xs font-medium">{t($ => $.perimeter.wallAssembly)}</span>
             </Label.Root>
             <MeasurementInfo highlightedAssembly="wallAssembly" />
           </div>
@@ -74,7 +74,7 @@ export function PerimeterToolInspector({ tool }: ToolInspectorProps<PerimeterToo
           {/* Wall Thickness */}
           <div className="flex items-center gap-1">
             <Label.Root htmlFor="wall-thickness">
-              <span className="text-xs font-medium text-muted-foreground">{t($ => $.perimeter.wallThickness)}</span>
+              <span className="text-muted-foreground text-xs font-medium">{t($ => $.perimeter.wallThickness)}</span>
             </Label.Root>
             <MeasurementInfo highlightedMeasurement="totalWallThickness" showFinishedSides />
           </div>
@@ -93,7 +93,7 @@ export function PerimeterToolInspector({ tool }: ToolInspectorProps<PerimeterToo
 
           <div className="flex items-center gap-1">
             <Label.Root>
-              <span className="text-xs font-medium text-muted-foreground">{t($ => $.perimeter.referenceSide)}</span>
+              <span className="text-muted-foreground text-xs font-medium">{t($ => $.perimeter.referenceSide)}</span>
             </Label.Root>
           </div>
           <SegmentedControl.Root
@@ -110,7 +110,7 @@ export function PerimeterToolInspector({ tool }: ToolInspectorProps<PerimeterToo
           {/* Base Ring Beam */}
           <div className="flex items-center gap-1">
             <Label.Root>
-              <span className="text-xs font-medium text-muted-foreground">{t($ => $.perimeter.basePlate)}</span>
+              <span className="text-muted-foreground text-xs font-medium">{t($ => $.perimeter.basePlate)}</span>
             </Label.Root>
             <MeasurementInfo highlightedPart="basePlate" />
           </div>
@@ -127,7 +127,7 @@ export function PerimeterToolInspector({ tool }: ToolInspectorProps<PerimeterToo
           {/* Top Ring Beam */}
           <div className="flex items-center gap-1">
             <Label.Root>
-              <span className="text-xs font-medium text-muted-foreground">{t($ => $.perimeter.topPlate)}</span>
+              <span className="text-muted-foreground text-xs font-medium">{t($ => $.perimeter.topPlate)}</span>
             </Label.Root>
             <MeasurementInfo highlightedPart="topPlate" />
           </div>
@@ -149,11 +149,11 @@ export function PerimeterToolInspector({ tool }: ToolInspectorProps<PerimeterToo
             <div className="flex items-center justify-between gap-2">
               <span className="text-xs font-medium text-blue-600">{t($ => $.perimeter.lengthOverride)}</span>
               <div className="flex items-center gap-2">
-                <code className="text-xs font-mono text-blue-600">{formatLength(state.lengthOverride)}</code>
+                <span className="font-mono text-xs text-blue-600">{formatLength(state.lengthOverride)}</span>
                 <Button
                   size="icon"
                   variant="ghost"
-                  className="h-6 w-6 text-destructive"
+                  className="text-destructive h-6 w-6"
                   onClick={() => {
                     tool.clearLengthOverride()
                   }}
@@ -170,11 +170,11 @@ export function PerimeterToolInspector({ tool }: ToolInspectorProps<PerimeterToo
         <Separator />
         <div className="flex flex-col gap-2">
           <span className="text-xs font-medium">{t($ => $.perimeter.controlsHeading)}</span>
-          <span className="text-xs text-muted-foreground">• {t($ => $.perimeter.controlPlace)}</span>
-          <span className="text-xs text-muted-foreground">• {t($ => $.perimeter.controlSnap)}</span>
-          <span className="text-xs text-muted-foreground">• {t($ => $.perimeter.controlNumbers)}</span>
+          <span className="text-muted-foreground text-xs">• {t($ => $.perimeter.controlPlace)}</span>
+          <span className="text-muted-foreground text-xs">• {t($ => $.perimeter.controlSnap)}</span>
+          <span className="text-muted-foreground text-xs">• {t($ => $.perimeter.controlNumbers)}</span>
           {state.lengthOverride ? (
-            <span className="text-xs text-muted-foreground">
+            <span className="text-muted-foreground text-xs">
               • <Kbd size="sm">{t($ => $.keyboard.esc)}</Kbd>{' '}
               {t($ => $.perimeter.controlEscOverride, {
                 key: ''
@@ -183,7 +183,7 @@ export function PerimeterToolInspector({ tool }: ToolInspectorProps<PerimeterToo
                 .trim()}
             </span>
           ) : (
-            <span className="text-xs text-muted-foreground">
+            <span className="text-muted-foreground text-xs">
               • <Kbd size="sm">{t($ => $.keyboard.esc)}</Kbd>{' '}
               {t($ => $.perimeter.controlEscAbort, {
                 key: ''
@@ -194,7 +194,7 @@ export function PerimeterToolInspector({ tool }: ToolInspectorProps<PerimeterToo
           )}
           {state.points.length >= 3 && (
             <>
-              <span className="text-xs text-muted-foreground">
+              <span className="text-muted-foreground text-xs">
                 • <Kbd size="sm">{t($ => $.keyboard.enter)}</Kbd>{' '}
                 {t($ => $.perimeter.controlEnter, {
                   key: ''
@@ -202,7 +202,7 @@ export function PerimeterToolInspector({ tool }: ToolInspectorProps<PerimeterToo
                   .replace('{{key}}', '')
                   .trim()}
               </span>
-              <span className="text-xs text-muted-foreground">• {t($ => $.perimeter.controlClickFirst)}</span>
+              <span className="text-muted-foreground text-xs">• {t($ => $.perimeter.controlClickFirst)}</span>
             </>
           )}
         </div>
@@ -231,7 +231,7 @@ export function PerimeterToolInspector({ tool }: ToolInspectorProps<PerimeterToo
               <Button
                 size="sm"
                 variant="secondary"
-                className="w-full text-destructive"
+                className="text-destructive w-full"
                 onClick={() => {
                   tool.cancel()
                 }}

@@ -12,8 +12,8 @@ export function RoofAssemblySelectWithEdit(props: RoofAssemblySelectProps): Reac
   const { openConfiguration } = useConfigurationModal()
 
   return (
-    <div className="flex gap-1 items-center">
-      <div className="flex flex-col gap-1 grow mr-1">
+    <div className="flex items-center gap-1">
+      <div className="mr-1 flex grow flex-col gap-1">
         <RoofAssemblySelect {...props} />
       </div>
       <Button

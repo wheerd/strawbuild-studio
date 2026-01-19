@@ -14,6 +14,14 @@ interface TextFieldRootProps extends React.HTMLAttributes<HTMLDivElement> {
   onKeyDown?: (e: React.KeyboardEvent<HTMLInputElement>) => void
   placeholder?: string
   type?: string
+  // Additional HTML input props
+  min?: number | string
+  max?: number | string
+  step?: number | string
+  required?: boolean
+  // Radix Themes compatibility props (style-only)
+  variant?: 'classic' | 'surface' | 'soft'
+  color?: string
 }
 
 const TextFieldContext = React.createContext<{
@@ -44,19 +52,38 @@ const TextFieldRoot = React.forwardRef<HTMLDivElement, TextFieldRootProps>(
       onKeyDown,
       placeholder,
       type,
+      min,
+      max,
+      step,
+      required,
+      variant: _variant,
+      color: _color,
       ...props
     },
     ref
   ) => {
-    const inputProps = { value, defaultValue, onChange, onBlur, onKeyDown, placeholder, type, disabled }
+    const inputProps = {
+      value,
+      defaultValue,
+      onChange,
+      onBlur,
+      onKeyDown,
+      placeholder,
+      type,
+      disabled,
+      min,
+      max,
+      step,
+      required
+    }
 
     return (
       <TextFieldContext.Provider value={{ size, disabled, inputProps }}>
         <div
           ref={ref}
           className={cn(
-            'flex items-center rounded-md border border-input bg-background ring-offset-background',
-            'focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2',
+            'border-input bg-background ring-offset-background flex items-center rounded-md border',
+            'focus-within:ring-ring focus-within:ring-2 focus-within:ring-offset-2',
             sizeClasses[size],
             disabled && 'cursor-not-allowed opacity-50',
             className
@@ -79,7 +106,7 @@ const TextFieldSlot = React.forwardRef<HTMLDivElement, TextFieldSlotProps>(({ cl
   <div
     ref={ref}
     className={cn(
-      'flex items-center text-muted-foreground',
+      'text-muted-foreground flex items-center',
       side === 'left' && 'pl-2',
       side === 'right' && 'pr-2',
       className
@@ -96,7 +123,7 @@ const TextFieldInput = React.forwardRef<HTMLInputElement, React.InputHTMLAttribu
     return (
       <input
         ref={ref}
-        className={cn('flex-1 bg-transparent px-2 outline-none min-w-0', sizeClasses[size ?? 'base'], className)}
+        className={cn('min-w-0 flex-1 bg-transparent px-2 outline-none', sizeClasses[size ?? 'base'], className)}
         disabled={disabled}
         {...inputProps}
         {...props}

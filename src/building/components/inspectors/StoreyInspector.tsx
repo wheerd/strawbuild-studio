@@ -80,73 +80,72 @@ export function StoreyInspector({ selectedId }: StoreyInspectorProps): React.JSX
     <div className="p-2">
       <div className="flex flex-col gap-3">
         {/* Basic Information */}
-        <h2 className="text-sm font-semibold">
-          <span className="flex items-center gap-2">
-            <code className={cn('font-mono font-bold text-sm', getLevelColor(storey.level))}>L{storey.level}</code>
-            <span>{storeyName}</span>
-          </span>
+        <h2 className="flex items-baseline gap-2 text-sm font-semibold">
+          <span className={cn('font-mono text-sm font-bold', getLevelColor(storey.level))}>L{storey.level}</span>
+          <span>{storeyName}</span>
         </h2>
-        <div className="grid grid-cols-[auto_1fr] gap-y-2 gap-x-1">
+
+        <div className="grid grid-cols-[auto_1fr] gap-x-1 gap-y-2">
           <span className="text-xs font-medium">{t($ => $.storey.footprint)}</span>
-          <span className="text-xs">{formatArea(combinedStats.footprint)}</span>
+          <span className="flex justify-end text-xs">{formatArea(combinedStats.footprint)}</span>
 
           <span className="text-xs font-medium">{t($ => $.storey.usableFloorArea)}</span>
           <span className="text-xs">
-            <span className="flex justify-end w-full">{formatArea(combinedStats.totalFloorArea)}</span>
+            <span className="flex w-full justify-end">{formatArea(combinedStats.totalFloorArea)}</span>
           </span>
 
           <span className="text-xs font-medium">{t($ => $.storey.constructionWallArea)}</span>
           <span className="text-xs">
-            <span className="flex justify-end w-full">{formatArea(combinedStats.totalConstructionWallArea)}</span>
+            <span className="flex w-full justify-end">{formatArea(combinedStats.totalConstructionWallArea)}</span>
           </span>
 
           <span className="text-xs font-medium">{t($ => $.storey.finishedWallArea)}</span>
           <span className="text-xs">
-            <span className="flex justify-end w-full">{formatArea(combinedStats.totalFinishedWallArea)}</span>
+            <span className="flex w-full justify-end">{formatArea(combinedStats.totalFinishedWallArea)}</span>
           </span>
 
           <span className="text-xs font-medium">{t($ => $.storey.exteriorWallArea)}</span>
           <span className="text-xs">
-            <span className="flex justify-end w-full">{formatArea(combinedStats.totalExteriorWallArea)}</span>
+            <span className="flex w-full justify-end">{formatArea(combinedStats.totalExteriorWallArea)}</span>
           </span>
 
           <span className="text-xs font-medium">{t($ => $.storey.windowArea)}</span>
           <span className="text-xs">
-            <span className="flex justify-end w-full">{formatArea(combinedStats.totalWindowArea)}</span>
+            <span className="flex w-full justify-end">{formatArea(combinedStats.totalWindowArea)}</span>
           </span>
 
           <span className="text-xs font-medium">{t($ => $.storey.wallToWindowRatio)}</span>
           <span className="text-xs">
-            <span className="flex justify-end w-full">
+            <span className="flex w-full justify-end">
               {formatPercentage((combinedStats.totalWindowArea / combinedStats.totalFinishedWallArea) * 100)}
             </span>
           </span>
 
           <span className="text-xs font-medium">{t($ => $.storey.doorArea)}</span>
           <span className="text-xs">
-            <span className="flex justify-end w-full">{formatArea(combinedStats.totalDoorArea)}</span>
+            <span className="flex w-full justify-end">{formatArea(combinedStats.totalDoorArea)}</span>
           </span>
 
           <span className="text-xs font-medium">{t($ => $.storey.totalVolume)}</span>
           <span className="text-xs">
-            <span className="flex justify-end w-full">{formatVolume(combinedStats.totalVolume)}</span>
+            <span className="flex w-full justify-end">{formatVolume(combinedStats.totalVolume)}</span>
           </span>
 
           <span className="text-xs font-medium">{t($ => $.storey.surfaceAreaToVolumeRatio)}</span>
           <span className="text-xs">
-            <span className="flex justify-end w-full">
+            <span className="flex w-full justify-end">
               {formatNumber((combinedStats.totalExteriorWallArea / combinedStats.totalVolume) * 1000, 2)}
             </span>
           </span>
 
           <span className="text-xs font-medium">{t($ => $.storey.floorHeight)}</span>
           <span className="text-xs">
-            <span className="flex justify-end w-full">{formatLength(combinedStats.storeyHeight)}</span>
+            <span className="flex w-full justify-end">{formatLength(combinedStats.storeyHeight)}</span>
           </span>
 
           <span className="text-xs font-medium">{t($ => $.storey.ceilingHeight)}</span>
           <span className="text-xs">
-            <span className="flex justify-end w-full">{formatLength(combinedStats.ceilingHeight)}</span>
+            <span className="flex w-full justify-end">{formatLength(combinedStats.ceilingHeight)}</span>
           </span>
         </div>
       </div>

@@ -10,9 +10,9 @@ export function PointerPositionDisplay(): React.JSX.Element {
   return (
     <div className="flex items-center gap-2">
       <CursorArrowIcon className="h-4 w-4" />
-      <code className="text-xs font-mono text-muted-foreground">
+      <span className="text-muted-foreground font-mono text-xs">
         {pointer ? `${formatLength(pointer[0])},${formatLength(pointer[1])}` : '--'}
-      </code>
+      </span>
     </div>
   )
 }

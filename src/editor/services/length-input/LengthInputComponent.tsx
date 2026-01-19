@@ -128,7 +128,7 @@ export function LengthInputComponent(): React.JSX.Element | null {
 
   return (
     <div
-      className="absolute z-1000 pointer-events-auto"
+      className="pointer-events-auto absolute z-1000"
       style={{
         left: constrainedPosition.x,
         top: constrainedPosition.y,
@@ -153,7 +153,7 @@ export function LengthInputComponent(): React.JSX.Element | null {
 
       {/* Error message */}
       {!state.isValid && state.errorMessage && (
-        <div className="absolute top-full left-1/2 -translate-x-1/2 mt-1 px-2 py-1 text-white text-xs rounded whitespace-nowrap shadow-md bg-red-900">
+        <div className="absolute top-full left-1/2 mt-1 -translate-x-1/2 rounded bg-red-900 px-2 py-1 text-xs whitespace-nowrap text-white shadow-md">
           {state.errorMessage}
         </div>
       )}

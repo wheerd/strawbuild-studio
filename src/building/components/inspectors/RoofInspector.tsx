@@ -118,7 +118,7 @@ export function RoofInspector({ roofId }: RoofInspectorProps): React.JSX.Element
   if (!roof) {
     return (
       <div className="p-2">
-        <span className="text-sm text-red-800 font-bold">{t($ => $.roof.notFound)}</span>
+        <span className="text-sm font-bold text-red-800">{t($ => $.roof.notFound)}</span>
       </div>
     )
   }
@@ -131,7 +131,7 @@ export function RoofInspector({ roofId }: RoofInspectorProps): React.JSX.Element
         </div>
 
         {/* Basic Information */}
-        <DataList.Root size="sm">
+        <DataList.Root>
           <DataList.Item>
             <DataList.Label>{t($ => $.roof.type)}</DataList.Label>
             <DataList.Value>
@@ -167,7 +167,7 @@ export function RoofInspector({ roofId }: RoofInspectorProps): React.JSX.Element
           </div>
 
           {/* Slope */}
-          <div className="items-center gap-2 justify-between">
+          <div className="items-center justify-between gap-2">
             <Label.Root htmlFor="roof-slope">
               <span className="text-sm font-medium text-gray-900">{t($ => $.roof.slope)}</span>
             </Label.Root>
@@ -213,7 +213,7 @@ export function RoofInspector({ roofId }: RoofInspectorProps): React.JSX.Element
           </div>
 
           {/* Vertical Offset */}
-          <div className="items-center gap-2 justify-between">
+          <div className="items-center justify-between gap-2">
             <Label.Root htmlFor="vertical-offset">
               <span className="text-sm font-medium text-gray-900">{t($ => $.roof.verticalOffset)}</span>
             </Label.Root>
@@ -230,7 +230,7 @@ export function RoofInspector({ roofId }: RoofInspectorProps): React.JSX.Element
           </div>
 
           {/* Global Overhang with MixedState */}
-          <div className="items-center gap-2 justify-between">
+          <div className="items-center justify-between gap-2">
             <Label.Root htmlFor="roof-overhang">
               <div className="flex items-center gap-1">
                 <span className="text-sm font-medium text-gray-900">{t($ => $.roof.overhang)}</span>
@@ -258,7 +258,7 @@ export function RoofInspector({ roofId }: RoofInspectorProps): React.JSX.Element
         <Separator />
 
         {/* Construction Views */}
-        <div className="flex flex-row gap-3 pt-1 items-center justify-center">
+        <div className="flex flex-row items-center justify-center gap-3 pt-1">
           <ConstructionPlanModal
             title={t($ => $.roof.constructionPlanTitle)}
             constructionModelFactory={() => Promise.resolve(constructRoof(roof))}

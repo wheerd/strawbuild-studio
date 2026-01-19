@@ -141,7 +141,7 @@ export function PlanCalibrationCanvas({
     <div
       ref={setContainerRef}
       style={{ borderColor: 'var(--color-gray-600)' }}
-      className="border rounded-md relative w-full h-full flex items-center justify-center overflow-hidden p0"
+      className="p0 relative flex h-full w-full items-center justify-center overflow-hidden rounded-md border"
     >
       {image ? (
         <SVGViewport ref={viewportRef} svgSize={containerSize} contentBounds={contentBounds}>
@@ -172,9 +172,9 @@ export function PlanCalibrationCanvas({
         <span className="text-gray-900">{t($ => $.canvas.uploadToBegin)}</span>
       )}
       {image && (
-        <div className="absolute bottom-3 right-3 z-10">
+        <div className="absolute right-3 bottom-3 z-10">
           <Card size="sm" variant="soft" className="shadow-md">
-            <div className="items-center gap-3 m--2 p-1">
+            <div className="m--2 items-center gap-3 p-1">
               <span className="text-sm">{t($ => $.canvas.scrollToZoom)}</span>
               <span className="text-sm">Shift + drag to pan</span>
             </div>

@@ -12,8 +12,8 @@ export function FloorAssemblySelectWithEdit(props: FloorAssemblySelectProps): Re
   const { openConfiguration } = useConfigurationModal()
 
   return (
-    <div className="flex gap-0.5 items-center">
-      <div className="grow mr-1">
+    <div className="flex items-center gap-0.5">
+      <div className="mr-1 grow">
         <FloorAssemblySelect {...props} />
       </div>
       <Button

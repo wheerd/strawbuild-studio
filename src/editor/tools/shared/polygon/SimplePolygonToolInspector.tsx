@@ -67,13 +67,13 @@ export function SimplePolygonToolInspector<TTool extends BasePolygonTool<Polygon
                 {t($ => $.simplePolygon.lengthOverride)}
               </span>
               <div className="flex items-center gap-2">
-                <code className="font-mono text-xs text-blue-600 dark:text-blue-400">
+                <span className="font-mono text-xs text-blue-600 dark:text-blue-400">
                   {formatLength(state.lengthOverride)}
-                </code>
+                </span>
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-6 w-6 text-destructive hover:text-destructive"
+                  className="text-destructive hover:text-destructive h-6 w-6"
                   onClick={() => {
                     tool.clearLengthOverride()
                   }}
@@ -89,10 +89,10 @@ export function SimplePolygonToolInspector<TTool extends BasePolygonTool<Polygon
         <Separator />
         <div className="flex flex-col gap-2">
           <span className="text-xs font-medium">{t($ => $.simplePolygon.controlsHeading)}</span>
-          <span className="text-xs text-muted-foreground">• {t($ => $.simplePolygon.controlPlace)}</span>
-          <span className="text-xs text-muted-foreground">• {t($ => $.simplePolygon.controlSnap)}</span>
-          <span className="text-xs text-muted-foreground">• {t($ => $.simplePolygon.controlNumbers)}</span>
-          <span className="text-xs text-muted-foreground">
+          <span className="text-muted-foreground text-xs">• {t($ => $.simplePolygon.controlPlace)}</span>
+          <span className="text-muted-foreground text-xs">• {t($ => $.simplePolygon.controlSnap)}</span>
+          <span className="text-muted-foreground text-xs">• {t($ => $.simplePolygon.controlNumbers)}</span>
+          <span className="text-muted-foreground text-xs">
             • <Kbd size="sm">{t($ => $.keyboard.esc)}</Kbd>{' '}
             {state.lengthOverride
               ? t($ => $.simplePolygon.controlEscOverride, {
@@ -107,7 +107,7 @@ export function SimplePolygonToolInspector<TTool extends BasePolygonTool<Polygon
                   .trim()}
           </span>
           {state.points.length >= minimumPoints && (
-            <span className="text-xs text-muted-foreground">
+            <span className="text-muted-foreground text-xs">
               • <Kbd size="sm">{t($ => $.keyboard.enter)}</Kbd>{' '}
               {t($ => $.simplePolygon.controlEnter, {
                 key: ''
@@ -139,7 +139,7 @@ export function SimplePolygonToolInspector<TTool extends BasePolygonTool<Polygon
               )}
               <Button
                 variant="outline"
-                className="w-full border-destructive/50 text-destructive hover:bg-destructive/10"
+                className="border-destructive/50 text-destructive hover:bg-destructive/10 w-full"
                 onClick={() => {
                   tool.cancel()
                 }}

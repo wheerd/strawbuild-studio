@@ -160,7 +160,7 @@ function ModalContent({
       onValueChange={value => {
         setActiveTab(value as 'plan' | 'parts' | 'modules')
       }}
-      className="flex flex-col h-full -mt-2 "
+      className="-mt-2 flex h-full flex-col"
     >
       <div className="flex flex-shrink-0">
         <Tabs.List>
@@ -169,11 +169,11 @@ function ModalContent({
           <Tabs.Trigger value="modules">{t($ => $.planModal.tabs.modules)}</Tabs.Trigger>
         </Tabs.List>
       </div>
-      <Tabs.Content value="plan" className="flex flex-1 min-h-0 pt-3">
-        <div className="flex flex-col gap-3 h-full overflow-hidden">
+      <Tabs.Content value="plan" className="flex min-h-0 flex-1 pt-3">
+        <div className="flex h-full flex-col gap-3 overflow-hidden">
           <div
             ref={containerRef}
-            className="flex flex-1 min-h-0 overflow-hidden border rounded-md"
+            className="flex min-h-0 flex-1 overflow-hidden rounded-md border"
             style={{
               position: 'relative',
               borderColor: 'var(--color-gray-600)'
@@ -205,7 +205,7 @@ function ModalContent({
           </div>
         </div>
       </Tabs.Content>
-      <Tabs.Content value="parts" className="flex flex-1 min-h-0 overflow-auto pt-3">
+      <Tabs.Content value="parts" className="flex min-h-0 flex-1 overflow-auto pt-3">
         {partsDataPromise ? (
           <Suspense fallback={<PartsSkeleton />}>
             <PartsTabContent partsDataPromise={partsDataPromise} onViewInPlan={handleViewInPlan} />
@@ -214,7 +214,7 @@ function ModalContent({
           <PartsSkeleton />
         )}
       </Tabs.Content>
-      <Tabs.Content value="modules" className="flex flex-1 min-h-0 overflow-auto pt-3">
+      <Tabs.Content value="modules" className="flex min-h-0 flex-1 overflow-auto pt-3">
         {partsDataPromise ? (
           <Suspense fallback={<PartsSkeleton />}>
             <ModulesTabContent partsDataPromise={partsDataPromise} onViewInPlan={handleViewInPlan} />
@@ -360,7 +360,7 @@ function PlanSkeleton() {
 
 function PartsSkeleton() {
   return (
-    <div className="flex flex-col gap-4 h-full overflow-hidden">
+    <div className="flex h-full flex-col gap-4 overflow-hidden">
       <CardSkeleton />
       <CardSkeleton />
     </div>

@@ -169,7 +169,7 @@ export function OpeningAssemblyContent({ initialSelectionId }: OpeningAssemblyCo
 
   if (!selectedAssembly) {
     return (
-      <div className="flex flex-col gap-4 w-full">
+      <div className="flex w-full flex-col gap-4">
         <Callout className="text-gray-900">
           <CalloutText>{t($ => $.openings.emptyList)}</CalloutText>
         </Callout>
@@ -178,11 +178,11 @@ export function OpeningAssemblyContent({ initialSelectionId }: OpeningAssemblyCo
   }
 
   return (
-    <div className="flex flex-col gap-4 w-full">
+    <div className="flex w-full flex-col gap-4">
       {/* Selector + Actions */}
       <div className="flex flex-col gap-2">
-        <div className="flex gap-2 items-end">
-          <div className="flex flex-col gap-1 grow">
+        <div className="flex items-end gap-2">
+          <div className="flex grow flex-col gap-1">
             <OpeningAssemblySelect
               value={(selectedAssemblyId as OpeningAssemblyId | null) ?? undefined}
               onValueChange={value => {
@@ -251,7 +251,7 @@ export function OpeningAssemblyContent({ initialSelectionId }: OpeningAssemblyCo
               <AlertDialog.Description>
                 {t($ => $.openings.deleteConfirm, { name: selectedAssembly.name })}
               </AlertDialog.Description>
-              <div className="flex gap-3 mt-4 justify-end">
+              <div className="mt-4 flex justify-end gap-3">
                 <AlertDialog.Cancel>
                   <Button variant="soft" className="text-gray-900">
                     {t($ => $.common.cancel)}
@@ -280,7 +280,7 @@ export function OpeningAssemblyContent({ initialSelectionId }: OpeningAssemblyCo
             <AlertDialog.Content>
               <AlertDialog.Title>{t($ => $.openings.resetTitle)}</AlertDialog.Title>
               <AlertDialog.Description>{t($ => $.openings.resetConfirm)}</AlertDialog.Description>
-              <div className="flex gap-3 mt-4 justify-end">
+              <div className="mt-4 flex justify-end gap-3">
                 <AlertDialog.Cancel>
                   <Button variant="soft" className="text-gray-900">
                     {t($ => $.common.cancel)}
@@ -299,7 +299,7 @@ export function OpeningAssemblyContent({ initialSelectionId }: OpeningAssemblyCo
       {/* Form */}
       <ConfigForm assembly={selectedAssembly} />
       <Separator />
-      <div className="grid grid-cols-[auto_1fr] gap-2 gap-x-3 items-center">
+      <div className="grid grid-cols-[auto_1fr] items-center gap-2 gap-x-3">
         <Label.Root>
           <span className="text-base font-medium text-gray-900">{t($ => $.openings.defaultOpeningAssembly)}</span>
         </Label.Root>
@@ -329,11 +329,11 @@ function UsageDisplay({ usage }: { usage: OpeningAssemblyUsage }): React.JSX.Ele
   const { t } = useTranslation('config')
 
   return (
-    <div className="grid grid-cols-[auto_1fr] gap-2 gap-x-3 items-center">
+    <div className="grid grid-cols-[auto_1fr] items-center gap-2 gap-x-3">
       <Label.Root>
         <span className="text-base font-medium text-gray-900">{t($ => $.usage.usedBy)}</span>
       </Label.Root>
-      <div className="flex gap-1 flex-wrap">
+      <div className="flex flex-wrap gap-1">
         {usage.isDefault && (
           <Badge variant="soft" color="blue">
             {t($ => $.usage.globalDefault_opening)}
@@ -375,14 +375,11 @@ function ConfigForm({ assembly }: { assembly: OpeningAssemblyConfig }): React.JS
 
   return (
     <div
-      className="flex flex-col
-      gap-3
-      p-3
-      "
+      className="flex flex-col gap-3 p-3"
       style={{ border: '1px solid var(--color-gray-600)', borderRadius: 'var(--radius-2)' }}
     >
-      <div className="grid grid-cols-2 gap-2 gap-x-3 items-center">
-        <div className="grid grid-cols-[auto_1fr] gap-x-2 items-center">
+      <div className="grid grid-cols-2 items-center gap-2 gap-x-3">
+        <div className="grid grid-cols-[auto_1fr] items-center gap-x-2">
           <Label.Root>
             <span className="text-base font-medium text-gray-900">{t($ => $.common.name)}</span>
           </Label.Root>
@@ -397,7 +394,7 @@ function ConfigForm({ assembly }: { assembly: OpeningAssemblyConfig }): React.JS
           />
         </div>
 
-        <div className="flex gap-2 items-center">
+        <div className="flex items-center gap-2">
           <Label.Root>
             <span className="text-base font-medium text-gray-900">{t($ => $.common.type)}</span>
           </Label.Root>
@@ -417,7 +414,7 @@ function ConfigForm({ assembly }: { assembly: OpeningAssemblyConfig }): React.JS
       ) : (
         <>
           <h2>{t($ => $.openings.types.empty)}</h2>
-          <div className="grid grid-cols-[auto_1fr] gap-2 gap-x-3 items-center">
+          <div className="grid grid-cols-[auto_1fr] items-center gap-2 gap-x-3">
             <Label.Root>
               <span className="text-base font-medium text-gray-900">{t($ => $.openings.labels.padding)}</span>
             </Label.Root>
@@ -444,7 +441,7 @@ const SimpleOpeningContent = ({
 }) => {
   const { t } = useTranslation('config')
   return (
-    <div className="grid grid-cols-[auto_1fr_auto_1fr] gap-2 gap-x-3 items-center">
+    <div className="grid grid-cols-[auto_1fr_auto_1fr] items-center gap-2 gap-x-3">
       <Label.Root>
         <span className="text-base font-medium text-gray-900">{t($ => $.openings.labels.padding)}</span>
       </Label.Root>
@@ -516,7 +513,7 @@ const PostOpeningContent = ({
   return (
     <div className="flex flex-col gap-3">
       <h2>{t($ => $.openings.sections.opening)}</h2>
-      <div className="grid grid-cols-[auto_1fr_auto_1fr] gap-2 gap-x-3 items-center">
+      <div className="grid grid-cols-[auto_1fr_auto_1fr] items-center gap-2 gap-x-3">
         <Label.Root>
           <span className="text-base font-medium text-gray-900">{t($ => $.openings.labels.padding)}</span>
         </Label.Root>
@@ -599,7 +596,7 @@ function PostsConfigSection({
     <div className="flex flex-col gap-3">
       <h2>{t($ => $.openings.sections.posts)}</h2>
 
-      <div className="grid grid-cols-[auto_1fr_auto_1fr] gap-2 gap-x-3 items-center">
+      <div className="grid grid-cols-[auto_1fr_auto_1fr] items-center gap-2 gap-x-3">
         <Label.Root htmlFor={typeSelectId}>
           <span className="text-base font-medium text-gray-900">{t($ => $.common.type)}</span>
         </Label.Root>
@@ -731,7 +728,7 @@ const PlankedOpeningContent = ({
   return (
     <div className="flex flex-col gap-3">
       <h2>{t($ => $.openings.sections.opening)}</h2>
-      <div className="grid grid-cols-[auto_1fr_auto_1fr] gap-2 gap-x-3 items-center">
+      <div className="grid grid-cols-[auto_1fr_auto_1fr] items-center gap-2 gap-x-3">
         <Label.Root>
           <span className="text-base font-medium text-gray-900">{t($ => $.openings.labels.padding)}</span>
         </Label.Root>

@@ -19,7 +19,7 @@ export function SelectionOutline({ points }: { points: Vec2[] }): React.JSX.Elem
   return (
     <path
       d={path}
-      className="stroke-blue-600/80 fill-none"
+      className="fill-none stroke-blue-600/80"
       strokeWidth={strokeWidth}
       strokeDasharray={dashPattern}
       strokeLinecap="round"

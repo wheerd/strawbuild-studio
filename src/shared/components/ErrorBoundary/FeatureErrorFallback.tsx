@@ -20,7 +20,7 @@ export function FeatureErrorFallback({ error, resetErrorBoundary }: FallbackProp
   const { t } = useTranslation('errors')
 
   return (
-    <div className="flex flex-col items-center justify-center gap-3 p-4 min-h-[200px]">
+    <div className="flex min-h-[200px] flex-col items-center justify-center gap-3 p-4">
       <Callout className="text-destructive w-full max-w-[500px]">
         <CalloutIcon>
           <ExclamationTriangleIcon />
@@ -33,7 +33,7 @@ export function FeatureErrorFallback({ error, resetErrorBoundary }: FallbackProp
         </CalloutText>
       </Callout>
 
-      <div className="flex gap-2 w-full max-w-[500px]">
+      <div className="flex w-full max-w-[500px] gap-2">
         <Button className="flex flex-1" onClick={resetErrorBoundary}>
           <ReloadIcon className="mr-2" />
           {t($ => $.feature.retry)}

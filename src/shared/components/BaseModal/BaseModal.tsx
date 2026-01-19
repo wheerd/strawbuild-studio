@@ -71,7 +71,7 @@ export function BaseModal({
           ...style
         }}
       >
-        <DialogTitle className="flex justify-between items-center">
+        <DialogTitle className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             {titleIcon}
             {title}

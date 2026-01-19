@@ -55,7 +55,7 @@ export function StoreySelector(): React.JSX.Element {
           {storeysDisplayOrder.map(storey => (
             <SelectItem key={storey.id} value={storey.id}>
               <span className="flex items-center gap-2">
-                <code className={cn('font-mono font-bold text-sm', getLevelColor(storey.level))}>L{storey.level}</code>
+                <span className={cn('font-mono text-sm font-bold', getLevelColor(storey.level))}>L{storey.level}</span>
                 <StoreyName storey={storey} />
               </span>
             </SelectItem>

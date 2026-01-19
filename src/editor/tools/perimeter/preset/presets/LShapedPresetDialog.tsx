@@ -70,7 +70,7 @@ export function LShapedPresetDialog({ onConfirm, trigger }: PresetDialogProps): 
       <div className="flex flex-col gap-4">
         <div className="flex flex-row gap-5">
           {/* Left Column - Configuration */}
-          <div className="flex flex-col gap-3 grow">
+          <div className="flex grow flex-col gap-3">
             <h2 font-medium>{t($ => $.presetDialogs.lShaped.configuration)}</h2>
 
             {/* Main Rectangle Dimensions */}
@@ -79,7 +79,7 @@ export function LShapedPresetDialog({ onConfirm, trigger }: PresetDialogProps): 
                 {t($ => $.presetDialogs.lShaped.mainRectangle)}
               </span>
               <div className="grid grid-cols-2 gap-3">
-                <div className="flex flex-col gap-1 col-auto">
+                <div className="col-auto flex flex-col gap-1">
                   <span className="text-sm text-gray-900">{t($ => $.presetDialogs.lShaped.width1)}</span>
                   <LengthField
                     value={config.width1}
@@ -96,7 +96,7 @@ export function LShapedPresetDialog({ onConfirm, trigger }: PresetDialogProps): 
                   />
                 </div>
 
-                <div className="flex flex-col gap-1 col-auto">
+                <div className="col-auto flex flex-col gap-1">
                   <span className="text-sm text-gray-900">{t($ => $.presetDialogs.lShaped.length1)}</span>
                   <LengthField
                     value={config.length1}
@@ -292,7 +292,7 @@ export function LShapedPresetDialog({ onConfirm, trigger }: PresetDialogProps): 
         </div>
 
         {/* Actions */}
-        <div className="justify-end gap-3 mt-4">
+        <div className="mt-4 justify-end gap-3">
           <DialogClose asChild>
             <Button variant="ghost">{t($ => $.presetDialogs.lShaped.cancel)}</Button>
           </DialogClose>

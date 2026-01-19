@@ -26,7 +26,7 @@ export const IssueDescriptionPanel = ({ modelPromise }: IssueDescriptionPanelPro
                 <CrossCircledIcon />
               </CalloutIcon>
               <div className="flex flex-col gap-2">
-                <span className="font-medium text-base">
+                <span className="text-base font-medium">
                   {t($ => $.planModal.issuesPanel.errorsTitle, { count: model.errors.length })}
                 </span>
                 <div className="flex flex-col gap-1">
@@ -63,7 +63,7 @@ export const IssueDescriptionPanel = ({ modelPromise }: IssueDescriptionPanelPro
                 <ExclamationTriangleIcon />
               </CalloutIcon>
               <div className="flex flex-col gap-2">
-                <span className="font-medium text-base">
+                <span className="text-base font-medium">
                   {t($ => $.planModal.issuesPanel.warningsTitle, { count: model.warnings.length })}
                 </span>
                 <div className="flex flex-col gap-1">
@@ -100,7 +100,7 @@ export const IssueDescriptionPanel = ({ modelPromise }: IssueDescriptionPanelPro
                 <CheckCircledIcon />
               </CalloutIcon>
               <div className="flex flex-col gap-1">
-                <span className="font-medium text-base">{t($ => $.planModal.issuesPanel.noIssuesTitle)}</span>
+                <span className="text-base font-medium">{t($ => $.planModal.issuesPanel.noIssuesTitle)}</span>
                 <span className="text-sm">{t($ => $.planModal.issuesPanel.noIssuesMessage)}</span>
               </div>
             </Callout>

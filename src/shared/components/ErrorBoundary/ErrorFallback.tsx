@@ -30,10 +30,10 @@ export function ErrorFallback({ error, resetErrorBoundary }: FallbackProps): Rea
   }
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen p-4 bg-muted">
-      <div className="flex flex-col gap-4 max-w-[600px] w-full">
-        <div className="flex flex-col gap-2 items-center">
-          <ExclamationTriangleIcon className="w-12 h-12 text-red-500" />
+    <div className="bg-muted flex min-h-screen flex-col items-center justify-center p-4">
+      <div className="flex w-full max-w-[600px] flex-col gap-4">
+        <div className="flex flex-col items-center gap-2">
+          <ExclamationTriangleIcon className="h-12 w-12 text-red-500" />
           <h1 className="text-2xl font-bold">{t($ => $.boundary.title)}</h1>
           <p className="text-muted-foreground text-center">{t($ => $.boundary.description)}</p>
         </div>
@@ -50,7 +50,7 @@ export function ErrorFallback({ error, resetErrorBoundary }: FallbackProps): Rea
         {showDetails && stack && (
           <div className="flex flex-col gap-2">
             <span className="text-sm font-bold">{t($ => $.boundary.errorDetails)}</span>
-            <code className="block p-3 whitespace-pre-wrap break-words max-h-[200px] overflow-auto bg-muted border border-border rounded text-xs">
+            <code className="bg-muted border-border block max-h-[200px] overflow-auto rounded border p-3 text-xs wrap-break-word whitespace-pre-wrap">
               {stack}
             </code>
           </div>

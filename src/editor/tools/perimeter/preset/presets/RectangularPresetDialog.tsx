@@ -72,7 +72,7 @@ export function RectangularPresetDialog({ onConfirm, trigger }: PresetDialogProp
           <div className="flex flex-col gap-3">
             <h2 font-medium>{t($ => $.presetDialogs.rectangular.configuration)}</h2>
 
-            <div className="grid grid-cols-2 gap-y-3 gap-x-2">
+            <div className="grid grid-cols-2 gap-x-2 gap-y-3">
               {/* Width */}
               <div className="flex flex-col gap-1">
                 <span className="text-sm text-gray-900">{t($ => $.presetDialogs.rectangular.width)}</span>
@@ -211,7 +211,7 @@ export function RectangularPresetDialog({ onConfirm, trigger }: PresetDialogProp
         </div>
 
         {/* Actions */}
-        <div className="justify-end gap-3 mt-4">
+        <div className="mt-4 justify-end gap-3">
           <DialogClose>
             <Button variant="soft" className="text-gray-900">
               {t($ => $.presetDialogs.rectangular.cancel)}

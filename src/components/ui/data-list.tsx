@@ -16,7 +16,7 @@ DataListItem.displayName = 'DataListItem'
 
 const DataListLabel = React.forwardRef<HTMLElement, React.HTMLAttributes<HTMLElement>>(
   ({ className, ...props }, ref) => (
-    <dt ref={ref} className={cn('text-sm text-muted-foreground', className)} {...props} />
+    <dt ref={ref} className={cn('text-muted-foreground text-sm', className)} {...props} />
   )
 )
 DataListLabel.displayName = 'DataListLabel'

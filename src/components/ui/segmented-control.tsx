@@ -38,36 +38,45 @@ const segmentedControlItemVariants = cva(
 
 type SegmentedControlSizeVariant = 'sm' | 'base' | 'lg'
 
-interface SegmentedControlRootProps
+interface SegmentedControlRootProps<T extends string = string>
   extends
-    Omit<React.ComponentPropsWithoutRef<typeof ToggleGroupPrimitive.Root>, 'type' | 'value' | 'defaultValue'>,
+    Omit<
+      React.ComponentPropsWithoutRef<typeof ToggleGroupPrimitive.Root>,
+      'type' | 'value' | 'defaultValue' | 'onValueChange'
+    >,
     VariantProps<typeof segmentedControlVariants> {
-  value?: string
-  defaultValue?: string
-  onValueChange?: (value: string) => void
+  value?: T
+  defaultValue?: T
+  onValueChange?: (value: T) => void
 }
 
 const SegmentedControlContext = React.createContext<{ size?: SegmentedControlSizeVariant }>({})
 
-const SegmentedControlRoot = React.forwardRef<
-  React.ComponentRef<typeof ToggleGroupPrimitive.Root>,
-  SegmentedControlRootProps
->(({ className, size, children, value, defaultValue, onValueChange, ...props }, ref) => (
-  <SegmentedControlContext.Provider value={{ size: size ?? undefined }}>
-    <ToggleGroupPrimitive.Root
-      ref={ref}
-      type="single"
-      value={value}
-      defaultValue={defaultValue}
-      onValueChange={onValueChange}
-      className={cn(segmentedControlVariants({ size }), className)}
-      {...props}
-    >
-      {children}
-    </ToggleGroupPrimitive.Root>
-  </SegmentedControlContext.Provider>
-))
-SegmentedControlRoot.displayName = 'SegmentedControl.Root'
+function SegmentedControlRootInner<T extends string = string>(
+  { className, size, children, value, defaultValue, onValueChange, ...props }: SegmentedControlRootProps<T>,
+  ref: React.ForwardedRef<React.ComponentRef<typeof ToggleGroupPrimitive.Root>>
+) {
+  return (
+    <SegmentedControlContext.Provider value={{ size: size ?? undefined }}>
+      <ToggleGroupPrimitive.Root
+        ref={ref}
+        type="single"
+        value={value}
+        defaultValue={defaultValue}
+        onValueChange={onValueChange as (value: string) => void}
+        className={cn(segmentedControlVariants({ size }), className)}
+        {...props}
+      >
+        {children}
+      </ToggleGroupPrimitive.Root>
+    </SegmentedControlContext.Provider>
+  )
+}
+
+const SegmentedControlRoot = React.forwardRef(SegmentedControlRootInner) as <T extends string = string>(
+  props: SegmentedControlRootProps<T> & React.RefAttributes<React.ComponentRef<typeof ToggleGroupPrimitive.Root>>
+) => React.ReactElement
+;(SegmentedControlRoot as React.FC).displayName = 'SegmentedControl.Root'
 
 interface SegmentedControlItemProps
   extends

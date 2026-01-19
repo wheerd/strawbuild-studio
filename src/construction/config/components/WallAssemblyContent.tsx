@@ -17,6 +17,7 @@ import { usePerimeterWalls } from '@/building/store'
 import { AlertDialog } from '@/components/ui/alert-dialog'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { Card } from '@/components/ui/card'
 import { Checkbox } from '@/components/ui/checkbox'
 import { DropdownMenu } from '@/components/ui/dropdown-menu'
 import { Select } from '@/components/ui/select'
@@ -129,7 +130,7 @@ function InfillConfigForm({ config, onUpdate }: InfillConfigFormProps): React.JS
 
         <Label.Root>
           <div className="flex flex-col gap-1">
-            <div className="flex gap-1 items-center">
+            <div className="flex items-center gap-1">
               <span className="text-sm font-medium text-gray-900">{t($ => $.walls.infillMaterial)}</span>
               <Tooltip content={t($ => $.walls.infillMaterialTooltip)}>
                 <InfoCircledIcon cursor="help" width={12} height={12} style={{ color: 'var(--color-gray-900)' }} />
@@ -175,7 +176,7 @@ function PostsConfigSection({ posts, onUpdate }: PostsConfigSectionProps): React
   return (
     <div className="flex flex-col gap-3">
       <h2>{t($ => $.walls.postsConfiguration)}</h2>
-      <div className="grid grid-cols-[5em_1fr] gap-2 gap-x-3 items-center">
+      <div className="grid grid-cols-[5em_1fr] items-center gap-2 gap-x-3">
         <Label.Root>
           <span className="text-sm font-medium text-gray-900">{t($ => $.walls.postType)}</span>
         </Label.Root>
@@ -199,7 +200,9 @@ function PostsConfigSection({ posts, onUpdate }: PostsConfigSectionProps): React
             }
           }}
         >
-          <Select.Trigger />
+          <Select.Trigger>
+            <Select.Value />
+          </Select.Trigger>
           <Select.Content>
             <Select.Item value="full">{t($ => $.walls.postTypeFull)}</Select.Item>
             <Select.Item value="double">{t($ => $.walls.postTypeDouble)}</Select.Item>
@@ -288,7 +291,7 @@ function TriangularBattensConfigSection({
         </Tooltip>
       </div>
 
-      <div className="grid grid-cols-[5em_1fr_5em_1fr] gap-2 gap-x-3 items-center">
+      <div className="grid grid-cols-[5em_1fr_5em_1fr] items-center gap-2 gap-x-3">
         <Label.Root>
           <span className="text-sm font-medium text-gray-900">{t($ => $.walls.battenSize)}</span>
         </Label.Root>
@@ -331,7 +334,7 @@ function TriangularBattensConfigSection({
 
       <div className="flex gap-3">
         <Label.Root>
-          <div className="flex gap-2 items-center">
+          <div className="flex items-center gap-2">
             <Checkbox
               checked={triangularBattens.inside}
               onCheckedChange={checked => {
@@ -343,7 +346,7 @@ function TriangularBattensConfigSection({
         </Label.Root>
 
         <Label.Root>
-          <div className="flex gap-2 items-center">
+          <div className="flex items-center gap-2">
             <Checkbox
               checked={triangularBattens.outside}
               onCheckedChange={checked => {
@@ -368,7 +371,7 @@ function ModuleConfigSection({ module, onUpdate }: ModuleConfigSectionProps): Re
   return (
     <div className="flex flex-col gap-3">
       <h2>{t($ => $.walls.moduleConfiguration)}</h2>
-      <div className="grid grid-cols-[6em_1fr] gap-2 gap-x-3 items-center">
+      <div className="grid grid-cols-[6em_1fr] items-center gap-2 gap-x-3">
         <Label.Root>
           <span className="text-sm font-medium text-gray-900">{t($ => $.walls.moduleType)}</span>
         </Label.Root>
@@ -823,16 +826,10 @@ function ConfigForm({ assembly }: ConfigFormProps): React.JSX.Element {
   }, [assembly])
 
   return (
-    <div
-      className="flex flex-col
-      gap-3
-      p-3
-      "
-      style={{ border: '1px solid var(--color-gray-600)', borderRadius: 'var(--radius-2)' }}
-    >
+    <Card className="flex flex-col gap-3 p-3">
       {/* Basic Info - Full Width */}
-      <div className="grid grid-cols-2 gap-2 gap-x-3 items-center">
-        <div className="grid grid-cols-[auto_1fr] gap-x-2 items-center">
+      <div className="grid grid-cols-2 items-center gap-2 gap-x-3">
+        <div className="grid grid-cols-[auto_1fr] items-center gap-x-2">
           <Label.Root>
             <span className="text-base font-medium text-gray-900">{t($ => $.common.name)}</span>
           </Label.Root>
@@ -847,18 +844,18 @@ function ConfigForm({ assembly }: ConfigFormProps): React.JSX.Element {
           />
         </div>
 
-        <div className="grid grid-cols-2 gap-2 gap-x-3 items-center">
-          <div className="flex gap-2 items-center">
+        <div className="grid grid-cols-2 items-center gap-2 gap-x-3">
+          <div className="flex items-center gap-2">
             <Label.Root>
               <span className="text-base font-medium text-gray-900">{t($ => $.common.type)}</span>
             </Label.Root>
-            <div className="flex gap-2 items-center">
+            <div className="flex items-center gap-2">
               {React.createElement(getPerimeterConfigTypeIcon(assembly.type))}
               <span className="text-base text-gray-900">{t($ => $.walls.types[assembly.type])}</span>
             </div>
           </div>
 
-          <div className="flex gap-2 items-center">
+          <div className="flex items-center gap-2">
             <Label.Root>
               <span className="text-base font-medium text-gray-900">{t($ => $.common.totalThickness)}</span>
             </Label.Root>
@@ -882,7 +879,7 @@ function ConfigForm({ assembly }: ConfigFormProps): React.JSX.Element {
           <CommonConfigSections assemblyId={assembly.id} config={assembly} />
         </div>
       </div>
-    </div>
+    </Card>
   )
 }
 
@@ -1094,8 +1091,8 @@ export function WallAssemblyContent({ initialSelectionId }: WallAssemblyContentP
       {/* Selector + Actions */}
       <div className="flex flex-col gap-2">
         <div className="grid grid-cols-2 gap-2">
-          <div className="flex gap-2 items-end">
-            <div className="flex flex-col gap-1 grow">
+          <div className="flex items-end gap-2">
+            <div className="flex grow flex-col gap-1">
               <WallAssemblySelect
                 value={selectedAssemblyId as WallAssemblyId | undefined}
                 onValueChange={setSelectedAssemblyId}
@@ -1180,7 +1177,7 @@ export function WallAssemblyContent({ initialSelectionId }: WallAssemblyContentP
                 <AlertDialog.Description>
                   {t($ => $.walls.deleteConfirm, { name: selectedAssembly?.name })}
                 </AlertDialog.Description>
-                <div className="flex gap-3 mt-4 justify-end">
+                <div className="mt-4 flex justify-end gap-3">
                   <AlertDialog.Cancel>
                     <Button variant="soft" className="text-gray-900">
                       {t($ => $.common.cancel)}
@@ -1209,7 +1206,7 @@ export function WallAssemblyContent({ initialSelectionId }: WallAssemblyContentP
               <AlertDialog.Content>
                 <AlertDialog.Title>{t($ => $.walls.resetTitle)}</AlertDialog.Title>
                 <AlertDialog.Description>{t($ => $.walls.resetConfirm)}</AlertDialog.Description>
-                <div className="flex gap-3 mt-4 justify-end">
+                <div className="mt-4 flex justify-end gap-3">
                   <AlertDialog.Cancel>
                     <Button variant="soft" className="text-gray-900">
                       {t($ => $.common.cancel)}
@@ -1225,7 +1222,7 @@ export function WallAssemblyContent({ initialSelectionId }: WallAssemblyContentP
             </AlertDialog.Root>
           </div>
 
-          <div className="grid grid-cols-[auto_1fr] gap-2 items-center">
+          <div className="grid grid-cols-[auto_1fr] items-center gap-2">
             <Label.Root>
               <div className="flex items-center gap-1">
                 <span className="text-sm font-medium text-gray-900">{t($ => $.walls.defaultWallAssembly)}</span>
@@ -1245,7 +1242,7 @@ export function WallAssemblyContent({ initialSelectionId }: WallAssemblyContentP
       {/* Form */}
       {selectedAssembly && <ConfigForm assembly={selectedAssembly} />}
       {!selectedAssembly && wallAssemblies.length === 0 && (
-        <div className="justify-center items-center p-5">
+        <div className="items-center justify-center p-5">
           <span className="text-gray-900">{t($ => $.walls.emptyList)}</span>
         </div>
       )}
@@ -1267,11 +1264,11 @@ function UsageDisplay({ usage }: { usage: WallAssemblyUsage }): React.JSX.Elemen
   const { t } = useTranslation('config')
 
   return (
-    <div className="grid grid-cols-[auto_1fr] gap-2 gap-x-3 items-center">
+    <div className="grid grid-cols-[auto_1fr] items-center gap-2 gap-x-3">
       <Label.Root>
         <span className="text-base font-medium text-gray-900">{t($ => $.usage.usedBy)}</span>
       </Label.Root>
-      <div className="flex gap-1 flex-wrap">
+      <div className="flex flex-wrap gap-1">
         {usage.isDefault && (
           <Badge variant="soft" color="blue">
             {t($ => $.usage.globalDefault_wall)}

@@ -74,7 +74,7 @@ export function ConstructionPartsListModal({
         onValueChange={value => {
           setActiveTab(value as 'materials' | 'modules')
         }}
-        className="flex flex-col h-full -mt-2"
+        className="-mt-2 flex h-full flex-col"
       >
         <div className="flex flex-shrink-0">
           <Tabs.List>
@@ -83,7 +83,7 @@ export function ConstructionPartsListModal({
           </Tabs.List>
         </div>
 
-        <Tabs.Content value="materials" className="flex flex-1 min-h-0 overflow-auto pt-3">
+        <Tabs.Content value="materials" className="flex min-h-0 flex-1 overflow-auto pt-3">
           {partsDataPromise ? (
             <Suspense fallback={<PartsSkeleton />}>
               <MaterialPartsContent partsDataPromise={partsDataPromise} />
@@ -93,7 +93,7 @@ export function ConstructionPartsListModal({
           )}
         </Tabs.Content>
 
-        <Tabs.Content value="modules" className="flex flex-1 min-h-0 overflow-auto pt-3">
+        <Tabs.Content value="modules" className="flex min-h-0 flex-1 overflow-auto pt-3">
           {partsDataPromise ? (
             <Suspense fallback={<PartsSkeleton />}>
               <ModulePartsContent partsDataPromise={partsDataPromise} />

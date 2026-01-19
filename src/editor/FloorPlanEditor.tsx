@@ -127,12 +127,12 @@ export function FloorPlanEditor(): React.JSX.Element {
     <ConfigurationModalContext.Provider value={{ openConfiguration }}>
       <div
         ref={containerRef}
-        className="grid grid-rows-[auto_1fr] w-screen h-screen m-0 p-0 bg-muted"
+        className="bg-muted m-0 grid h-screen w-screen grid-rows-[auto_1fr] p-0"
         tabIndex={0}
         data-testid="floor-plan-editor"
       >
         {/* Top Toolbar - Tabs for tool groups + tools */}
-        <div className="border-b border-border">
+        <div className="border-border border-b">
           <MainToolbar onInfoClick={openManually} />
         </div>
 
@@ -149,9 +149,9 @@ export function FloorPlanEditor(): React.JSX.Element {
         <WelcomeModal isOpen={isOpen} mode={mode} onAccept={handleAccept} />
 
         {/* Main Content Area - Editor + Side Panel */}
-        <div className="grid grid-cols-[1fr_320px] p-0 gap-0 overflow-hidden">
+        <div className="grid grid-cols-[1fr_320px] gap-0 overflow-hidden p-0">
           {/* Editor Area */}
-          <div className="relative overflow-hidden bg-background border-r border-border">
+          <div className="bg-background border-border relative overflow-hidden border-r">
             <ErrorBoundary FallbackComponent={FeatureErrorFallback}>
               <ViewModeToggle />
               <FloorPlanStage width={dimensions.width} height={dimensions.height} />

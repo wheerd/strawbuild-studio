@@ -274,12 +274,12 @@ export function ConstructionPlan({
   }, [highlightedPartId])
 
   return (
-    <div className="relative w-full h-full">
+    <div className="relative h-full w-full">
       <SVGViewport
         ref={viewportRef}
         contentBounds={contentBounds}
         padding={0.05} // 5% padding for wall construction
-        className={`w-full h-full ${midCutEnabled ? 'mid-cut-enabled' : ''} ${showStrawTypes ? 'show-straw-types' : ''}`}
+        className={`h-full w-full ${midCutEnabled ? 'mid-cut-enabled' : ''} ${showStrawTypes ? 'show-straw-types' : ''}`}
         resetButtonPosition="top-right"
         svgSize={containerSize}
       >
@@ -380,7 +380,7 @@ export function ConstructionPlan({
 
       <div className="absolute top-3 left-3 z-10">
         <Card size="sm" variant="soft" className="shadow-md">
-          <div className="flex flex-col gap-2 m--2">
+          <div className="m--2 flex flex-col gap-2">
             {/* View selector - only show if multiple views */}
             {views.length > 1 && (
               <SegmentedControl.Root
@@ -398,7 +398,7 @@ export function ConstructionPlan({
               </SegmentedControl.Root>
             )}
 
-            <div className="grid grid-cols-6 gap-1 items-center justify-center">
+            <div className="grid grid-cols-6 items-center justify-center gap-1">
               {/* Mid-cut toggle */}
               <Button
                 size="icon"
@@ -464,7 +464,7 @@ export function ConstructionPlan({
             </div>
 
             {showStrawTypes && (
-              <div className="flex flex-col p-2 mt--2">
+              <div className="mt--2 flex flex-col p-2">
                 <h4>{t($ => $.plan.strawTypesHeading)}</h4>
                 <div className="grid grid-cols-2">
                   <span className="text-sm text-lime-600">{t($ => $.plan.strawTypes.fullBale)}</span>

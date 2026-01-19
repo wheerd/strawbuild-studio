@@ -34,7 +34,7 @@ const codeVariants = cva('font-mono', {
   },
   defaultVariants: {
     variant: 'ghost',
-    size: '2',
+    size: 'base',
     weight: 'regular'
   }
 })

@@ -374,7 +374,7 @@ function MaterialSummaryRow({
         <MaterialTypeIndicator material={material} />
       </Table.RowHeaderCell>
       <Table.RowHeaderCell>
-        <div className="items-center gap-2 justify-between">
+        <div className="items-center justify-between gap-2">
           <span className="font-medium">{materialName}</span>
           <Button size="icon" title={t($ => $.partsList.actions.jumpToDetails)} variant="ghost" onClick={onNavigate}>
             <PinBottomIcon />
@@ -417,7 +417,7 @@ function MaterialGroupSummaryRow({
         <span className="text</span>00">↳</span>
       </Table.Cell>
       <Table.Cell>
-        <div className="items-center gap-2 justify-between">
+        <div className="items-center justify-between gap-2">
           <Badge color={group.badgeColor}>{group.badgeLabel}</Badge>
           <Button size="icon" title={t($ => $.partsList.actions.jumpToDetails)} variant="ghost" onClick={onNavigate}>
             <PinBottomIcon />
@@ -602,7 +602,7 @@ function DimensionalPartsTable({
               </Table.Cell>
               <Table.Cell justify-center>{part.quantity}</Table.Cell>
               <Table.Cell justify-end>
-                <div className="items-center gap-2 justify-end">
+                <div className="items-center justify-end gap-2">
                   {part.issue === 'LengthExceedsAvailable' && material.lengths.length > 0 && (
                     <Tooltip
                       key="length-exceeds-available"
@@ -726,7 +726,7 @@ function SheetPartsTable({
                 </div>
               </Table.Cell>
               <Table.Cell justify-end>
-                <div className="items-center gap-2 justify-end">
+                <div className="items-center justify-end gap-2">
                   {part.issue === 'ThicknessMismatch' && (
                     <Tooltip key="thickness-missmatch" content={t($ => $.partsList.issues.dimensionsMismatchThickness)}>
                       <ExclamationTriangleIcon style={{ color: 'var(--color-red-900)' }} />

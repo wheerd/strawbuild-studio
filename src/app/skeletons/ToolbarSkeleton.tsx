@@ -20,22 +20,22 @@ export function ToolbarSkeleton(): React.JSX.Element {
         <div className="flex items-center gap-2">
           {/* Basic tools group */}
           <div className="flex items-center gap-1">
-            <Skeleton className="w-8 h-8" />
-            <Skeleton className="w-8 h-8" />
-            <Skeleton className="w-8 h-8" />
+            <Skeleton className="h-8 w-8" />
+            <Skeleton className="h-8 w-8" />
+            <Skeleton className="h-8 w-8" />
           </div>
           <Separator orientation="vertical" className="h-6" />
           {/* Perimeter tools group */}
           <div className="flex items-center gap-1">
-            <Skeleton className="w-8 h-8" />
-            <Skeleton className="w-8 h-8" />
-            <Skeleton className="w-8 h-8" />
+            <Skeleton className="h-8 w-8" />
+            <Skeleton className="h-8 w-8" />
+            <Skeleton className="h-8 w-8" />
           </div>
           <Separator orientation="vertical" className="h-6" />
           {/* Test data tools group */}
           <div className="flex items-center gap-1">
-            <Skeleton className="w-8 h-8" />
-            <Skeleton className="w-8 h-8" />
+            <Skeleton className="h-8 w-8" />
+            <Skeleton className="h-8 w-8" />
           </div>
         </div>
       </Toolbar.Root>

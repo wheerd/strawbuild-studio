@@ -28,10 +28,10 @@ export function MoveToolInspector({ tool }: ToolInspectorProps<MoveTool>): React
         {/* Help Text */}
         <div className="flex flex-col gap-2">
           <span className="text-xs font-medium">{t($ => $.move.controlsHeading)}</span>
-          <span className="text-xs text-muted-foreground">• {t($ => $.move.controlDrag)}</span>
-          <span className="text-xs text-muted-foreground">• {t($ => $.move.controlSnap)}</span>
-          <span className="text-xs text-muted-foreground">• {t($ => $.move.controlPrecise)}</span>
-          <span className="text-xs text-muted-foreground">
+          <span className="text-muted-foreground text-xs">• {t($ => $.move.controlDrag)}</span>
+          <span className="text-muted-foreground text-xs">• {t($ => $.move.controlSnap)}</span>
+          <span className="text-muted-foreground text-xs">• {t($ => $.move.controlPrecise)}</span>
+          <span className="text-muted-foreground text-xs">
             •{' '}
             {t($ => $.move.controlCancel, {
               key: 'Esc'

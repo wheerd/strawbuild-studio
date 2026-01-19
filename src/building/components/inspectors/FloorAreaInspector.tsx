@@ -43,7 +43,7 @@ export function FloorAreaInspector({ floorAreaId }: FloorAreaInspectorProps): Re
   if (!floorArea) {
     return (
       <div className="p-2">
-        <span className="text-sm text-red-800 font-bold">{t($ => $.floorArea.notFound)}</span>
+        <span className="text-sm font-bold text-red-800">{t($ => $.floorArea.notFound)}</span>
       </div>
     )
   }

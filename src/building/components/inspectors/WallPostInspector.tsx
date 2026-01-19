@@ -103,7 +103,7 @@ export function WallPostInspector({ postId }: { postId: WallPostId }): React.JSX
         </div>
 
         {/* Dimension inputs in Radix Grid layout */}
-        <div className="grid grid-cols-[auto_1fr_auto_1fr] grid-rows-1 gap-2 gap-x-3 items-center grow">
+        <div className="grid grow grid-cols-[auto_1fr_auto_1fr] grid-rows-1 items-center gap-2 gap-x-3">
           {/* Width Label */}
           <Label.Root htmlFor="post-width">
             <span className="text-sm font-medium text-gray-900">{t($ => $.wallPost.width)}</span>

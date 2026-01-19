@@ -105,7 +105,7 @@ export function TagVisibilityMenu({ model }: TagVisibilityMenuProps): React.JSX.
         </DropdownMenu.Trigger>
         <DropdownMenu.Content>
           <DropdownMenu.Item disabled>
-            <span className="text-sm ">{t($ => $.tagVisibility.noTags)}</span>
+            <span className="text-sm">{t($ => $.tagVisibility.noTags)}</span>
           </DropdownMenu.Item>
         </DropdownMenu.Content>
       </DropdownMenu>
@@ -127,7 +127,7 @@ export function TagVisibilityMenu({ model }: TagVisibilityMenuProps): React.JSX.
           return (
             <DropdownMenu.Sub key={categoryId}>
               <DropdownMenu.SubTrigger>
-                <div className="items-center justify-between w-full gap-2">
+                <div className="w-full items-center justify-between gap-2">
                   <span className="text-sm">
                     <CategoryLabel categoryId={categoryId} />
                   </span>
@@ -142,7 +142,7 @@ export function TagVisibilityMenu({ model }: TagVisibilityMenuProps): React.JSX.
                   }}
                 >
                   <div
-                    className="items-center                    justify-between                    w-full                    gap-2"
+                    className="w-full items-center justify-between gap-2"
                     onClick={e => {
                       e.stopPropagation()
                       toggleTagOrCategory(categoryId)
@@ -166,7 +166,7 @@ export function TagVisibilityMenu({ model }: TagVisibilityMenuProps): React.JSX.
                     }}
                   >
                     <div
-                      className="items-center                      justify-between                      w-full                      gap-2"
+                      className="w-full items-center justify-between gap-2"
                       onClick={e => {
                         e.stopPropagation()
                         toggleTagOrCategory(tag.id)

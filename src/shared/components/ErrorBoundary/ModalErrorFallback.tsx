@@ -9,7 +9,7 @@ export function ModalErrorFallback({ error, resetErrorBoundary }: FallbackProps)
   const { t } = useTranslation('errors')
 
   return (
-    <div className="flex flex-col items-center justify-center gap-3 p-4 min-h-[150px]">
+    <div className="flex min-h-[150px] flex-col items-center justify-center gap-3 p-4">
       <Callout className="text-destructive w-full">
         <CalloutIcon>
           <ExclamationTriangleIcon />

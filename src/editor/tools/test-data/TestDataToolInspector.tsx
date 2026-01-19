@@ -35,7 +35,7 @@ export function TestDataToolInspector({ tool }: ToolInspectorProps<TestDataTool>
       <div className="flex flex-col gap-3">
         {/* Test Data Generation Section */}
         <div>
-          <h2 className="text-sm font-medium mb-2 text-muted-foreground">{t($ => $.testData.generationHeading)}</h2>
+          <h2 className="text-muted-foreground mb-2 text-sm font-medium">{t($ => $.testData.generationHeading)}</h2>
 
           <div className="flex flex-col gap-2">
             {/* Cross/T-Shape Perimeter */}
@@ -60,7 +60,7 @@ export function TestDataToolInspector({ tool }: ToolInspectorProps<TestDataTool>
 
         {/* Danger Zone Section */}
         <div>
-          <h2 className="text-sm font-medium mb-2 text-destructive">{t($ => $.testData.dangerZone)}</h2>
+          <h2 className="text-destructive mb-2 text-sm font-medium">{t($ => $.testData.dangerZone)}</h2>
 
           <div className="flex flex-col gap-2">
             <Button className="w-full" size="sm" variant="destructive" onClick={handleResetData}>
@@ -70,14 +70,14 @@ export function TestDataToolInspector({ tool }: ToolInspectorProps<TestDataTool>
               {t($ => $.testData.hardReset)}
             </Button>
 
-            <span className="text-xs text-muted-foreground">{t($ => $.testData.resetWarning)}</span>
+            <span className="text-muted-foreground text-xs">{t($ => $.testData.resetWarning)}</span>
           </div>
         </div>
 
         {/* Instructions */}
         <Separator />
         <div>
-          <span className="text-xs text-muted-foreground">{t($ => $.testData.instructions)}</span>
+          <span className="text-muted-foreground text-xs">{t($ => $.testData.instructions)}</span>
         </div>
       </div>
     </div>

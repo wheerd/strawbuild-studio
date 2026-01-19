@@ -13,10 +13,10 @@ import { ThemeToggle } from './ThemeToggle'
 export function StatusBar(): React.JSX.Element {
   return (
     <div
-      className="absolute z-5 pointer-events-none left-0 right-0 bottom-0 h-9 p-0 px-1 m-0 bg-card border-t border-border"
+      className="bg-card border-border pointer-events-none absolute right-0 bottom-0 left-0 z-5 m-0 h-9 border-t p-0 px-1"
       data-testid="statusbar"
     >
-      <div className="grid grid-cols-[1fr_1fr_2fr] items-center gap-4 p-0.5 pointer-events-auto">
+      <div className="pointer-events-auto grid grid-cols-[1fr_1fr_2fr] items-center gap-4 p-0.5">
         <div className="flex items-center gap-3 p-0">
           <OfflineStatusIndicator />
           <AutoSaveIndicator />

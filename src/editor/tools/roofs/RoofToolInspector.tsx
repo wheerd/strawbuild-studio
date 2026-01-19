@@ -58,7 +58,7 @@ export function RoofToolInspector({ tool }: ToolInspectorProps<RoofTool>): React
           {/* Assembly */}
           <div className="flex flex-col gap-1">
             <Label.Root>
-              <span className="text-xs font-medium text-muted-foreground">{t($ => $.roof.assembly)}</span>
+              <span className="text-muted-foreground text-xs font-medium">{t($ => $.roof.assembly)}</span>
             </Label.Root>
             <RoofAssemblySelectWithEdit
               value={state.assemblyId}
@@ -72,9 +72,9 @@ export function RoofToolInspector({ tool }: ToolInspectorProps<RoofTool>): React
           </div>
 
           {/* Roof Type */}
-          <div className="flex items-center gap-2 justify-between">
+          <div className="flex items-center justify-between gap-2">
             <Label.Root>
-              <span className="text-xs font-medium text-muted-foreground">{t($ => $.roof.type)}</span>
+              <span className="text-muted-foreground text-xs font-medium">{t($ => $.roof.type)}</span>
             </Label.Root>
             <SegmentedControl.Root
               size="sm"
@@ -89,16 +89,16 @@ export function RoofToolInspector({ tool }: ToolInspectorProps<RoofTool>): React
           </div>
 
           {/* Slope */}
-          <div className="flex items-center gap-2 justify-between">
+          <div className="flex items-center justify-between gap-2">
             <Label.Root htmlFor="roof-slope">
-              <span className="text-xs font-medium text-muted-foreground">{t($ => $.roof.slope)}</span>
+              <span className="text-muted-foreground text-xs font-medium">{t($ => $.roof.slope)}</span>
             </Label.Root>
 
             <div className="flex items-center gap-2">
               <div
                 className={cn(
-                  'flex items-center h-7 rounded-md border border-input bg-background text-xs',
-                  'focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2'
+                  'border-input bg-background flex h-7 items-center rounded-md border text-xs',
+                  'focus-within:ring-ring focus-within:ring-2 focus-within:ring-offset-2'
                 )}
                 style={{ width: '6em' }}
               >
@@ -114,15 +114,15 @@ export function RoofToolInspector({ tool }: ToolInspectorProps<RoofTool>): React
                   }}
                   min={0}
                   max={90}
-                  className="flex flex-1 bg-transparent px-2 text-right outline-none min-w-0 h-full text-xs"
+                  className="flex h-full min-w-0 flex-1 bg-transparent px-2 text-right text-xs outline-none"
                 />
                 <span className="text-muted-foreground px-1">°</span>
               </div>
 
               <div
                 className={cn(
-                  'flex items-center h-7 rounded-md border border-input bg-background text-xs',
-                  'focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2'
+                  'border-input bg-background flex h-7 items-center rounded-md border text-xs',
+                  'focus-within:ring-ring focus-within:ring-2 focus-within:ring-offset-2'
                 )}
                 style={{ width: '6em' }}
               >
@@ -138,7 +138,7 @@ export function RoofToolInspector({ tool }: ToolInspectorProps<RoofTool>): React
                   min={0}
                   max={100}
                   step={1}
-                  className="flex flex-1 bg-transparent px-2 text-right outline-none min-w-0 h-full text-xs"
+                  className="flex h-full min-w-0 flex-1 bg-transparent px-2 text-right text-xs outline-none"
                 />
                 <span className="text-muted-foreground px-1">%</span>
               </div>
@@ -146,9 +146,9 @@ export function RoofToolInspector({ tool }: ToolInspectorProps<RoofTool>): React
           </div>
 
           {/* Vertical Offset */}
-          <div className="flex items-center gap-2 justify-between">
+          <div className="flex items-center justify-between gap-2">
             <Label.Root htmlFor="vertical-offset">
-              <span className="text-xs font-medium text-muted-foreground">{t($ => $.roof.verticalOffset)}</span>
+              <span className="text-muted-foreground text-xs font-medium">{t($ => $.roof.verticalOffset)}</span>
             </Label.Root>
             <LengthField
               id="vertical-offset"
@@ -166,9 +166,9 @@ export function RoofToolInspector({ tool }: ToolInspectorProps<RoofTool>): React
           </div>
 
           {/* Overhang */}
-          <div className="flex items-center gap-2 justify-between">
+          <div className="flex items-center justify-between gap-2">
             <Label.Root htmlFor="roof-overhang">
-              <span className="text-xs font-medium text-muted-foreground">{t($ => $.roof.overhang)}</span>
+              <span className="text-muted-foreground text-xs font-medium">{t($ => $.roof.overhang)}</span>
             </Label.Root>
             <LengthField
               id="roof-overhang"
@@ -190,9 +190,9 @@ export function RoofToolInspector({ tool }: ToolInspectorProps<RoofTool>): React
         <Separator />
         <div className="flex flex-col gap-2">
           <span className="text-xs font-medium">{t($ => $.roof.controlsHeading)}</span>
-          <span className="text-xs text-muted-foreground">• {t($ => $.roof.controlPlace)}</span>
-          <span className="text-xs text-muted-foreground">• {t($ => $.roof.controlSnap)}</span>
-          <span className="text-xs text-muted-foreground">
+          <span className="text-muted-foreground text-xs">• {t($ => $.roof.controlPlace)}</span>
+          <span className="text-muted-foreground text-xs">• {t($ => $.roof.controlSnap)}</span>
+          <span className="text-muted-foreground text-xs">
             • <Kbd size="sm">{t($ => $.keyboard.esc)}</Kbd>{' '}
             {t($ => $.roof.controlEsc, {
               key: ''
@@ -202,7 +202,7 @@ export function RoofToolInspector({ tool }: ToolInspectorProps<RoofTool>): React
           </span>
           {state.points.length >= 3 && (
             <>
-              <span className="text-xs text-muted-foreground">
+              <span className="text-muted-foreground text-xs">
                 • <Kbd size="sm">{t($ => $.keyboard.enter)}</Kbd>{' '}
                 {t($ => $.roof.controlEnter, {
                   key: ''
@@ -210,7 +210,7 @@ export function RoofToolInspector({ tool }: ToolInspectorProps<RoofTool>): React
                   .replace('{{key}}', '')
                   .trim()}
               </span>
-              <span className="text-xs text-muted-foreground">• {t($ => $.roof.controlClickFirst)}</span>
+              <span className="text-muted-foreground text-xs">• {t($ => $.roof.controlClickFirst)}</span>
             </>
           )}
         </div>
@@ -239,7 +239,7 @@ export function RoofToolInspector({ tool }: ToolInspectorProps<RoofTool>): React
               <Button
                 size="sm"
                 variant="secondary"
-                className="w-full text-destructive"
+                className="text-destructive w-full"
                 onClick={() => {
                   tool.cancel()
                 }}

@@ -215,14 +215,14 @@ export function LayerListEditor({
 
       {!hasLayers && (
         <Card variant="soft">
-          <div className="items-center justify-center min-h-[3.5rem]">
+          <div className="min-h-[3.5rem] items-center justify-center">
             <span className="text-sm text-gray-900">{emptyHint}</span>
           </div>
         </Card>
       )}
 
       {hasLayers && (
-        <div className="grid grid-cols-1 gap-2 items-center justify-center">
+        <div className="grid grid-cols-1 items-center justify-center gap-2">
           <div className="flex justify-center">
             <span className="text-sm text-gray-900">{beforeLabel}</span>
           </div>
@@ -329,7 +329,7 @@ function LayerCard({
             size="sm"
             style={{ width: '8em' }}
           >
-            <TextField.Slot title={t($ => $.common.thickness)} side="left" className="pl-1 pr-0">
+            <TextField.Slot title={t($ => $.common.thickness)} side="left" className="pr-0 pl-1">
               <HeightIcon />
             </TextField.Slot>
           </LengthField>
@@ -391,7 +391,7 @@ function LayerCard({
 
 function Field({ label, control }: { label: string; control: React.ReactNode }): React.JSX.Element {
   return (
-    <div className="grid grid-cols-[auto_1fr] gap-2 items-center">
+    <div className="grid grid-cols-[auto_1fr] items-center gap-2">
       <span className="text-sm text-gray-900">{label}</span>
       {control}
     </div>
@@ -468,7 +468,7 @@ function StripedLayerFields({
           size="sm"
           style={{ width: '8em' }}
         >
-          <TextField.Slot title={t($ => $.common.width)} side="left" className="pl-1 pr-0">
+          <TextField.Slot title={t($ => $.common.width)} side="left" className="pr-0 pl-1">
             <WidthIcon />
           </TextField.Slot>
         </LengthField>
@@ -495,7 +495,7 @@ function StripedLayerFields({
           size="sm"
           style={{ width: '8em' }}
         >
-          <TextField.Slot title={t($ => $.common.width)} side="left" className="pl-1 pr-0">
+          <TextField.Slot title={t($ => $.common.width)} side="left" className="pr-0 pl-1">
             <WidthIcon />
           </TextField.Slot>
         </LengthField>

@@ -60,7 +60,7 @@ export const VolumeField = forwardRef<HTMLInputElement, VolumeFieldProps>(functi
   return (
     <div
       className={cn(
-        'flex items-center rounded-md border border-input bg-background ring-offset-background focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2',
+        'border-input bg-background ring-offset-background focus-within:ring-ring flex items-center rounded-md border focus-within:ring-2 focus-within:ring-offset-2',
         sizeClasses[size],
         disabled && 'cursor-not-allowed opacity-50',
         className
@@ -75,10 +75,10 @@ export const VolumeField = forwardRef<HTMLInputElement, VolumeFieldProps>(functi
         placeholder={placeholder}
         disabled={disabled}
         step={step}
-        className={cn('flex-1 bg-transparent px-2 text-right outline-none min-w-0', sizeClasses[size])}
+        className={cn('min-w-0 flex-1 bg-transparent px-2 text-right outline-none', sizeClasses[size])}
         {...props}
       />
-      <span className="text-xs text-muted-foreground px-1.5">{label}</span>
+      <span className="text-muted-foreground px-1.5 text-xs">{label}</span>
     </div>
   )
 })

@@ -43,7 +43,7 @@ export function FloorOpeningInspector({ floorOpeningId }: FloorOpeningInspectorP
   if (!opening) {
     return (
       <div className="p-2">
-        <span className="text-sm text-red-800 font-bold">{t($ => $.floorOpening.notFound)}</span>
+        <span className="text-sm font-bold text-red-800">{t($ => $.floorOpening.notFound)}</span>
       </div>
     )
   }
@@ -51,7 +51,7 @@ export function FloorOpeningInspector({ floorOpeningId }: FloorOpeningInspectorP
   return (
     <div className="p-2">
       <div className="flex flex-col gap-3">
-        <DataList.Root size="sm">
+        <DataList.Root>
           <DataList.Item>
             <DataList.Label>{t($ => $.floorOpening.perimeter)}</DataList.Label>
             <DataList.Value>{formatLength(perimeterLength)}</DataList.Value>

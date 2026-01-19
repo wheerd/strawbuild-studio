@@ -26,9 +26,9 @@ export function EditorSkeleton(): React.JSX.Element {
         }}
       >
         <div className="flex flex-col items-center gap-3">
-          <Skeleton className="w-50 h-50 rounded-lg" />
+          <Skeleton className="h-50 w-50 rounded-lg" />
 
-          <span className="text-base text-muted-foreground">Loading editor...</span>
+          <span className="text-muted-foreground text-base">Loading editor...</span>
         </div>
       </div>
     </div>

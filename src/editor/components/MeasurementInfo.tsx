@@ -977,7 +977,7 @@ export function MeasurementInfo(config: MeasurementDisplayConfig): React.JSX.Ele
         <Button
           size="icon-sm"
           style={{ cursor: 'help' }}
-          className="rounded-full w-6 h-6 text-gray-500"
+          className="h-6 w-6 rounded-full text-gray-500"
           title={t($ => $.measurements.measurements)}
           variant="ghost"
         >

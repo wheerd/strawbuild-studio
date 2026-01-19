@@ -12,12 +12,12 @@ export function MaterialSelectWithEdit(props: MaterialSelectProps): React.JSX.El
   const { openConfiguration } = useConfigurationModal()
 
   return (
-    <div className="flex gap-1 items-center">
-      <div className="flex flex-col gap-1 grow mr-1">
+    <div className="flex items-center gap-0.5">
+      <div className="mr-1 flex grow flex-col gap-1">
         <MaterialSelect {...props} />
       </div>
       <Button
-        size="icon-sm"
+        size="icon-xs"
         title={t($ => $.materials.configure)}
         variant="ghost"
         onClick={() => {

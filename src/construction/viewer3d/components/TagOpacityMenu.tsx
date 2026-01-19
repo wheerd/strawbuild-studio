@@ -114,7 +114,7 @@ export function TagOpacityMenu({ model }: TagOpacityMenuProps): React.JSX.Elemen
         </DropdownMenu.Trigger>
         <DropdownMenu.Content>
           <DropdownMenu.Item disabled>
-            <span className="text-sm ">{t($ => $.tagOpacity.noTags)}</span>
+            <span className="text-sm">{t($ => $.tagOpacity.noTags)}</span>
           </DropdownMenu.Item>
         </DropdownMenu.Content>
       </DropdownMenu>
@@ -137,7 +137,7 @@ export function TagOpacityMenu({ model }: TagOpacityMenuProps): React.JSX.Elemen
           return (
             <DropdownMenu.Sub key={categoryId}>
               <DropdownMenu.SubTrigger>
-                <div className="items-center justify-between w-full gap-2">
+                <div className="w-full items-center justify-between gap-2">
                   <span className="text-sm">
                     <CategoryLabel categoryId={categoryId} />
                   </span>
@@ -152,11 +152,7 @@ export function TagOpacityMenu({ model }: TagOpacityMenuProps): React.JSX.Elemen
                   }}
                 >
                   <div
-                    className="items-center
-                    justify-between
-                    w-full
-                    gap-2
-                    "
+                    className="w-full items-center justify-between gap-2"
                     onClick={e => {
                       e.stopPropagation()
                       cycleTagOrCategoryOpacity(categoryId)
@@ -178,11 +174,7 @@ export function TagOpacityMenu({ model }: TagOpacityMenuProps): React.JSX.Elemen
                       }}
                     >
                       <div
-                        className="items-center
-                        justify-between
-                        w-full
-                        gap-2
-                        "
+                        className="w-full items-center justify-between gap-2"
                         onClick={e => {
                           e.stopPropagation()
                           cycleTagOrCategoryOpacity(tag.id)

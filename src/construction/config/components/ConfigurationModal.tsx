@@ -2,10 +2,10 @@ import { GearIcon } from '@radix-ui/react-icons'
 import React from 'react'
 import { useTranslation } from 'react-i18next'
 
+import { FullScreenModal } from '@/components/ui/full-screen-modal'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import type { ConfigTab } from '@/construction/config/context/ConfigurationModalContext'
 import { MaterialsConfigContent } from '@/construction/materials/components/MaterialsConfigContent'
-import { BaseModal } from '@/shared/components/BaseModal'
 
 import { FloorAssemblyConfigContent } from './FloorAssemblyConfigContent'
 import { OpeningAssemblyContent } from './OpeningAssemblyContent'
@@ -34,18 +34,7 @@ export function ConfigurationModal({
   }
 
   return (
-    <BaseModal
-      open={open}
-      onOpenChange={onOpenChange}
-      titleIcon={<GearIcon />}
-      title={t($ => $.modal.title)}
-      size="4"
-      width="95%"
-      maxWidth="95%"
-      height="90vh"
-      maxHeight="90vh"
-      resetKeys={[initialSelectionId]}
-    >
+    <FullScreenModal open={open} onOpenChange={onOpenChange} titleIcon={<GearIcon />} title={t($ => $.modal.title)}>
       <Tabs value={activeTab} onValueChange={setActiveTab} className="h-full">
         <TabsList>
           <TabsTrigger value="materials">{t($ => $.modal.tabMaterials)}</TabsTrigger>
@@ -57,41 +46,41 @@ export function ConfigurationModal({
         </TabsList>
 
         <TabsContent value="materials">
-          <div className="flex pt-4 w-full">
+          <div className="flex w-full pt-4">
             <MaterialsConfigContent initialSelectionId={initialSelectionId} />
           </div>
         </TabsContent>
 
         <TabsContent value="ringbeams">
-          <div className="flex pt-4 w-full">
+          <div className="flex w-full pt-4">
             <RingBeamAssemblyContent initialSelectionId={initialSelectionId} />
           </div>
         </TabsContent>
 
         <TabsContent value="walls">
-          <div className="flex pt-4 w-full">
+          <div className="flex w-full pt-4">
             <WallAssemblyContent initialSelectionId={initialSelectionId} />
           </div>
         </TabsContent>
 
         <TabsContent value="openings">
-          <div className="flex pt-4 w-full">
+          <div className="flex w-full pt-4">
             <OpeningAssemblyContent initialSelectionId={initialSelectionId} />
           </div>
         </TabsContent>
 
         <TabsContent value="floors">
-          <div className="flex pt-4 w-full">
+          <div className="flex w-full pt-4">
             <FloorAssemblyConfigContent initialSelectionId={initialSelectionId} />
           </div>
         </TabsContent>
 
         <TabsContent value="roofs">
-          <div className="flex pt-4 w-full">
+          <div className="flex w-full pt-4">
             <RoofAssemblyConfigContent initialSelectionId={initialSelectionId} />
           </div>
         </TabsContent>
       </Tabs>
-    </BaseModal>
+    </FullScreenModal>
   )
 }

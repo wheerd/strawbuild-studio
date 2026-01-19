@@ -14,7 +14,7 @@ const kbdVariants = cva(
       }
     },
     defaultVariants: {
-      size: '2'
+      size: 'base'
     }
   }
 )

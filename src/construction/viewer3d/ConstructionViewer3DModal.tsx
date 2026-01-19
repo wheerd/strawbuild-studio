@@ -50,10 +50,10 @@ export function ConstructionViewer3DModal({
       title={t($ => $.viewer3DModal.title)}
       trigger={trigger}
     >
-      <div className="h-full flex flex-col">
+      <div className="flex h-full flex-col">
         <div
           ref={containerRef}
-          className="relative flex-1 min-h-0 overflow-hidden border rounded-md"
+          className="relative min-h-0 flex-1 overflow-hidden rounded-md border"
           style={{
             borderColor: 'var(--color-gray-600)'
           }}
@@ -141,7 +141,7 @@ function ConstructionViewer3DContent({
 
   if (!constructionModel) {
     return (
-      <div className="flex items-center justify-center h-full">
+      <div className="flex h-full items-center justify-center">
         <span className="items-center text-gray-900">
           <span className="text-6xl">⚠</span>
           <br />
@@ -153,7 +153,7 @@ function ConstructionViewer3DContent({
 
   if (!shouldRenderCanvas) {
     return (
-      <div className="flex items-center justify-center h-full">
+      <div className="flex h-full items-center justify-center">
         <Spinner size="lg" />
       </div>
     )

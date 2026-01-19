@@ -44,7 +44,7 @@ export function MainToolbar({ onInfoClick }: MainToolbarProps): React.JSX.Elemen
   }, [])
 
   return (
-    <div className="flex items-center gap-4 border-b border-border p-2" data-testid="main-toolbar">
+    <div className="border-border flex items-center gap-4 border-b p-2" data-testid="main-toolbar">
       {/* Logo - Compact version */}
       <Logo />
       {/* Tools positioned next to logo on the left */}
@@ -93,7 +93,7 @@ export function MainToolbar({ onInfoClick }: MainToolbarProps): React.JSX.Elemen
         </div>
       </Toolbar.Root>
       {/* Configuration button on the right */}
-      <div className="ml-auto flex gap-2 items-center">
+      <div className="ml-auto flex items-center gap-2">
         <TopDownPlanModal
           title={
             activeStorey
@@ -148,7 +148,7 @@ export function MainToolbar({ onInfoClick }: MainToolbarProps): React.JSX.Elemen
         >
           <GearIcon width={20} height={20} aria-hidden />
         </Button>
-        <Button title={t($ => $.about)} variant="ghost" size="icon-sm" onClick={onInfoClick} className="w-6 h-6">
+        <Button title={t($ => $.about)} variant="ghost" size="icon-sm" onClick={onInfoClick} className="h-6 w-6">
           <InfoCircledIcon aria-hidden />
         </Button>
       </div>

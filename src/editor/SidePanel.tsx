@@ -5,10 +5,10 @@ export function SidePanel(): React.JSX.Element {
 
   return (
     <div
-      className="p-0 bg-muted border-l border-border overflow-y-auto overflow-x-hidden side-panel"
+      className="bg-muted border-border side-panel overflow-x-hidden overflow-y-auto border-l p-0"
       data-testid="side-panel"
     >
-      <div className="flex flex-col p-2 gap-2">
+      <div className="flex flex-col gap-2 p-2">
         <activeTool.inspectorComponent tool={activeTool} />
       </div>
     </div>

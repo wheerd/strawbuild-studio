@@ -11,12 +11,12 @@ export function ViewModeToggle(): React.JSX.Element {
 
   return (
     <div className="absolute top-2 left-2 z-10" data-testid="viewmode-toggle">
-      <Card className="shadow-md p-1">
+      <Card className="p-1 shadow-md">
         <SegmentedControl.Root
           size="sm"
           value={mode}
           onValueChange={value => {
-            setMode(value as 'walls' | 'floors' | 'roofs')
+            setMode(value)
           }}
         >
           <SegmentedControl.Item value="walls">{t($ => $.viewMode.walls)}</SegmentedControl.Item>

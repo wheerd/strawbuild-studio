@@ -367,7 +367,7 @@ export function SVGViewport({
         viewBox={viewBox}
         width={svgSize.width || 100}
         height={svgSize.height || 100}
-        className="w-full h-full touch-none block viewport"
+        className="viewport block h-full w-full touch-none"
         preserveAspectRatio="none"
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}

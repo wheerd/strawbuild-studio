@@ -142,7 +142,7 @@ function ConstructionViewer3D({ model, containerSize }: ConstructionViewer3DProp
 
       <div className="absolute top-3 left-3 z-10">
         <Card size="sm" variant="soft" className="shadow-md">
-          <div className="flex flex-row items-center gap-1 m--2 p-0">
+          <div className="m--2 flex flex-row items-center gap-1 p-0">
             <TagOpacityMenu model={model} />
             <GridToggleButton />
           </div>
@@ -151,7 +151,7 @@ function ConstructionViewer3D({ model, containerSize }: ConstructionViewer3DProp
 
       <div className="absolute top-3 right-3 z-10">
         <Card size="sm" variant="soft" className="shadow-md">
-          <div className="flex flex-col items-center gap-2 m--2 p-0">
+          <div className="m--2 flex flex-col items-center gap-2 p-0">
             <ExportButton
               onExport={format => {
                 void handleExport(format)
@@ -187,7 +187,7 @@ function ConstructionViewer3D({ model, containerSize }: ConstructionViewer3DProp
               )}
             </div>
           </AlertDialog.Description>
-          <div className="flex gap-3 mt-4 justify-end">
+          <div className="mt-4 flex justify-end gap-3">
             <AlertDialog.Cancel>
               <Button variant="default">{t($ => $.export.exportError.close)}</Button>
             </AlertDialog.Cancel>

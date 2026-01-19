@@ -153,19 +153,19 @@ export function PerimeterWallInspector({ wallId }: { wallId: PerimeterWallId }):
       {/* Measurements */}
       <div className="flex flex-col gap-2">
         <h2>{t($ => $.perimeterWall.measurements)}</h2>
-        <DataList.Root size="sm">
+        <DataList.Root>
           <DataList.Item>
-            <DataList.Label minWidth="88px">{t($ => $.perimeterWall.insideLength)}</DataList.Label>
+            <DataList.Label>{t($ => $.perimeterWall.insideLength)}</DataList.Label>
             <DataList.Value>{formatLength(wall.insideLength)}</DataList.Value>
           </DataList.Item>
           <DataList.Item>
-            <DataList.Label minWidth="88px">{t($ => $.perimeterWall.outsideLength)}</DataList.Label>
+            <DataList.Label>{t($ => $.perimeterWall.outsideLength)}</DataList.Label>
             <DataList.Value>{formatLength(wall.outsideLength)}</DataList.Value>
           </DataList.Item>
           {wallAssembly ? (
             <>
               <DataList.Item>
-                <DataList.Label minWidth="88px">
+                <DataList.Label>
                   <div className="flex items-center gap-1">
                     {t($ => $.perimeterWall.insideLayersThickness)}
                     <MeasurementInfo highlightedPart="insideLayer" />
@@ -174,7 +174,7 @@ export function PerimeterWallInspector({ wallId }: { wallId: PerimeterWallId }):
                 <DataList.Value>{formatLength(wallAssembly.layers.insideThickness)}</DataList.Value>
               </DataList.Item>
               <DataList.Item>
-                <DataList.Label minWidth="88px">
+                <DataList.Label>
                   <div className="flex items-center gap-1">
                     {t($ => $.perimeterWall.outsideLayersThickness)}
                     <MeasurementInfo highlightedPart="outsideLayer" />
@@ -183,7 +183,7 @@ export function PerimeterWallInspector({ wallId }: { wallId: PerimeterWallId }):
                 <DataList.Value>{formatLength(wallAssembly.layers.outsideThickness)}</DataList.Value>
               </DataList.Item>
               <DataList.Item>
-                <DataList.Label minWidth="88px">
+                <DataList.Label>
                   <div className="flex items-center gap-1">
                     {t($ => $.perimeterWall.constructionThickness)}
                     <MeasurementInfo highlightedPart="wallConstruction" />
@@ -207,7 +207,7 @@ export function PerimeterWallInspector({ wallId }: { wallId: PerimeterWallId }):
         <h2>{t($ => $.perimeterWall.openings)}</h2>
         <div className="grid grid-cols-3 gap-2">
           <Card size="sm" variant="soft">
-            <div className="flex flex-col gap-0 m--1">
+            <div className="m--1 flex flex-col gap-0">
               <span className="items-center text-base font-bold">
                 {openings.filter(o => o.openingType === 'door').length}
               </span>
@@ -215,7 +215,7 @@ export function PerimeterWallInspector({ wallId }: { wallId: PerimeterWallId }):
             </div>
           </Card>
           <Card size="sm" variant="soft">
-            <div className="flex flex-col gap-0 m--1">
+            <div className="m--1 flex flex-col gap-0">
               <span className="items-center text-base font-bold">
                 {openings.filter(o => o.openingType === 'window').length}
               </span>
@@ -223,7 +223,7 @@ export function PerimeterWallInspector({ wallId }: { wallId: PerimeterWallId }):
             </div>
           </Card>
           <Card size="sm" variant="soft">
-            <div className="flex flex-col gap-0 m--1">
+            <div className="m--1 flex flex-col gap-0">
               <span className="items-center text-base font-bold">
                 {openings.filter(o => o.openingType === 'passage').length}
               </span>

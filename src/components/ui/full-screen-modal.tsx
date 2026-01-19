@@ -29,7 +29,7 @@ export function FullScreenModal({
 
       <DialogPrimitive.Portal>
         {/* Overlay */}
-        <DialogPrimitive.Overlay className="fixed inset-0" style={{ backgroundColor: 'var(--color-overlay)' }} />
+        <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-black/80" />
 
         {/* Content */}
         <DialogPrimitive.Content
@@ -40,22 +40,18 @@ export function FullScreenModal({
             }
             e.stopPropagation()
           }}
-          className="fixed left-1/2 top-1/2 flex flex-col rounded-lg shadow-lg focus:outline-none"
+          className="bg-background fixed top-1/2 left-1/2 z-50 flex flex-col rounded-lg border p-6 shadow-lg focus:outline-none"
           style={{
             transform: 'translate(-50%, -50%)',
             width: 'calc(100vw - 2rem)',
             height: 'calc(100vh - 2rem)',
             maxWidth: 'calc(100vw - 2rem)',
-            maxHeight: 'calc(100vh - 2rem)',
-            backgroundColor: 'var(--color-panel-solid)',
-            borderColor: 'var(--color-gray-600)',
-            borderWidth: '1px',
-            borderStyle: 'solid'
+            maxHeight: 'calc(100vh - 2rem)'
           }}
         >
           {/* Header - fixed at top */}
           <div
-            className="flex items-center justify-between px-4 py-2 shrink-0"
+            className="flex shrink-0 items-center justify-between px-4 py-2"
             style={{
               borderBottom: '1px solid var(--color-gray-600)'
             }}
@@ -68,7 +64,7 @@ export function FullScreenModal({
             </div>
 
             <DialogPrimitive.Close
-              className="rounded-sm opacity-70 hover:opacity-100 transition-opacity h-8 w-8 inline-flex items-center justify-center"
+              className="inline-flex h-8 w-8 items-center justify-center rounded-sm opacity-70 transition-opacity hover:opacity-100"
               style={{
                 color: 'var(--color-gray-900)'
               }}
@@ -79,7 +75,7 @@ export function FullScreenModal({
           </div>
 
           {/* Content - fills remaining space */}
-          <div className="flex flex-1 min-h-0 overflow-hidden px-4 py-2">{children}</div>
+          <div className="flex min-h-0 flex-1 overflow-hidden px-4 py-2">{children}</div>
         </DialogPrimitive.Content>
       </DialogPrimitive.Portal>
     </DialogPrimitive.Root>

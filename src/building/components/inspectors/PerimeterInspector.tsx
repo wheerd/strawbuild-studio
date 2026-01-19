@@ -213,7 +213,7 @@ export function PerimeterInspector({ selectedId }: PerimeterInspectorProps): Rea
         </DataList.Root>
 
         <div className="flex items-center gap-2">
-          <span className="text-sm text-gray-900 font-medium">{t($ => $.perimeter.referenceSide)}</span>
+          <span className="text-sm font-medium text-gray-900">{t($ => $.perimeter.referenceSide)}</span>
           <SegmentedControl.Root
             size="sm"
             value={perimeter.referenceSide}
@@ -240,7 +240,7 @@ export function PerimeterInspector({ selectedId }: PerimeterInspectorProps): Rea
           </Callout>
         )}
 
-        <div className="flex flex-row gap-3 pt-1 items-center justify-center">
+        <div className="flex flex-row items-center justify-center gap-3 pt-1">
           <TopDownPlanModal
             title={t($ => $.perimeter.constructionPlanTitle)}
             factory={() => Promise.resolve(constructPerimeter(perimeter))}
@@ -263,7 +263,7 @@ export function PerimeterInspector({ selectedId }: PerimeterInspectorProps): Rea
         </div>
 
         {/* Wall Configuration */}
-        <div className="pt-1 border-t border-gray-600">
+        <div className="border-t border-gray-600 pt-1">
           <h4 className="mb-1">{t($ => $.perimeter.wallConfiguration)}</h4>
 
           <div className="flex flex-col gap-2">
@@ -325,7 +325,7 @@ export function PerimeterInspector({ selectedId }: PerimeterInspectorProps): Rea
         </div>
 
         {/* Ring Beam Configuration */}
-        <div className="pt-1 border-t border-gray-600">
+        <div className="border-t border-gray-600 pt-1">
           <h2 className="mb-2">{t($ => $.perimeter.ringBeams)}</h2>
 
           <div className="flex flex-col gap-2">

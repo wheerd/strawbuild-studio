@@ -140,9 +140,9 @@ export function StoreyListItem({
     <Card className="p-2" style={isActive ? { background: 'var(--color-primary-500)' } : {}}>
       <div className="flex items-center gap-2">
         {/* Level indicator */}
-        <div className="flex flex-col items-center gap-0 w-20 font-mono p-2">
+        <div className="flex w-20 flex-col items-center gap-0 p-2 font-mono">
           <span className={`font-bold ${getLevelColor(storey.level)}`}>L{storey.level}</span>
-          <span className="text-gray-600 font-mono text-xs">
+          <span className="font-mono text-xs text-gray-600">
             {storey.level === 0
               ? t($ => $.storeys.ground)
               : storey.level > 0
@@ -152,7 +152,7 @@ export function StoreyListItem({
         </div>
 
         {/* Editable name */}
-        <div className="flex flex-col gap-1 grow">
+        <div className="flex grow flex-col gap-1">
           <span className="text-sm font-medium text-gray-900">{t($ => $.storeys.name)}</span>
           <TextField.Root
             value={editName}
@@ -185,7 +185,7 @@ export function StoreyListItem({
             }}
             title={`Floor height: ${formatLength(storey.floorHeight)}`}
           >
-            <TextField.Slot side="left" className="pl-1 pr-0">
+            <TextField.Slot side="left" className="pr-0 pl-1">
               <HeightIcon />
             </TextField.Slot>
           </LengthField>
@@ -206,7 +206,7 @@ export function StoreyListItem({
         </div>
 
         {/* Action buttons */}
-        <div className="flex gap-1 items-center">
+        <div className="flex items-center gap-1">
           <div className="flex flex-col gap-1">
             <Button size="icon-sm" onClick={handleMoveUp} disabled={!canMoveUp} title={t($ => $.storeys.moveUp)}>
               <ChevronUpIcon />
@@ -231,7 +231,7 @@ export function StoreyListItem({
               <AlertDialog.Title>{t($ => $.storeys.deleteFloorTitle)}</AlertDialog.Title>
               <AlertDialog.Description>{t($ => $.storeys.deleteFloorConfirm)}</AlertDialog.Description>
 
-              <div className="flex gap-3 justify-end">
+              <div className="flex justify-end gap-3">
                 <AlertDialog.Cancel>
                   <Button variant="soft" className="text-gray-900">
                     {t($ => $.actions.cancel)}

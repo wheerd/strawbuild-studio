@@ -80,11 +80,11 @@ export function PerimeterCornerInspector({ cornerId }: { cornerId: PerimeterCorn
         <h2>{t($ => $.perimeterCorner.geometry)}</h2>
         <DataList.Root>
           <DataList.Item>
-            <DataList.Label minWidth="88px">{t($ => $.perimeterCorner.interiorAngle)}</DataList.Label>
+            <DataList.Label>{t($ => $.perimeterCorner.interiorAngle)}</DataList.Label>
             <DataList.Value>{corner.interiorAngle}°</DataList.Value>
           </DataList.Item>
           <DataList.Item>
-            <DataList.Label minWidth="88px">{t($ => $.perimeterCorner.exteriorAngle)}</DataList.Label>
+            <DataList.Label>{t($ => $.perimeterCorner.exteriorAngle)}</DataList.Label>
             <DataList.Value>{corner.exteriorAngle}°</DataList.Value>
           </DataList.Item>
         </DataList.Root>

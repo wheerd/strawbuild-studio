@@ -38,7 +38,7 @@ export function OfflineStatusIndicator(): React.JSX.Element {
       <TooltipTrigger asChild>
         <span
           aria-hidden="true"
-          className={`m-1 w-3 h-3 rounded-full shadow-[0_0_0_1px] shadow-border ${meta.colorClass}`}
+          className={`shadow-border m-1 h-3 w-3 rounded-full shadow-[0_0_0_1px] ${meta.colorClass}`}
         />
       </TooltipTrigger>
       <TooltipContent side="top" items-start>
