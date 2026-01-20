@@ -26,8 +26,8 @@ export function PerimeterCornerMovementPreview({
         cx={movementState.position[0]}
         cy={movementState.position[1]}
         r={30}
-        fill={isValid ? 'var(--color-green-900)' : 'var(--color-red-900)'}
-        stroke="var(--color-schematic-gray-1)"
+        fill={isValid ? 'var(--color-green-600)' : 'var(--color-red-600)'}
+        stroke="var(--color-border-contrast)"
         strokeWidth={5}
         opacity={0.8}
       />
@@ -38,7 +38,7 @@ export function PerimeterCornerMovementPreview({
         y1={corner.referencePoint[1]}
         x2={movementState.position[0]}
         y2={movementState.position[1]}
-        stroke="var(--color-gray-900)"
+        stroke="var(--color-border-contrast)"
         strokeWidth={10}
         strokeDasharray="50 50"
         opacity={0.7}
@@ -48,14 +48,14 @@ export function PerimeterCornerMovementPreview({
       <path
         d={boundaryPath}
         fill="none"
-        stroke={isValid ? 'var(--color-green-900)' : 'var(--color-red-900)'}
+        stroke={isValid ? 'var(--color-green-600)' : 'var(--color-red-600)'}
         strokeWidth={10}
         strokeDasharray="80 40"
         opacity={0.6}
       />
       <path
         d={boundaryPath}
-        fill={isValid ? 'var(--color-green-900)' : 'var(--color-red-900)'}
+        fill={isValid ? 'var(--color-green-600)' : 'var(--color-red-600)'}
         stroke="none"
         opacity={0.3}
       />

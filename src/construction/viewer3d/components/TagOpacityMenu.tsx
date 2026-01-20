@@ -107,7 +107,7 @@ export function TagOpacityMenu({ model }: TagOpacityMenuProps): React.JSX.Elemen
   if (sortedCategories.length === 0) {
     return (
       <DropdownMenu>
-        <DropdownMenu.Trigger>
+        <DropdownMenu.Trigger asChild>
           <Button size="icon-sm" variant="outline" title={t($ => $.tagOpacity.title)} disabled>
             <EyeOpenIcon />
           </Button>
@@ -123,7 +123,7 @@ export function TagOpacityMenu({ model }: TagOpacityMenuProps): React.JSX.Elemen
 
   return (
     <DropdownMenu>
-      <DropdownMenu.Trigger>
+      <DropdownMenu.Trigger asChild>
         <Button size="icon-sm" variant="default" title={t($ => $.tagOpacity.title)}>
           <EyeOpenIcon />
         </Button>

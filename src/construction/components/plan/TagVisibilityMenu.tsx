@@ -98,7 +98,7 @@ export function TagVisibilityMenu({ model }: TagVisibilityMenuProps): React.JSX.
   if (sortedCategories.length === 0) {
     return (
       <DropdownMenu>
-        <DropdownMenu.Trigger>
+        <DropdownMenu.Trigger asChild>
           <Button size="icon-xs" variant="outline" title={t($ => $.tagVisibility.title)} disabled>
             <EyeOpenIcon />
           </Button>
@@ -114,7 +114,7 @@ export function TagVisibilityMenu({ model }: TagVisibilityMenuProps): React.JSX.
 
   return (
     <DropdownMenu>
-      <DropdownMenu.Trigger>
+      <DropdownMenu.Trigger asChild>
         <Button size="icon-xs" variant="default" title={t($ => $.tagVisibility.title)}>
           <EyeOpenIcon />
         </Button>

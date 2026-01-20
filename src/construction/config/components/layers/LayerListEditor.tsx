@@ -118,7 +118,7 @@ export function LayerListEditor({
         <div className="flex gap-1">
           {layerCopySources && (
             <DropdownMenu>
-              <DropdownMenu.Trigger>
+              <DropdownMenu.Trigger asChild>
                 <Button size="icon-sm" title={t($ => $.layers.copyFrom)} variant="soft">
                   <CopyIcon />
                 </Button>
@@ -144,7 +144,7 @@ export function LayerListEditor({
 
           {hasPresetMenu && (
             <DropdownMenu>
-              <DropdownMenu.Trigger>
+              <DropdownMenu.Trigger asChild>
                 <Button size="icon-sm" title={t($ => $.layers.presetsLabel)} variant="soft">
                   <MagicWandIcon />
                 </Button>
@@ -168,7 +168,7 @@ export function LayerListEditor({
           )}
 
           <DropdownMenu>
-            <DropdownMenu.Trigger>
+            <DropdownMenu.Trigger asChild>
               <Button size="icon-sm" title={addLabel} variant="default">
                 <PlusIcon />
               </Button>

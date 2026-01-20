@@ -37,7 +37,7 @@ export function WallPostMovementPreview({
   const originalMid = scaleAddVec2(base, wall.direction, post.centerOffsetFromWallStart)
   const previewMid = scaleAddVec2(base, wall.direction, movementState.newOffset)
 
-  const fillColor = isValid ? 'var(--color-green-900)' : 'var(--color-red-900)'
+  const fillColor = isValid ? 'var(--color-green-600)' : 'var(--color-red-600)'
 
   return (
     <g pointerEvents="none">
@@ -46,7 +46,7 @@ export function WallPostMovementPreview({
         d={pathData}
         fill={fillColor}
         opacity={0.6}
-        stroke="var(--color-schematic-gray-1)"
+        stroke="var(--color-border-contrast)"
         strokeWidth={5}
         strokeLinejoin="miter"
       />
@@ -57,7 +57,7 @@ export function WallPostMovementPreview({
         y1={originalMid[1]}
         x2={previewMid[0]}
         y2={previewMid[1]}
-        stroke="var(--color-gray-900)"
+        stroke="var(--color-border-contrast)"
         strokeWidth={10}
         strokeDasharray="20 20"
         opacity={0.7}

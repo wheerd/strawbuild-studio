@@ -166,7 +166,7 @@ export function PlanCalibrationCanvas({
           />
           {renderReferenceLine()}
           {referencePoints.map(point => renderCrosshair(point, 'var(--color-primary)'))}
-          {originPoint && renderCrosshair(originPoint, 'var(--color-red-900)')}
+          {originPoint && renderCrosshair(originPoint, 'var(--color-red-600)')}
         </SVGViewport>
       ) : (
         <span className="">{t($ => $.canvas.uploadToBegin)}</span>

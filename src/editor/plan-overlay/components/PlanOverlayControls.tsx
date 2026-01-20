@@ -29,7 +29,7 @@ export function PlanOverlayControls(): React.JSX.Element | null {
       {plan ? (
         <>
           <DropdownMenu>
-            <DropdownMenu.Trigger>
+            <DropdownMenu.Trigger asChild>
               <Button
                 size="icon-sm"
                 className="size-7"
@@ -88,7 +88,7 @@ export function PlanOverlayControls(): React.JSX.Element | null {
                   })}
                 </AlertDialog.Description>
                 <div className="justify-end gap-2">
-                  <AlertDialog.Cancel>
+                  <AlertDialog.Cancel asChild>
                     <Button
                       variant="soft"
                       onClick={() => {
@@ -98,7 +98,7 @@ export function PlanOverlayControls(): React.JSX.Element | null {
                       {t($ => $.planControls.confirmRemove.cancel)}
                     </Button>
                   </AlertDialog.Cancel>
-                  <AlertDialog.Action>
+                  <AlertDialog.Action asChild>
                     <Button
                       variant="destructive"
                       onClick={() => {

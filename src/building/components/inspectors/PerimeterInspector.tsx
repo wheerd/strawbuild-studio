@@ -406,7 +406,7 @@ export function PerimeterInspector({ selectedId }: PerimeterInspectorProps): Rea
           </Button>
         ) : (
           <DropdownMenu>
-            <DropdownMenu.Trigger>
+            <DropdownMenu.Trigger asChild>
               <Button size="icon-sm" title={t($ => $.perimeter.addRoofBasedOnPerimeter)}>
                 <RoofIcon />
               </Button>

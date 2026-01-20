@@ -194,7 +194,7 @@ export function OpeningAssemblyContent({ initialSelectionId }: OpeningAssemblyCo
           </div>
 
           <DropdownMenu>
-            <DropdownMenu.Trigger>
+            <DropdownMenu.Trigger asChild>
               <Button size="icon" title={t($ => $.common.addNew)}>
                 <PlusIcon />
               </Button>
@@ -252,12 +252,12 @@ export function OpeningAssemblyContent({ initialSelectionId }: OpeningAssemblyCo
                 {t($ => $.openings.deleteConfirm, { name: selectedAssembly.name })}
               </AlertDialog.Description>
               <div className="mt-4 flex justify-end gap-3">
-                <AlertDialog.Cancel>
+                <AlertDialog.Cancel asChild>
                   <Button variant="soft" className="">
                     {t($ => $.common.cancel)}
                   </Button>
                 </AlertDialog.Cancel>
-                <AlertDialog.Action>
+                <AlertDialog.Action asChild>
                   <Button variant="destructive" onClick={handleDelete}>
                     {t($ => $.common.delete)}
                   </Button>
@@ -281,12 +281,12 @@ export function OpeningAssemblyContent({ initialSelectionId }: OpeningAssemblyCo
               <AlertDialog.Title>{t($ => $.openings.resetTitle)}</AlertDialog.Title>
               <AlertDialog.Description>{t($ => $.openings.resetConfirm)}</AlertDialog.Description>
               <div className="mt-4 flex justify-end gap-3">
-                <AlertDialog.Cancel>
+                <AlertDialog.Cancel asChild>
                   <Button variant="soft" className="">
                     {t($ => $.common.cancel)}
                   </Button>
                 </AlertDialog.Cancel>
-                <AlertDialog.Action>
+                <AlertDialog.Action asChild>
                   <Button variant="destructive" onClick={handleReset}>
                     {t($ => $.common.reset)}
                   </Button>

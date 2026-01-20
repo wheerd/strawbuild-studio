@@ -29,8 +29,8 @@ export function PerimeterWallMovementPreview({
         cx={newMidpoint[0]}
         cy={newMidpoint[1]}
         r={20}
-        fill={isValid ? 'var(--color-green-900)' : 'var(--color-red-900)'}
-        stroke="var(--color-schematic-gray-1)"
+        fill={isValid ? 'var(--color-green-600)' : 'var(--color-red-600)'}
+        stroke="var(--color-border-contrast)"
         strokeWidth={2}
         opacity={0.8}
       />
@@ -41,7 +41,7 @@ export function PerimeterWallMovementPreview({
         y1={originalMidpoint[1]}
         x2={newMidpoint[0]}
         y2={newMidpoint[1]}
-        stroke="var(--color-gray-900)"
+        stroke="var(--color-border-contrast)"
         strokeWidth={10}
         strokeDasharray="50 50"
         opacity={0.7}
@@ -51,14 +51,14 @@ export function PerimeterWallMovementPreview({
       <path
         d={boundaryPath}
         fill="none"
-        stroke={isValid ? 'var(--color-green-900)' : 'var(--color-red-900)'}
+        stroke={isValid ? 'var(--color-green-600)' : 'var(--color-red-600)'}
         strokeWidth={10}
         strokeDasharray="80 40"
         opacity={0.6}
       />
       <path
         d={boundaryPath}
-        fill={isValid ? 'var(--color-green-900)' : 'var(--color-red-900)'}
+        fill={isValid ? 'var(--color-green-600)' : 'var(--color-red-600)'}
         stroke="none"
         opacity={0.3}
       />

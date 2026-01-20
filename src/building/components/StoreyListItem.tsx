@@ -232,7 +232,7 @@ export function StoreyListItem({
               <AlertDialog.Description>{t($ => $.storeys.deleteFloorConfirm)}</AlertDialog.Description>
 
               <div className="flex justify-end gap-3">
-                <AlertDialog.Cancel>
+                <AlertDialog.Cancel asChild>
                   <Button variant="soft" className="">
                     {t($ => $.actions.cancel)}
                   </Button>

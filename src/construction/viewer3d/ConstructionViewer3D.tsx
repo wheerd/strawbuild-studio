@@ -164,7 +164,7 @@ function ConstructionViewer3D({ model, containerSize }: ConstructionViewer3DProp
         <AlertDialog.Content maxWidth="450px">
           <AlertDialog.Title>
             <div className="flex items-center gap-2">
-              <ExclamationTriangleIcon color="var(--color-red-900)" />
+              <ExclamationTriangleIcon color="var(--color-red-600)" />
               <span className="text-red-800">{t($ => $.export.exportError.title)}</span>
             </div>
           </AlertDialog.Title>
@@ -182,7 +182,7 @@ function ConstructionViewer3D({ model, containerSize }: ConstructionViewer3DProp
             </div>
           </AlertDialog.Description>
           <div className="mt-4 flex justify-end gap-3">
-            <AlertDialog.Cancel>
+            <AlertDialog.Cancel asChild>
               <Button variant="default">{t($ => $.export.exportError.close)}</Button>
             </AlertDialog.Cancel>
           </div>
