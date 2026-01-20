@@ -51,7 +51,7 @@ export function AddOpeningToolOverlay({ tool }: ToolOverlayComponentProps<AddOpe
           fontSize={wall.thickness * 0.7}
           textAnchor="middle"
           dominantBaseline="central"
-          fill="var(--color-gray-100)"
+          fill="var(--color-schematic-gray-1)"
           fontFamily="Arial"
         >
           {tool.getNeedsConversion() ? '⚠' : getOpeningIcon(state.openingType)}
@@ -65,7 +65,7 @@ export function AddOpeningToolOverlay({ tool }: ToolOverlayComponentProps<AddOpe
           cy={wall.thickness / 2}
           r={wall.thickness * 0.15}
           fill="var(--color-primary)"
-          stroke="var(--color-gray-100)"
+          stroke="var(--color-schematic-gray-1)"
           strokeWidth={2}
           opacity={0.9}
         />

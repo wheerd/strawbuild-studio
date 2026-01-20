@@ -75,7 +75,7 @@ export function RectangularPresetDialog({ onConfirm, trigger }: PresetDialogProp
             <div className="grid grid-cols-2 gap-x-2 gap-y-3">
               {/* Width */}
               <div className="flex flex-col gap-1">
-                <span className="text-sm text-gray-900">{t($ => $.presetDialogs.rectangular.width)}</span>
+                <span className="text-sm">{t($ => $.presetDialogs.rectangular.width)}</span>
                 <LengthField
                   value={config.width}
                   onChange={value => {
@@ -92,7 +92,7 @@ export function RectangularPresetDialog({ onConfirm, trigger }: PresetDialogProp
 
               {/* Length */}
               <div className="flex flex-col gap-1">
-                <span className="text-sm text-gray-900">{t($ => $.presetDialogs.rectangular.length)}</span>
+                <span className="text-sm">{t($ => $.presetDialogs.rectangular.length)}</span>
                 <LengthField
                   value={config.length}
                   onChange={value => {
@@ -110,7 +110,7 @@ export function RectangularPresetDialog({ onConfirm, trigger }: PresetDialogProp
               {/* Wall Thickness */}
               <div className="flex flex-col gap-1">
                 <div className="flex items-center gap-1">
-                  <span className="text-sm text-gray-900">{t($ => $.presetDialogs.rectangular.wallThickness)}</span>
+                  <span className="text-sm">{t($ => $.presetDialogs.rectangular.wallThickness)}</span>
                   <MeasurementInfo highlightedMeasurement="totalWallThickness" showFinishedSides />
                 </div>
                 <LengthField
@@ -130,7 +130,7 @@ export function RectangularPresetDialog({ onConfirm, trigger }: PresetDialogProp
               {/* Wall Assembly */}
               <div className="flex flex-col gap-1">
                 <div className="flex items-center gap-1">
-                  <span className="text-sm text-gray-900">{t($ => $.presetDialogs.rectangular.wallAssembly)}</span>
+                  <span className="text-sm">{t($ => $.presetDialogs.rectangular.wallAssembly)}</span>
                   <MeasurementInfo highlightedAssembly="wallAssembly" />
                 </div>
                 <WallAssemblySelectWithEdit
@@ -146,7 +146,7 @@ export function RectangularPresetDialog({ onConfirm, trigger }: PresetDialogProp
               {/* Base Plate */}
               <div className="flex flex-col gap-1">
                 <div className="flex items-center gap-1">
-                  <span className="text-sm text-gray-900">{t($ => $.presetDialogs.rectangular.basePlate)}</span>
+                  <span className="text-sm">{t($ => $.presetDialogs.rectangular.basePlate)}</span>
                   <MeasurementInfo highlightedPart="basePlate" />
                 </div>
                 <RingBeamAssemblySelectWithEdit
@@ -163,7 +163,7 @@ export function RectangularPresetDialog({ onConfirm, trigger }: PresetDialogProp
               {/* Top Plate */}
               <div className="flex flex-col gap-1">
                 <div className="flex items-center gap-1">
-                  <span className="text-sm text-gray-900">{t($ => $.presetDialogs.rectangular.topPlate)}</span>
+                  <span className="text-sm">{t($ => $.presetDialogs.rectangular.topPlate)}</span>
                   <MeasurementInfo highlightedPart="topPlate" />
                 </div>
                 <RingBeamAssemblySelectWithEdit
@@ -185,7 +185,7 @@ export function RectangularPresetDialog({ onConfirm, trigger }: PresetDialogProp
 
             {/* Reference Side */}
             <div className="flex flex-col gap-1">
-              <span className="text-sm text-gray-900">{t($ => $.presetDialogs.rectangular.referenceSide)}</span>
+              <span className="text-sm">{t($ => $.presetDialogs.rectangular.referenceSide)}</span>
               <ToggleGroup
                 type="single"
                 variant="outline"
@@ -213,7 +213,7 @@ export function RectangularPresetDialog({ onConfirm, trigger }: PresetDialogProp
         {/* Actions */}
         <div className="mt-4 flex justify-end gap-3">
           <DialogClose>
-            <Button variant="soft" className="text-gray-900">
+            <Button variant="soft" className="">
               {t($ => $.presetDialogs.rectangular.cancel)}
             </Button>
           </DialogClose>

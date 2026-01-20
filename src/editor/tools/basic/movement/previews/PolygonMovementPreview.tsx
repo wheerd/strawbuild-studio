@@ -22,7 +22,7 @@ export function PolygonMovementPreview<TEntity>({
           cy={movementState.snapResult.position[1]}
           r={50}
           fill="var(--color-blue-900)"
-          stroke="var(--color-gray-100)"
+          stroke="var(--color-schematic-gray-1)"
           strokeWidth={5}
           opacity={0.8}
         />

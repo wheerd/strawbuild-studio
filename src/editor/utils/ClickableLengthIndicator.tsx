@@ -99,7 +99,7 @@ export function ClickableLengthIndicator({
   const rightEndpoint = scaleAddVec2(lineMidpoint, dir, textSize.width * 0.6)
 
   // Visual feedback colors
-  const actualColor = color ?? 'var(--color-gray-900)'
+  const actualColor = color ?? 'var(--color-foreground)'
   const displayColor = isHovered ? 'var(--color-primary)' : actualColor
 
   const handleClick = () => {
@@ -212,7 +212,7 @@ export function ClickableLengthIndicator({
           textAnchor="middle"
           dominantBaseline="central"
           style={{
-            filter: 'drop-shadow(0 0 0.1em var(--color-gray-100))'
+            filter: 'drop-shadow(0 0 0.1em var(--color-background))'
           }}
         >
           {displayLabel}

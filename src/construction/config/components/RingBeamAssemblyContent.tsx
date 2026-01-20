@@ -239,7 +239,7 @@ export function RingBeamAssemblyContent({ initialSelectionId }: RingBeamAssembly
               </AlertDialog.Description>
               <div className="mt-4 flex justify-end gap-3">
                 <AlertDialog.Cancel>
-                  <Button variant="soft" className="text-gray-900">
+                  <Button variant="soft" className="">
                     {t($ => $.common.cancel)}
                   </Button>
                 </AlertDialog.Cancel>
@@ -268,7 +268,7 @@ export function RingBeamAssemblyContent({ initialSelectionId }: RingBeamAssembly
               <AlertDialog.Description>{t($ => $.ringBeams.resetConfirm)}</AlertDialog.Description>
               <div className="mt-4 flex justify-end gap-3">
                 <AlertDialog.Cancel>
-                  <Button variant="soft" className="text-gray-900">
+                  <Button variant="soft" className="">
                     {t($ => $.common.cancel)}
                   </Button>
                 </AlertDialog.Cancel>
@@ -286,7 +286,7 @@ export function RingBeamAssemblyContent({ initialSelectionId }: RingBeamAssembly
       {selectedAssembly && <ConfigForm assembly={selectedAssembly} />}
       {!selectedAssembly && ringBeamAssemblies.length === 0 && (
         <div className="flex items-center justify-center p-5">
-          <span className="text-gray-900">No ring beam assemblies yet. Create one using the "New" button above.</span>
+          <span className="">No ring beam assemblies yet. Create one using the "New" button above.</span>
         </div>
       )}
       {/* Defaults Section */}
@@ -295,7 +295,7 @@ export function RingBeamAssemblyContent({ initialSelectionId }: RingBeamAssembly
         <div className="grid grid-cols-[auto_1fr_auto_1fr] items-center gap-2 gap-x-3">
           <div className="flex items-center gap-1">
             <Label.Root>
-              <span className="text-base font-medium text-gray-900">{t($ => $.ringBeams.defaultBasePlate)}</span>
+              <span className="text-base font-medium">{t($ => $.ringBeams.defaultBasePlate)}</span>
             </Label.Root>
             <MeasurementInfo highlightedPart="basePlate" />
           </div>
@@ -308,7 +308,7 @@ export function RingBeamAssemblyContent({ initialSelectionId }: RingBeamAssembly
 
           <div className="flex items-center gap-1">
             <Label.Root>
-              <span className="text-base font-medium text-gray-900">{t($ => $.ringBeams.defaultTopPlate)}</span>
+              <span className="text-base font-medium">{t($ => $.ringBeams.defaultTopPlate)}</span>
             </Label.Root>
             <MeasurementInfo highlightedPart="topPlate" />
           </div>
@@ -357,7 +357,7 @@ function ConfigForm({ assembly }: { assembly: RingBeamAssemblyConfig }): React.R
       <div className="grid grid-cols-2 items-center gap-2 gap-x-3">
         <div className="grid grid-cols-[auto_1fr] items-center gap-x-2">
           <Label.Root>
-            <span className="text-base font-medium text-gray-900">{t($ => $.common.name)}</span>
+            <span className="text-base font-medium">{t($ => $.common.name)}</span>
           </Label.Root>
           <TextField.Root
             value={nameInput.value}
@@ -373,19 +373,19 @@ function ConfigForm({ assembly }: { assembly: RingBeamAssemblyConfig }): React.R
         <div className="grid grid-cols-2 items-center gap-2 gap-x-3">
           <div className="flex items-center gap-2">
             <Label.Root>
-              <span className="text-base font-medium text-gray-900">{t($ => $.common.type)}</span>
+              <span className="text-base font-medium">{t($ => $.common.type)}</span>
             </Label.Root>
             <div className="flex items-center gap-2">
               {React.createElement(getRingBeamTypeIcon(assembly.type))}
-              <span className="text-base text-gray-900">{t($ => $.ringBeams.types[assembly.type])}</span>
+              <span className="text-base">{t($ => $.ringBeams.types[assembly.type])}</span>
             </div>
           </div>
 
           <div className="flex items-center gap-2">
             <Label.Root>
-              <span className="text-base font-medium text-gray-900">{t($ => $.common.totalHeight)}</span>
+              <span className="text-base font-medium">{t($ => $.common.totalHeight)}</span>
             </Label.Root>
-            <span className="text-base text-gray-900">{totalHeight}</span>
+            <span className="text-base">{totalHeight}</span>
           </div>
         </div>
       </div>
@@ -411,7 +411,7 @@ function FullRingBeamFields({
     <>
       <div className="grid grid-cols-[auto_1fr_auto_1fr] items-center gap-2 gap-x-3">
         <Label.Root>
-          <span className="text-base font-medium text-gray-900">{t($ => $.common.materialLabel)}</span>
+          <span className="text-base font-medium">{t($ => $.common.materialLabel)}</span>
         </Label.Root>
         <MaterialSelectWithEdit
           value={config.material}
@@ -425,7 +425,7 @@ function FullRingBeamFields({
 
         <div className="flex items-center gap-1">
           <Label.Root>
-            <span className="text-base font-medium text-gray-900">{t($ => $.common.height)}</span>
+            <span className="text-base font-medium">{t($ => $.common.height)}</span>
           </Label.Root>
           <MeasurementInfo highlightedPart="plates" />
         </div>
@@ -438,7 +438,7 @@ function FullRingBeamFields({
         />
 
         <Label.Root>
-          <span className="text-base font-medium text-gray-900">{t($ => $.common.width)}</span>
+          <span className="text-base font-medium">{t($ => $.common.width)}</span>
         </Label.Root>
         <LengthField
           value={config.width}
@@ -449,7 +449,7 @@ function FullRingBeamFields({
         />
 
         <Label.Root>
-          <span className="text-base font-medium text-gray-900">{t($ => $.ringBeams.labels.offsetFromInsideEdge)}</span>
+          <span className="text-base font-medium">{t($ => $.ringBeams.labels.offsetFromInsideEdge)}</span>
         </Label.Root>
         <LengthField
           value={config.offsetFromEdge}
@@ -474,7 +474,7 @@ function DoubleRingBeamFields({
   return (
     <div className="grid grid-cols-[auto_1fr_auto_1fr] items-center gap-2 gap-x-3">
       <Label.Root>
-        <span className="text-base font-medium text-gray-900">{t($ => $.common.materialLabel)}</span>
+        <span className="text-base font-medium">{t($ => $.common.materialLabel)}</span>
       </Label.Root>
       <MaterialSelectWithEdit
         value={config.material}
@@ -487,7 +487,7 @@ function DoubleRingBeamFields({
       />
 
       <Label.Root>
-        <span className="text-base font-medium text-gray-900">{t($ => $.common.materialLabel)}</span>
+        <span className="text-base font-medium">{t($ => $.common.materialLabel)}</span>
       </Label.Root>
       <MaterialSelectWithEdit
         value={config.infillMaterial}
@@ -500,7 +500,7 @@ function DoubleRingBeamFields({
 
       <div className="flex items-center gap-1">
         <Label.Root>
-          <span className="text-base font-medium text-gray-900">{t($ => $.common.height)}</span>
+          <span className="text-base font-medium">{t($ => $.common.height)}</span>
         </Label.Root>
         <MeasurementInfo highlightedPart="plates" />
       </div>
@@ -514,7 +514,7 @@ function DoubleRingBeamFields({
 
       <div className="flex items-center gap-1">
         <Label.Root>
-          <span className="text-base font-medium text-gray-900">{t($ => $.common.thickness)}</span>
+          <span className="text-base font-medium">{t($ => $.common.thickness)}</span>
         </Label.Root>
         <MeasurementInfo highlightedPart="plates" />
       </div>
@@ -528,7 +528,7 @@ function DoubleRingBeamFields({
 
       <div className="flex items-center gap-1">
         <Label.Root>
-          <span className="text-base font-medium text-gray-900">{t($ => $.common.spacing)}</span>
+          <span className="text-base font-medium">{t($ => $.common.spacing)}</span>
         </Label.Root>
         <MeasurementInfo highlightedPart="plates" />
       </div>
@@ -542,7 +542,7 @@ function DoubleRingBeamFields({
 
       <div className="flex items-center gap-1">
         <Label.Root>
-          <span className="text-base font-medium text-gray-900">{t($ => $.ringBeams.labels.offsetFromInsideEdge)}</span>
+          <span className="text-base font-medium">{t($ => $.ringBeams.labels.offsetFromInsideEdge)}</span>
         </Label.Root>
         <MeasurementInfo highlightedPart="plates" />
       </div>
@@ -554,7 +554,7 @@ function DoubleRingBeamFields({
         unit="mm"
       />
 
-      <span className="text-base font-medium text-gray-900">{t($ => $.ringBeams.labels.cornerHandling)}</span>
+      <span className="text-base font-medium">{t($ => $.ringBeams.labels.cornerHandling)}</span>
 
       <div className="col-span-3">
         <ToggleGroup
@@ -589,7 +589,7 @@ function BrickRingBeamFields({
 
       <div className="grid grid-cols-[auto_1fr_auto_1fr] items-center gap-2 gap-x-3">
         <Label.Root>
-          <span className="text-base font-medium text-gray-900">{t($ => $.common.height)}</span>
+          <span className="text-base font-medium">{t($ => $.common.height)}</span>
         </Label.Root>
         <LengthField
           value={config.wallHeight}
@@ -601,7 +601,7 @@ function BrickRingBeamFields({
         />
 
         <Label.Root>
-          <span className="text-base font-medium text-gray-900">{t($ => $.common.width)}</span>
+          <span className="text-base font-medium">{t($ => $.common.width)}</span>
         </Label.Root>
         <LengthField
           value={config.wallWidth}
@@ -613,7 +613,7 @@ function BrickRingBeamFields({
         />
 
         <Label.Root>
-          <span className="text-base font-medium text-gray-900">{t($ => $.common.materialLabel)}</span>
+          <span className="text-base font-medium">{t($ => $.common.materialLabel)}</span>
         </Label.Root>
         <MaterialSelectWithEdit
           value={config.wallMaterial}
@@ -632,7 +632,7 @@ function BrickRingBeamFields({
 
       <div className="grid grid-cols-[auto_1fr_auto_1fr] items-center gap-2 gap-x-3">
         <Label.Root>
-          <span className="text-base font-medium text-gray-900">{t($ => $.common.thickness)}</span>
+          <span className="text-base font-medium">{t($ => $.common.thickness)}</span>
         </Label.Root>
         <LengthField
           value={config.insulationThickness}
@@ -644,7 +644,7 @@ function BrickRingBeamFields({
         />
 
         <Label.Root>
-          <span className="text-base font-medium text-gray-900">{t($ => $.common.materialLabel)}</span>
+          <span className="text-base font-medium">{t($ => $.common.materialLabel)}</span>
         </Label.Root>
         <MaterialSelectWithEdit
           value={config.insulationMaterial}
@@ -662,7 +662,7 @@ function BrickRingBeamFields({
 
       <div className="grid grid-cols-[auto_1fr_auto_1fr] items-center gap-2 gap-x-3">
         <Label.Root>
-          <span className="text-base font-medium text-gray-900">{t($ => $.common.thickness)}</span>
+          <span className="text-base font-medium">{t($ => $.common.thickness)}</span>
         </Label.Root>
         <LengthField
           value={config.beamThickness}
@@ -674,7 +674,7 @@ function BrickRingBeamFields({
         />
 
         <Label.Root>
-          <span className="text-base font-medium text-gray-900">{t($ => $.common.width)}</span>
+          <span className="text-base font-medium">{t($ => $.common.width)}</span>
         </Label.Root>
         <LengthField
           value={config.beamWidth}
@@ -686,7 +686,7 @@ function BrickRingBeamFields({
         />
 
         <Label.Root>
-          <span className="text-base font-medium text-gray-900">{t($ => $.common.materialLabel)}</span>
+          <span className="text-base font-medium">{t($ => $.common.materialLabel)}</span>
         </Label.Root>
         <MaterialSelectWithEdit
           value={config.beamMaterial}
@@ -705,7 +705,7 @@ function BrickRingBeamFields({
 
       <div className="grid grid-cols-[auto_1fr_auto_1fr] items-center gap-2 gap-x-3">
         <Label.Root>
-          <span className="text-base font-medium text-gray-900">{t($ => $.common.thickness)}</span>
+          <span className="text-base font-medium">{t($ => $.common.thickness)}</span>
         </Label.Root>
         <LengthField
           value={config.waterproofingThickness}
@@ -717,7 +717,7 @@ function BrickRingBeamFields({
         />
 
         <Label.Root>
-          <span className="text-base font-medium text-gray-900">{t($ => $.common.materialLabel)}</span>
+          <span className="text-base font-medium">{t($ => $.common.materialLabel)}</span>
         </Label.Root>
         <MaterialSelectWithEdit
           value={config.waterproofingMaterial}
@@ -748,7 +748,7 @@ function UsageDisplay({ usage }: { usage: RingBeamAssemblyUsage }): React.JSX.El
   return (
     <div className="grid grid-cols-[auto_1fr] items-center gap-2 gap-x-3">
       <Label.Root>
-        <span className="text-base font-medium text-gray-900">{t($ => $.usage.usedBy)}</span>
+        <span className="text-base font-medium">{t($ => $.usage.usedBy)}</span>
       </Label.Root>
       <div className="flex flex-wrap gap-1">
         {usage.isDefaultBase && (

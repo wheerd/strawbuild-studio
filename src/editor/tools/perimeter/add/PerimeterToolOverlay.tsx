@@ -214,7 +214,7 @@ export function PerimeterToolOverlay({ tool }: ToolOverlayComponentProps<Perimet
           cy={point[1]}
           r={scaledPointRadius}
           fill={index === 0 ? 'var(--color-blue-600)' : 'var(--color-gray-600)'}
-          stroke="var(--color-gray-100)"
+          stroke="var(--color-schematic-gray-1)"
           strokeWidth={scaledPointStrokeWidth}
         />
       ))}
@@ -225,7 +225,7 @@ export function PerimeterToolOverlay({ tool }: ToolOverlayComponentProps<Perimet
         cy={previewPos[1]}
         r={scaledPointRadius}
         fill={state.lengthOverride ? 'var(--color-primary)' : 'var(--color-gray-900)'}
-        stroke={state.lengthOverride ? 'var(--color-gray-100)' : 'var(--color-gray-900)'}
+        stroke={state.lengthOverride ? 'var(--color-schematic-gray-1)' : 'var(--color-gray-900)'}
         strokeWidth={scaledPointStrokeWidth}
       />
     </g>

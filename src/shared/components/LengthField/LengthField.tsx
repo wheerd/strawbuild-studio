@@ -117,25 +117,25 @@ export const LengthField = forwardRef<HTMLInputElement, LengthFieldProps>(functi
           <Button
             type="button"
             variant="outline"
-            size="icon"
+            size="icon-xs"
             disabled={disabled || !canStepUp}
             onClick={stepUp}
             className="border-input h-1/2 w-6 rounded-l-none rounded-br-none border-b-[0.5px] border-l focus-visible:relative"
             tabIndex={-1}
           >
-            <ChevronUpIcon className="h-2.5 w-2.5" />
+            <ChevronUpIcon />
           </Button>
 
           <Button
             type="button"
             className="border-input h-1/2 w-6 rounded-l-none rounded-tr-none border-t-[0.5px] border-l focus-visible:relative"
             variant="outline"
-            size="icon"
+            size="icon-xs"
             disabled={disabled || !canStepDown}
             onClick={stepDown}
             tabIndex={-1}
           >
-            <ChevronDownIcon className="h-2.5 w-2.5" />
+            <ChevronDownIcon />
           </Button>
         </div>
       </div>

@@ -50,7 +50,7 @@ export function RoofOverhangInspector({ overhangId }: { overhangId: RoofOverhang
         {/* Overhang Value */}
         <div className="flex items-center justify-between gap-2">
           <Label.Root>
-            <span className="text-sm font-medium text-gray-900">{t($ => $.roofOverhang.overhang)}</span>
+            <span className="text-sm font-medium">{t($ => $.roofOverhang.overhang)}</span>
           </Label.Root>
           <LengthField
             value={overhang.value}

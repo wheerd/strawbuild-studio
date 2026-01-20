@@ -7,38 +7,47 @@ import { Logo } from '@/shared/components/Logo'
 
 export function ToolbarSkeleton(): React.JSX.Element {
   return (
-    <div
-      className="flex items-center gap-4 p-3"
-      style={{ borderBottom: '1px solid var(--color-gray-600)' }}
-      data-testid="toolbar-skeleton"
-    >
+    <div className="border-border flex items-center gap-4 border-b p-3" data-testid="toolbar-skeleton">
       {/* Logo - Real logo loads immediately */}
       <Logo />
 
       {/* Tools skeleton */}
       <Toolbar.Root>
         <div className="flex items-center gap-2">
-          {/* Basic tools group */}
           <div className="flex items-center gap-1">
-            <Skeleton className="h-8 w-8" />
-            <Skeleton className="h-8 w-8" />
-            <Skeleton className="h-8 w-8" />
+            <Skeleton className="bg-background size-10" />
+            <Skeleton className="bg-background size-10" />
+            <Skeleton className="bg-background size-10" />
           </div>
           <Separator orientation="vertical" className="h-6" />
-          {/* Perimeter tools group */}
           <div className="flex items-center gap-1">
-            <Skeleton className="h-8 w-8" />
-            <Skeleton className="h-8 w-8" />
-            <Skeleton className="h-8 w-8" />
+            <Skeleton className="bg-background size-10" />
+            <Skeleton className="bg-background size-10" />
+            <Skeleton className="bg-background size-10" />
+            <Skeleton className="bg-background size-10" />
+            <Skeleton className="bg-background size-10" />
           </div>
           <Separator orientation="vertical" className="h-6" />
-          {/* Test data tools group */}
           <div className="flex items-center gap-1">
-            <Skeleton className="h-8 w-8" />
-            <Skeleton className="h-8 w-8" />
+            <Skeleton className="bg-background size-10" />
+          </div>
+          <Separator orientation="vertical" className="h-6" />
+          <div className="flex items-center gap-1">
+            <Skeleton className="bg-background size-10" />
+          </div>
+          <Separator orientation="vertical" className="h-6" />
+          <div className="flex items-center gap-1">
+            <Skeleton className="bg-background size-10" />
           </div>
         </div>
       </Toolbar.Root>
+
+      <div className="ml-auto flex items-center gap-2">
+        <Skeleton className="bg-primary/30 size-10" />
+        <Skeleton className="bg-primary/30 size-10" />
+        <Skeleton className="bg-primary/30 size-10" />
+        <Skeleton className="bg-background size-9" />
+      </div>
     </div>
   )
 }

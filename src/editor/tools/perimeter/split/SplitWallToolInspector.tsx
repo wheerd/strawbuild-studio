@@ -25,7 +25,7 @@ export function SplitWallToolInspector({ tool }: ToolInspectorProps<SplitWallToo
             <span className="text-sm">{t($ => $.splitWall.info)}</span>
           </CalloutText>
         </Callout>
-        <span className="text-base text-gray-900">{t($ => $.splitWall.selectWall)}</span>
+        <span className="text-base">{t($ => $.splitWall.selectWall)}</span>
       </div>
     )
   }
@@ -61,10 +61,10 @@ export function SplitWallToolInspector({ tool }: ToolInspectorProps<SplitWallToo
       </div>
       {/* Instructions */}
       <div className="flex flex-col gap-1">
-        <span className="text-sm text-gray-900">• {t($ => $.splitWall.controlHover)}</span>
-        <span className="text-sm text-gray-900">• {t($ => $.splitWall.controlClick)}</span>
-        <span className="text-sm text-gray-900">• {t($ => $.splitWall.controlMeasurements)}</span>
-        <span className="text-sm text-gray-900">• {t($ => $.splitWall.controlConfirm)}</span>
+        <span className="text-sm">• {t($ => $.splitWall.controlHover)}</span>
+        <span className="text-sm">• {t($ => $.splitWall.controlClick)}</span>
+        <span className="text-sm">• {t($ => $.splitWall.controlMeasurements)}</span>
+        <span className="text-sm">• {t($ => $.splitWall.controlConfirm)}</span>
       </div>
     </div>
   )

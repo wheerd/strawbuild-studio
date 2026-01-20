@@ -17,7 +17,7 @@ export function AddPostToolOverlay({ tool }: ToolOverlayComponentProps<AddPostTo
 
   const halfWidth = state.width / 2
 
-  const fillColor = state.canPlace ? 'var(--color-gray-100)' : 'var(--color-red-900)'
+  const fillColor = state.canPlace ? 'var(--color-schematic-gray-1)' : 'var(--color-red-900)'
 
   return (
     <g
@@ -80,7 +80,7 @@ export function AddPostToolOverlay({ tool }: ToolOverlayComponentProps<AddPostTo
           cy={wall.thickness / 2}
           r={wall.thickness * 0.15}
           fill="var(--color-primary)"
-          stroke="var(--color-gray-100)"
+          stroke="var(--color-schematic-gray-1)"
           strokeWidth={2}
           opacity={0.9}
         />

@@ -30,7 +30,7 @@ export function PerimeterWallMovementPreview({
         cy={newMidpoint[1]}
         r={20}
         fill={isValid ? 'var(--color-green-900)' : 'var(--color-red-900)'}
-        stroke="var(--color-gray-100)"
+        stroke="var(--color-schematic-gray-1)"
         strokeWidth={2}
         opacity={0.8}
       />

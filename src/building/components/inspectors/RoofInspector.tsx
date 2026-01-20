@@ -152,7 +152,7 @@ export function RoofInspector({ roofId }: RoofInspectorProps): React.JSX.Element
         {/* Assembly */}
         <div className="flex justify-between gap-1">
           <Label.Root>
-            <span className="text-sm font-medium text-gray-900">{t($ => $.roof.assembly)}</span>
+            <span className="text-sm font-medium">{t($ => $.roof.assembly)}</span>
           </Label.Root>
           <RoofAssemblySelectWithEdit
             value={roof.assemblyId}
@@ -166,7 +166,7 @@ export function RoofInspector({ roofId }: RoofInspectorProps): React.JSX.Element
         {/* Slope */}
         <div className="flex items-center justify-between gap-2">
           <Label.Root htmlFor="roof-slope">
-            <span className="text-sm font-medium text-gray-900">{t($ => $.roof.slope)}</span>
+            <span className="text-sm font-medium">{t($ => $.roof.slope)}</span>
           </Label.Root>
 
           <div className="flex items-center gap-2">
@@ -205,7 +205,7 @@ export function RoofInspector({ roofId }: RoofInspectorProps): React.JSX.Element
         {/* Vertical Offset */}
         <div className="flex items-center justify-between gap-2">
           <Label.Root htmlFor="vertical-offset">
-            <span className="text-sm font-medium text-gray-900">{t($ => $.roof.verticalOffset)}</span>
+            <span className="text-sm font-medium">{t($ => $.roof.verticalOffset)}</span>
           </Label.Root>
           <LengthField
             id="vertical-offset"
@@ -223,7 +223,7 @@ export function RoofInspector({ roofId }: RoofInspectorProps): React.JSX.Element
         <div className="flex items-center justify-between gap-2">
           <Label.Root htmlFor="roof-overhang">
             <div className="flex items-center gap-1">
-              <span className="text-sm font-medium text-gray-900">{t($ => $.roof.overhang)}</span>
+              <span className="text-sm font-medium">{t($ => $.roof.overhang)}</span>
               {overhangState.isMixed && <MixedStateIndicator tooltip={t($ => $.roof.mixedValuesTooltip)} />}
             </div>
           </Label.Root>
@@ -242,7 +242,7 @@ export function RoofInspector({ roofId }: RoofInspectorProps): React.JSX.Element
           />
         </div>
 
-        {overhangState.isMixed && <span className="text-sm text-gray-900">{t($ => $.roof.mixedWarning)}</span>}
+        {overhangState.isMixed && <span className="text-sm">{t($ => $.roof.mixedWarning)}</span>}
       </div>
 
       <Separator />

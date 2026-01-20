@@ -6,7 +6,6 @@ import { Arrow } from '@/editor/components/Arrow'
 import { useSelectionStore } from '@/editor/hooks/useSelectionStore'
 import { RoofOverhangShape } from '@/editor/shapes/RoofOverhangShape'
 import { Bounds2D, direction, midpoint, negVec2, perpendicular, perpendicularCW, scaleAddVec2 } from '@/shared/geometry'
-import { MATERIAL_COLORS } from '@/shared/theme/colors'
 import { polygonToSvgPath } from '@/shared/utils/svg'
 
 export function RoofShape({ roof }: { roof: Roof }): React.JSX.Element {
@@ -62,11 +61,11 @@ export function RoofShape({ roof }: { roof: Roof }): React.JSX.Element {
 
   return (
     <g data-entity-id={roof.id} data-entity-type="roof" data-parent-ids="[]">
-      <path d={roofPath} fill={MATERIAL_COLORS.roof} opacity={0.6} />
-      <path d={roofPath} fill="none" stroke="var(--color-gray-900)" strokeWidth={20} />
+      <path d={roofPath} fill="var(--color-red-400)" opacity={0.6} />
+      <path d={roofPath} fill="none" stroke="var(--color-border-contrast)" strokeWidth={20} />
 
       {/* Eave polygon - dashed outline */}
-      <path d={eavePath} fill="none" stroke="var(--color-gray-900)" strokeWidth={10} strokeDasharray="200 100" />
+      <path d={eavePath} fill="none" stroke="var(--color-border-contrast)" strokeWidth={10} strokeDasharray="200 100" />
 
       {/* Individual overhang sides - rendered as trapezoids */}
       {overhangs.map(overhang => (
@@ -90,7 +89,7 @@ export function RoofShape({ roof }: { roof: Roof }): React.JSX.Element {
             key={index}
             arrowStart={arrow.start}
             arrowEnd={arrow.end}
-            color="var(--color-gray-100)"
+            color="var(--color-white)"
             strokeWidth={400}
             pointerLength={200}
             pointerWidth={200}

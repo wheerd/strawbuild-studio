@@ -153,7 +153,7 @@ export function StoreyListItem({
 
         {/* Editable name */}
         <div className="flex grow flex-col gap-1">
-          <span className="text-sm font-medium text-gray-900">{t($ => $.storeys.name)}</span>
+          <span className="text-sm font-medium">{t($ => $.storeys.name)}</span>
           <TextField.Root
             value={editName}
             onChange={handleNameChange}
@@ -169,7 +169,7 @@ export function StoreyListItem({
         {/* Floor height input */}
         <div className="flex flex-col gap-1">
           <div className="flex items-center gap-1">
-            <span className="text-sm font-medium text-gray-900">{t($ => $.storeys.floorHeight)}</span>
+            <span className="text-sm font-medium">{t($ => $.storeys.floorHeight)}</span>
             <MeasurementInfo highlightedMeasurement="storeyHeight" />
           </div>
           <LengthField
@@ -194,7 +194,7 @@ export function StoreyListItem({
         {/* Floor Assembly Configuration */}
         <div className="flex flex-col gap-1">
           <div className="flex items-center gap-1">
-            <span className="text-sm font-medium text-gray-900">{t($ => $.storeys.floorAssembly)}</span>
+            <span className="text-sm font-medium">{t($ => $.storeys.floorAssembly)}</span>
             <MeasurementInfo highlightedAssembly="floorAssembly" />
           </div>
           <FloorAssemblySelectWithEdit
@@ -233,7 +233,7 @@ export function StoreyListItem({
 
               <div className="flex justify-end gap-3">
                 <AlertDialog.Cancel>
-                  <Button variant="soft" className="text-gray-900">
+                  <Button variant="soft" className="">
                     {t($ => $.actions.cancel)}
                   </Button>
                 </AlertDialog.Cancel>

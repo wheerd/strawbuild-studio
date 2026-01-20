@@ -284,7 +284,7 @@ export function MaterialsConfigContent({ initialSelectionId }: MaterialsConfigCo
               </AlertDialog.Description>
               <div className="mt-4 flex justify-end gap-3">
                 <AlertDialog.Cancel>
-                  <Button variant="soft" className="text-gray-900">
+                  <Button variant="soft" className="">
                     {t($ => $.common.cancel)}
                   </Button>
                 </AlertDialog.Cancel>
@@ -312,7 +312,7 @@ export function MaterialsConfigContent({ initialSelectionId }: MaterialsConfigCo
               <AlertDialog.Description>{t($ => $.materials.resetConfirm)}</AlertDialog.Description>
               <div className="mt-4 flex justify-end gap-3">
                 <AlertDialog.Cancel>
-                  <Button variant="soft" className="text-gray-900">
+                  <Button variant="soft" className="">
                     {t($ => $.common.cancel)}
                   </Button>
                 </AlertDialog.Cancel>
@@ -328,7 +328,7 @@ export function MaterialsConfigContent({ initialSelectionId }: MaterialsConfigCo
 
         <div className="grid grid-cols-[auto_1fr] items-center gap-2">
           <Label.Root>
-            <span className="text-sm font-medium text-gray-900">{t($ => $.materials.defaultStrawMaterial)}</span>
+            <span className="text-sm font-medium">{t($ => $.materials.defaultStrawMaterial)}</span>
           </Label.Root>
           <MaterialSelect
             value={defaultStrawMaterialId}
@@ -347,7 +347,7 @@ export function MaterialsConfigContent({ initialSelectionId }: MaterialsConfigCo
         <Card className="flex flex-col gap-3 p-3">
           <div className="grid grid-cols-[4em_1fr] items-center gap-2 gap-x-3">
             <Label.Root>
-              <span className="text-base font-medium text-gray-900">{t($ => $.common.name)}</span>
+              <span className="text-base font-medium">{t($ => $.common.name)}</span>
             </Label.Root>
             <TextField.Root
               value={nameKey ? t($ => $.materials.defaults[nameKey]) : selectedMaterial.name}
@@ -359,15 +359,15 @@ export function MaterialsConfigContent({ initialSelectionId }: MaterialsConfigCo
           </div>
           <div className="grid grid-cols-[4em_1fr_auto_1fr_auto_auto] items-center gap-2 gap-x-3">
             <Label.Root>
-              <span className="text-base font-medium text-gray-900">{t($ => $.common.type)}</span>
+              <span className="text-base font-medium">{t($ => $.common.type)}</span>
             </Label.Root>
             <div className="flex items-center gap-2">
               {Icon && <Icon width="12" height="12" />}
-              <span className="text-base text-gray-900">{getMaterialTypeName(selectedMaterial.type)}</span>
+              <span className="text-base">{getMaterialTypeName(selectedMaterial.type)}</span>
             </div>
 
             <Label.Root>
-              <span className="text-base font-medium text-gray-900">{t($ => $.common.color)}</span>
+              <span className="text-base font-medium">{t($ => $.common.color)}</span>
             </Label.Root>
             <input
               type="color"
@@ -378,7 +378,7 @@ export function MaterialsConfigContent({ initialSelectionId }: MaterialsConfigCo
               style={{ width: '60px', height: '24px', cursor: 'pointer' }}
             />
             <Label.Root>
-              <span className="text-base font-medium text-gray-900">{t($ => $.common.density)}</span>
+              <span className="text-base font-medium">{t($ => $.common.density)}</span>
             </Label.Root>
             <NumberField.Root
               value={selectedMaterial.density}
@@ -415,7 +415,7 @@ export function MaterialsConfigContent({ initialSelectionId }: MaterialsConfigCo
       )}
       {!selectedMaterial && materials.length === 0 && (
         <div className="flex items-center justify-center p-5">
-          <span className="text-gray-900">{t($ => $.materials.noMaterialsYet)}</span>
+          <span className="">{t($ => $.materials.noMaterialsYet)}</span>
         </div>
       )}
       {usage.isUsed && <UsageDisplay usage={usage} />}
@@ -438,7 +438,7 @@ function UsageDisplay({ usage }: { usage: MaterialUsage }): React.JSX.Element {
   return (
     <div className="grid grid-cols-[auto_1fr] items-baseline gap-2 gap-x-3">
       <Label.Root>
-        <span className="text-base font-medium text-gray-900">{t($ => $.usage.usedBy)}</span>
+        <span className="text-base font-medium">{t($ => $.usage.usedBy)}</span>
       </Label.Root>
       <div className="flex flex-wrap gap-1">
         {usage.isDefaultStraw && (
@@ -526,7 +526,7 @@ function DimensionalMaterialFields({
     <div className="flex flex-col gap-3">
       <div className="flex flex-row items-end justify-between">
         <div className="flex flex-col gap-2">
-          <span className="text-base font-medium text-gray-900" id="crossSections">
+          <span className="text-base font-medium" id="crossSections">
             {t($ => $.materials.crossSections)}
           </span>
           <div className="flex grow flex-wrap gap-2" role="list" aria-labelledby="crossSections">
@@ -543,7 +543,7 @@ function DimensionalMaterialFields({
                   <Button
                     size="icon-xs"
                     variant="ghost"
-                    className="text-gray-900"
+                    className=""
                     onClick={() => {
                       handleRemoveCrossSection(section)
                     }}
@@ -592,7 +592,7 @@ function DimensionalMaterialFields({
       </div>
       <div className="flex flex-row items-end justify-between">
         <div className="flex flex-col gap-2">
-          <span className="text-base font-medium text-gray-900" id="stock-lengths">
+          <span className="text-base font-medium" id="stock-lengths">
             {t($ => $.materials.stockLengths)}
           </span>
           <div className="flex flex-wrap gap-2" role="list" aria-labelledby="stock-lengths">
@@ -603,7 +603,7 @@ function DimensionalMaterialFields({
                   <Button
                     size="icon-xs"
                     variant="ghost"
-                    className="text-gray-900"
+                    className=""
                     onClick={() => {
                       handleRemoveLength(length)
                     }}
@@ -710,7 +710,7 @@ function SheetMaterialFields({
     <div className="flex flex-col gap-3">
       <div className="flex flex-row items-end justify-between">
         <div className="flex flex-col gap-2">
-          <span className="text-base font-medium text-gray-900" id="sheet-sizes">
+          <span className="text-base font-medium" id="sheet-sizes">
             {t($ => $.materials.sheetSizes)}
           </span>
           <div className="flex flex-wrap gap-2" role="list" aria-labelledby="sheet-sizes">
@@ -727,7 +727,7 @@ function SheetMaterialFields({
                   <Button
                     size="icon-xs"
                     variant="ghost"
-                    className="text-gray-900"
+                    className=""
                     onClick={() => {
                       handleRemoveSize(size)
                     }}
@@ -771,7 +771,7 @@ function SheetMaterialFields({
       </div>
       <div className="flex flex-row items-end justify-between">
         <div className="flex flex-col gap-2">
-          <span className="text-base font-medium text-gray-900" id="sheet-thicknesses">
+          <span className="text-base font-medium" id="sheet-thicknesses">
             {t($ => $.materials.thicknesses)}
           </span>
           <div className="flex flex-wrap gap-2" role="list" aria-labelledby="sheet-thicknesses">
@@ -782,7 +782,7 @@ function SheetMaterialFields({
                   <Button
                     size="icon-xs"
                     variant="ghost"
-                    className="text-gray-900"
+                    className=""
                     onClick={() => {
                       handleRemoveThickness(thickness)
                     }}
@@ -824,7 +824,7 @@ function SheetMaterialFields({
         </div>
       </div>
       <div className="flex flex-col gap-2">
-        <span className="text-base font-medium text-gray-900">{t($ => $.materials.sheetType)}</span>
+        <span className="text-base font-medium">{t($ => $.materials.sheetType)}</span>
         <ToggleGroup
           type="single"
           variant="outline"
@@ -878,7 +878,7 @@ function VolumeMaterialFields({
     <div className="flex flex-col gap-3">
       <div className="flex flex-row items-end justify-between">
         <div className="flex flex-col gap-2">
-          <span className="text-base font-medium text-gray-900" id="available-volumes">
+          <span className="text-base font-medium" id="available-volumes">
             {t($ => $.materials.availableVolumes)}
           </span>
           <div className="flex flex-wrap gap-2" role="list" aria-labelledby="available-volumes">
@@ -889,7 +889,7 @@ function VolumeMaterialFields({
                   <Button
                     size="icon-xs"
                     variant="ghost"
-                    className="text-gray-900"
+                    className=""
                     onClick={() => {
                       handleRemoveVolume(volume)
                     }}
@@ -963,7 +963,7 @@ function StrawbaleMaterialFields({
     <div className="flex flex-col gap-3">
       <div className="grid grid-cols-[8em_1fr_8em_1fr] gap-3 gap-x-4">
         <Label.Root>
-          <span className="text-sm font-medium text-gray-900">{t($ => $.materials.minBaleLength)}</span>
+          <span className="text-sm font-medium">{t($ => $.materials.minBaleLength)}</span>
         </Label.Root>
         <LengthField
           value={material.baleMinLength}
@@ -974,7 +974,7 @@ function StrawbaleMaterialFields({
         />
 
         <Label.Root>
-          <span className="text-sm font-medium text-gray-900">{t($ => $.materials.maxBaleLength)}</span>
+          <span className="text-sm font-medium">{t($ => $.materials.maxBaleLength)}</span>
         </Label.Root>
         <LengthField
           value={material.baleMaxLength}
@@ -985,7 +985,7 @@ function StrawbaleMaterialFields({
         />
 
         <Label.Root>
-          <span className="text-sm font-medium text-gray-900">{t($ => $.materials.baleHeight)}</span>
+          <span className="text-sm font-medium">{t($ => $.materials.baleHeight)}</span>
         </Label.Root>
         <LengthField
           value={material.baleHeight}
@@ -996,7 +996,7 @@ function StrawbaleMaterialFields({
         />
 
         <Label.Root>
-          <span className="text-sm font-medium text-gray-900">{t($ => $.materials.baleWidth)}</span>
+          <span className="text-sm font-medium">{t($ => $.materials.baleWidth)}</span>
         </Label.Root>
         <LengthField
           value={material.baleWidth}
@@ -1008,7 +1008,7 @@ function StrawbaleMaterialFields({
       </div>
       <div className="grid grid-cols-[8em_1fr_8em_1fr] gap-3 gap-x-4">
         <Label.Root>
-          <span className="text-sm font-medium text-gray-900">{t($ => $.materials.tolerance)}</span>
+          <span className="text-sm font-medium">{t($ => $.materials.tolerance)}</span>
         </Label.Root>
         <LengthField
           value={material.tolerance}
@@ -1019,7 +1019,7 @@ function StrawbaleMaterialFields({
         />
 
         <Label.Root>
-          <span className="text-sm font-medium text-gray-900">{t($ => $.materials.topCutoffLimit)}</span>
+          <span className="text-sm font-medium">{t($ => $.materials.topCutoffLimit)}</span>
         </Label.Root>
         <LengthField
           value={material.topCutoffLimit}
@@ -1030,7 +1030,7 @@ function StrawbaleMaterialFields({
         />
 
         <Label.Root>
-          <span className="text-sm font-medium text-gray-900">{t($ => $.materials.flakeSize)}</span>
+          <span className="text-sm font-medium">{t($ => $.materials.flakeSize)}</span>
         </Label.Root>
         <LengthField
           value={material.flakeSize}

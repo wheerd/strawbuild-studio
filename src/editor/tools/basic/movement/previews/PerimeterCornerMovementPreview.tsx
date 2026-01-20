@@ -27,7 +27,7 @@ export function PerimeterCornerMovementPreview({
         cy={movementState.position[1]}
         r={30}
         fill={isValid ? 'var(--color-green-900)' : 'var(--color-red-900)'}
-        stroke="var(--color-gray-100)"
+        stroke="var(--color-schematic-gray-1)"
         strokeWidth={5}
         opacity={0.8}
       />

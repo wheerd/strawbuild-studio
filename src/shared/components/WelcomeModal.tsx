@@ -128,7 +128,7 @@ export function WelcomeModal({ isOpen, mode, onAccept, trigger }: WelcomeModalPr
                     ))}
                   </ul>
                 </div>
-                <span className="text-base text-gray-900">{t($ => $.localStorage.privacy)}</span>
+                <span className="text-base">{t($ => $.localStorage.privacy)}</span>
               </div>
 
               <Callout color="orange" variant="soft">
@@ -157,9 +157,9 @@ export function WelcomeModal({ isOpen, mode, onAccept, trigger }: WelcomeModalPr
               <Button size="lg" onClick={onAccept} style={{ width: '100%' }}>
                 {t($ => $.continueButton)}
               </Button>
-              {isFirstVisit && <span className="flex items-center text-sm text-gray-900">{t($ => $.reviewInfo)}</span>}
+              {isFirstVisit && <span className="flex items-center text-sm">{t($ => $.reviewInfo)}</span>}
               <div className="mt-2 flex flex-col items-center gap-1">
-                <span className="flex items-center text-sm text-gray-900">
+                <span className="flex items-center text-sm">
                   {t($ => $.version, {
                     version: VERSION_INFO.version
                   })}

@@ -29,7 +29,7 @@ export function FullScreenModal({
 
       <DialogPrimitive.Portal>
         {/* Overlay */}
-        <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-black/80" />
+        <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-black/50" />
 
         {/* Content */}
         <DialogPrimitive.Content
@@ -58,17 +58,10 @@ export function FullScreenModal({
           >
             <div className="flex items-center gap-2">
               {titleIcon}
-              <DialogPrimitive.Title className="text-lg font-semibold" style={{ color: 'var(--color-gray-900)' }}>
-                {title}
-              </DialogPrimitive.Title>
+              <DialogPrimitive.Title className="text-lg font-semibold">{title}</DialogPrimitive.Title>
             </div>
 
-            <DialogPrimitive.Close
-              className="inline-flex h-8 w-8 items-center justify-center rounded-sm opacity-70 transition-opacity hover:opacity-100"
-              style={{
-                color: 'var(--color-gray-900)'
-              }}
-            >
+            <DialogPrimitive.Close className="inline-flex h-8 w-8 items-center justify-center rounded-sm opacity-70 transition-opacity hover:opacity-100">
               <Cross2Icon className="h-4 w-4" />
               <span className="sr-only">Close</span>
             </DialogPrimitive.Close>

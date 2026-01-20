@@ -200,7 +200,7 @@ e | y +--------------+ s | Floor top layers                 }
 
   const highlightFill = 'var(--color-blue-200)'
   const highlightStroke = 'var(--color-blue-700)'
-  const measurementNeutralColor = 'var(--color-gray-300)'
+  const measurementNeutralColor = 'var(--color-schematic-gray-3)'
   const finishedLevelColor = 'var(--color-teal-600)'
   const finishedSideColor = 'var(--color-sky-600)'
 
@@ -296,7 +296,7 @@ e | y +--------------+ s | Floor top layers                 }
           y={floorTopY}
           width={floorWidth + floorProjection}
           height={floorTopThickness}
-          fill={getPartFill('floorTopLayers', 'var(--color-gray-200)')}
+          fill={getPartFill('floorTopLayers', 'var(--color-schematic-gray-2)')}
           stroke={getPartStroke('floorTopLayers')}
           strokeWidth="5"
         />
@@ -310,7 +310,7 @@ e | y +--------------+ s | Floor top layers                 }
               H ${wallRight}
               v -${floorConstructionBottomOverlap}
               H ${wallLeft} Z`}
-          fill={getPartFill('floorConstruction', 'var(--color-gray-300)')}
+          fill={getPartFill('floorConstruction', 'var(--color-schematic-gray-3)')}
           stroke={getPartStroke('floorConstruction')}
           strokeWidth="5"
         />
@@ -320,7 +320,7 @@ e | y +--------------+ s | Floor top layers                 }
           y={topFloorBottomLayersTopY}
           width={floorWidth + floorProjection}
           height={floorBottomThickness}
-          fill={getPartFill('floorBottomLayers', 'var(--color-gray-200)')}
+          fill={getPartFill('floorBottomLayers', 'var(--color-schematic-gray-2)')}
           stroke={getPartStroke('floorBottomLayers')}
           strokeWidth="5"
         />
@@ -332,7 +332,7 @@ e | y +--------------+ s | Floor top layers                 }
           y={bottomFloorTopY}
           width={floorWidth + floorProjection}
           height={floorTopThickness}
-          fill={getPartFill('floorTopLayers', 'var(--color-gray-200)')}
+          fill={getPartFill('floorTopLayers', 'var(--color-schematic-gray-2)')}
           stroke={getPartStroke('floorTopLayers')}
           strokeWidth="5"
         />
@@ -346,7 +346,7 @@ e | y +--------------+ s | Floor top layers                 }
               H ${wallRight}
               v -${floorConstructionBottomOverlap}
               H ${wallLeft} Z`}
-          fill={getPartFill('floorConstruction', 'var(--color-gray-300)')}
+          fill={getPartFill('floorConstruction', 'var(--color-schematic-gray-3)')}
           stroke={getPartStroke('floorConstruction')}
           strokeWidth="5"
         />
@@ -356,7 +356,7 @@ e | y +--------------+ s | Floor top layers                 }
           y={bottomFloorBottomLayersTopY}
           width={floorWidth + floorProjection}
           height={floorBottomThickness}
-          fill={getPartFill('floorBottomLayers', 'var(--color-gray-200)')}
+          fill={getPartFill('floorBottomLayers', 'var(--color-schematic-gray-2)')}
           stroke={getPartStroke('floorBottomLayers')}
           strokeWidth="5"
         />
@@ -372,7 +372,7 @@ e | y +--------------+ s | Floor top layers                 }
         y={-wallVerticalExtension}
         width={wallWidth}
         height={topFloorConstructionTopY + floorConstructionTopOverlap - basePlateThickness + wallVerticalExtension}
-        fill="var(--color-gray-300)"
+        fill="var(--color-schematic-gray-3)"
         stroke="var(--color-gray-900)"
         strokeWidth="5"
       />
@@ -382,7 +382,7 @@ e | y +--------------+ s | Floor top layers                 }
         y={-wallVerticalExtension}
         width={insideThickness}
         height={topFloorConstructionTopY + wallVerticalExtension}
-        fill={getPartFill('insideLayer', 'var(--color-gray-100)')}
+        fill={getPartFill('insideLayer', 'var(--color-schematic-gray-1)')}
         stroke={getPartStroke('insideLayer')}
         strokeWidth="5"
       />
@@ -392,7 +392,7 @@ e | y +--------------+ s | Floor top layers                 }
         y={topFloorConstructionTopY + floorConstructionTopOverlap - basePlateThickness}
         width={wallWidth}
         height={basePlateThickness}
-        fill={getPartFill('basePlate', 'var(--color-gray-400)')}
+        fill={getPartFill('basePlate', 'var(--color-schematic-gray-4)')}
         stroke={getPartStroke('basePlate')}
         strokeWidth="5"
       />
@@ -402,7 +402,7 @@ e | y +--------------+ s | Floor top layers                 }
         y={wallAssemblyTopY}
         width={wallWidth}
         height={topPlateThickness}
-        fill={getPartFill('topPlate', 'var(--color-gray-400)')}
+        fill={getPartFill('topPlate', 'var(--color-schematic-gray-4)')}
         stroke={getPartStroke('topPlate')}
         strokeWidth="5"
       />
@@ -412,7 +412,7 @@ e | y +--------------+ s | Floor top layers                 }
         y={wallCoreTopY}
         width={wallWidth}
         height={wallCoreHeight}
-        fill={getPartFill('wallConstruction', 'var(--color-gray-300)')}
+        fill={getPartFill('wallConstruction', 'var(--color-schematic-gray-3)')}
         stroke={getPartStroke('wallConstruction')}
         strokeWidth="5"
       />
@@ -422,7 +422,7 @@ e | y +--------------+ s | Floor top layers                 }
         y={basePlateTopY}
         width={wallWidth}
         height={basePlateThickness}
-        fill={getPartFill('basePlate', 'var(--color-gray-400)')}
+        fill={getPartFill('basePlate', 'var(--color-schematic-gray-4)')}
         stroke={getPartStroke('basePlate')}
         strokeWidth="5"
       />
@@ -432,7 +432,7 @@ e | y +--------------+ s | Floor top layers                 }
         y={topFloorBottomLayersTopY}
         width={insideThickness}
         height={insideLayerMiddleHeight}
-        fill={getPartFill('insideLayer', 'var(--color-gray-100)')}
+        fill={getPartFill('insideLayer', 'var(--color-schematic-gray-1)')}
         stroke={getPartStroke('insideLayer')}
         strokeWidth="5"
       />
@@ -442,7 +442,7 @@ e | y +--------------+ s | Floor top layers                 }
         y={bottomFloorConstructionTopY + floorConstructionThickness + floorConstructionTopOverlap}
         width={wallWidth}
         height={topPlateThickness}
-        fill={getPartFill('topPlate', 'var(--color-gray-400)')}
+        fill={getPartFill('topPlate', 'var(--color-schematic-gray-4)')}
         stroke={getPartStroke('topPlate')}
         strokeWidth="5"
       />
@@ -452,7 +452,7 @@ e | y +--------------+ s | Floor top layers                 }
         y={bottomWallTopY}
         width={wallWidth}
         height={wallHeight}
-        fill="var(--color-gray-300)"
+        fill="var(--color-schematic-gray-3)"
         stroke="var(--color-gray-800)"
         strokeWidth="5"
       />
@@ -462,7 +462,7 @@ e | y +--------------+ s | Floor top layers                 }
         y={bottomFloorConstructionTopY + floorTotalConstructionThickness}
         width={insideThickness}
         height={wallHeight}
-        fill={getPartFill('insideLayer', 'var(--color-gray-100)')}
+        fill={getPartFill('insideLayer', 'var(--color-schematic-gray-1)')}
         stroke={getPartStroke('insideLayer')}
         strokeWidth="5"
       />
@@ -472,7 +472,7 @@ e | y +--------------+ s | Floor top layers                 }
         y={-1}
         width={outsideThickness}
         height={totalHeight + 1}
-        fill={getPartFill('outsideLayer', 'var(--color-gray-100)')}
+        fill={getPartFill('outsideLayer', 'var(--color-schematic-gray-1)')}
         stroke={getPartStroke('outsideLayer')}
         strokeWidth="5"
       />

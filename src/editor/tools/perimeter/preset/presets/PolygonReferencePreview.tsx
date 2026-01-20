@@ -75,7 +75,7 @@ function generateLabels(
           fill={color}
           className="font-mono"
           transform={`rotate(${textAngle})`}
-          style={{ filter: 'drop-shadow(1px 1px 2px var(--color-gray-100))' }}
+          style={{ filter: 'drop-shadow(1px 1px 2px var(--color-schematic-gray-1))' }}
         >
           {formatLength(length)}
         </text>
@@ -169,7 +169,7 @@ export function PolygonReferencePreview({
   const referenceStroke =
     referenceSide === 'inside' ? 'var(--color-accent-foreground)' : 'var(--color-accent-foreground)'
 
-  const derivedFill = referenceSide === 'inside' ? 'var(--color-gray-300)' : 'var(--color-gray-200)'
+  const derivedFill = referenceSide === 'inside' ? 'var(--color-schematic-gray-3)' : 'var(--color-schematic-gray-2)'
   const derivedStroke = referenceSide === 'inside' ? 'var(--color-gray-800)' : 'var(--color-gray-800)'
 
   const showDerived = derivedPath.length > 0

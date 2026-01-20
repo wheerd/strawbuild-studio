@@ -70,7 +70,7 @@ export function PolygonToolOverlay<TTool extends BasePolygonTool<PolygonToolStat
           cy={point[1]}
           r={scaledPointRadius}
           fill={index === 0 ? 'var(--color-blue-600)' : 'var(--color-gray-800)'}
-          stroke="var(--color-gray-100)"
+          stroke="var(--color-schematic-gray-1)"
           strokeWidth={scaledPointStrokeWidth}
         />
       ))}
@@ -81,7 +81,7 @@ export function PolygonToolOverlay<TTool extends BasePolygonTool<PolygonToolStat
         cy={previewPos[1]}
         r={scaledPointRadius}
         fill={state.lengthOverride ? 'var(--color-blue-600)' : 'var(--color-gray-800)'}
-        stroke={state.lengthOverride ? 'var(--color-gray-100)' : 'var(--color-gray-800)'}
+        stroke={state.lengthOverride ? 'var(--color-schematic-gray-1)' : 'var(--color-gray-800)'}
         strokeWidth={scaledPointStrokeWidth}
       />
     </g>

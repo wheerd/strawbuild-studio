@@ -1241,7 +1241,7 @@ export function ConstructionPartsList({ partsList, onViewInPlan }: ConstructionP
   if (materialIds.length === 0) {
     return (
       <Card variant="ghost">
-        <span className="text-base text-gray-900">{t($ => $.partsList.noPartsAvailable)}</span>
+        <span className="text-base">{t($ => $.partsList.noPartsAvailable)}</span>
       </Card>
     )
   }

@@ -13,7 +13,7 @@ describe('Material CSS Generation', () => {
     expect(css).toContain(`fill: ${strawbale.color}`)
     expect(css).toContain(`.${roughWood.id} .apply-material`)
     expect(css).toContain(`fill: ${roughWood.color}`)
-    expect(css).toContain('stroke: #000')
+    expect(css).toContain('stroke: var(--color-border-contrast)')
     expect(css).toContain('stroke-width: 5')
   })
 

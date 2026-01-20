@@ -161,7 +161,7 @@ export function ConstructionSchematic({
   const textFill = 'var(--color-foreground)'
   const highlightFill = 'var(--color-blue-200)'
   const highlightStroke = 'var(--color-blue-700)'
-  const measurementNeutralColor = 'var(--color-gray-300)'
+  const measurementNeutralColor = 'var(--color-schematic-gray-3)'
   const finishedLevelColor = 'var(--color-teal-600)'
   const finishedSideColor = 'var(--color-sky-600)'
 
@@ -170,7 +170,7 @@ export function ConstructionSchematic({
   const getPartFill = (part: ConstructionPart | undefined, defaultFill: string): string =>
     partIsHighlighted(part) ? highlightFill : defaultFill
 
-  const getPartStroke = (part: ConstructionPart | undefined, defaultStroke = 'var(--color-black)'): string =>
+  const getPartStroke = (part: ConstructionPart | undefined, defaultStroke = 'var(--color-border-contrast)'): string =>
     partIsHighlighted(part) ? highlightStroke : defaultStroke
 
   const partLabelVisible = (part: ConstructionPart): boolean => showPartLabels || highlightedPart === part
@@ -237,7 +237,7 @@ export function ConstructionSchematic({
             v ${roofTopThicknessVertical}
             L ${overhangLeftX} ${roofOutsideCornerY + overhangDelta - roofConstructionThicknessVertical}
             Z`}
-        fill={getPartFill('roofTopLayers', 'var(--color-gray-200)')}
+        fill={getPartFill('roofTopLayers', 'var(--color-schematic-gray-2)')}
         stroke={getPartStroke('roofTopLayers')}
         strokeWidth="5"
       />
@@ -252,7 +252,7 @@ export function ConstructionSchematic({
             V ${roofOutsideCornerY}
             L ${overhangLeftX} ${roofOutsideCornerY + overhangDelta}
             Z`}
-        fill={getPartFill('roofConstruction', 'var(--color-gray-300)')}
+        fill={getPartFill('roofConstruction', 'var(--color-schematic-gray-3)')}
         stroke={getPartStroke('roofConstruction')}
         strokeWidth="5"
       />
@@ -263,7 +263,7 @@ export function ConstructionSchematic({
             v ${roofBottomThicknessVertical}
             L ${inside} ${roofInsideCornerY - insideLayerDelta + roofBottomThicknessVertical}
             Z`}
-        fill={getPartFill('roofBottomLayers', 'var(--color-gray-200)')}
+        fill={getPartFill('roofBottomLayers', 'var(--color-schematic-gray-2)')}
         stroke={getPartStroke('roofBottomLayers')}
         strokeWidth="5"
       />
@@ -274,7 +274,7 @@ export function ConstructionSchematic({
             v ${overhangBottomThicknessVertical}
             L ${outside} ${roofOutsideCornerY + outsideLayerDelta + overhangBottomThicknessVertical}
             Z`}
-        fill={getPartFill('overhangBottomLayers', 'var(--color-gray-200)')}
+        fill={getPartFill('overhangBottomLayers', 'var(--color-schematic-gray-2)')}
         stroke={getPartStroke('overhangBottomLayers')}
         strokeWidth="5"
       />
@@ -289,7 +289,7 @@ export function ConstructionSchematic({
         y={wallAssemblyTopY}
         width={wallWidth}
         height={topPlateThickness}
-        fill={getPartFill('topPlate', 'var(--color-gray-400)')}
+        fill={getPartFill('topPlate', 'var(--color-schematic-gray-4)')}
         stroke={getPartStroke('topPlate')}
         strokeWidth="5"
       />
@@ -299,7 +299,7 @@ export function ConstructionSchematic({
         y={wallCoreTopY}
         width={wallWidth}
         height={totalHeight - wallCoreTopY}
-        fill={getPartFill('wallConstruction', 'var(--color-gray-300)')}
+        fill={getPartFill('wallConstruction', 'var(--color-schematic-gray-3)')}
         stroke={getPartStroke('wallConstruction')}
         strokeWidth="5"
       />
@@ -310,7 +310,7 @@ export function ConstructionSchematic({
             V ${totalHeight}
             h -${insideThickness}
             Z`}
-        fill={getPartFill('insideLayer', 'var(--color-gray-100)')}
+        fill={getPartFill('insideLayer', 'var(--color-schematic-gray-1)')}
         stroke={getPartStroke('insideLayer')}
         strokeWidth="5"
       />
@@ -321,7 +321,7 @@ export function ConstructionSchematic({
             V ${totalHeight}
             h ${outsideThickness}
             Z`}
-        fill={getPartFill('outsideLayer', 'var(--color-gray-100)')}
+        fill={getPartFill('outsideLayer', 'var(--color-schematic-gray-1)')}
         stroke={getPartStroke('outsideLayer')}
         strokeWidth="5"
       />

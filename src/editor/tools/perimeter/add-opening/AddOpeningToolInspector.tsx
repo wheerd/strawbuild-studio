@@ -249,7 +249,7 @@ function AddOpeningToolInspectorImpl({ tool }: AddOpeningToolInspectorImplProps)
       {/* Dimension Mode Toggle */}
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-1">
-          <span className="text-sm font-medium text-gray-900">{t($ => $.addOpening.dimensionMode)}</span>
+          <span className="text-sm font-medium">{t($ => $.addOpening.dimensionMode)}</span>
           <Tooltip
             content={
               state.dimensionMode === 'finished'
@@ -289,7 +289,7 @@ function AddOpeningToolInspectorImpl({ tool }: AddOpeningToolInspectorImplProps)
       {/* Type Selection */}
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-1">
-          <span className="text-sm font-medium text-gray-900">{t($ => $.addOpening.openingType)}</span>
+          <span className="text-sm font-medium">{t($ => $.addOpening.openingType)}</span>
         </div>
         <ToggleGroup type="single" variant="outline" value={state.openingType} onValueChange={handleTypeChange}>
           <ToggleGroupItem value="door">
@@ -318,14 +318,14 @@ function AddOpeningToolInspectorImpl({ tool }: AddOpeningToolInspectorImplProps)
         </ToggleGroup>
       </div>
       <div className="flex items-center gap-2">
-        <span className="text-sm font-medium text-gray-900">{t($ => $.addOpening.padding)}</span>
-        <span className="text-sm text-gray-900">{formatLength(currentPadding)}</span>
+        <span className="text-sm font-medium">{t($ => $.addOpening.padding)}</span>
+        <span className="text-sm">{formatLength(currentPadding)}</span>
       </div>
       {/* Dimension inputs in Radix Grid layout */}
       <div className="grid grid-cols-[auto_min-content_auto_min-content] grid-rows-2 items-center gap-2 gap-x-3">
         {/* Row 1, Column 1: Width Label */}
         <Label.Root htmlFor="opening-width">
-          <span className="text-sm font-medium text-gray-900">{t($ => $.addOpening.width)}</span>
+          <span className="text-sm font-medium">{t($ => $.addOpening.width)}</span>
         </Label.Root>
 
         {/* Row 1, Column 2: Width Input */}
@@ -350,7 +350,7 @@ function AddOpeningToolInspectorImpl({ tool }: AddOpeningToolInspectorImplProps)
 
         {/* Row 1, Column 3: Height Label */}
         <Label.Root htmlFor="opening-height">
-          <span className="text-sm font-medium text-gray-900">{t($ => $.addOpening.height)}</span>
+          <span className="text-sm font-medium">{t($ => $.addOpening.height)}</span>
         </Label.Root>
 
         {/* Row 1, Column 4: Height Input */}
@@ -375,7 +375,7 @@ function AddOpeningToolInspectorImpl({ tool }: AddOpeningToolInspectorImplProps)
 
         {/* Row 2, Column 1: Sill Height Label */}
         <Label.Root htmlFor="opening-sill-height">
-          <span className="text-sm font-medium text-gray-900">{t($ => $.addOpening.sill)}</span>
+          <span className="text-sm font-medium">{t($ => $.addOpening.sill)}</span>
         </Label.Root>
 
         {/* Row 2, Column 2: Sill Height Input */}
@@ -400,7 +400,7 @@ function AddOpeningToolInspectorImpl({ tool }: AddOpeningToolInspectorImplProps)
 
         {/* Row 2, Column 3: Top Height Label */}
         <Label.Root htmlFor="opening-top-height">
-          <span className="text-sm font-medium text-gray-900">{t($ => $.addOpening.top)}</span>
+          <span className="text-sm font-medium">{t($ => $.addOpening.top)}</span>
         </Label.Root>
 
         {/* Row 2, Column 4: Top Height Input */}
@@ -452,7 +452,7 @@ function AddOpeningToolInspectorImpl({ tool }: AddOpeningToolInspectorImplProps)
       <Separator />
       {/* Presets Section */}
       <div className="flex flex-col gap-2">
-        <span className="text-sm font-medium text-gray-900">{t($ => $.addOpening.presets.title)}</span>
+        <span className="text-sm font-medium">{t($ => $.addOpening.presets.title)}</span>
         <div className="grid grid-cols-6 gap-1">
           {ALL_OPENING_PRESETS.map((preset: PresetConfig, index: number) => (
             <Button
@@ -486,7 +486,7 @@ function AddOpeningToolInspectorImpl({ tool }: AddOpeningToolInspectorImplProps)
       {/* Opening Assembly Selector */}
       <div className="flex flex-col gap-1">
         <div className="flex items-center gap-1">
-          <span className="text-sm font-medium text-gray-900">{t($ => $.addOpening.openingAssembly)}</span>
+          <span className="text-sm font-medium">{t($ => $.addOpening.openingAssembly)}</span>
           <Tooltip content={t($ => $.addOpening.openingAssemblyTooltip)}>
             <InfoCircledIcon cursor="help" width={12} height={12} style={{ color: 'var(--color-gray-900)' }} />
           </Tooltip>

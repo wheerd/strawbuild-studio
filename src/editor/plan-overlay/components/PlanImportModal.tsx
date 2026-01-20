@@ -229,13 +229,13 @@ export function PlanImportModal({
           <div className="flex flex-col gap-2">
             <span className="font-medium">{t($ => $.planImport.step1.title)}</span>
             {existingPlan && !file ? (
-              <span className="text-base text-gray-900">
+              <span className="text-base">
                 {t($ => $.planImport.step1.currentImage, {
                   name: existingPlan.image.name
                 })}
               </span>
             ) : (
-              <span className="text-base text-gray-900">{t($ => $.planImport.step1.uploadHint)}</span>
+              <span className="text-base">{t($ => $.planImport.step1.uploadHint)}</span>
             )}
             <Button asChild>
               <Label htmlFor="fileInput">{t($ => $.planImport.step1.uploadButton)}</Label>
@@ -248,7 +248,7 @@ export function PlanImportModal({
           <div className="flex flex-col gap-2">
             <span className="font-medium">{t($ => $.planImport.step2.title)}</span>
             <div className="items-baseline justify-between">
-              <span className="text-base text-gray-900">{t($ => $.planImport.step2.instructions)}</span>
+              <span className="text-base">{t($ => $.planImport.step2.instructions)}</span>
               <Button
                 size="sm"
                 variant="soft"
@@ -277,7 +277,7 @@ export function PlanImportModal({
 
               <div className="flex flex-row items-center justify-end gap-1">
                 <span className="text-base font-medium">{t($ => $.planImport.step2.scale)}</span>
-                <span className="text-base text-gray-900">
+                <span className="text-base">
                   {mmPerPixel
                     ? t($ => $.planImport.step2.scaleValue, {
                         distance: formatLength(mmPerPixel)
@@ -297,7 +297,7 @@ export function PlanImportModal({
 
           <div className="flex flex-col gap-2">
             <span className="font-medium">{t($ => $.planImport.step3.title)}</span>
-            <span className="text-base text-gray-900">{t($ => $.planImport.step3.instructions)}</span>
+            <span className="text-base">{t($ => $.planImport.step3.instructions)}</span>
 
             <div className="flex items-center gap-3">
               <Tooltip

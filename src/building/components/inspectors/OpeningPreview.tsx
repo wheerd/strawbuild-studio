@@ -81,14 +81,14 @@ export function OpeningPreview({
 
   // Styling based on highlight mode and focus
   const getFittingStyle = () => ({
-    fill: highlightMode === 'fitting' ? 'var(--color-blue-300)' : 'var(--color-gray-200)',
+    fill: highlightMode === 'fitting' ? 'var(--color-blue-300)' : 'var(--color-schematic-gray-2)',
     stroke: highlightMode === 'fitting' ? 'var(--color-blue-600)' : 'var(--color-gray-600)',
     strokeWidth: highlightMode === 'fitting' ? 2 : 1,
     strokeDasharray: '4,2'
   })
 
   const getFinishedStyle = () => ({
-    fill: highlightMode === 'finished' ? 'var(--color-green-200)' : 'var(--color-gray-100)',
+    fill: highlightMode === 'finished' ? 'var(--color-green-200)' : 'var(--color-schematic-gray-1)',
     stroke: highlightMode === 'finished' ? 'var(--color-green-600)' : 'var(--color-gray-700)',
     strokeWidth: highlightMode === 'finished' ? 2 : 1
   })
@@ -101,9 +101,9 @@ export function OpeningPreview({
     const isFocused = focusedField === field
     const isHighlighted = highlightMode === type
 
-    if (isFocused && isHighlighted) return 'var(--color-orange-400)'
+    if (isFocused && isHighlighted) return 'var(--color-orange-500)'
     if (isHighlighted) {
-      return type === 'fitting' ? 'var(--color-blue-600)' : 'var(--color-green-600)'
+      return type === 'fitting' ? 'var(--color-blue-500)' : 'var(--color-green-500)'
     }
     return 'var(--color-gray-500)'
   }
@@ -161,8 +161,8 @@ export function OpeningPreview({
             cx={finishedRight - 12}
             cy={(finishedTop + finishedBottom) / 2}
             r="3"
-            fill="var(--color-gray-800)"
-            stroke="var(--color-gray-900)"
+            fill="var(--color-foreground)"
+            stroke="var(--color-border)"
             strokeWidth="1"
           />
         </g>
@@ -176,7 +176,7 @@ export function OpeningPreview({
             y1={finishedTop}
             x2={finishedLeft + finishedWidthSvg / 2}
             y2={finishedBottom}
-            stroke="var(--color-gray-800)"
+            stroke="var(--color-foreground)"
             strokeWidth="1"
           />
           <line
@@ -184,7 +184,7 @@ export function OpeningPreview({
             y1={finishedTop + finishedHeightSvg / 2}
             x2={finishedRight}
             y2={finishedTop + finishedHeightSvg / 2}
-            stroke="var(--color-gray-800)"
+            stroke="var(--color-foreground)"
             strokeWidth="1"
           />
         </g>
@@ -286,7 +286,7 @@ export function OpeningPreview({
         dominantBaseline="middle"
         fill="var(--color-gray-800)"
         style={{
-          filter: 'drop-shadow(0 0 0.2em var(--color-gray-100))'
+          filter: 'drop-shadow(0 0 0.2em var(--color-background))'
         }}
       >
         {formatArea(area)}

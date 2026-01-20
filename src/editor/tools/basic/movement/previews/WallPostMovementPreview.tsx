@@ -46,7 +46,7 @@ export function WallPostMovementPreview({
         d={pathData}
         fill={fillColor}
         opacity={0.6}
-        stroke="var(--color-gray-100)"
+        stroke="var(--color-schematic-gray-1)"
         strokeWidth={5}
         strokeLinejoin="miter"
       />

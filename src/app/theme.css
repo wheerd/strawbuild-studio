@@ -21,6 +21,7 @@
   --color-destructive: var(--destructive);
   --color-destructive-foreground: var(--destructive-foreground);
   --color-border: var(--border);
+  --color-border-contrast: var(--border-contrast);
   --color-input: var(--input);
   --color-ring: var(--ring);
   --color-chart-1: var(--chart-1);
@@ -36,6 +37,10 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
+  --color-schematic-gray-1: var(--schematic-gray-1);
+  --color-schematic-gray-2: var(--schematic-gray-2);
+  --color-schematic-gray-3: var(--schematic-gray-3);
+  --color-schematic-gray-4: var(--schematic-gray-4);
 
   --font-sans: var(--font-sans);
   --font-mono: var(--font-mono);
@@ -78,6 +83,7 @@
     --destructive: oklch(0.6368 0.2078 25.3313);
     --destructive-foreground: oklch(1 0 0);
     --border: oklch(0.8717 0.0093 258.3382);
+    --border-contrast: oklch(0.2795 0.0368 260.031);
     --input: oklch(0.8717 0.0093 258.3382);
     --ring: oklch(0.5854 0.2041 277.1173);
     --chart-1: oklch(0.5854 0.2041 277.1173);
@@ -93,6 +99,13 @@
     --sidebar-accent-foreground: oklch(0.3729 0.0306 259.7328);
     --sidebar-border: oklch(0.8717 0.0093 258.3382);
     --sidebar-ring: oklch(0.5854 0.2041 277.1173);
+    --schematic-gray-1: theme(colors.gray.100);
+    --schematic-gray-2: theme(colors.gray.200);
+    --schematic-gray-3: theme(colors.gray.300);
+    --schematic-gray-4: theme(colors.gray.400);
+    --gray-100: theme(colors.gray.100);
+    --gray-200: theme(colors.gray.200);
+    --gray-300: theme(colors.gray.300);
     --font-sans: Inter, sans-serif;
     --font-serif: Merriweather, serif;
     --font-mono: JetBrains Mono, monospace;
@@ -136,6 +149,7 @@
     --destructive: oklch(0.6368 0.2078 25.3313);
     --destructive-foreground: oklch(0.2077 0.0398 265.7549);
     --border: oklch(0.4461 0.0263 256.8018);
+    --border-contrast: oklch(0.9288 0.0126 255.5078);
     --input: oklch(0.4461 0.0263 256.8018);
     --ring: oklch(0.6801 0.1583 276.9349);
     --chart-1: oklch(0.6801 0.1583 276.9349);
@@ -151,6 +165,10 @@
     --sidebar-accent-foreground: oklch(0.8717 0.0093 258.3382);
     --sidebar-border: oklch(0.4461 0.0263 256.8018);
     --sidebar-ring: oklch(0.6801 0.1583 276.9349);
+    --schematic-gray-1: theme(colors.gray.800);
+    --schematic-gray-2: theme(colors.gray.700);
+    --schematic-gray-3: theme(colors.gray.600);
+    --schematic-gray-4: theme(colors.gray.500);
     --font-sans: Inter, sans-serif;
     --font-serif: Merriweather, serif;
     --font-mono: JetBrains Mono, monospace;

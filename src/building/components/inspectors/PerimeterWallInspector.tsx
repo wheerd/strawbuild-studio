@@ -73,7 +73,7 @@ export function PerimeterWallInspector({ wallId }: { wallId: PerimeterWallId }):
         {/* Wall Assembly */}
         <div className="flex items-center gap-1">
           <Label.Root>
-            <span className="text-sm font-medium text-gray-900">{t($ => $.perimeterWall.wallAssembly)}</span>
+            <span className="text-sm font-medium">{t($ => $.perimeterWall.wallAssembly)}</span>
           </Label.Root>
           <MeasurementInfo highlightedAssembly="wallAssembly" />
         </div>
@@ -89,7 +89,7 @@ export function PerimeterWallInspector({ wallId }: { wallId: PerimeterWallId }):
         {/* Thickness Input */}
         <div className="flex items-center gap-1">
           <Label.Root htmlFor="wall-thickness">
-            <span className="text-sm font-medium text-gray-900">{t($ => $.perimeterWall.thickness)}</span>
+            <span className="text-sm font-medium">{t($ => $.perimeterWall.thickness)}</span>
           </Label.Root>
           <MeasurementInfo highlightedMeasurement="totalWallThickness" showFinishedSides />
         </div>
@@ -110,7 +110,7 @@ export function PerimeterWallInspector({ wallId }: { wallId: PerimeterWallId }):
         {/* Base Ring Beam */}
         <Label.Root>
           <div className="flex items-center gap-1">
-            <span className="text-sm font-medium text-gray-900">{t($ => $.perimeterWall.basePlate)}</span>
+            <span className="text-sm font-medium">{t($ => $.perimeterWall.basePlate)}</span>
             <MeasurementInfo highlightedPart="basePlate" />
           </div>
         </Label.Root>
@@ -131,7 +131,7 @@ export function PerimeterWallInspector({ wallId }: { wallId: PerimeterWallId }):
         {/* Top Ring Beam */}
         <Label.Root>
           <div className="flex items-center gap-1">
-            <span className="text-sm font-medium text-gray-900">{t($ => $.perimeterWall.topPlate)}</span>
+            <span className="text-sm font-medium">{t($ => $.perimeterWall.topPlate)}</span>
             <MeasurementInfo highlightedPart="topPlate" />
           </div>
         </Label.Root>

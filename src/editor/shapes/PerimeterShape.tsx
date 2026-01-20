@@ -22,13 +22,21 @@ export function PerimeterShape({ perimeter }: { perimeter: PerimeterWithGeometry
         className="pointer-events-none"
       >
         {/* Outer polygon fill */}
-        <path d={outerPath} className="fill-gray-300 opacity-30" />
+        <path d={outerPath} className="fill-muted opacity-30" />
 
         {/* Outer polygon stroke */}
-        <path d={outerPath} className="fill-none stroke-gray-600 stroke-40 opacity-60" strokeDasharray="120 60" />
+        <path
+          d={outerPath}
+          className="stroke-border-contrast fill-none stroke-40 opacity-60"
+          strokeDasharray="120 60"
+        />
 
         {/* Inner polygon stroke */}
-        <path d={innerPath} className="fill-none stroke-gray-600 stroke-40 opacity-60" strokeDasharray="120 60" />
+        <path
+          d={innerPath}
+          className="stroke-border-contrast fill-none stroke-40 opacity-60"
+          strokeDasharray="120 60"
+        />
       </g>
     )
   }

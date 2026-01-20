@@ -166,7 +166,7 @@ function AddPostToolInspectorImpl({ tool }: AddPostToolInspectorImplProps): Reac
       </Callout>
       {/* Type Selection */}
       <div className="flex items-center justify-between gap-2">
-        <span className="text-sm font-medium text-gray-900">{t($ => $.addPost.type)}</span>
+        <span className="text-sm font-medium">{t($ => $.addPost.type)}</span>
         <ToggleGroup type="single" variant="outline" value={state.type} onValueChange={handleTypeChange} size="sm">
           <ToggleGroupItem value="inside">{t($ => $.addPost.types.inside)}</ToggleGroupItem>
           <ToggleGroupItem value="center">{t($ => $.addPost.types.center)}</ToggleGroupItem>
@@ -175,18 +175,18 @@ function AddPostToolInspectorImpl({ tool }: AddPostToolInspectorImplProps): Reac
         </ToggleGroup>
       </div>
       <div className="flex items-center justify-between gap-2">
-        <span className="text-sm font-medium text-gray-900">{t($ => $.addPost.behavior)}</span>
+        <span className="text-sm font-medium">{t($ => $.addPost.behavior)}</span>
         <div className="flex items-center gap-2">
-          <span className="text-sm text-gray-900">{t($ => $.addPost.actsAsPost)}</span>
+          <span className="text-sm">{t($ => $.addPost.actsAsPost)}</span>
           <Switch checked={!state.replacesPosts} size="sm" onCheckedChange={handleReplacesPostsChange} />
-          <span className="text-sm text-gray-900">{t($ => $.addPost.flankedByPosts)}</span>
+          <span className="text-sm">{t($ => $.addPost.flankedByPosts)}</span>
         </div>
       </div>
       {/* Dimension inputs */}
       <div className="grid grid-cols-[auto_1fr_auto_1fr] grid-rows-1 items-center gap-2 gap-x-3">
         {/* Width Label */}
         <Label.Root htmlFor="post-width">
-          <span className="text-sm font-medium text-gray-900">{t($ => $.addPost.width)}</span>
+          <span className="text-sm font-medium">{t($ => $.addPost.width)}</span>
         </Label.Root>
 
         {/* Width Input */}
@@ -205,7 +205,7 @@ function AddPostToolInspectorImpl({ tool }: AddPostToolInspectorImplProps): Reac
 
         {/* Thickness Label */}
         <Label.Root htmlFor="post-thickness">
-          <span className="text-sm font-medium text-gray-900">{t($ => $.addPost.thickness)}</span>
+          <span className="text-sm font-medium">{t($ => $.addPost.thickness)}</span>
         </Label.Root>
 
         {/* Thickness Input */}
@@ -224,7 +224,7 @@ function AddPostToolInspectorImpl({ tool }: AddPostToolInspectorImplProps): Reac
       </div>
       {/* Material Selection */}
       <div className="flex flex-col gap-2">
-        <span className="text-sm font-medium text-gray-900">{t($ => $.addPost.postMaterial)}</span>
+        <span className="text-sm font-medium">{t($ => $.addPost.postMaterial)}</span>
         <MaterialSelectWithEdit
           value={state.material}
           onValueChange={handleMaterialChange}
@@ -234,7 +234,7 @@ function AddPostToolInspectorImpl({ tool }: AddPostToolInspectorImplProps): Reac
       </div>
       {/* Infill Material Selection */}
       <div className="flex flex-col gap-2">
-        <span className="text-sm font-medium text-gray-900">{t($ => $.addPost.infillMaterial)}</span>
+        <span className="text-sm font-medium">{t($ => $.addPost.infillMaterial)}</span>
         <MaterialSelectWithEdit value={state.infillMaterial} onValueChange={handleInfillMaterialChange} size="sm" />
       </div>
       <Separator />
@@ -242,7 +242,7 @@ function AddPostToolInspectorImpl({ tool }: AddPostToolInspectorImplProps): Reac
       <div className="flex flex-col gap-2">
         {/* Copy Existing Configuration */}
         <div className="flex items-center justify-between gap-2">
-          <span className="text-sm font-medium text-gray-900">{t($ => $.addPost.presets.title)}</span>
+          <span className="text-sm font-medium">{t($ => $.addPost.presets.title)}</span>
           <DropdownMenu>
             <DropdownMenuTrigger disabled={allPostConfigs.length === 0} asChild>
               <Button size="icon" title={t($ => $.addPost.copyConfigurationTooltip)}>

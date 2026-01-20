@@ -308,7 +308,7 @@ export function FloorAssemblyConfigContent({ initialSelectionId }: FloorAssembly
               </AlertDialog.Description>
               <div className="mt-4 flex justify-end gap-3">
                 <AlertDialog.Cancel>
-                  <Button variant="soft" className="text-gray-900">
+                  <Button variant="soft" className="">
                     {t($ => $.common.cancel)}
                   </Button>
                 </AlertDialog.Cancel>
@@ -332,7 +332,7 @@ export function FloorAssemblyConfigContent({ initialSelectionId }: FloorAssembly
               <AlertDialog.Description>{t($ => $.floors.reset.confirm)}</AlertDialog.Description>
               <div className="mt-4 flex justify-end gap-3">
                 <AlertDialog.Cancel>
-                  <Button variant="soft" className="text-gray-900">
+                  <Button variant="soft" className="">
                     {t($ => $.common.cancel)}
                   </Button>
                 </AlertDialog.Cancel>
@@ -350,7 +350,7 @@ export function FloorAssemblyConfigContent({ initialSelectionId }: FloorAssembly
       {selectedConfig && <ConfigForm assembly={selectedConfig} />}
       {!selectedConfig && floorAssemblies.length === 0 && (
         <div className="flex items-center justify-center p-5">
-          <span className="text-gray-900">{t($ => $.floors.emptyList)}</span>
+          <span className="">{t($ => $.floors.emptyList)}</span>
         </div>
       )}
       {/* Defaults Section */}

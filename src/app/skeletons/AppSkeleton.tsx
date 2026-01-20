@@ -4,34 +4,14 @@ import { EditorSkeleton, SidePanelSkeleton, ToolbarSkeleton } from '.'
 
 export function AppSkeleton(): React.JSX.Element {
   return (
-    <div
-      style={{
-        width: '100vw',
-        height: '100vh',
-        margin: 0,
-        padding: 0,
-        overflow: 'hidden',
-        backgroundColor: 'var(--color-gray-200)'
-      }}
-      data-testid="app-skeleton"
-    >
-      <div style={{ flexShrink: 0, zIndex: 100, borderBottom: '1px solid var(--color-gray-600)' }}>
+    <div className="bg-muted grid h-screen w-screen grid-rows-[auto_1fr] overflow-hidden" data-testid="app-skeleton">
+      <div className="border-border z-100 shrink-0 border-b">
         <ToolbarSkeleton />
       </div>
 
-      <div className="flex" style={{ flex: 1, overflow: 'hidden', minHeight: 0 }}>
+      <div className="grid min-h-0 grid-cols-[1fr_320px] overflow-hidden">
         <EditorSkeleton />
-
-        <div
-          style={{
-            width: '320px',
-            flexShrink: 0,
-            backgroundColor: 'var(--color-gray-200)',
-            overflowY: 'auto'
-          }}
-        >
-          <SidePanelSkeleton />
-        </div>
+        <SidePanelSkeleton />
       </div>
     </div>
   )

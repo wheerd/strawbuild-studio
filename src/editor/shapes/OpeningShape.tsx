@@ -104,9 +104,9 @@ export function OpeningShape({ openingId }: { openingId: OpeningId }): React.JSX
       {/* Opening cutout - render as a different colored line */}
       <path
         d={openingPath}
-        fill="var(--color-gray-400)"
+        fill="var(--color-muted)"
         fillOpacity={0.7}
-        stroke="var(--color-gray-900)"
+        stroke="var(--color-border-contrast)"
         strokeWidth={10}
       />
 
@@ -132,7 +132,6 @@ export function OpeningShape({ openingId }: { openingId: OpeningId }): React.JSX
               startPoint={previousObstacle.outsideLine.end}
               endPoint={opening.outsideLine.start}
               offset={60}
-              color="var(--color-gray-900)"
               fontSize={50}
               strokeWidth={4}
               onClick={measurement => {
@@ -146,7 +145,6 @@ export function OpeningShape({ openingId }: { openingId: OpeningId }): React.JSX
               startPoint={opening.outsideLine.end}
               endPoint={nextObstacle.outsideLine.start}
               offset={60}
-              color="var(--color-gray-900)"
               fontSize={50}
               strokeWidth={4}
               onClick={measurement => {
@@ -161,7 +159,7 @@ export function OpeningShape({ openingId }: { openingId: OpeningId }): React.JSX
             endPoint={opening.insideLine.end}
             label={formatLength(opening.width)}
             offset={-60}
-            color="var(--color-primary)"
+            color="var(--color-blue-500)"
             fontSize={50}
             strokeWidth={4}
           />
@@ -170,7 +168,7 @@ export function OpeningShape({ openingId }: { openingId: OpeningId }): React.JSX
             endPoint={opening.outsideLine.end}
             label={formatLength(opening.width)}
             offset={hasNeighbors ? 90 : 60}
-            color="var(--color-primary)"
+            color="var(--color-blue-500)"
             fontSize={50}
             strokeWidth={4}
           />
@@ -180,7 +178,6 @@ export function OpeningShape({ openingId }: { openingId: OpeningId }): React.JSX
             startPoint={startCorner.insidePoint}
             endPoint={opening.insideLine.start}
             offset={-60}
-            color="var(--color-gray-900)"
             fontSize={50}
             strokeWidth={4}
             onClick={measurement => {
@@ -191,7 +188,6 @@ export function OpeningShape({ openingId }: { openingId: OpeningId }): React.JSX
             startPoint={opening.insideLine.end}
             endPoint={endCorner.insidePoint}
             offset={-60}
-            color="var(--color-gray-900)"
             fontSize={50}
             strokeWidth={4}
             onClick={measurement => {
@@ -202,7 +198,6 @@ export function OpeningShape({ openingId }: { openingId: OpeningId }): React.JSX
             startPoint={startCorner.outsidePoint}
             endPoint={opening.outsideLine.start}
             offset={hasNeighbors ? 120 : 60}
-            color="var(--color-gray-900)"
             fontSize={50}
             strokeWidth={4}
             onClick={measurement => {
@@ -213,7 +208,6 @@ export function OpeningShape({ openingId }: { openingId: OpeningId }): React.JSX
             startPoint={opening.outsideLine.end}
             endPoint={endCorner.outsidePoint}
             offset={hasNeighbors ? 120 : 60}
-            color="var(--color-gray-900)"
             fontSize={50}
             strokeWidth={4}
             onClick={measurement => {

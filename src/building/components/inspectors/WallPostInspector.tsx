@@ -86,7 +86,7 @@ export function WallPostInspector({ postId }: { postId: WallPostId }): React.JSX
       {/* Basic Properties */}
       <div className="flex flex-col gap-3">
         <div className="flex items-center justify-between gap-2">
-          <span className="text-sm font-medium text-gray-900">{t($ => $.wallPost.type)}</span>
+          <span className="text-sm font-medium">{t($ => $.wallPost.type)}</span>
           <ToggleGroup type="single" variant="outline" value={post.postType} onValueChange={handleTypeChange} size="sm">
             <ToggleGroupItem value="inside">{t($ => $.wallPost.typeInside)}</ToggleGroupItem>
             <ToggleGroupItem value="center">{t($ => $.wallPost.typeCenter)}</ToggleGroupItem>
@@ -96,11 +96,11 @@ export function WallPostInspector({ postId }: { postId: WallPostId }): React.JSX
         </div>
 
         <div className="flex items-center justify-between gap-2">
-          <span className="text-sm font-medium text-gray-900">{t($ => $.wallPost.behavior)}</span>
+          <span className="text-sm font-medium">{t($ => $.wallPost.behavior)}</span>
           <div className="flex items-center gap-2">
-            <span className="text-sm text-gray-900">{t($ => $.wallPost.actsAsPost)}</span>
+            <span className="text-sm">{t($ => $.wallPost.actsAsPost)}</span>
             <Switch checked={!post.replacesPosts} size="sm" onCheckedChange={handleReplacesPostsChange} />
-            <span className="text-sm text-gray-900">{t($ => $.wallPost.flankedByPosts)}</span>
+            <span className="text-sm">{t($ => $.wallPost.flankedByPosts)}</span>
           </div>
         </div>
 
@@ -108,7 +108,7 @@ export function WallPostInspector({ postId }: { postId: WallPostId }): React.JSX
         <div className="grid grow grid-cols-[auto_1fr_auto_1fr] grid-rows-1 items-center gap-2 gap-x-3">
           {/* Width Label */}
           <Label.Root htmlFor="post-width">
-            <span className="text-sm font-medium text-gray-900">{t($ => $.wallPost.width)}</span>
+            <span className="text-sm font-medium">{t($ => $.wallPost.width)}</span>
           </Label.Root>
 
           {/* Width Input */}
@@ -127,7 +127,7 @@ export function WallPostInspector({ postId }: { postId: WallPostId }): React.JSX
 
           {/* Thickness Label */}
           <Label.Root htmlFor="post-thickness">
-            <span className="text-sm font-medium text-gray-900">{t($ => $.wallPost.thickness)}</span>
+            <span className="text-sm font-medium">{t($ => $.wallPost.thickness)}</span>
           </Label.Root>
 
           {/* Thickness Input */}
@@ -148,7 +148,7 @@ export function WallPostInspector({ postId }: { postId: WallPostId }): React.JSX
       {/* Material Selection */}
       <div className="flex flex-col gap-2">
         <Label.Root>
-          <span className="text-sm font-medium text-gray-900">{t($ => $.wallPost.postMaterial)}</span>
+          <span className="text-sm font-medium">{t($ => $.wallPost.postMaterial)}</span>
         </Label.Root>
         <MaterialSelectWithEdit
           value={post.material}
@@ -160,7 +160,7 @@ export function WallPostInspector({ postId }: { postId: WallPostId }): React.JSX
       {/* Infill Material Selection */}
       <div className="flex flex-col gap-2">
         <Label.Root>
-          <span className="text-sm font-medium text-gray-900">{t($ => $.wallPost.infillMaterial)}</span>
+          <span className="text-sm font-medium">{t($ => $.wallPost.infillMaterial)}</span>
         </Label.Root>
         <MaterialSelectWithEdit value={post.infillMaterial} onValueChange={handleInfillMaterialChange} size="sm" />
       </div>

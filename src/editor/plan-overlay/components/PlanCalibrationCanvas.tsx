@@ -123,7 +123,7 @@ export function PlanCalibrationCanvas({
         y1={point.y - 12}
         x2={point.x + 12}
         y2={point.y + 12}
-        stroke="var(--color-gray-100)"
+        stroke="var(--color-schematic-gray-1)"
         strokeWidth={1.5}
       />
       <line
@@ -131,7 +131,7 @@ export function PlanCalibrationCanvas({
         y1={point.y + 12}
         x2={point.x + 12}
         y2={point.y - 12}
-        stroke="var(--color-gray-100)"
+        stroke="var(--color-schematic-gray-1)"
         strokeWidth={1.5}
       />
     </g>
@@ -150,7 +150,7 @@ export function PlanCalibrationCanvas({
             y={0}
             width={image.naturalWidth}
             height={image.naturalHeight}
-            fill="var(--color-gray-200)"
+            fill="var(--color-muted)"
             pointerEvents="none"
           />
           <image
@@ -169,7 +169,7 @@ export function PlanCalibrationCanvas({
           {originPoint && renderCrosshair(originPoint, 'var(--color-red-900)')}
         </SVGViewport>
       ) : (
-        <span className="text-gray-900">{t($ => $.canvas.uploadToBegin)}</span>
+        <span className="">{t($ => $.canvas.uploadToBegin)}</span>
       )}
       {image && (
         <div className="absolute right-3 bottom-3 z-10">

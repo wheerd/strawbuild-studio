@@ -113,9 +113,7 @@ export function LayerListEditor({
         <div className="flex items-center gap-2">
           <span className="text-base font-bold">{title}</span>
           {measurementInfo}
-          <span className="text-sm text-gray-900">
-            {t($ => $.layers.totalThicknessLabel, { thickness: totalThickness })}
-          </span>
+          <span className="text-sm">{t($ => $.layers.totalThicknessLabel, { thickness: totalThickness })}</span>
         </div>
         <div className="flex gap-1">
           {layerCopySources && (
@@ -136,7 +134,7 @@ export function LayerListEditor({
                   >
                     <div className="flex items-center gap-2">
                       <span>{name}</span>
-                      <span className="text-sm text-gray-900">· {formatLength(totalThickness)}</span>
+                      <span className="text-sm">· {formatLength(totalThickness)}</span>
                     </div>
                   </DropdownMenu.Item>
                 ))}
@@ -161,7 +159,7 @@ export function LayerListEditor({
                   >
                     <div className="flex items-center gap-2">
                       <span>{t(preset.nameKey)}</span>
-                      <span className="text-sm text-gray-900">· {formatLength(sumLayerThickness(preset.layers))}</span>
+                      <span className="text-sm">· {formatLength(sumLayerThickness(preset.layers))}</span>
                     </div>
                   </DropdownMenu.Item>
                 ))}
@@ -224,7 +222,7 @@ export function LayerListEditor({
       {hasLayers && (
         <div className="grid grid-cols-1 items-center justify-center gap-2">
           <div className="flex justify-center">
-            <span className="text-sm text-gray-900">{beforeLabel}</span>
+            <span className="text-sm">{beforeLabel}</span>
           </div>
           {layers.map((layer, index) => (
             <LayerCard
@@ -239,7 +237,7 @@ export function LayerListEditor({
             />
           ))}
           <div className="flex justify-center">
-            <span className="text-sm text-gray-900">{afterLabel}</span>
+            <span className="text-sm">{afterLabel}</span>
           </div>
         </div>
       )}
@@ -391,7 +389,7 @@ function LayerCard({
 function Field({ label, control }: { label: string; control: React.ReactNode }): React.JSX.Element {
   return (
     <div className="grid grid-cols-[auto_1fr] items-center gap-2">
-      <span className="text-sm text-gray-900">{label}</span>
+      <span className="text-sm">{label}</span>
       {control}
     </div>
   )
@@ -457,7 +455,7 @@ function StripedLayerFields({
         }
       />
       <div className="grid grid-cols-[auto_auto_auto_1fr] items-center gap-x-2 gap-y-2">
-        <span className="text-sm text-gray-900">{t($ => $.layers.stripe)}</span>
+        <span className="text-sm">{t($ => $.layers.stripe)}</span>
         <LengthField
           value={layer.stripeWidth}
           onChange={value => {
@@ -472,7 +470,7 @@ function StripedLayerFields({
           </TextField.Slot>
         </LengthField>
 
-        <span className="text-sm text-gray-900">{t($ => $.common.materialLabel)}</span>
+        <span className="text-sm">{t($ => $.common.materialLabel)}</span>
         <MaterialSelectWithEdit
           value={layer.stripeMaterial}
           onValueChange={material => {
@@ -484,7 +482,7 @@ function StripedLayerFields({
           preferredTypes={['dimensional']}
         />
 
-        <span className="text-sm text-gray-900">{t($ => $.layers.gap)}</span>
+        <span className="text-sm">{t($ => $.layers.gap)}</span>
         <LengthField
           value={layer.gapWidth}
           onChange={value => {
@@ -499,7 +497,7 @@ function StripedLayerFields({
           </TextField.Slot>
         </LengthField>
 
-        <span className="text-sm text-gray-900">{t($ => $.common.materialLabel)}</span>
+        <span className="text-sm">{t($ => $.common.materialLabel)}</span>
         <MaterialSelectWithEdit
           value={layer.gapMaterial}
           allowEmpty
