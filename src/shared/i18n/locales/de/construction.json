@@ -18,6 +18,7 @@
   "materialTypes": {
     "dimensional": "Dimensioniert",
     "generic": "Generisch",
+    "prefab": "Fertigteil",
     "sheet": "Platte",
     "strawbale": "Strohballen",
     "volume": "Volumen"

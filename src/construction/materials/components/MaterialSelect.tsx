@@ -1,4 +1,4 @@
-import { CircleIcon, CubeIcon, LayersIcon, OpacityIcon } from '@radix-ui/react-icons'
+import { BoxModelIcon, CircleIcon, CubeIcon, LayersIcon, OpacityIcon } from '@radix-ui/react-icons'
 import React from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -60,6 +60,10 @@ export function getMaterialTypeIcon(type: Material['type']): IconComponent {
       return CircleIcon
     case 'strawbale':
       return StrawbaleIcon
+    case 'prefab':
+      return BoxModelIcon
+    default:
+      return CircleIcon
   }
 }
 
@@ -80,6 +84,8 @@ export function useGetMaterialTypeName() {
         return t($ => $.materialTypes.generic)
       case 'strawbale':
         return t($ => $.materialTypes.strawbale)
+      case 'prefab':
+        return t($ => $.materialTypes.prefab)
     }
   }
 }
