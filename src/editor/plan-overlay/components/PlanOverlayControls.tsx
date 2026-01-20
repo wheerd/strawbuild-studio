@@ -30,7 +30,12 @@ export function PlanOverlayControls(): React.JSX.Element | null {
         <>
           <DropdownMenu>
             <DropdownMenu.Trigger>
-              <Button size="icon-sm" variant="soft" aria-label={t($ => $.planControls.ariaLabel)}>
+              <Button
+                size="icon-sm"
+                className="size-7"
+                variant="secondary"
+                aria-label={t($ => $.planControls.ariaLabel)}
+              >
                 <ImageIcon />
               </Button>
             </DropdownMenu.Trigger>
@@ -112,7 +117,8 @@ export function PlanOverlayControls(): React.JSX.Element | null {
       ) : (
         <Button
           size="icon-sm"
-          variant="soft"
+          className="size-7"
+          variant="secondary"
           onClick={() => {
             setModalOpen(true)
           }}

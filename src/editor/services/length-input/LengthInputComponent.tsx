@@ -136,7 +136,6 @@ export function LengthInputComponent(): React.JSX.Element | null {
       }}
     >
       <TextField.Root
-        ref={inputRef}
         value={state.inputValue}
         onChange={handleInputChange}
         onKeyDown={handleKeyDown}
@@ -144,16 +143,14 @@ export function LengthInputComponent(): React.JSX.Element | null {
         placeholder={placeholder ?? 'Enter length...'}
         size="lg"
         variant="soft"
-        color={state.isValid ? undefined : 'red'}
-        className="w-20 text-center shadow-lg"
-        style={{
-          border: state.isValid ? '2px solid var(--color-primary)' : '2px solid var(--color-red-900)'
-        }}
-      />
+        className={'w-20 text-center shadow-lg' + (state.isValid ? '' : ' text-red-600 ring-red-600/50!')}
+      >
+        <TextField.Input ref={inputRef} />
+      </TextField.Root>
 
       {/* Error message */}
       {!state.isValid && state.errorMessage && (
-        <div className="absolute top-full left-1/2 mt-1 -translate-x-1/2 rounded bg-red-900 px-2 py-1 text-xs whitespace-nowrap text-white shadow-md">
+        <div className="absolute top-full left-1/2 mt-2 -translate-x-1/2 rounded bg-red-300 px-2 py-1 text-xs whitespace-nowrap text-white shadow-md">
           {state.errorMessage}
         </div>
       )}

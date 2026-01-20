@@ -244,7 +244,7 @@ function AddPostToolInspectorImpl({ tool }: AddPostToolInspectorImplProps): Reac
         <div className="flex items-center justify-between gap-2">
           <span className="text-sm font-medium text-gray-900">{t($ => $.addPost.presets.title)}</span>
           <DropdownMenu>
-            <DropdownMenuTrigger disabled={allPostConfigs.length === 0}>
+            <DropdownMenuTrigger disabled={allPostConfigs.length === 0} asChild>
               <Button size="icon" title={t($ => $.addPost.copyConfigurationTooltip)}>
                 <CopyIcon />
               </Button>

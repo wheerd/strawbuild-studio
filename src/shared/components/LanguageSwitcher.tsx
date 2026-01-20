@@ -46,7 +46,7 @@ export function LanguageSwitcher({ size }: { size: 'sm' | 'lg' }): React.JSX.Ele
       <DropdownMenuTrigger asChild>
         <Button
           variant="secondary"
-          size="icon"
+          size={size === 'sm' ? 'icon-sm' : 'icon'}
           className={size === 'sm' ? 'h-7 w-7' : 'h-10 w-10'}
           title={t($ => $.currentLanguageWithLabel, {
             language: currentLanguage.name,

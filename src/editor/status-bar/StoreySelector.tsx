@@ -66,13 +66,13 @@ export function StoreySelector(): React.JSX.Element {
       <StoreyManagementModal
         trigger={
           <Button
-            size="icon"
-            className="h-7 w-7"
+            size="icon-sm"
+            className="size-7"
             title={t($ => $.storeys.manageFloorsTooltip)}
             type="button"
             variant="secondary"
           >
-            <Pencil1Icon className="h-4 w-4" />
+            <Pencil1Icon />
           </Button>
         }
       />

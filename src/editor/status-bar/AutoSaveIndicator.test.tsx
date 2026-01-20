@@ -2,6 +2,7 @@ import { render } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import type { PersistenceState } from '@/building/store/persistenceStore'
+import { TooltipProvider } from '@/components/ui/tooltip'
 
 import { AutoSaveIndicator } from './AutoSaveIndicator'
 
@@ -33,7 +34,11 @@ vi.mock('@/importers/ifc/importService', () => ({
 vi.mock('@/exporters/ifc')
 
 function renderAutoSaveIndicator() {
-  return render(<AutoSaveIndicator />)
+  return render(
+    <TooltipProvider>
+      <AutoSaveIndicator />
+    </TooltipProvider>
+  )
 }
 
 describe('AutoSaveIndicator', () => {

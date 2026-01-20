@@ -13,7 +13,7 @@ export function ThemeToggle(): React.JSX.Element {
   return (
     <Button
       variant="secondary"
-      size="icon"
+      size="icon-sm"
       className="h-7 w-7"
       onClick={() => {
         setTheme(isDark ? 'light' : 'dark')
