@@ -182,7 +182,7 @@ interface Resources {
       }
     },
     "layers": {
-      "copyFrom": "Copy from {{name}}",
+      "copyFrom": "Copy from...",
       "defaultName_monolithic": "Monolithic Layer",
       "defaultName_striped": "Striped Layer",
       "defaults": {

@@ -105,7 +105,7 @@
     }
   },
   "layers": {
-    "copyFrom": "Von \"{{name}}\" kopieren",
+    "copyFrom": "Kopieren von...",
     "defaultName_monolithic": "Monolithische Schicht",
     "defaultName_striped": "Gestreifte Schicht",
     "defaults": {

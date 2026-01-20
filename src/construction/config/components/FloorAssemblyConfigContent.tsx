@@ -323,7 +323,7 @@ export function FloorAssemblyConfigContent({ initialSelectionId }: FloorAssembly
 
           <AlertDialog.Root>
             <AlertDialog.Trigger>
-              <Button size="icon" variant="destructive" variant="outline" title={t($ => $.common.resetToDefaults)}>
+              <Button size="icon" variant="destructive" title={t($ => $.common.resetToDefaults)}>
                 <ResetIcon />
               </Button>
             </AlertDialog.Trigger>
@@ -1156,7 +1156,7 @@ function LayersFields({ assemblyId, config }: { assemblyId: FloorAssemblyId; con
     <div className="flex flex-col gap-3">
       <LayerListEditor
         title={t($ => $.floors.layers.topLayers)}
-        measurementInfo={<MeasurementInfo highlightedPart="floorTopLayers" />}
+        measurementInfo={<MeasurementInfo highlightedPart="floorTopLayers" showFinishedLevels />}
         layers={displayedTopLayers}
         onAddLayer={layer => {
           addFloorAssemblyTopLayer(assemblyId, layer)
@@ -1185,7 +1185,7 @@ function LayersFields({ assemblyId, config }: { assemblyId: FloorAssemblyId; con
 
       <LayerListEditor
         title={t($ => $.floors.layers.bottomLayers)}
-        measurementInfo={<MeasurementInfo highlightedPart="floorBottomLayers" />}
+        measurementInfo={<MeasurementInfo highlightedPart="floorBottomLayers" showFinishedLevels />}
         layers={config.layers.bottomLayers}
         onAddLayer={layer => {
           addFloorAssemblyBottomLayer(assemblyId, layer)

@@ -35,7 +35,7 @@ export function ConfigurationModal({
 
   return (
     <FullScreenModal open={open} onOpenChange={onOpenChange} titleIcon={<GearIcon />} title={t($ => $.modal.title)}>
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="h-full w-full">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="flex h-full w-full flex-col">
         <TabsList>
           <TabsTrigger value="materials">{t($ => $.modal.tabMaterials)}</TabsTrigger>
           <TabsTrigger value="ringbeams">{t($ => $.modal.tabRingBeams)}</TabsTrigger>
@@ -58,7 +58,7 @@ export function ConfigurationModal({
         </TabsContent>
 
         <TabsContent value="walls">
-          <div className="flex w-full pt-4">
+          <div className="w-full pt-4">
             <WallAssemblyContent initialSelectionId={initialSelectionId} />
           </div>
         </TabsContent>

@@ -426,7 +426,7 @@ function LayerSections({ assemblyId, config }: LayerSectionsProps): React.JSX.El
       <LayerListEditor
         title={t($ => $.roofs.layers.insideLayers)}
         layers={config.layers.insideLayers}
-        measurementInfo={<RoofMeasurementInfo highlightedPart="roofBottomLayers" />}
+        measurementInfo={<RoofMeasurementInfo highlightedPart="roofBottomLayers" showFinishedLevels />}
         onAddLayer={layer => {
           addRoofAssemblyInsideLayer(assemblyId, layer)
         }}
@@ -455,7 +455,7 @@ function LayerSections({ assemblyId, config }: LayerSectionsProps): React.JSX.El
       <LayerListEditor
         title={t($ => $.roofs.topLayers)}
         layers={displayedTopLayers}
-        measurementInfo={<RoofMeasurementInfo highlightedPart="roofTopLayers" />}
+        measurementInfo={<RoofMeasurementInfo highlightedPart="roofTopLayers" showFinishedLevels />}
         onAddLayer={layer => {
           addRoofAssemblyTopLayer(assemblyId, layer)
         }}
@@ -484,7 +484,7 @@ function LayerSections({ assemblyId, config }: LayerSectionsProps): React.JSX.El
       <LayerListEditor
         title={t($ => $.roofs.layers.overhangLayers)}
         layers={config.layers.overhangLayers}
-        measurementInfo={<RoofMeasurementInfo highlightedPart="overhangBottomLayers" />}
+        measurementInfo={<RoofMeasurementInfo highlightedPart="overhangBottomLayers" showFinishedLevels />}
         onAddLayer={layer => {
           addRoofAssemblyOverhangLayer(assemblyId, layer)
         }}

@@ -126,7 +126,7 @@ export function LayerListEditor({
                 </Button>
               </DropdownMenu.Trigger>
               <DropdownMenu.Content>
-                <DropdownMenu.Label>Copy from...</DropdownMenu.Label>
+                <DropdownMenu.Label>{t($ => $.layers.copyFrom)}</DropdownMenu.Label>
                 {layerCopySources.map(({ name, totalThickness, layerSource }) => (
                   <DropdownMenu.Item
                     key={name}
@@ -171,7 +171,7 @@ export function LayerListEditor({
 
           <DropdownMenu>
             <DropdownMenu.Trigger>
-              <Button size="icon-sm" title={addLabel} variant="soft">
+              <Button size="icon-sm" title={addLabel} variant="default">
                 <PlusIcon />
               </Button>
             </DropdownMenu.Trigger>
@@ -215,8 +215,8 @@ export function LayerListEditor({
 
       {!hasLayers && (
         <Card variant="soft">
-          <div className="min-h-[3.5rem] items-center justify-center">
-            <span className="text-sm text-gray-900">{emptyHint}</span>
+          <div className="flex min-h-14 items-center justify-center">
+            <span className="text-muted-foreground text-sm">{emptyHint}</span>
           </div>
         </Card>
       )}
