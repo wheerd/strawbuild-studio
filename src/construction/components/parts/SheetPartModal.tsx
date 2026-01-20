@@ -61,7 +61,7 @@ export function SheetPartModal({
 
   return (
     <FullScreenModal title={t($ => $.partCutModal.sheetPartDiagram)} trigger={trigger}>
-      <div className="h-full" ref={containerRef}>
+      <div className="h-full w-full" ref={containerRef}>
         <SVGViewport
           ref={viewportRef}
           contentBounds={displayBounds}

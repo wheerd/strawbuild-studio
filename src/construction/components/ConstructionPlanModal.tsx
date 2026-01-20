@@ -162,23 +162,16 @@ function ModalContent({
       }}
       className="-mt-2 flex h-full w-full flex-col"
     >
-      <div className="flex flex-shrink-0">
+      <div className="flex shrink-0">
         <Tabs.List>
           <Tabs.Trigger value="plan">{t($ => $.planModal.tabs.planIssues)}</Tabs.Trigger>
           <Tabs.Trigger value="parts">{t($ => $.planModal.tabs.partsList)}</Tabs.Trigger>
           <Tabs.Trigger value="modules">{t($ => $.planModal.tabs.modules)}</Tabs.Trigger>
         </Tabs.List>
       </div>
-      <Tabs.Content value="plan" className="flex min-h-0 flex-1 pt-3">
-        <div className="flex h-full w-full flex-col gap-3 overflow-hidden">
-          <div
-            ref={containerRef}
-            className="flex min-h-0 flex-1 overflow-hidden rounded-md border"
-            style={{
-              position: 'relative',
-              borderColor: 'var(--color-gray-600)'
-            }}
-          >
+      <Tabs.Content value="plan" className="flex min-h-0 flex-1 p-0">
+        <div className="flex h-full w-full flex-col gap-2 overflow-hidden">
+          <div ref={containerRef} className="relative flex min-h-0 flex-1 overflow-hidden rounded-md border">
             {modelPromise ? (
               <Suspense fallback={<PlanSkeleton />}>
                 <TagVisibilityProvider defaultHidden={defaultHiddenTags}>
@@ -196,7 +189,7 @@ function ModalContent({
             <PartHighlightPanel />
           </div>
 
-          <div className="flex flex-shrink-0">
+          <div className="flex w-full shrink-0">
             {modelPromise ? (
               <Suspense fallback={<PlanSkeleton />}>
                 <IssueDescriptionPanel modelPromise={modelPromise} />

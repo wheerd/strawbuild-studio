@@ -380,8 +380,8 @@ export function ConstructionPlan({
       {/* Overlay controls in top-left corner */}
 
       <div className="absolute top-3 left-3 z-10">
-        <Card size="sm" variant="soft" className="shadow-md">
-          <div className="m--2 flex flex-col gap-2">
+        <Card size="sm" variant="soft" className="bg-card shadow-md">
+          <div className="-m-2 flex flex-col gap-2">
             {/* View selector - only show if multiple views */}
             {views.length > 1 && (
               <ToggleGroup
@@ -396,7 +396,7 @@ export function ConstructionPlan({
                 size="sm"
               >
                 {views.map((viewOption, index) => (
-                  <ToggleGroupItem key={index} value={index.toString()}>
+                  <ToggleGroupItem key={index} value={index.toString()} className="h-7 text-xs">
                     {viewOption.label}
                   </ToggleGroupItem>
                 ))}
@@ -406,7 +406,7 @@ export function ConstructionPlan({
             <div className="grid grid-cols-6 items-center justify-center gap-1">
               {/* Mid-cut toggle */}
               <Button
-                size="icon"
+                size="icon-xs"
                 variant={midCutEnabled ? 'default' : 'outline'}
                 title={t($ => $.plan.midCut)}
                 onClick={() => {
@@ -418,7 +418,7 @@ export function ConstructionPlan({
 
               {/* Area toggle */}
               <Button
-                size="icon"
+                size="icon-xs"
                 variant={hideAreas ? 'outline' : 'default'}
                 title={t($ => $.plan.hideAreas)}
                 onClick={() => {
@@ -430,7 +430,7 @@ export function ConstructionPlan({
 
               {/* Issues toggle */}
               <Button
-                size="icon"
+                size="icon-xs"
                 variant={hideIssues ? 'outline' : 'default'}
                 title={t($ => $.plan.hideIssues)}
                 onClick={() => {
@@ -442,7 +442,7 @@ export function ConstructionPlan({
 
               {/* Measurements toggle */}
               <Button
-                size="icon"
+                size="icon-xs"
                 variant={hideMeasurements ? 'outline' : 'default'}
                 title={t($ => $.plan.hideMeasurements)}
                 onClick={() => {
@@ -454,7 +454,7 @@ export function ConstructionPlan({
 
               {/* Straw types toggle */}
               <Button
-                size="icon"
+                size="icon-xs"
                 variant={showStrawTypes ? 'default' : 'outline'}
                 title={t($ => $.plan.showStrawTypes)}
                 onClick={() => {
@@ -469,7 +469,7 @@ export function ConstructionPlan({
             </div>
 
             {showStrawTypes && (
-              <div className="mt--2 flex flex-col p-2">
+              <div className="flex flex-col">
                 <h4>{t($ => $.plan.strawTypesHeading)}</h4>
                 <div className="grid grid-cols-2">
                   <span className="text-sm text-lime-600">{t($ => $.plan.strawTypes.fullBale)}</span>

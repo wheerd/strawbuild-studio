@@ -75,7 +75,7 @@ export function FullScreenModal({
           </div>
 
           {/* Content - fills remaining space */}
-          <div className="flex min-h-0 flex-1 overflow-hidden px-4 py-2">{children}</div>
+          <div className="flex min-h-0 flex-1 overflow-hidden px-2 py-2">{children}</div>
         </DialogPrimitive.Content>
       </DialogPrimitive.Portal>
     </DialogPrimitive.Root>

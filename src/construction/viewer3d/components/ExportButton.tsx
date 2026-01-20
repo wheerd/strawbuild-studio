@@ -17,7 +17,7 @@ function ExportButton({ onExport }: ExportButtonProps): React.JSX.Element {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" size="icon" title={t($ => $.export.title)}>
+        <Button variant="outline" size="icon-sm" title={t($ => $.export.title)}>
           <DownloadIcon />
         </Button>
       </DropdownMenuTrigger>

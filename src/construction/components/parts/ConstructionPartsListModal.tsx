@@ -74,16 +74,15 @@ export function ConstructionPartsListModal({
         onValueChange={value => {
           setActiveTab(value as 'materials' | 'modules')
         }}
-        className="-mt-2 flex h-full flex-col"
+        className="-mt-2 flex h-full w-full flex-col"
       >
-        <div className="flex flex-shrink-0">
+        <div className="flex shrink-0">
           <Tabs.List>
             <Tabs.Trigger value="materials">{t($ => $.partsListModal.tabs.materials)}</Tabs.Trigger>
             <Tabs.Trigger value="modules">{t($ => $.partsListModal.tabs.modules)}</Tabs.Trigger>
           </Tabs.List>
         </div>
-
-        <Tabs.Content value="materials" className="flex min-h-0 flex-1 overflow-auto pt-3">
+        <Tabs.Content value="materials" className="flex min-h-0 w-full flex-1 overflow-auto pt-3">
           {partsDataPromise ? (
             <Suspense fallback={<PartsSkeleton />}>
               <MaterialPartsContent partsDataPromise={partsDataPromise} />

@@ -34,7 +34,7 @@ export function WelcomeModal({ isOpen, mode, onAccept, trigger }: WelcomeModalPr
       {trigger && <DialogTrigger asChild>{trigger}</DialogTrigger>}
       <DialogContent
         aria-describedby={undefined}
-        className="max-w-[90vw]"
+        className="h-full max-h-[90vh] max-w-[90vw] overflow-y-auto"
         onEscapeKeyDown={e => {
           if (isFirstVisit) e.preventDefault()
         }}
@@ -105,7 +105,7 @@ export function WelcomeModal({ isOpen, mode, onAccept, trigger }: WelcomeModalPr
                 <span className="text-base">{t($ => $.demoVideo.description)}</span>
                 <div className="flex flex-row items-center gap-4">
                   <a
-                    className="font-bold"
+                    className="font-bold underline"
                     href="https://www.youtube.com/watch?v=oe9VnhEW0JE"
                     target="_blank"
                     rel="noopener noreferrer"
@@ -113,7 +113,7 @@ export function WelcomeModal({ isOpen, mode, onAccept, trigger }: WelcomeModalPr
                     {t($ => $.demoVideo.demo01)}
                   </a>
                   <a
-                    className="font-bold"
+                    className="font-bold underline"
                     href="https://www.youtube.com/watch?v=7Ed09YNGSn8"
                     target="_blank"
                     rel="noopener noreferrer"

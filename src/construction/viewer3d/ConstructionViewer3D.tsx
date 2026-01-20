@@ -51,7 +51,7 @@ function ConstructionViewer3D({ model, containerSize }: ConstructionViewer3DProp
   const cameraThreeZ = -centerY + cameraDistance * 0.7
 
   const gridSize = Math.max(maxSize * 3, 10000)
-  const gridColor = isDarkTheme ? '#EEEEEE' : '#111111'
+  const gridColor = isDarkTheme ? '#CCCCCC' : '#333333'
   const gridHelperArgs = useMemo<[number, number, string, string]>(
     () => [gridSize, 50, gridColor, gridColor],
     [gridSize, gridColor]
@@ -103,7 +103,7 @@ function ConstructionViewer3D({ model, containerSize }: ConstructionViewer3DProp
   const { position, rotation, scale } = toThreeTransform(matAppToThree)
 
   return (
-    <div style={{ position: 'relative', width: '100%', height: '100%' }}>
+    <div className="relative h-full w-full">
       <Canvas
         frameloop="always"
         camera={{
@@ -140,25 +140,19 @@ function ConstructionViewer3D({ model, containerSize }: ConstructionViewer3DProp
         <SceneExporter onExportReady={handleExportReady} />
       </Canvas>
 
-      <div className="absolute top-3 left-3 z-10">
-        <Card size="sm" variant="soft" className="shadow-md">
-          <div className="m--2 flex flex-row items-center gap-1 p-0">
-            <TagOpacityMenu model={model} />
-            <GridToggleButton />
-          </div>
-        </Card>
-      </div>
+      <Card size="sm" variant="surface" className="absolute top-3 left-3 z-10 shadow-md">
+        <div className="-m-2 flex flex-row items-center gap-1 p-0.5">
+          <TagOpacityMenu model={model} />
+          <GridToggleButton />
+        </div>
+      </Card>
 
-      <div className="absolute top-3 right-3 z-10">
-        <Card size="sm" variant="soft" className="shadow-md">
-          <div className="m--2 flex flex-col items-center gap-2 p-0">
-            <ExportButton
-              onExport={format => {
-                void handleExport(format)
-              }}
-            />
-          </div>
-        </Card>
+      <div className="absolute top-3 right-3 z-10 p-0 shadow-md">
+        <ExportButton
+          onExport={format => {
+            void handleExport(format)
+          }}
+        />
       </div>
 
       <AlertDialog.Root

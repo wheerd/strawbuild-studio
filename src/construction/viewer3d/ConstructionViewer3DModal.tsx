@@ -50,7 +50,7 @@ export function ConstructionViewer3DModal({
       title={t($ => $.viewer3DModal.title)}
       trigger={trigger}
     >
-      <div className="flex h-full flex-col">
+      <div className="flex h-full w-full flex-col">
         <div
           ref={containerRef}
           className="relative min-h-0 flex-1 overflow-hidden rounded-md border"

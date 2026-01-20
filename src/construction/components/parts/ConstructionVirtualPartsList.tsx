@@ -3,7 +3,7 @@ import React, { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { Button } from '@/components/ui/button'
-import { Card } from '@/components/ui/card'
+import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Table } from '@/components/ui/table'
 import type { PartId, VirtualPartsList } from '@/construction/parts'
 import { useFormatters } from '@/shared/i18n/useFormatters'
@@ -25,32 +25,34 @@ export function ConstructionVirtualPartsList({
 
   if (parts.length === 0) {
     return (
-      <Card variant="soft">
-        <div className="flex justify-center">
-          <span className="text-lg text-gray-900">{t($ => $.modulesList.noModules)}</span>
-        </div>
+      <Card variant="surface" className="w-full">
+        <CardContent className="flex justify-center">
+          <span className="text-muted-foreground text-lg">{t($ => $.modulesList.noModules)}</span>
+        </CardContent>
       </Card>
     )
   }
 
   return (
-    <Card variant="soft">
-      <div className="flex flex-col gap-3">
-        <h4>{t($ => $.modulesList.title)}</h4>
-        <Table.Root variant="soft" className="min-w-full">
-          <Table.Header>
+    <Card variant="surface" className="w-full">
+      <CardHeader className="p-3">
+        <h2 className="text-xl font-bold">{t($ => $.modulesList.title)}</h2>
+      </CardHeader>
+      <CardContent className="px-3">
+        <Table.Root variant="surface" className="min-w-full">
+          <Table.Header className="bg-muted">
             <Table.Row>
-              <Table.ColumnHeaderCell width="5em" justify-center>
+              <Table.ColumnHeaderCell width="5em" className="text-center">
                 {t($ => $.modulesList.tableHeaders.label)}
               </Table.ColumnHeaderCell>
               <Table.ColumnHeaderCell>{t($ => $.modulesList.tableHeaders.type)}</Table.ColumnHeaderCell>
               <Table.ColumnHeaderCell width="20em">
                 {t($ => $.modulesList.tableHeaders.dimensions)}
               </Table.ColumnHeaderCell>
-              <Table.ColumnHeaderCell width="6em" justify-center>
+              <Table.ColumnHeaderCell width="6em" className="text-center">
                 {t($ => $.modulesList.tableHeaders.quantity)}
               </Table.ColumnHeaderCell>
-              <Table.ColumnHeaderCell width="3em" justify-center>
+              <Table.ColumnHeaderCell width="3em" className="text-center">
                 {t($ => $.modulesList.tableHeaders.view)}
               </Table.ColumnHeaderCell>
             </Table.Row>
@@ -58,7 +60,7 @@ export function ConstructionVirtualPartsList({
           <Table.Body>
             {parts.map(part => (
               <Table.Row key={part.partId}>
-                <Table.RowHeaderCell justify-center>
+                <Table.RowHeaderCell className="text-center">
                   <span className="font-medium">{part.label}</span>
                 </Table.RowHeaderCell>
                 <Table.Cell>
@@ -67,18 +69,19 @@ export function ConstructionVirtualPartsList({
                 <Table.Cell>
                   <span>{formatDimensions3D([part.size[0], part.size[1], part.size[2]])}</span>
                 </Table.Cell>
-                <Table.Cell justify-center>
+                <Table.Cell className="text-center">
                   <span>{part.quantity}</span>
                 </Table.Cell>
-                <Table.Cell justify-center>
+                <Table.Cell className="text-center">
                   {canHighlightPart(part.partId) && onViewInPlan && (
                     <Button
-                      size="icon"
+                      size="icon-sm"
                       variant="ghost"
                       onClick={() => {
                         onViewInPlan(part.partId)
                       }}
                       title={t($ => $.modulesList.actions.viewInPlan)}
+                      className="-my-2"
                     >
                       <EyeOpenIcon />
                     </Button>
@@ -88,7 +91,7 @@ export function ConstructionVirtualPartsList({
             ))}
           </Table.Body>
         </Table.Root>
-      </div>
+      </CardContent>
     </Card>
   )
 }

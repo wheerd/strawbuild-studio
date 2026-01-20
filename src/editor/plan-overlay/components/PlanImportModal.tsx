@@ -224,7 +224,7 @@ export function PlanImportModal({
       onOpenChange={onOpenChange}
       title={existingPlan ? t($ => $.planImport.titleExisting) : t($ => $.planImport.titleNew)}
     >
-      <div className="grid h-full grid-cols-[30em_1fr] gap-x-2">
+      <div className="grid h-full w-full grid-cols-[30em_1fr] gap-x-2">
         <div className="flex flex-col gap-3">
           <div className="flex flex-col gap-2">
             <span className="font-medium">{t($ => $.planImport.step1.title)}</span>

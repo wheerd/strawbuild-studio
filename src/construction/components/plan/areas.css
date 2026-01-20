@@ -126,22 +126,20 @@
   stroke-dasharray: 50, 50;
 }
 
+@reference "tailwindcss";
+
 .show-straw-types g.tag__straw_full-bale {
-  outline: solid 20px var(--grass-a8);
-  outline-offset: -30px;
+  @apply outline-20 -outline-offset-30 outline-green-600/50;
 }
 
 .show-straw-types g.tag__straw_partial-bale {
-  outline: solid 20px var(--blue-a8);
-  outline-offset: -30px;
+  @apply outline-20 -outline-offset-30 outline-blue-600/50;
 }
 
 .show-straw-types g.tag__straw_flakes {
-  outline: solid 20px var(--purple-a8);
-  outline-offset: -30px;
+  @apply outline-20 -outline-offset-30 outline-purple-600/50;
 }
 
 .show-straw-types g.tag__straw_stuffed {
-  outline: solid 20px var(--red-a8);
-  outline-offset: -30px;
+  @apply outline-20 -outline-offset-30 outline-red-600/50;
 }

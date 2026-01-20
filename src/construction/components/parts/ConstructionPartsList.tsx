@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next'
 
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Card } from '@/components/ui/card'
+import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Table } from '@/components/ui/table'
 import { Tooltip } from '@/components/ui/tooltip'
 import { PartCutModal } from '@/construction/components/parts/PartCutModal'
@@ -370,27 +370,27 @@ function MaterialSummaryRow({
 
   return (
     <Table.Row>
-      <Table.RowHeaderCell justify-center>
+      <Table.RowHeaderCell className="text-center">
         <MaterialTypeIndicator material={material} />
       </Table.RowHeaderCell>
       <Table.RowHeaderCell>
-        <div className="flex items-center justify-between gap-2">
+        <div className="text-foreground flex items-center justify-between gap-2">
           <span className="font-medium">{materialName}</span>
-          <Button size="icon" title={t($ => $.partsList.actions.jumpToDetails)} variant="ghost" onClick={onNavigate}>
+          <Button size="icon-xs" title={t($ => $.partsList.actions.jumpToDetails)} variant="ghost" onClick={onNavigate}>
             <PinBottomIcon />
           </Button>
         </div>
       </Table.RowHeaderCell>
-      <Table.Cell justify-center>{metrics.totalQuantity}</Table.Cell>
-      <Table.Cell justify-center>{metrics.partCount}</Table.Cell>
-      <Table.Cell justify-end>
+      <Table.Cell className="text-center">{metrics.totalQuantity}</Table.Cell>
+      <Table.Cell className="text-center">{metrics.partCount}</Table.Cell>
+      <Table.Cell className="text-end">
         {metrics.totalLength !== undefined ? formatters.formatLengthInMeters(metrics.totalLength) : '—'}
       </Table.Cell>
-      <Table.Cell justify-end>
+      <Table.Cell className="text-end">
         {metrics.totalArea !== undefined ? formatters.formatArea(metrics.totalArea) : '—'}
       </Table.Cell>
-      <Table.Cell justify-end>{formatters.formatVolume(metrics.totalVolume)}</Table.Cell>
-      <Table.Cell justify-end>{formatWeight(metrics.totalWeight)}</Table.Cell>
+      <Table.Cell className="text-end">{formatters.formatVolume(metrics.totalVolume)}</Table.Cell>
+      <Table.Cell className="text-end">{formatWeight(metrics.totalWeight)}</Table.Cell>
     </Table.Row>
   )
 }
@@ -413,27 +413,29 @@ function MaterialGroupSummaryRow({
 
   return (
     <Table.Row>
-      <Table.Cell width="6em" justify-center>
-        <span className="text</span>00">↳</span>
+      <Table.Cell width="6em" className="text-center">
+        <span className="text-muted-foreground/60">↳</span>
       </Table.Cell>
       <Table.Cell>
         <div className="flex items-center justify-between gap-2">
-          <Badge color={group.badgeColor}>{group.badgeLabel}</Badge>
-          <Button size="icon" title={t($ => $.partsList.actions.jumpToDetails)} variant="ghost" onClick={onNavigate}>
+          <Badge variant="surface" color={group.badgeColor ?? 'blue'}>
+            {group.badgeLabel}
+          </Badge>
+          <Button size="icon-xs" title={t($ => $.partsList.actions.jumpToDetails)} variant="ghost" onClick={onNavigate}>
             <PinBottomIcon />
           </Button>
         </div>
       </Table.Cell>
-      <Table.Cell justify-center>{metrics.totalQuantity}</Table.Cell>
-      <Table.Cell justify-center>{metrics.partCount}</Table.Cell>
-      <Table.Cell justify-end>
+      <Table.Cell className="text-center">{metrics.totalQuantity}</Table.Cell>
+      <Table.Cell className="text-center">{metrics.partCount}</Table.Cell>
+      <Table.Cell className="text-end">
         {metrics.totalLength !== undefined ? formatters.formatLengthInMeters(metrics.totalLength) : '—'}
       </Table.Cell>
-      <Table.Cell justify-end>
+      <Table.Cell className="text-end">
         {metrics.totalArea !== undefined ? formatters.formatArea(metrics.totalArea) : '—'}
       </Table.Cell>
-      <Table.Cell justify-end>{formatters.formatVolume(metrics.totalVolume)}</Table.Cell>
-      <Table.Cell justify-end>{formatWeight(metrics.totalWeight)}</Table.Cell>
+      <Table.Cell className="text-end">{formatters.formatVolume(metrics.totalVolume)}</Table.Cell>
+      <Table.Cell className="text-end">{formatWeight(metrics.totalWeight)}</Table.Cell>
     </Table.Row>
   )
 }
@@ -452,14 +454,14 @@ function MaterialGroupCard({ material, group, onBackToTop, onViewInPlan, formatt
   const materialName = useMaterialName(material)
 
   return (
-    <Card variant="soft">
-      <div className="flex flex-col gap-3">
+    <Card variant="surface" className="p-2">
+      <CardHeader className="p-3">
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-3">
             <MaterialTypeIndicator material={material} size={24} />
-            <h4>{materialName}</h4>
+            <h3 className="text-lg font-bold">{materialName}</h3>
             <Button
-              size="icon"
+              size="icon-xs"
               title={t($ => $.partsList.actions.configureMaterial)}
               variant="ghost"
               onClick={() => {
@@ -470,13 +472,13 @@ function MaterialGroupCard({ material, group, onBackToTop, onViewInPlan, formatt
             </Button>
             <div className="flex items-center gap-2">
               {group.badgeLabel && (
-                <Badge variant="soft" color={group.badgeColor ?? 'gray'}>
+                <Badge variant="surface" color={group.badgeColor ?? 'gray'}>
                   {group.badgeLabel}
                 </Badge>
               )}
               {group.hasIssue && (
                 <Tooltip content={group.issueMessage ?? t($ => $.partsList.issues.groupMismatch)}>
-                  <ExclamationTriangleIcon style={{ color: 'var(--color-red-900)' }} />
+                  <ExclamationTriangleIcon className="text-red-600" />
                 </Tooltip>
               )}
             </div>
@@ -485,7 +487,8 @@ function MaterialGroupCard({ material, group, onBackToTop, onViewInPlan, formatt
             <PinTopIcon />
           </Button>
         </div>
-
+      </CardHeader>
+      <CardContent className="px-3">
         {material.type === 'dimensional' && (
           <DimensionalPartsTable
             parts={group.parts}
@@ -514,7 +517,7 @@ function MaterialGroupCard({ material, group, onBackToTop, onViewInPlan, formatt
         {material.type === 'strawbale' && (
           <StrawbalePartsTable parts={group.parts} material={material} formatters={formatters} />
         )}
-      </div>
+      </CardContent>
     </Card>
   )
 }
@@ -536,30 +539,30 @@ function DimensionalPartsTable({
     return formatters.formatWeight(weight)
   }
   return (
-    <Table.Root variant="soft" className="min-w-full">
-      <Table.Header>
+    <Table.Root variant="surface" className="min-w-full">
+      <Table.Header className="bg-muted">
         <Table.Row>
-          <Table.ColumnHeaderCell width="5em" justify-center>
+          <Table.ColumnHeaderCell width="5em" className="text-center">
             {t($ => $.partsList.tableHeaders.label)}
           </Table.ColumnHeaderCell>
           <Table.ColumnHeaderCell width="10em">{t($ => $.partsList.tableHeaders.type)}</Table.ColumnHeaderCell>
           <Table.ColumnHeaderCell>{t($ => $.partsList.tableHeaders.description)}</Table.ColumnHeaderCell>
-          <Table.ColumnHeaderCell width="5em" justify-center>
+          <Table.ColumnHeaderCell width="5em" className="text-center">
             {t($ => $.partsList.tableHeaders.quantity)}
           </Table.ColumnHeaderCell>
-          <Table.ColumnHeaderCell width="5em" justify-end>
+          <Table.ColumnHeaderCell width="5em" className="text-end">
             {t($ => $.partsList.tableHeaders.length)}
           </Table.ColumnHeaderCell>
-          <Table.ColumnHeaderCell width="8em" justify-end>
+          <Table.ColumnHeaderCell width="8em" className="text-end">
             {t($ => $.partsList.tableHeaders.totalLength)}
           </Table.ColumnHeaderCell>
-          <Table.ColumnHeaderCell width="9em" justify-end>
+          <Table.ColumnHeaderCell width="9em" className="text-end">
             {t($ => $.partsList.tableHeaders.totalVolume)}
           </Table.ColumnHeaderCell>
-          <Table.ColumnHeaderCell width="9em" justify-end>
+          <Table.ColumnHeaderCell width="9em" className="text-end">
             {t($ => $.partsList.tableHeaders.totalWeight)}
           </Table.ColumnHeaderCell>
-          <Table.ColumnHeaderCell width="3em" justify-center>
+          <Table.ColumnHeaderCell width="3em" className="text-center">
             {t($ => $.partsList.tableHeaders.view)}
           </Table.ColumnHeaderCell>
         </Table.Row>
@@ -569,11 +572,8 @@ function DimensionalPartsTable({
           const partWeight = calculateWeight(part.totalVolume, material)
           const severity = getIssueSeverity(part)
           return (
-            <Table.Row
-              key={part.partId}
-              style={{ background: severity === 'error' ? 'var(--color-red-300)' : undefined }}
-            >
-              <Table.RowHeaderCell justify-center>
+            <Table.Row key={part.partId} className={severity === 'error' ? 'bg-red-100 hover:bg-red-200' : undefined}>
+              <Table.RowHeaderCell className="text-center">
                 <span className="font-medium">{part.label}</span>
               </Table.RowHeaderCell>
               <Table.Cell>{part.type}</Table.Cell>
@@ -586,7 +586,7 @@ function DimensionalPartsTable({
                         key="special-cut"
                         content={<SpecialCutTooltip polygon={part.sideFaces[0].polygon.outer} />}
                       >
-                        <ExclamationTriangleIcon aria-hidden style={{ color: 'var(--color-orange-900)' }} />
+                        <ExclamationTriangleIcon aria-hidden className="text-orange-500" />
                       </Tooltip>
                       <PartCutModal
                         trigger={
@@ -600,9 +600,9 @@ function DimensionalPartsTable({
                   )}
                 </div>
               </Table.Cell>
-              <Table.Cell justify-center>{part.quantity}</Table.Cell>
-              <Table.Cell justify-end>
-                <div className="flex items-center justify-end gap-2">
+              <Table.Cell className="text-center">{part.quantity}</Table.Cell>
+              <Table.Cell className="text-end">
+                <div className="flex items-center justify-end gap-2 text-end">
                   {part.issue === 'LengthExceedsAvailable' && material.lengths.length > 0 && (
                     <Tooltip
                       key="length-exceeds-available"
@@ -613,29 +613,28 @@ function DimensionalPartsTable({
                       }
                     >
                       <ExclamationTriangleIcon
-                        style={{
-                          color: part.requiresSinglePiece ? 'var(--color-red-900)' : 'var(--color-orange-900)'
-                        }}
+                        className={part.requiresSinglePiece ? 'text-red-600' : 'text-orange-500'}
                       />
                     </Tooltip>
                   )}
                   <span>{part.length !== undefined ? formatters.formatLengthInMeters(part.length) : '—'}</span>
                 </div>
               </Table.Cell>
-              <Table.Cell justify-end>
+              <Table.Cell className="text-end">
                 {part.totalLength !== undefined ? formatters.formatLengthInMeters(part.totalLength) : '—'}
               </Table.Cell>
-              <Table.Cell justify-end>{formatters.formatVolume(part.totalVolume)}</Table.Cell>
-              <Table.Cell justify-end>{formatWeight(partWeight)}</Table.Cell>
-              <Table.Cell justify-center>
+              <Table.Cell className="text-end">{formatters.formatVolume(part.totalVolume)}</Table.Cell>
+              <Table.Cell className="text-end">{formatWeight(partWeight)}</Table.Cell>
+              <Table.Cell className="text-center">
                 {canHighlightPart(part.partId) && onViewInPlan && (
                   <Button
-                    size="icon"
+                    size="icon-sm"
                     variant="ghost"
                     onClick={() => {
                       onViewInPlan(part.partId)
                     }}
                     title={t($ => $.partsList.actions.viewInPlan)}
+                    className="-my-2"
                   >
                     <EyeOpenIcon />
                   </Button>
@@ -666,33 +665,33 @@ function SheetPartsTable({
     return formatters.formatWeight(weight)
   }
   return (
-    <Table.Root variant="soft" className="min-w-full">
-      <Table.Header>
+    <Table.Root variant="surface" className="min-w-full">
+      <Table.Header className="bg-muted">
         <Table.Row>
-          <Table.ColumnHeaderCell width="5em" justify-center>
+          <Table.ColumnHeaderCell width="5em" className="text-center">
             {t($ => $.partsList.tableHeaders.label)}
           </Table.ColumnHeaderCell>
           <Table.ColumnHeaderCell width="10em">{t($ => $.partsList.tableHeaders.type)}</Table.ColumnHeaderCell>
           <Table.ColumnHeaderCell>{t($ => $.partsList.tableHeaders.description)}</Table.ColumnHeaderCell>
-          <Table.ColumnHeaderCell width="20em" justify-end>
+          <Table.ColumnHeaderCell width="20em" className="text-end">
             {t($ => $.partsList.tableHeaders.dimensions)}
           </Table.ColumnHeaderCell>
-          <Table.ColumnHeaderCell width="5em" justify-center>
+          <Table.ColumnHeaderCell width="5em" className="text-center">
             {t($ => $.partsList.tableHeaders.quantity)}
           </Table.ColumnHeaderCell>
-          <Table.ColumnHeaderCell width="5em" justify-end>
+          <Table.ColumnHeaderCell width="5em" className="text-end">
             {t($ => $.partsList.tableHeaders.area)}
           </Table.ColumnHeaderCell>
-          <Table.ColumnHeaderCell width="8em" justify-end>
+          <Table.ColumnHeaderCell width="8em" className="text-end">
             {t($ => $.partsList.tableHeaders.totalArea)}
           </Table.ColumnHeaderCell>
-          <Table.ColumnHeaderCell width="9em" justify-end>
+          <Table.ColumnHeaderCell width="9em" className="text-end">
             {t($ => $.partsList.tableHeaders.totalVolume)}
           </Table.ColumnHeaderCell>
-          <Table.ColumnHeaderCell width="9em" justify-end>
+          <Table.ColumnHeaderCell width="9em" className="text-end">
             {t($ => $.partsList.tableHeaders.totalWeight)}
           </Table.ColumnHeaderCell>
-          <Table.ColumnHeaderCell width="3em" justify-center>
+          <Table.ColumnHeaderCell width="3em" className="text-center">
             {t($ => $.partsList.tableHeaders.view)}
           </Table.ColumnHeaderCell>
         </Table.Row>
@@ -702,11 +701,8 @@ function SheetPartsTable({
           const partWeight = calculateWeight(part.totalVolume, material)
           const severity = getIssueSeverity(part)
           return (
-            <Table.Row
-              key={part.partId}
-              style={{ background: severity === 'error' ? 'var(--color-red-300)' : undefined }}
-            >
-              <Table.RowHeaderCell justify-center>
+            <Table.Row key={part.partId} className={severity === 'error' ? 'bg-red-100 hover:bg-red-200' : undefined}>
+              <Table.RowHeaderCell className="text-center">
                 <span className="font-medium">{part.label}</span>
               </Table.RowHeaderCell>
               <Table.Cell>{part.type}</Table.Cell>
@@ -716,7 +712,7 @@ function SheetPartsTable({
                   {part.sideFaces?.length && part.sideFaces[0].polygon.outer.points.length >= 3 && (
                     <SheetPartModal
                       trigger={
-                        <Button size="icon" variant="outline" className="rounded-full">
+                        <Button size="icon-sm" variant="outline" className="-my-2 rounded-full">
                           <SawIcon />
                         </Button>
                       }
@@ -725,11 +721,11 @@ function SheetPartsTable({
                   )}
                 </div>
               </Table.Cell>
-              <Table.Cell justify-end>
+              <Table.Cell className="text-end">
                 <div className="flex items-center justify-end gap-2">
                   {part.issue === 'ThicknessMismatch' && (
                     <Tooltip key="thickness-missmatch" content={t($ => $.partsList.issues.dimensionsMismatchThickness)}>
-                      <ExclamationTriangleIcon style={{ color: 'var(--color-red-900)' }} />
+                      <ExclamationTriangleIcon className="text-red-600" />
                     </Tooltip>
                   )}
                   {part.issue === 'SheetSizeExceeded' && (
@@ -743,9 +739,7 @@ function SheetPartsTable({
                     >
                       <ExclamationTriangleIcon
                         aria-hidden
-                        style={{
-                          color: part.requiresSinglePiece ? 'var(--color-red-900)' : 'var(--color-orange-900)'
-                        }}
+                        className={part.requiresSinglePiece ? 'text-red-600' : 'text-orange-500'}
                       />
                     </Tooltip>
                   )}
@@ -754,22 +748,25 @@ function SheetPartsTable({
                   </span>
                 </div>
               </Table.Cell>
-              <Table.Cell justify-center>{part.quantity}</Table.Cell>
-              <Table.Cell justify-end> {part.area !== undefined ? formatters.formatArea(part.area) : '—'}</Table.Cell>
-              <Table.Cell justify-end>
+              <Table.Cell className="text-center">{part.quantity}</Table.Cell>
+              <Table.Cell className="text-end">
+                {part.area !== undefined ? formatters.formatArea(part.area) : '—'}
+              </Table.Cell>
+              <Table.Cell className="text-end">
                 {part.totalArea !== undefined ? formatters.formatArea(part.totalArea) : '—'}
               </Table.Cell>
-              <Table.Cell justify-end>{formatters.formatVolume(part.totalVolume)}</Table.Cell>
-              <Table.Cell justify-end>{formatWeight(partWeight)}</Table.Cell>
-              <Table.Cell justify-center>
+              <Table.Cell className="text-end">{formatters.formatVolume(part.totalVolume)}</Table.Cell>
+              <Table.Cell className="text-end">{formatWeight(partWeight)}</Table.Cell>
+              <Table.Cell className="text-center">
                 {canHighlightPart(part.partId) && onViewInPlan && (
                   <Button
-                    size="icon"
+                    size="icon-sm"
                     variant="ghost"
                     onClick={() => {
                       onViewInPlan(part.partId)
                     }}
                     title={t($ => $.partsList.actions.viewInPlan)}
+                    className="-my-2"
                   >
                     <EyeOpenIcon />
                   </Button>
@@ -800,30 +797,30 @@ function VolumePartsTable({
     return formatters.formatWeight(weight)
   }
   return (
-    <Table.Root variant="soft" className="min-w-full">
-      <Table.Header>
+    <Table.Root variant="surface" className="min-w-full">
+      <Table.Header className="bg-muted">
         <Table.Row>
-          <Table.ColumnHeaderCell width="5em" justify-center>
+          <Table.ColumnHeaderCell width="5em" className="text-center">
             {t($ => $.partsList.tableHeaders.label)}
           </Table.ColumnHeaderCell>
           <Table.ColumnHeaderCell width="10em">{t($ => $.partsList.tableHeaders.type)}</Table.ColumnHeaderCell>
           <Table.ColumnHeaderCell>{t($ => $.partsList.tableHeaders.description)}</Table.ColumnHeaderCell>
-          <Table.ColumnHeaderCell width="5em" justify-center>
+          <Table.ColumnHeaderCell width="5em" className="text-center">
             {t($ => $.partsList.tableHeaders.quantity)}
           </Table.ColumnHeaderCell>
-          <Table.ColumnHeaderCell width="5em" justify-end>
+          <Table.ColumnHeaderCell width="5em" className="text-end">
             {t($ => $.partsList.tableHeaders.thickness)}
           </Table.ColumnHeaderCell>
-          <Table.ColumnHeaderCell width="8em" justify-end>
+          <Table.ColumnHeaderCell width="8em" className="text-end">
             {t($ => $.partsList.tableHeaders.totalArea)}
           </Table.ColumnHeaderCell>
-          <Table.ColumnHeaderCell width="9em" justify-end>
+          <Table.ColumnHeaderCell width="9em" className="text-end">
             {t($ => $.partsList.tableHeaders.totalVolume)}
           </Table.ColumnHeaderCell>
-          <Table.ColumnHeaderCell width="9em" justify-end>
+          <Table.ColumnHeaderCell width="9em" className="text-end">
             {t($ => $.partsList.tableHeaders.totalWeight)}
           </Table.ColumnHeaderCell>
-          <Table.ColumnHeaderCell width="3em" justify-center>
+          <Table.ColumnHeaderCell width="3em" className="text-center">
             {t($ => $.partsList.tableHeaders.view)}
           </Table.ColumnHeaderCell>
         </Table.Row>
@@ -833,33 +830,31 @@ function VolumePartsTable({
           const partWeight = calculateWeight(part.totalVolume, material)
           const severity = getIssueSeverity(part)
           return (
-            <Table.Row
-              key={part.partId}
-              style={{ background: severity === 'error' ? 'var(--color-red-300)' : undefined }}
-            >
-              <Table.RowHeaderCell justify-center>
+            <Table.Row key={part.partId} className={severity === 'error' ? 'bg-red-100 hover:bg-red-200' : undefined}>
+              <Table.RowHeaderCell className="text-center">
                 <span className="font-medium">{part.label}</span>
               </Table.RowHeaderCell>
               <Table.Cell>{part.type}</Table.Cell>
               <Table.Cell>{part.description}</Table.Cell>
-              <Table.Cell justify-center>{part.quantity}</Table.Cell>
-              <Table.Cell justify-end>
+              <Table.Cell className="text-center">{part.quantity}</Table.Cell>
+              <Table.Cell className="text-end">
                 {part.thickness !== undefined ? formatters.formatLength(part.thickness) : '—'}
               </Table.Cell>
-              <Table.Cell justify-end>
+              <Table.Cell className="text-end">
                 {part.totalArea !== undefined ? formatters.formatArea(part.totalArea) : '—'}
               </Table.Cell>
-              <Table.Cell justify-end>{formatters.formatVolume(part.totalVolume)}</Table.Cell>
-              <Table.Cell justify-end>{formatWeight(partWeight)}</Table.Cell>
-              <Table.Cell justify-center>
+              <Table.Cell className="text-end">{formatters.formatVolume(part.totalVolume)}</Table.Cell>
+              <Table.Cell className="text-end">{formatWeight(partWeight)}</Table.Cell>
+              <Table.Cell className="text-center">
                 {canHighlightPart(part.partId) && onViewInPlan && (
                   <Button
-                    size="icon"
+                    size="icon-sm"
                     variant="ghost"
                     onClick={() => {
                       onViewInPlan(part.partId)
                     }}
                     title={t($ => $.partsList.actions.viewInPlan)}
+                    className="-my-2"
                   >
                     <EyeOpenIcon />
                   </Button>
@@ -882,18 +877,18 @@ function GenericPartsTable({
 }) {
   const { t } = useTranslation('construction')
   return (
-    <Table.Root variant="soft" className="min-w-full">
-      <Table.Header>
+    <Table.Root variant="surface" className="min-w-full">
+      <Table.Header className="bg-muted">
         <Table.Row>
-          <Table.ColumnHeaderCell width="5em" justify-center>
+          <Table.ColumnHeaderCell width="5em" className="text-center">
             {t($ => $.partsList.tableHeaders.label)}
           </Table.ColumnHeaderCell>
           <Table.ColumnHeaderCell width="10em">{t($ => $.partsList.tableHeaders.type)}</Table.ColumnHeaderCell>
           <Table.ColumnHeaderCell>{t($ => $.partsList.tableHeaders.description)}</Table.ColumnHeaderCell>
-          <Table.ColumnHeaderCell width="5em" justify-center>
+          <Table.ColumnHeaderCell width="5em" className="text-center">
             {t($ => $.partsList.tableHeaders.quantity)}
           </Table.ColumnHeaderCell>
-          <Table.ColumnHeaderCell width="3em" justify-center>
+          <Table.ColumnHeaderCell width="3em" className="text-center">
             {t($ => $.partsList.tableHeaders.view)}
           </Table.ColumnHeaderCell>
         </Table.Row>
@@ -901,13 +896,13 @@ function GenericPartsTable({
       <Table.Body>
         {parts.map(part => (
           <Table.Row key={part.partId}>
-            <Table.RowHeaderCell justify-center>
+            <Table.RowHeaderCell className="text-center">
               <span className="font-medium">{part.label}</span>
             </Table.RowHeaderCell>
             <Table.Cell>{part.type}</Table.Cell>
             <Table.Cell>{part.description}</Table.Cell>
-            <Table.Cell justify-center>{part.quantity}</Table.Cell>
-            <Table.Cell justify-center>
+            <Table.Cell className="text-center">{part.quantity}</Table.Cell>
+            <Table.Cell className="text-center">
               {canHighlightPart(part.partId) && onViewInPlan && (
                 <Button
                   size="icon"
@@ -916,6 +911,7 @@ function GenericPartsTable({
                     onViewInPlan(part.partId)
                   }}
                   title={t($ => $.partsList.actions.viewInPlan)}
+                  className="-my-2"
                 >
                   <EyeOpenIcon />
                 </Button>
@@ -1001,14 +997,14 @@ function StrawbalePartsTable({
   )
 
   return (
-    <Table.Root variant="soft" className="min-w-full">
-      <Table.Header>
+    <Table.Root variant="surface" className="min-w-full">
+      <Table.Header className="bg-muted">
         <Table.Row>
           <Table.ColumnHeaderCell>{t($ => $.partsList.tableHeaders.category)}</Table.ColumnHeaderCell>
-          <Table.ColumnHeaderCell width="12em" justify-center>
+          <Table.ColumnHeaderCell width="12em" className="text-center">
             {t($ => $.partsList.tableHeaders.baleCount)}
           </Table.ColumnHeaderCell>
-          <Table.ColumnHeaderCell width="12em" justify-end>
+          <Table.ColumnHeaderCell width="12em" className="text-end">
             {t($ => $.partsList.tableHeaders.totalVolume)}
           </Table.ColumnHeaderCell>
         </Table.Row>
@@ -1017,32 +1013,36 @@ function StrawbalePartsTable({
         {rows.map(row => (
           <Table.Row key={row.key}>
             <Table.RowHeaderCell>
-              <span className={`font-medium ${row.key === 'remaining' ? 'text-gray-900' : ''}`}>{row.label}</span>
+              <span className={`font-medium ${row.key === 'remaining' ? 'text-muted-foreground' : 'text-foreground'}`}>
+                {row.label}
+              </span>
             </Table.RowHeaderCell>
-            <Table.Cell justify-center>
-              <span className={row.key === 'remaining' ? 'text-gray-900' : undefined}>
+            <Table.Cell className="text-center">
+              <span className={row.key === 'remaining' ? 'text-muted-foreground' : undefined}>
                 {formatRange(row.minQuantity, row.maxQuantity)}
               </span>
             </Table.Cell>
-            <Table.Cell justify-end>
-              <span className={row.key === 'remaining' ? 'text-gray-900' : undefined}>
+            <Table.Cell className="text-end">
+              <span className={row.key === 'remaining' ? 'text-muted-foreground' : undefined}>
                 {formatters.formatVolume(row.volume)}
               </span>
             </Table.Cell>
           </Table.Row>
         ))}
+      </Table.Body>
+      <Table.Footer className="bg-muted">
         <Table.Row>
-          <Table.RowHeaderCell>
+          <Table.RowHeaderCell className="text-foreground">
             <span className="font-medium">{t($ => $.partsList.totalRow)}</span>
           </Table.RowHeaderCell>
-          <Table.Cell justify-center>
+          <Table.Cell className="text-center">
             <span className="font-medium">{formatRange(totalMinQuantity, totalMaxQuantity)}</span>
           </Table.Cell>
-          <Table.Cell justify-end>
+          <Table.Cell className="text-end">
             <span className="font-medium">{formatters.formatVolume(summary.totalVolume)}</span>
           </Table.Cell>
         </Table.Row>
-      </Table.Body>
+      </Table.Footer>
     </Table.Root>
   )
 }
@@ -1094,7 +1094,7 @@ export function ConstructionPartsList({ partsList, onViewInPlan }: ConstructionP
           group = {
             label,
             badgeLabel: label,
-            badgeColor: isKnown ? undefined : 'orange',
+            badgeColor: isKnown ? undefined : 'red',
             parts: [],
             sortValue,
             hasIssue: !isKnown,
@@ -1142,7 +1142,7 @@ export function ConstructionPartsList({ partsList, onViewInPlan }: ConstructionP
           group = {
             label,
             badgeLabel: label,
-            badgeColor: isKnown ? undefined : 'orange',
+            badgeColor: isKnown ? undefined : 'red',
             parts: [],
             sortValue,
             hasIssue: !isKnown,
@@ -1274,33 +1274,35 @@ export function ConstructionPartsList({ partsList, onViewInPlan }: ConstructionP
     )
 
   return (
-    <div className="flex flex-col gap-4">
-      <Card ref={topRef} variant="soft">
-        <div className="flex flex-col gap-3">
-          <h4>{t($ => $.partsList.summary)}</h4>
-          <Table.Root variant="soft" className="min-w-full">
-            <Table.Header>
+    <div className="flex w-full flex-col gap-4">
+      <Card ref={topRef} variant="surface" className="p-2">
+        <CardHeader className="p-3">
+          <h2 className="text-xl font-bold">{t($ => $.partsList.summary)}</h2>
+        </CardHeader>
+        <CardContent className="px-3">
+          <Table.Root variant="surface" className="min-w-full">
+            <Table.Header className="bg-muted">
               <Table.Row>
-                <Table.ColumnHeaderCell width="4em" justify-center>
+                <Table.ColumnHeaderCell width="4em" className="text-center">
                   {t($ => $.partsList.tableHeaders.type)}
                 </Table.ColumnHeaderCell>
                 <Table.ColumnHeaderCell>{t($ => $.partsList.tableHeaders.material)}</Table.ColumnHeaderCell>
-                <Table.ColumnHeaderCell width="10em" justify-center>
+                <Table.ColumnHeaderCell width="10em" className="text-center">
                   {t($ => $.partsList.tableHeaders.totalQuantity)}
                 </Table.ColumnHeaderCell>
-                <Table.ColumnHeaderCell width="10em" justify-center>
+                <Table.ColumnHeaderCell width="10em" className="text-center">
                   {t($ => $.partsList.tableHeaders.differentParts)}
                 </Table.ColumnHeaderCell>
-                <Table.ColumnHeaderCell width="10em" justify-end>
+                <Table.ColumnHeaderCell width="10em" className="text-end">
                   {t($ => $.partsList.tableHeaders.totalLength)}
                 </Table.ColumnHeaderCell>
-                <Table.ColumnHeaderCell width="10em" justify-end>
+                <Table.ColumnHeaderCell width="10em" className="text-end">
                   {t($ => $.partsList.tableHeaders.totalArea)}
                 </Table.ColumnHeaderCell>
-                <Table.ColumnHeaderCell width="10em" justify-end>
+                <Table.ColumnHeaderCell width="10em" className="text-end">
                   {t($ => $.partsList.tableHeaders.totalVolume)}
                 </Table.ColumnHeaderCell>
-                <Table.ColumnHeaderCell width="10em" justify-end>
+                <Table.ColumnHeaderCell width="10em" className="text-end">
                   {t($ => $.partsList.tableHeaders.totalWeight)}
                 </Table.ColumnHeaderCell>
               </Table.Row>
@@ -1331,7 +1333,7 @@ export function ConstructionPartsList({ partsList, onViewInPlan }: ConstructionP
               ))}
             </Table.Body>
           </Table.Root>
-        </div>
+        </CardContent>
       </Card>
 
       <div className="flex flex-col gap-4">

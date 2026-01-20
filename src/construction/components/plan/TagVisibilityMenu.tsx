@@ -99,7 +99,7 @@ export function TagVisibilityMenu({ model }: TagVisibilityMenuProps): React.JSX.
     return (
       <DropdownMenu>
         <DropdownMenu.Trigger>
-          <Button size="icon" variant="outline" title={t($ => $.tagVisibility.title)} disabled>
+          <Button size="icon-xs" variant="outline" title={t($ => $.tagVisibility.title)} disabled>
             <EyeOpenIcon />
           </Button>
         </DropdownMenu.Trigger>
@@ -115,7 +115,7 @@ export function TagVisibilityMenu({ model }: TagVisibilityMenuProps): React.JSX.
   return (
     <DropdownMenu>
       <DropdownMenu.Trigger>
-        <Button size="icon" variant="default" title={t($ => $.tagVisibility.title)}>
+        <Button size="icon-xs" variant="default" title={t($ => $.tagVisibility.title)}>
           <EyeOpenIcon />
         </Button>
       </DropdownMenu.Trigger>
@@ -127,7 +127,7 @@ export function TagVisibilityMenu({ model }: TagVisibilityMenuProps): React.JSX.
           return (
             <DropdownMenu.Sub key={categoryId}>
               <DropdownMenu.SubTrigger>
-                <div className="w-full items-center justify-between gap-2">
+                <div className="flex w-full items-center justify-between gap-2">
                   <span className="text-sm">
                     <CategoryLabel categoryId={categoryId} />
                   </span>
@@ -142,7 +142,7 @@ export function TagVisibilityMenu({ model }: TagVisibilityMenuProps): React.JSX.
                   }}
                 >
                   <div
-                    className="w-full items-center justify-between gap-2"
+                    className="flex w-full items-center justify-between gap-2"
                     onClick={e => {
                       e.stopPropagation()
                       toggleTagOrCategory(categoryId)
@@ -166,7 +166,7 @@ export function TagVisibilityMenu({ model }: TagVisibilityMenuProps): React.JSX.
                     }}
                   >
                     <div
-                      className="w-full items-center justify-between gap-2"
+                      className="flex w-full items-center justify-between gap-2"
                       onClick={e => {
                         e.stopPropagation()
                         toggleTagOrCategory(tag.id)
