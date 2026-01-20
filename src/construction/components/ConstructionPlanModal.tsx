@@ -317,35 +317,13 @@ function ModulesTabContent({
 
 function PlanSkeleton() {
   return (
-    <div style={{ position: 'relative', width: '100%', height: '100%' }}>
+    <div className="relative h-full w-full">
       <Skeleton height="95vh" />
-      <div
-        style={{
-          position: 'absolute',
-          top: '30%',
-          left: '50%',
-          transform: 'translate(-50%, -50%) scale(3)',
-          zIndex: 10
-        }}
-      >
+      <div className="absolute top-[30%] left-1/2 z-10 -translate-x-1/2 -translate-y-1/2 scale-[3]">
         <Spinner size="lg" />
       </div>
-      <div
-        style={{
-          position: 'absolute',
-          top: '12px',
-          left: '12px',
-          zIndex: 10
-        }}
-      >
-        <Skeleton
-          height="48px"
-          width="90px"
-          style={{
-            borderRadius: 'var(--radius-3)',
-            boxShadow: 'var(--shadow-3)'
-          }}
-        />
+      <div className="absolute top-[12px] left-[12px] z-10">
+        <Skeleton height="48px" width="90px" className="rounded-lg shadow-lg" />
       </div>
     </div>
   )
@@ -361,12 +339,5 @@ function PartsSkeleton() {
 }
 
 function CardSkeleton() {
-  return (
-    <Skeleton
-      style={{
-        height: '160px',
-        borderRadius: 'var(--radius-3)'
-      }}
-    />
-  )
+  return <Skeleton className="h-[160px] rounded-lg" />
 }

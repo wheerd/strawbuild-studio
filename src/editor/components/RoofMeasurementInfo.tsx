@@ -597,12 +597,12 @@ export function ConstructionSchematic({
     >
       <defs>
         <linearGradient id={marginBottomGradientId} x1="0" x2="0" y1="0" y2="1">
-          <stop offset="0%" stop-color="var(--color-background)" stop-opacity="0" />
-          <stop offset="90%" stop-color="var(--color-background)" stop-opacity="1" />
+          <stop offset="0%" stopColor="var(--color-background)" stopOpacity="0" />
+          <stop offset="90%" stopColor="var(--color-background)" stopOpacity="1" />
         </linearGradient>
         <linearGradient id={marginRightGradientId} x1="0" x2="1" y1="0" y2="0">
-          <stop offset="0%" stop-color="var(--color-background)" stop-opacity="0" />
-          <stop offset="90%" stop-color="var(--color-background)" stop-opacity="1" />
+          <stop offset="0%" stopColor="var(--color-background)" stopOpacity="0" />
+          <stop offset="90%" stopColor="var(--color-background)" stopOpacity="1" />
         </linearGradient>
         <path id={roofPathId} d={roofOutlinePath} />
         <clipPath id={roofClipId} clipPathUnits="userSpaceOnUse">
@@ -745,8 +745,7 @@ export function RoofMeasurementInfo(config: MeasurementDisplayConfig): React.JSX
       <HoverCardTrigger>
         <Button
           size="icon"
-          style={{ cursor: 'help' }}
-          className="rounded-full"
+          className="cursor-help rounded-full"
           title={t($ => $.measurements.measurements)}
           variant="ghost"
         >

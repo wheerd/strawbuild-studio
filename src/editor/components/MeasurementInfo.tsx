@@ -851,16 +851,16 @@ e | y +--------------+ s | Floor top layers                 }
     >
       <defs>
         <linearGradient id={marginTopGradientId} x1="0" x2="0" y1="0" y2="1">
-          <stop offset="10%" stop-color="var(--color-background)" stop-opacity="1" />
-          <stop offset="100%" stop-color="var(--color-background)" stop-opacity="0" />
+          <stop offset="10%" stopColor="var(--color-background)" stopOpacity="1" />
+          <stop offset="100%" stopColor="var(--color-background)" stopOpacity="0" />
         </linearGradient>
         <linearGradient id={marginBottomGradientId} x1="0" x2="0" y1="0" y2="1">
-          <stop offset="0%" stop-color="var(--color-background)" stop-opacity="0" />
-          <stop offset="90%" stop-color="var(--color-background)" stop-opacity="1" />
+          <stop offset="0%" stopColor="var(--color-background)" stopOpacity="0" />
+          <stop offset="90%" stopColor="var(--color-background)" stopOpacity="1" />
         </linearGradient>
         <linearGradient id={marginRightGradientId} x1="0" x2="1" y1="0" y2="0">
-          <stop offset="0%" stop-color="var(--color-background)" stop-opacity="0" />
-          <stop offset="90%" stop-color="var(--color-background)" stop-opacity="1" />
+          <stop offset="0%" stopColor="var(--color-background)" stopOpacity="0" />
+          <stop offset="90%" stopColor="var(--color-background)" stopOpacity="1" />
         </linearGradient>
         <path id={upperFloorPathId} d={upperFloorOutlinePath} />
         <clipPath id={upperFloorClipId} clipPathUnits="userSpaceOnUse">
@@ -976,8 +976,7 @@ export function MeasurementInfo(config: MeasurementDisplayConfig): React.JSX.Ele
       <HoverCard.Trigger asChild>
         <Button
           size="icon-sm"
-          style={{ cursor: 'help' }}
-          className="h-6 w-6 rounded-full text-gray-500"
+          className="h-6 w-6 cursor-help rounded-full text-gray-500"
           title={t($ => $.measurements.measurements)}
           variant="ghost"
         >

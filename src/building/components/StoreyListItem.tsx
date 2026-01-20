@@ -160,7 +160,7 @@ export function StoreyListItem({
             onBlur={handleNameSave}
             onKeyDown={handleKeyDown}
             placeholder={t($ => $.storeys.floorName)}
-            style={{ minWidth: '150px', flexGrow: 1 }}
+            className="min-w-[150px] flex-grow"
           >
             <TextField.Input ref={nameFieldRef} required />
           </TextField.Root>

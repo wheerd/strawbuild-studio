@@ -152,16 +152,9 @@ export function MaterialSelect({
                 <div className="flex items-center gap-2">
                   <div
                     style={{
-                      width: '16px',
-                      height: '16px',
-                      backgroundColor: material.color,
-                      borderRadius: '2px',
-                      border: '1px solid var(--color-gray-700)',
-                      flexShrink: 0,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center'
+                      backgroundColor: material.color
                     }}
+                    className="flex h-[16px] w-[16px] shrink-0 items-center justify-center rounded-[2px] border border-gray-700"
                   >
                     <Icon
                       width="12"

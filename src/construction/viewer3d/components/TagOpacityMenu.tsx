@@ -87,7 +87,7 @@ export function TagOpacityMenu({ model }: TagOpacityMenuProps): React.JSX.Elemen
     if (opacity === 1.0) {
       return <EyeOpenIcon />
     } else if (opacity === 0.5) {
-      return <EyeOpenIcon style={{ opacity: 0.5 }} />
+      return <EyeOpenIcon className="opacity-50" />
     } else {
       return <EyeClosedIcon />
     }
@@ -98,7 +98,7 @@ export function TagOpacityMenu({ model }: TagOpacityMenuProps): React.JSX.Elemen
       case 'visible':
         return <EyeOpenIcon />
       case 'partial':
-        return <EyeOpenIcon style={{ opacity: 0.5 }} />
+        return <EyeOpenIcon className="opacity-50" />
       case 'hidden':
         return <EyeClosedIcon />
     }

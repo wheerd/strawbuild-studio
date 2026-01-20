@@ -122,7 +122,7 @@ export function WallPostInspector({ postId }: { postId: WallPostId }): React.JSX
             max={500}
             step={10}
             size="sm"
-            style={{ width: '80px' }}
+            className="w-20"
           />
 
           {/* Thickness Label */}
@@ -141,7 +141,7 @@ export function WallPostInspector({ postId }: { postId: WallPostId }): React.JSX
             max={1000}
             step={10}
             size="sm"
-            style={{ width: '80px' }}
+            className="w-20"
           />
         </div>
       </div>

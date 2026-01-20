@@ -729,7 +729,7 @@ export function RoofAssemblyConfigContent({ initialSelectionId }: RoofAssemblyCo
   }, [resetRoofAssembliesToDefaults, selectedAssemblyId, roofAssemblies])
 
   return (
-    <div className="flex flex-col gap-4" style={{ width: '100%' }}>
+    <div className="flex w-full flex-col gap-4">
       {/* Selector + Actions */}
       <div className="flex flex-col gap-2">
         <div className="grid grid-cols-2 gap-2">

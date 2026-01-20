@@ -90,7 +90,7 @@ export function LShapedPresetDialog({ onConfirm, trigger }: PresetDialogProps): 
                     unit="m"
                     precision={3}
                     size="sm"
-                    style={{ width: '100%' }}
+                    className="w-full"
                   />
                 </div>
 
@@ -107,7 +107,7 @@ export function LShapedPresetDialog({ onConfirm, trigger }: PresetDialogProps): 
                     unit="m"
                     precision={3}
                     size="sm"
-                    style={{ width: '100%' }}
+                    className="w-full"
                   />
                 </div>
               </div>
@@ -133,7 +133,7 @@ export function LShapedPresetDialog({ onConfirm, trigger }: PresetDialogProps): 
                     unit="m"
                     precision={3}
                     size="sm"
-                    style={{ width: '100%' }}
+                    className="w-full"
                   />
                 </div>
 
@@ -151,7 +151,7 @@ export function LShapedPresetDialog({ onConfirm, trigger }: PresetDialogProps): 
                     unit="m"
                     precision={3}
                     size="sm"
-                    style={{ width: '100%' }}
+                    className="w-full"
                   />
                 </div>
               </div>
@@ -204,7 +204,7 @@ export function LShapedPresetDialog({ onConfirm, trigger }: PresetDialogProps): 
                   step={10}
                   unit="cm"
                   size="sm"
-                  style={{ width: '100%' }}
+                  className="w-full"
                 />
               </div>
 
@@ -290,7 +290,7 @@ export function LShapedPresetDialog({ onConfirm, trigger }: PresetDialogProps): 
                 referenceSide={config.referenceSide}
               />
             ) : (
-              <div className="flex items-center justify-center" style={{ height: '240px' }}>
+              <div className="flex h-[240px] items-center justify-center">
                 <span className="text-sm text-red-900">{t($ => $.presetDialogs.lShaped.invalidConfig)}</span>
               </div>
             )}

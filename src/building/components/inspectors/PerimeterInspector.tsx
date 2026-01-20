@@ -89,7 +89,7 @@ function detectMixedRingBeams(
 function MixedStateIndicator({ tooltip }: { tooltip: string }) {
   return (
     <Tooltip content={tooltip}>
-      <ExclamationTriangleIcon width={14} height={14} style={{ color: 'var(--color-orange-900)' }} />
+      <ExclamationTriangleIcon className="text-orange-900" width={14} height={14} />
     </Tooltip>
   )
 }
@@ -320,7 +320,7 @@ export function PerimeterInspector({ selectedId }: PerimeterInspectorProps): Rea
             step={10}
             size="sm"
             unit="cm"
-            style={{ width: '5rem' }}
+            className="w-[5rem]"
           />
         </div>
       </div>

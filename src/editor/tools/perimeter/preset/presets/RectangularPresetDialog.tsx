@@ -86,7 +86,7 @@ export function RectangularPresetDialog({ onConfirm, trigger }: PresetDialogProp
                   unit="m"
                   precision={3}
                   size="sm"
-                  style={{ width: '100%' }}
+                  className="w-full"
                 />
               </div>
 
@@ -103,7 +103,7 @@ export function RectangularPresetDialog({ onConfirm, trigger }: PresetDialogProp
                   unit="m"
                   precision={3}
                   size="sm"
-                  style={{ width: '100%' }}
+                  className="w-full"
                 />
               </div>
 
@@ -123,7 +123,7 @@ export function RectangularPresetDialog({ onConfirm, trigger }: PresetDialogProp
                   step={10}
                   unit="cm"
                   size="sm"
-                  style={{ width: '100%' }}
+                  className="w-full"
                 />
               </div>
 

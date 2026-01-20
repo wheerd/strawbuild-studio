@@ -339,7 +339,7 @@ function AddOpeningToolInspectorImpl({ tool }: AddOpeningToolInspectorImplProps)
           max={5000}
           step={100}
           size="sm"
-          style={{ width: '80px' }}
+          className="w-20"
           onFocus={() => {
             setFocusedField('width')
           }}
@@ -364,7 +364,7 @@ function AddOpeningToolInspectorImpl({ tool }: AddOpeningToolInspectorImplProps)
           max={4000}
           step={100}
           size="sm"
-          style={{ width: '80px' }}
+          className="w-20"
           onFocus={() => {
             setFocusedField('height')
           }}
@@ -389,7 +389,7 @@ function AddOpeningToolInspectorImpl({ tool }: AddOpeningToolInspectorImplProps)
           max={2000}
           step={100}
           size="sm"
-          style={{ width: '80px' }}
+          className="w-20"
           onFocus={() => {
             setFocusedField('sillHeight')
           }}
@@ -416,7 +416,7 @@ function AddOpeningToolInspectorImpl({ tool }: AddOpeningToolInspectorImplProps)
           max={5000}
           step={100}
           size="sm"
-          style={{ width: '80px' }}
+          className="w-20"
           onFocus={() => {
             setFocusedField('topHeight')
           }}

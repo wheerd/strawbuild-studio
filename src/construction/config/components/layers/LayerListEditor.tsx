@@ -298,7 +298,7 @@ function LayerCard({
   }
 
   return (
-    <Card variant="soft" style={{ padding: '0.75rem' }}>
+    <Card variant="soft" className="p-3">
       <div className="flex flex-col gap-2">
         <div className="grid grid-cols-[auto_1fr_auto_auto_auto] items-center gap-1">
           <LayerTypeIcon type={layer.type} />
@@ -325,7 +325,7 @@ function LayerCard({
             }}
             unit="mm"
             size="sm"
-            style={{ width: '10em' }}
+            className="w-[10em]"
           >
             <TextField.Slot title={t($ => $.common.thickness)} side="left" className="pr-0 pl-1">
               <HeightIcon />
@@ -463,7 +463,7 @@ function StripedLayerFields({
           }}
           unit="mm"
           size="sm"
-          style={{ width: '8em' }}
+          className="w-[8em]"
         >
           <TextField.Slot title={t($ => $.common.width)} side="left" className="pr-0 pl-1">
             <WidthIcon />
@@ -490,7 +490,7 @@ function StripedLayerFields({
           }}
           unit="mm"
           size="sm"
-          style={{ width: '8em' }}
+          className="w-[8em]"
         >
           <TextField.Slot title={t($ => $.common.width)} side="left" className="pr-0 pl-1">
             <WidthIcon />

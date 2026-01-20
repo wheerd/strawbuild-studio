@@ -89,7 +89,7 @@ export function TagVisibilityMenu({ model }: TagVisibilityMenuProps): React.JSX.
       case 'visible':
         return <EyeOpenIcon />
       case 'partial':
-        return <EyeOpenIcon style={{ opacity: 0.5 }} />
+        return <EyeOpenIcon className="opacity-50" />
       case 'hidden':
         return <EyeClosedIcon />
     }

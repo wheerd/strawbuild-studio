@@ -61,27 +61,15 @@ export function ConstructionViewer3DModal({
           {modelPromise ? (
             <Suspense
               fallback={
-                <div style={{ position: 'relative', width: '100%', height: '100%' }}>
+                <div className="relative h-full w-full">
                   <Skeleton height="100%" />
                   <div
-                    style={{
-                      position: 'absolute',
-                      top: '50%',
-                      left: '50%',
-                      transform: 'translate(-50%, -50%) scale(3)',
-                      zIndex: 10
-                    }}
+                    className="absolute top-1/2 left-1/2 z-10 scale-[3]"
+                    style={{ transform: 'translate(-50%, -50%)' }}
                   >
                     <Spinner size="lg" />
                   </div>
-                  <div
-                    style={{
-                      position: 'absolute',
-                      top: '12px',
-                      left: '12px',
-                      zIndex: 10
-                    }}
-                  >
+                  <div className="absolute top-[12px] left-[12px] z-10">
                     <Skeleton
                       height="48px"
                       width="90px"

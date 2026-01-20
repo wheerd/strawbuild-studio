@@ -65,7 +65,7 @@ export function WelcomeModal({ isOpen, mode, onAccept, trigger }: WelcomeModalPr
               <div className="flex flex-col gap-2">
                 <h3>{t($ => $.keyFeatures.title)}</h3>
                 <div className="text-sm">
-                  <ul style={{ listStyleType: 'disc', margin: 0, paddingLeft: '1.5rem' }}>
+                  <ul className="m-0 list-disc pl-6">
                     {(
                       t($ => $.keyFeatures.items, {
                         returnObjects: true
@@ -80,7 +80,7 @@ export function WelcomeModal({ isOpen, mode, onAccept, trigger }: WelcomeModalPr
               <div className="flex flex-col gap-2">
                 <h3>{t($ => $.plannedFeatures.title)}</h3>
                 <div className="text-sm">
-                  <ul style={{ listStyleType: 'disc', margin: 0, paddingLeft: '1.5rem' }}>
+                  <ul className="m-0 list-disc pl-6">
                     {(
                       t($ => $.plannedFeatures.items, {
                         returnObjects: true
@@ -118,7 +118,7 @@ export function WelcomeModal({ isOpen, mode, onAccept, trigger }: WelcomeModalPr
                 <h3>{t($ => $.localStorage.title)}</h3>
                 <div className="text-sm">
                   {t($ => $.localStorage.description)}
-                  <ul style={{ margin: '0.5rem 0 0 0', paddingLeft: '1.5rem' }}>
+                  <ul className="mt-2 pl-6">
                     {(
                       t($ => $.localStorage.items, {
                         returnObjects: true
@@ -154,7 +154,7 @@ export function WelcomeModal({ isOpen, mode, onAccept, trigger }: WelcomeModalPr
             </div>
 
             <div className="flex flex-col items-center gap-2">
-              <Button size="lg" onClick={onAccept} style={{ width: '100%' }}>
+              <Button size="lg" onClick={onAccept} className="w-full">
                 {t($ => $.continueButton)}
               </Button>
               {isFirstVisit && <span className="flex items-center text-sm">{t($ => $.reviewInfo)}</span>}

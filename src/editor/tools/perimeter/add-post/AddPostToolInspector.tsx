@@ -200,7 +200,7 @@ function AddPostToolInspectorImpl({ tool }: AddPostToolInspectorImplProps): Reac
           max={500}
           step={10}
           size="sm"
-          style={{ width: '80px' }}
+          className="w-20"
         />
 
         {/* Thickness Label */}
@@ -219,7 +219,7 @@ function AddPostToolInspectorImpl({ tool }: AddPostToolInspectorImplProps): Reac
           max={1000}
           step={10}
           size="sm"
-          style={{ width: '80px' }}
+          className="w-20"
         />
       </div>
       {/* Material Selection */}

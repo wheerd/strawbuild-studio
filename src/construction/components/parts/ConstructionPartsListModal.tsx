@@ -151,18 +151,11 @@ function PartsSkeleton() {
     <div className="flex flex-col gap-4">
       <CardSkeleton />
       <CardSkeleton />
-      <Spinner style={{ alignSelf: 'center' }} />
+      <Spinner className="self-center" />
     </div>
   )
 }
 
 function CardSkeleton() {
-  return (
-    <Skeleton
-      style={{
-        height: '160px',
-        borderRadius: 'var(--radius-3)'
-      }}
-    />
-  )
+  return <Skeleton className="h-[160px] rounded-lg" />
 }

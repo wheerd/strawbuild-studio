@@ -271,7 +271,7 @@ export function PlanImportModal({
                   min={1}
                   max={1000_000}
                   precision={3}
-                  style={{ width: '7em' }}
+                  className="w-[7em]"
                 />
               </div>
 

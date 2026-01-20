@@ -60,7 +60,7 @@ export function RoofOverhangInspector({ overhangId }: { overhangId: RoofOverhang
             step={10}
             size="sm"
             unit="cm"
-            style={{ width: '7em' }}
+            className="w-[7em]"
           />
         </div>
 

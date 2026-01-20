@@ -104,7 +104,7 @@ export function PerimeterWallInspector({ wallId }: { wallId: PerimeterWallId }):
           step={10}
           size="sm"
           unit="cm"
-          style={{ width: '5rem' }}
+          className="w-[5rem]"
         />
 
         {/* Base Ring Beam */}

@@ -17,7 +17,7 @@ export const IssueDescriptionPanel = ({ modelPromise }: IssueDescriptionPanelPro
   const { t } = useTranslation('construction')
 
   return (
-    <div className="flex w-full flex-col gap-2 py-2" style={{ maxHeight: '120px', overflowY: 'auto' }}>
+    <div className="flex max-h-[120px] w-full flex-col gap-2 overflow-y-auto py-2">
       {model ? (
         <>
           {model.errors.length > 0 && (

@@ -263,15 +263,9 @@ function MaterialTypeIndicator({ material, size = 18 }: { material: Material; si
       style={{
         width: `${size}px`,
         height: `${size}px`,
-        backgroundColor: material.color,
-        borderRadius: '4px',
-        border: '1px solid var(--color-gray-700)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        flexShrink: 0,
-        margin: '0 auto'
+        backgroundColor: material.color
       }}
+      className="mx-auto flex shrink-0 items-center justify-center rounded-[4px] border border-gray-700"
       aria-hidden
     >
       <Icon

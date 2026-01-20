@@ -58,7 +58,7 @@ function detectMixedOverhangs(overhangs: RoofOverhang[]): MixedState<Length> {
 function MixedStateIndicator({ tooltip }: { tooltip: string }) {
   return (
     <Tooltip content={tooltip}>
-      <ExclamationTriangleIcon width={14} height={14} style={{ color: 'var(--color-orange-900)' }} />
+      <ExclamationTriangleIcon className="text-orange-900" width={14} height={14} />
     </Tooltip>
   )
 }
@@ -215,7 +215,7 @@ export function RoofInspector({ roofId }: RoofInspectorProps): React.JSX.Element
             max={10000}
             size="sm"
             unit="cm"
-            style={{ width: '7em' }}
+            className="w-[7em]"
           />
         </div>
 
@@ -238,7 +238,7 @@ export function RoofInspector({ roofId }: RoofInspectorProps): React.JSX.Element
             step={10}
             size="sm"
             unit="cm"
-            style={{ width: '7em' }}
+            className="w-[7em]"
           />
         </div>
 

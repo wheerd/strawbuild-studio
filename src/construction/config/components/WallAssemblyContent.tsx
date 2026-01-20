@@ -287,7 +287,7 @@ function TriangularBattensConfigSection({
       <div className="flex items-center gap-2">
         <h2>{t($ => $.walls.triangularBattensConfiguration)}</h2>
         <Tooltip content={t($ => $.walls.triangularBattensTooltip)}>
-          <InfoCircledIcon style={{ cursor: 'help' }} />
+          <InfoCircledIcon className="cursor-help" />
         </Tooltip>
       </div>
 
@@ -1087,7 +1087,7 @@ export function WallAssemblyContent({ initialSelectionId }: WallAssemblyContentP
   }, [resetWallAssembliesToDefaults, selectedAssemblyId, wallAssemblies])
 
   return (
-    <div className="flex flex-col gap-4" style={{ width: '100%' }}>
+    <div className="flex w-full flex-col gap-4">
       {/* Selector + Actions */}
       <div className="flex flex-col gap-2">
         <div className="grid grid-cols-2 gap-2">

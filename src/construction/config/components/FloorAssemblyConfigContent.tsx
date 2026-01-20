@@ -559,7 +559,7 @@ function JoistConfigFields({
             <span className="text-base font-medium">{t($ => $.floors.labels.beamHeight)}</span>
           </Label.Root>
           <Tooltip content={t($ => $.floors.tips.beamHeight)}>
-            <Button size="icon" style={{ cursor: 'help' }} className="rounded-full" variant="ghost">
+            <Button size="icon" className="cursor-help rounded-full" variant="ghost">
               <InfoCircledIcon width={12} height={12} />
             </Button>
           </Tooltip>
@@ -748,7 +748,7 @@ function FilledConfigFields({
             <span className="text-base font-medium">{t($ => $.floors.labels.constructionHeight)}</span>
           </Label.Root>
           <Tooltip content={t($ => $.floors.tips.constructionHeight)}>
-            <Button size="icon" style={{ cursor: 'help' }} className="rounded-full" variant="ghost">
+            <Button size="icon" className="cursor-help rounded-full" variant="ghost">
               <InfoCircledIcon width={12} height={12} />
             </Button>
           </Tooltip>
@@ -933,7 +933,7 @@ function FilledConfigFields({
             <span className="text-base font-medium">{t($ => $.common.strawMaterialOverride)}</span>
           </Label.Root>
           <Tooltip content={t($ => $.floors.tips.strawMaterialOverride)}>
-            <Button size="icon" style={{ cursor: 'help' }} className="rounded-full" variant="ghost">
+            <Button size="icon" className="cursor-help rounded-full" variant="ghost">
               <InfoCircledIcon width={12} height={12} />
             </Button>
           </Tooltip>
@@ -986,7 +986,7 @@ function HangingJoistConfigFields({
             <span className="text-base font-medium">{t($ => $.common.height)}</span>
           </Label.Root>
           <Tooltip content={t($ => $.floors.tips.joistHeight)}>
-            <Button size="icon" style={{ cursor: 'help' }} className="rounded-full" variant="ghost">
+            <Button size="icon" className="cursor-help rounded-full" variant="ghost">
               <InfoCircledIcon width={12} height={12} />
             </Button>
           </Tooltip>
@@ -1029,7 +1029,7 @@ function HangingJoistConfigFields({
             <span className="text-base font-medium">{t($ => $.floors.labels.verticalOffset)}</span>
           </Label.Root>
           <Tooltip content={t($ => $.floors.tips.verticalOffset)}>
-            <Button size="icon" style={{ cursor: 'help' }} className="rounded-full" variant="ghost">
+            <Button size="icon" className="cursor-help rounded-full" variant="ghost">
               <InfoCircledIcon width={12} height={12} />
             </Button>
           </Tooltip>

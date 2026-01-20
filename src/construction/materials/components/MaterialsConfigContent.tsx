@@ -183,7 +183,7 @@ export function MaterialsConfigContent({ initialSelectionId }: MaterialsConfigCo
 
   const nameKey = selectedMaterial?.nameKey
   return (
-    <div className="flex flex-col gap-4" style={{ width: '100%' }}>
+    <div className="flex w-full flex-col gap-4">
       <div className="grid grid-cols-2 gap-2">
         {/* Selector + Actions */}
         <div className="flex w-full items-center gap-2">
@@ -375,7 +375,7 @@ export function MaterialsConfigContent({ initialSelectionId }: MaterialsConfigCo
               onChange={e => {
                 handleUpdate({ color: e.target.value })
               }}
-              style={{ width: '60px', height: '24px', cursor: 'pointer' }}
+              className="h-[24px] w-[60px] cursor-pointer"
             />
             <Label.Root>
               <span className="text-base font-medium">{t($ => $.common.density)}</span>
@@ -543,11 +543,10 @@ function DimensionalMaterialFields({
                   <Button
                     size="icon-xs"
                     variant="ghost"
-                    className=""
+                    className="cursor-pointer"
                     onClick={() => {
                       handleRemoveCrossSection(section)
                     }}
-                    style={{ cursor: 'pointer' }}
                     aria-label={t($ => $.materials.removeCrossSection)}
                   >
                     <Cross2Icon width="10" height="10" />
@@ -603,11 +602,10 @@ function DimensionalMaterialFields({
                   <Button
                     size="icon-xs"
                     variant="ghost"
-                    className=""
+                    className="cursor-pointer"
                     onClick={() => {
                       handleRemoveLength(length)
                     }}
-                    style={{ cursor: 'pointer' }}
                     aria-label={t($ => $.materials.removeStockLength)}
                   >
                     <Cross2Icon width="10" height="10" />
@@ -630,7 +628,7 @@ function DimensionalMaterialFields({
             value={newLengthInput}
             onChange={setNewLengthInput}
             unit="cm"
-            style={{ width: '8em' }}
+            className="w-[8em]"
             aria-label={t($ => $.materials.stockLengthInput)}
           />
           <Button
@@ -727,11 +725,10 @@ function SheetMaterialFields({
                   <Button
                     size="icon-xs"
                     variant="ghost"
-                    className=""
+                    className="cursor-pointer"
                     onClick={() => {
                       handleRemoveSize(size)
                     }}
-                    style={{ cursor: 'pointer' }}
                     aria-label={t($ => $.materials.removeSheetSize)}
                   >
                     <Cross2Icon width="10" height="10" />
@@ -782,11 +779,10 @@ function SheetMaterialFields({
                   <Button
                     size="icon-xs"
                     variant="ghost"
-                    className=""
+                    className="cursor-pointer"
                     onClick={() => {
                       handleRemoveThickness(thickness)
                     }}
-                    style={{ cursor: 'pointer' }}
                     aria-label={t($ => $.materials.removeThickness)}
                   >
                     <Cross2Icon width="10" height="10" />
@@ -809,7 +805,7 @@ function SheetMaterialFields({
             value={newThickness}
             onChange={setNewThickness}
             unit="mm"
-            style={{ width: '8em' }}
+            className="w-[8em]"
             aria-label={t($ => $.materials.thicknessInput)}
           />
           <Button
@@ -889,11 +885,10 @@ function VolumeMaterialFields({
                   <Button
                     size="icon-xs"
                     variant="ghost"
-                    className=""
+                    className="cursor-pointer"
                     onClick={() => {
                       handleRemoveVolume(volume)
                     }}
-                    style={{ cursor: 'pointer' }}
                     aria-label={t($ => $.materials.removeVolume)}
                   >
                     <Cross2Icon width="10" height="10" />
@@ -912,7 +907,7 @@ function VolumeMaterialFields({
           </div>
         </div>
 
-        <div className="flex flex-col items-end gap-2" style={{ minWidth: '14em' }}>
+        <div className="flex min-w-[14em] flex-col items-end gap-2">
           <ToggleGroup
             type="single"
             variant="outline"
@@ -932,7 +927,7 @@ function VolumeMaterialFields({
               value={newVolumeInput}
               onChange={setNewVolumeInput}
               unit={volumeUnit}
-              style={{ width: '8em' }}
+              className="w-[8em]"
               aria-label={t($ => $.materials.volumeInput)}
             />
             <Button

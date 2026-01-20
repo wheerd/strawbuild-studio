@@ -191,7 +191,7 @@ export function OpeningInspector({ openingId }: { openingId: OpeningId }): React
           <div className="flex items-center gap-1">
             <span className="text-sm font-medium">{t($ => $.opening.type)}</span>
             <Tooltip content={t($ => $.opening.typeTooltip)}>
-              <InfoCircledIcon cursor="help" width={12} height={12} style={{ color: 'var(--color-gray-900)' }} />
+              <InfoCircledIcon className="cursor-help text-gray-900" width={12} height={12} />
             </Tooltip>
           </div>
           <ToggleGroup
@@ -241,7 +241,7 @@ export function OpeningInspector({ openingId }: { openingId: OpeningId }): React
                   : t($ => $.opening.dimensionModeFinishedTooltip)
               }
             >
-              <InfoCircledIcon cursor="help" width={12} height={12} style={{ color: 'var(--color-gray-900)' }} />
+              <InfoCircledIcon className="cursor-help text-gray-900" width={12} height={12} />
             </Tooltip>
           </div>
           <ToggleGroup
@@ -283,7 +283,7 @@ export function OpeningInspector({ openingId }: { openingId: OpeningId }): React
             max={5000}
             step={100}
             size="sm"
-            style={{ width: '80px' }}
+            className="w-20"
             onFocus={() => {
               setFocusedField('width')
             }}
@@ -309,7 +309,7 @@ export function OpeningInspector({ openingId }: { openingId: OpeningId }): React
             max={4000}
             step={100}
             size="sm"
-            style={{ width: '80px' }}
+            className="w-20"
             onFocus={() => {
               setFocusedField('height')
             }}
@@ -337,7 +337,7 @@ export function OpeningInspector({ openingId }: { openingId: OpeningId }): React
             max={2000}
             step={100}
             size="sm"
-            style={{ width: '80px' }}
+            className="w-20"
             onFocus={() => {
               setFocusedField('sillHeight')
             }}
@@ -365,7 +365,7 @@ export function OpeningInspector({ openingId }: { openingId: OpeningId }): React
             max={5000}
             step={100}
             size="sm"
-            style={{ width: '80px' }}
+            className="w-20"
             onFocus={() => {
               setFocusedField('topHeight')
             }}
@@ -382,7 +382,7 @@ export function OpeningInspector({ openingId }: { openingId: OpeningId }): React
             <span className="text-sm font-medium">{t($ => $.opening.openingAssembly)}</span>
           </Label.Root>
           <Tooltip content={t($ => $.opening.openingAssemblyTooltip)}>
-            <InfoCircledIcon cursor="help" width={12} height={12} style={{ color: 'var(--color-gray-900)' }} />
+            <InfoCircledIcon className="cursor-help text-gray-900" width={12} height={12} />
           </Tooltip>
         </div>
         <OpeningAssemblySelectWithEdit
