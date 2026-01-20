@@ -443,6 +443,7 @@
     "defaults": {
       "concreteWall": "Concrete Wall",
       "defaultModule": "Default Module",
+      "ecococonModules": "Ecococon Modules",
       "standardInfill": "Standard Infill",
       "strawhengeModule": "Strawhenge Module"
     },
@@ -470,6 +471,7 @@
     "newName_infill": "New Infill Assembly",
     "newName_modules": "New Modules Assembly",
     "newName_nonStrawbale": "New Non-Strawbale Assembly",
+    "newName_prefab": "New Prefab Modules Assembly",
     "newName_strawhenge": "New Strawhenge Assembly",
     "noInfillMaterial": "No infill material",
     "noInsideLayers": "No inside layers defined",
@@ -483,18 +485,30 @@
     "postType": "Post Type",
     "postTypeDouble": "Double",
     "postTypeFull": "Full",
+    "prefab": {
+      "defaultMaterial": "Default Material",
+      "fallbackMaterial": "Fallback Material",
+      "inclinedMaterial": "Inclined Material",
+      "lintelMaterial": "Lintel Material",
+      "preferEqualWidth": "Prefer equal module widths",
+      "sillMaterial": "Sill Material",
+      "useDefaultMaterial": "Use default material"
+    },
+    "prefabModulesConfiguration": "Prefab Modules Configuration",
     "resetConfirm": "Are you sure you want to reset default wall assemblies? This will restore the original default assemblies but keep any custom assemblies you've created. This action cannot be undone.",
     "resetTitle": "Reset Wall Assemblies",
     "selectDefault": "Select default...",
     "spacerCount": "Spacer Count",
     "spacerMaterial": "Spacer Material",
     "spacerSize": "Spacer Size",
+    "targetWidth": "Target Width",
     "triangularBattensConfiguration": "Triangular Battens",
     "triangularBattensTooltip": "Triangular battens are placed in the corners between posts and strawbales to prevent them from slipping out. Not needed when there is planking to hold the bales.",
     "types": {
       "infill": "Infill",
       "modules": "Modules",
       "non-strawbale": "Non-Strawbale",
+      "prefab-modules": "Prefab Modules",
       "strawhenge": "Strawhenge"
     },
     "unclearTotalThickness": "? + {{layerThickness, length}} (Layers)",

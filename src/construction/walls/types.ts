@@ -19,7 +19,7 @@ export interface WallAssembly {
   get tag(): Tag
 }
 
-export type WallAssemblyType = 'infill' | 'strawhenge' | 'non-strawbale' | 'modules'
+export type WallAssemblyType = 'infill' | 'strawhenge' | 'non-strawbale' | 'modules' | 'prefab-modules'
 
 export interface WallBaseConfig {
   type: WallAssemblyType
@@ -65,7 +65,24 @@ export interface NonStrawbaleWallConfig extends WallBaseConfig {
   material: MaterialId
 }
 
-export type WallConfig = InfillWallConfig | ModulesWallConfig | StrawhengeWallConfig | NonStrawbaleWallConfig
+export interface PrefabModulesWallConfig extends WallBaseConfig {
+  type: 'prefab-modules'
+  defaultMaterial: MaterialId
+  fallbackMaterial: MaterialId
+  inclinedMaterial: MaterialId
+  lintelMaterial?: MaterialId
+  sillMaterial?: MaterialId
+  maxWidth: Length
+  targetWidth: Length
+  preferEqualWidths: boolean
+}
+
+export type WallConfig =
+  | InfillWallConfig
+  | ModulesWallConfig
+  | StrawhengeWallConfig
+  | NonStrawbaleWallConfig
+  | PrefabModulesWallConfig
 
 export type InfillMethod = (area: WallConstructionArea) => Generator<ConstructionResult>
 
@@ -144,6 +161,15 @@ const validateNonStrawbaleWallConfig = (_config: NonStrawbaleWallConfig): void =
   // No validation needed
 }
 
+const validatePrefabModulesWallConfig = (config: PrefabModulesWallConfig): void => {
+  ensurePositive(config.maxWidth, 'Maximum width must be greater than 0')
+  ensurePositive(config.targetWidth, 'Target width must be greater than 0')
+
+  if (config.maxWidth < config.targetWidth) {
+    throw new Error('Maximum width must not be less than target width')
+  }
+}
+
 export const validateWallConfig = (config: WallConfig): void => {
   validateLayers(config.layers)
 
@@ -159,6 +185,9 @@ export const validateWallConfig = (config: WallConfig): void => {
       break
     case 'non-strawbale':
       validateNonStrawbaleWallConfig(config)
+      break
+    case 'prefab-modules':
+      validatePrefabModulesWallConfig(config)
       break
     default:
       assertUnreachable(config, 'Invalid wall assembly type')

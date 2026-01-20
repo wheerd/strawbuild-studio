@@ -159,12 +159,17 @@ export const TAG_MODULE_CONSTRUCTION: PredefinedTag = {
 }
 
 export const TAG_STRAWHENGE_CONSTRUCTION: PredefinedTag = {
-  id: 'wall-assembly_strawhenge',
+  id: 'wall-assembly_modules',
   category: 'wall-assembly'
 }
 
 export const TAG_NON_STRAWBALE_CONSTRUCTION: PredefinedTag = {
   id: 'wall-assembly_non-strawbale',
+  category: 'wall-assembly'
+}
+
+export const TAG_PREFAB_MODULE_CONSTRUCTION: PredefinedTag = {
+  id: 'wall-assembly_prefab-modules',
   category: 'wall-assembly'
 }
 

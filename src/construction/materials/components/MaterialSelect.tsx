@@ -18,6 +18,7 @@ export interface MaterialSelectProps {
   allowEmpty?: boolean
   emptyLabel?: string
   preferredTypes?: MaterialType[]
+  onlyTypes?: MaterialType[]
 }
 
 interface IconProps extends React.SVGAttributes<SVGElement> {
@@ -98,7 +99,8 @@ export function MaterialSelect({
   materials: materialsProp,
   allowEmpty = false,
   emptyLabel,
-  preferredTypes
+  preferredTypes,
+  onlyTypes
 }: MaterialSelectProps): React.JSX.Element {
   const { t: tConstruction } = useTranslation('construction')
   const { t } = useTranslation('config')
@@ -111,7 +113,14 @@ export function MaterialSelect({
     return nameKey ? t($ => $.materials.defaults[nameKey]) : material.name
   }
 
-  const sortedMaterials = [...materials].sort((a, b) => {
+  const filteredMaterials = [...materials].filter(material => {
+    if (onlyTypes && onlyTypes.length > 0) {
+      return onlyTypes.includes(material.type)
+    }
+    return true
+  })
+
+  const sortedMaterials = [...filteredMaterials].sort((a, b) => {
     if (a.type !== b.type) {
       if (preferredTypes) {
         const aIndex = preferredTypes.indexOf(a.type)
@@ -145,7 +154,7 @@ export function MaterialSelect({
             <span className="text-muted-foreground">{translatedEmptyLabel}</span>
           </Select.Item>
         )}
-        {materials.length === 0 ? (
+        {filteredMaterials.length === 0 ? (
           <Select.Item value="-" disabled>
             <span className="text-muted-foreground">{tConstruction($ => $.materialSelect.noMaterialsAvailable)}</span>
           </Select.Item>

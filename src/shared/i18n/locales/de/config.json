@@ -443,6 +443,7 @@
     "defaults": {
       "concreteWall": "Betonwand",
       "defaultModule": "Standard-Modul",
+      "ecococonModules": "Ecococon Module",
       "standardInfill": "Standard-Ausfachung",
       "strawhengeModule": "Strawhenge-Modul"
     },
@@ -470,6 +471,7 @@
     "newName_infill": "Neuer Ausfachungsaufbau",
     "newName_modules": "Neuer Modulaufbau",
     "newName_nonStrawbale": "Neuer Massiv-Aufbau",
+    "newName_prefab": "Neuer Fertigteilaufbau",
     "newName_strawhenge": "Neuer Strawhenge-Aufbau",
     "noInfillMaterial": "Kein Füllmaterial",
     "noInsideLayers": "Keine Innenschichten definiert",
@@ -483,18 +485,30 @@
     "postType": "Ständertyp",
     "postTypeDouble": "Doppelt",
     "postTypeFull": "Massiv",
+    "prefab": {
+      "defaultMaterial": "Standardmaterial",
+      "fallbackMaterial": "Ersatzmaterial",
+      "inclinedMaterial": "Geneigtes Material",
+      "lintelMaterial": "Sturzmaterial",
+      "preferEqualWidth": "Bevorzuge gleiche Modulbreite",
+      "sillMaterial": "Schwellenmaterial",
+      "useDefaultMaterial": "Standardmaterial verwenden"
+    },
+    "prefabModulesConfiguration": "Fertigteilkonfiguration",
     "resetConfirm": "Möchtest du die Standard-Wandaufbauten wirklich zurücksetzen? Dies stellt die ursprünglichen Standardaufbauten wieder her, behält aber alle benutzerdefinierten Aufbauten bei. Diese Aktion kann nicht rückgängig gemacht werden.",
     "resetTitle": "Wandaufbauten zurücksetzen",
     "selectDefault": "Standard auswählen...",
     "spacerCount": "Anzahl Abstandhalter",
     "spacerMaterial": "Abstandhaltermaterial",
     "spacerSize": "Abstandhaltergröße",
+    "targetWidth": "Zielbreite",
     "triangularBattensConfiguration": "Dreiecklatten",
     "triangularBattensTooltip": "Dreiecklatten werden in den Ecken zwischen Ständern und Ballen platziert, um zu verhindern, dass die Ballen rausfallen. Wenn Beplankung verwendet wird, sind die Leisten überflüssig.",
     "types": {
       "infill": "Ausfachung",
       "modules": "Module",
       "non-strawbale": "Massiv",
+      "prefab-modules": "Fertigteile",
       "strawhenge": "Strawhenge"
     },
     "unclearTotalThickness": "? + {{layerThickness, length}} (Schichten)",

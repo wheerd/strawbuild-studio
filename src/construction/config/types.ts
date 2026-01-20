@@ -25,6 +25,7 @@ import type {
   InfillWallConfig,
   ModulesWallConfig,
   NonStrawbaleWallConfig,
+  PrefabModulesWallConfig,
   StrawhengeWallConfig
 } from '@/construction/walls'
 
@@ -93,12 +94,14 @@ export type InfillWallAssemblyConfig = InfillWallConfig & WallAssemblyIdPart
 export type ModulesWallAssemblyConfig = ModulesWallConfig & WallAssemblyIdPart
 export type StrawhengeWallAssemblyConfig = StrawhengeWallConfig & WallAssemblyIdPart
 export type NonStrawbaleWallAssemblyConfig = NonStrawbaleWallConfig & WallAssemblyIdPart
+export type PrefabModulesWallAssemblyConfig = PrefabModulesWallConfig & WallAssemblyIdPart
 
 export type WallAssemblyConfig =
   | InfillWallAssemblyConfig
   | ModulesWallAssemblyConfig
   | StrawhengeWallAssemblyConfig
   | NonStrawbaleWallAssemblyConfig
+  | PrefabModulesWallAssemblyConfig
 
 // Ring beams
 

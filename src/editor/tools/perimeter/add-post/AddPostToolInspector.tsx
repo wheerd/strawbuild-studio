@@ -77,8 +77,9 @@ function AddPostToolInspectorImpl({ tool }: AddPostToolInspectorImplProps): Reac
         case 'modules':
           postConfig = assembly.infill.posts
           break
+        case 'prefab-modules':
         case 'non-strawbale':
-          // No post config for non-strawbale walls
+          // No post config for these wall types
           break
         default:
           assertUnreachable(assembly, 'Invalid wall assembly type')
