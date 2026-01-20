@@ -335,6 +335,11 @@ export const TAG_MODULE_WIDTH: PredefinedTag = {
   category: 'wall-measurement'
 }
 
+export const TAG_MODULE_HEIGHT: PredefinedTag = {
+  id: 'wall-measurement_module-height',
+  category: 'wall-measurement'
+}
+
 export const TAG_WALL_LENGTH_OUTSIDE: PredefinedTag = {
   id: 'finished-measurement_wall-length-outside',
   category: 'finished-measurement'

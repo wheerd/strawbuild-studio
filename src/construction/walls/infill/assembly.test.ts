@@ -203,7 +203,7 @@ describe('assembly.construct', () => {
         // Simulate calling opening construction if there are openings
         if (wall.entityIds.length > 0) {
           const openingArea = new WallConstructionArea(newVec3(1000, 30, 60), newVec3(800, 220, 900))
-          yield* infill(openingArea)
+          yield* infill(openingArea, 'sill')
         }
       }
     )
@@ -352,7 +352,7 @@ describe('assembly.construct', () => {
       const infillFn = mockSegmentedWallConstruction.mock.calls[0][4]
       expect(infillFn).toBeDefined()
 
-      const result = [...infillFn(area)]
+      const result = [...infillFn(area, 'sill')]
       expect(result.length).toBeGreaterThan(0)
     })
   })

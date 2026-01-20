@@ -902,6 +902,7 @@ interface Resources {
       "wall-assembly_strawhenge": "Type: Strawhenge",
       "wall-layer_inside": "Inside Wall Layers",
       "wall-layer_outside": "Outside Wall Layers",
+      "wall-measurement_module-height": "Module Height",
       "wall-measurement_module-width": "Module Width",
       "wall-measurement_opening-spacing": "Opening Spacing",
       "wall-measurement_post-spacing": "Post Spacing",

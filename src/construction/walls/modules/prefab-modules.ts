@@ -1,20 +1,21 @@
 import type { PerimeterWallWithGeometry } from '@/building/model'
 import { type ConstructionElement, createConstructionElement } from '@/construction/elements'
 import { WallConstructionArea } from '@/construction/geometry'
-import type { PrefabMaterial } from '@/construction/materials/material'
+import type { MaterialId, PrefabMaterial } from '@/construction/materials/material'
 import { getMaterialsActions } from '@/construction/materials/store'
+import { yieldMeasurementFromArea } from '@/construction/measurements'
 import type { ConstructionModel } from '@/construction/model'
 import { mergeModels } from '@/construction/model'
 import type { ConstructionResult } from '@/construction/results'
 import { resultsToModel, yieldElement, yieldError } from '@/construction/results'
 import { createCuboid, createElementFromArea } from '@/construction/shapes'
 import type { StoreyContext } from '@/construction/storeys/context'
-import { TAG_INFILL_CONSTRUCTION, TAG_MODULE } from '@/construction/tags'
+import { TAG_INFILL_CONSTRUCTION, TAG_MODULE, TAG_MODULE_HEIGHT, TAG_MODULE_WIDTH } from '@/construction/tags'
 import type { PrefabModulesWallConfig } from '@/construction/walls'
 import { BaseWallAssembly } from '@/construction/walls/base'
 import { constructWallLayers } from '@/construction/walls/layers'
 import { segmentedWallConstruction } from '@/construction/walls/segmentation'
-import { type Vec3, addVec3, composeTransform, fromRot, fromTrans, newVec3 } from '@/shared/geometry'
+import { type Length, type Vec3, addVec3, composeTransform, fromRot, fromTrans, newVec3 } from '@/shared/geometry'
 
 export class PrefabModulesWallAssembly extends BaseWallAssembly<PrefabModulesWallConfig> {
   construct(wall: PerimeterWallWithGeometry, storeyContext: StoreyContext): ConstructionModel {
@@ -42,24 +43,16 @@ export class PrefabModulesWallAssembly extends BaseWallAssembly<PrefabModulesWal
     _endsWithStand = false,
     startAtEnd = false
   ): Generator<ConstructionResult> {
-    const { getMaterialById } = getMaterialsActions()
     const { defaultMaterial, inclinedMaterial, targetWidth, maxWidth, preferEqualWidths } = this.config
     const width = area.size[0]
     const height = area.size[2]
 
-    const standardModule = getMaterialById(defaultMaterial)
-    if (standardModule?.type !== 'prefab') {
-      throw new Error(`Invalid default material for prefab module: ${defaultMaterial}`)
-    }
-
-    let usedModule = standardModule
+    const standardModule = this.getModuleMaterial(defaultMaterial)
+    let module = standardModule
+    let subtype = 'standard'
 
     if (!area.isFlat) {
-      const inclinedModule = getMaterialById(inclinedMaterial)
-      if (inclinedModule?.type !== 'prefab') {
-        throw new Error(`Invalid inclined material for prefab module: ${inclinedMaterial}`)
-      }
-
+      const inclinedModule = this.getModuleMaterial(inclinedMaterial)
       const topOffsets = area.topOffsets ?? []
       if (topOffsets.length > 2) {
         const [a, b] = area.splitInX(topOffsets[1][0])
@@ -69,25 +62,24 @@ export class PrefabModulesWallAssembly extends BaseWallAssembly<PrefabModulesWal
       }
 
       if (topOffsets[0][1] !== topOffsets[1][1]) {
-        usedModule = inclinedModule
+        module = inclinedModule
+        subtype = 'inclined'
       }
     }
 
-    if (width < usedModule.minWidth || height < usedModule.minHeight) {
+    if (width < module.minWidth || height < module.minHeight) {
       return yield* this.fallback(area)
     }
 
     if (preferEqualWidths) {
-      const minCount = Math.ceil(width / Math.min(usedModule.maxWidth, maxWidth))
-      const maxCount = Math.floor(width / usedModule.minWidth)
+      const minCount = Math.ceil(width / Math.min(module.maxWidth, maxWidth))
+      const maxCount = Math.floor(width / module.minWidth)
       const desiredCount = Math.round(width / targetWidth)
       const moduleCount = Math.min(Math.max(desiredCount, minCount), maxCount)
       const moduleWidth = width / moduleCount
       for (let i = 0; i < moduleCount; i++) {
         const moduleArea = area.withXAdjustment(i * moduleWidth, moduleWidth)
-        yield* yieldElement(
-          createElementFromArea(moduleArea, usedModule.id, [TAG_MODULE], { type: 'module', subtype: 'standard' })
-        )
+        yield* this.yieldModule(moduleArea, module, subtype)
       }
     } else {
       let remainingArea = area
@@ -95,74 +87,118 @@ export class PrefabModulesWallAssembly extends BaseWallAssembly<PrefabModulesWal
         const [a, b] = remainingArea.splitInX(startAtEnd ? remainingArea.size[0] - targetWidth : targetWidth)
         remainingArea = startAtEnd ? a : b
         const moduleArea = startAtEnd ? b : a
-        yield* yieldElement(
-          createElementFromArea(moduleArea, usedModule.id, [TAG_MODULE], { type: 'module', subtype: 'standard' })
-        )
+        yield* this.yieldModule(moduleArea, module, subtype)
       }
       if (remainingArea.size[0] > 0) {
-        yield* yieldElement(
-          createElementFromArea(remainingArea, usedModule.id, [TAG_MODULE], { type: 'module', subtype: 'standard' })
-        )
+        // TODO: Proper handling with fallback
+        yield* this.yieldModule(remainingArea, module, subtype)
       }
     }
   }
 
-  private *fallback(area: WallConstructionArea) {
-    const { getMaterialById } = getMaterialsActions()
-    const { fallbackMaterial } = this.config
+  private *moduleSubWallArea(area: WallConstructionArea, type: 'lintel' | 'sill'): Generator<ConstructionResult> {
+    const { sillMaterial, lintelMaterial } = this.config
     const width = area.size[0]
     const height = area.size[2]
 
-    const fallbackModule = getMaterialById(fallbackMaterial)
-    if (fallbackModule?.type !== 'prefab') {
-      throw new Error(`Invalid fallback material for prefab module: ${fallbackMaterial}`)
+    if (type === 'sill' && sillMaterial) {
+      const sillModule = this.getModuleMaterial(sillMaterial)
+      if (width <= sillModule.maxWidth && height <= sillModule.maxHeight) {
+        if (width < sillModule.minWidth || height < sillModule.minHeight) {
+          return yield* this.fallback(area)
+        }
+
+        return yield* this.yieldModule(area, sillModule, 'sill')
+      }
     }
 
-    const shouldFlip =
-      (width < fallbackModule.minWidth &&
-        width >= fallbackModule.minHeight &&
-        height >= fallbackModule.minWidth &&
-        height <= fallbackModule.maxWidth) ||
-      (height < fallbackModule.minHeight &&
-        height >= fallbackModule.minWidth &&
-        width >= fallbackModule.minHeight &&
-        width <= fallbackModule.maxHeight)
+    if (type === 'lintel' && lintelMaterial) {
+      const lintelModule = this.getModuleMaterial(lintelMaterial)
+      if (width <= lintelModule.maxWidth && height <= lintelModule.maxHeight) {
+        if (width < lintelModule.minWidth || height < lintelModule.minHeight) {
+          return yield* this.fallback(area)
+        }
 
+        return yield* this.yieldModule(area, lintelModule, 'lintel')
+      }
+
+      // TODO: Proper fallback for lintel
+    }
+
+    yield* this.moduleWallArea(area)
+  }
+
+  private *fallback(area: WallConstructionArea) {
+    const { fallbackMaterial } = this.config
+    const fallbackModule = this.getModuleMaterial(fallbackMaterial)
+    const shouldFlip = this.shouldFlip(area.size[0], area.size[2], fallbackModule)
     if (shouldFlip && area.minHeight === area.size[2]) {
-      const flippedSize = newVec3(area.size[2], area.size[1], area.size[0])
-      const shape = createCuboid(flippedSize)
-      const rot = fromRot(Math.PI / 2, newVec3(0, -1, 0))
-      const trans = fromTrans(addVec3(area.position, newVec3(area.size[0], 0, 0)))
-      const transform = composeTransform(trans, rot)
-      const element = createConstructionElement(fallbackMaterial, shape, transform, [TAG_MODULE], {
-        type: 'module',
-        subtype: 'fallback'
-      })
-      return yield* this.yieldWithValidation(element, fallbackModule, flippedSize)
+      yield* this.yieldFlippedModule(area, fallbackMaterial, fallbackModule, 'fallback')
     }
 
-    const element = createElementFromArea(area, fallbackMaterial, [TAG_MODULE], { type: 'module', subtype: 'fallback' })
+    yield* this.yieldModule(area, fallbackModule, 'fallback')
+  }
+
+  private getModuleMaterial(materialId: MaterialId) {
+    const moduleMaterial = getMaterialsActions().getMaterialById(materialId)
+    if (moduleMaterial?.type !== 'prefab') {
+      throw new Error(`Invalid module material for prefab module: ${materialId}`)
+    }
+    return moduleMaterial
+  }
+
+  private *yieldFlippedModule(
+    area: WallConstructionArea,
+    fallbackMaterial: MaterialId,
+    fallbackModule: PrefabMaterial,
+    subtype: string,
+    validateFlipped = true
+  ) {
+    const flippedSize = newVec3(area.size[2], area.size[1], area.size[0])
+    const shape = createCuboid(flippedSize)
+    const rot = fromRot(Math.PI / 2, newVec3(0, -1, 0))
+    const trans = fromTrans(addVec3(area.position, newVec3(area.size[0], 0, 0)))
+    const transform = composeTransform(trans, rot)
+    const element = createConstructionElement(fallbackMaterial, shape, transform, [TAG_MODULE], {
+      type: 'module',
+      subtype
+    })
+    yield* yieldMeasurementFromArea(area, 'width', [TAG_MODULE_WIDTH])
+    yield* yieldMeasurementFromArea(area, 'height', [TAG_MODULE_HEIGHT])
+    yield* this.yieldWithValidation(element, fallbackModule, validateFlipped ? flippedSize : area.size)
+  }
+
+  private *yieldModule(area: WallConstructionArea, material: PrefabMaterial, subtype: string) {
+    const element = createElementFromArea(area, material.id, [TAG_MODULE], { type: 'module', subtype })
 
     if (element) {
-      return yield* this.yieldWithValidation(element, fallbackModule, area.size)
+      yield* yieldMeasurementFromArea(area, 'width', [TAG_MODULE_WIDTH])
+      yield* yieldMeasurementFromArea(area, 'height', [TAG_MODULE_HEIGHT])
+      yield* this.yieldWithValidation(element, material, area.size)
     }
   }
 
-  private *yieldWithValidation(element: ConstructionElement, fallbackModule: PrefabMaterial, size: Vec3) {
+  private shouldFlip(width: Length, height: Length, module: PrefabMaterial) {
+    return (
+      (width < module.minWidth &&
+        width >= module.minHeight &&
+        height >= module.minWidth &&
+        height <= module.maxWidth) ||
+      (height < module.minHeight && height >= module.minWidth && width >= module.minHeight && width <= module.maxHeight)
+    )
+  }
+
+  private *yieldWithValidation(element: ConstructionElement, module: PrefabMaterial, size: Vec3) {
     yield* yieldElement(element)
     const width = size[0]
     const thickness = size[1]
     const height = size[2]
-    if (width < fallbackModule.minHeight || height < fallbackModule.minWidth) {
+    if (width < module.minWidth || height < module.minHeight) {
       yield yieldError($ => $.construction.prefabModules.tooSmall, undefined, [element])
     }
-    if (thickness < fallbackModule.minThickness) {
+    if (thickness < module.minThickness) {
       yield yieldError($ => $.construction.prefabModules.tooThin, undefined, [element], 'prefab-too-thin')
     }
-  }
-
-  private *moduleSubWallArea(_area: WallConstructionArea, _type: 'lintel' | 'sill'): Generator<ConstructionResult> {
-    yield* []
   }
 
   readonly tag = TAG_INFILL_CONSTRUCTION
