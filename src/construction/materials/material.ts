@@ -7,7 +7,13 @@ export type MaterialId = string & { readonly brand: unique symbol }
 export const createMaterialId = () => createId('material_') as MaterialId
 export const isMaterialId = (id: string): id is MaterialId => id.startsWith('material_')
 
-export type Material = StrawbaleMaterial | DimensionalMaterial | SheetMaterial | VolumeMaterial | GenericMaterial
+export type Material =
+  | StrawbaleMaterial
+  | DimensionalMaterial
+  | SheetMaterial
+  | VolumeMaterial
+  | GenericMaterial
+  | PrefabMaterial
 
 export type MaterialType = 'strawbale' | 'dimensional' | 'sheet' | 'volume' | 'generic' | 'prefab'
 
@@ -66,6 +72,11 @@ export interface GenericMaterial extends BaseMaterial {
   type: 'generic'
 }
 
+export interface PrefabSloped {
+  minAngleDegrees: number
+  maxAngleDegrees: number
+}
+
 export interface PrefabMaterial extends BaseMaterial {
   type: 'prefab'
   minHeight: Length
@@ -74,6 +85,7 @@ export interface PrefabMaterial extends BaseMaterial {
   maxThickness: Length
   minWidth: Length
   maxWidth: Length
+  sloped?: PrefabSloped
 }
 
 export * from './defaults'
