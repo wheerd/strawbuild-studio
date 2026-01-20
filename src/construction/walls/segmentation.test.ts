@@ -26,7 +26,7 @@ import {
   TAG_WALL_HEIGHT,
   TAG_WALL_LENGTH
 } from '@/construction/tags'
-import type { InfillMethod, WallLayersConfig } from '@/construction/walls'
+import type { SegmentInfillMethod, WallLayersConfig } from '@/construction/walls'
 import { Bounds3D, IDENTITY, type Length, type Vec3, ZERO_VEC2, newVec2, newVec3 } from '@/shared/geometry'
 import { partial } from '@/test/helpers'
 
@@ -222,7 +222,7 @@ function createMockStoreyContext(storeyHeight: Length = 2500, wallHeight: Length
 
 describe('segmentedWallConstruction', () => {
   let mockWallConstruction: Mocked<WallSegmentConstruction>
-  let mockInfillMethod: Mock<InfillMethod>
+  let mockInfillMethod: Mock<SegmentInfillMethod>
   let mockOpeningConstruction: Mock<OpeningAssembly['construct']>
   let mockGetRingBeamAssemblyById: ReturnType<typeof vi.fn>
   let mockGetOpeningAssemblyById: Mock<() => OpeningAssemblyConfig>
@@ -322,7 +322,7 @@ describe('segmentedWallConstruction', () => {
       _area: WallConstructionArea,
       _adjustedHeader: Length,
       _adjustedSill: Length,
-      _infill: InfillMethod
+      _infill: SegmentInfillMethod
     ) {
       yield* yieldElement({
         id: 'opening-element' as any,

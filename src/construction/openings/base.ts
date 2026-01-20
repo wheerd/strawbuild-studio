@@ -1,6 +1,6 @@
 import type { WallConstructionArea } from '@/construction/geometry'
 import type { ConstructionResult } from '@/construction/results'
-import type { InfillMethod } from '@/construction/walls'
+import type { SegmentInfillMethod } from '@/construction/walls'
 import type { Length } from '@/shared/geometry'
 
 import type { OpeningAssembly, OpeningAssemblyConfigBase } from './types'
@@ -16,7 +16,7 @@ export abstract class BaseOpeningAssembly<T extends OpeningAssemblyConfigBase> i
     area: WallConstructionArea,
     adjustedHeader: Length,
     adjustedSill: Length,
-    infill: InfillMethod
+    infill: SegmentInfillMethod
   ): Generator<ConstructionResult>
 
   abstract get segmentationPadding(): Length

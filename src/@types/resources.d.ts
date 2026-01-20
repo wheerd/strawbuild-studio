@@ -578,7 +578,7 @@ interface Resources {
       "spacerCount": "Spacer Count",
       "spacerMaterial": "Spacer Material",
       "spacerSize": "Spacer Size",
-      "targetWidth": "walls.targetWidth",
+      "targetWidth": "Target Width",
       "triangularBattensConfiguration": "Triangular Battens",
       "triangularBattensTooltip": "Triangular battens are placed in the corners between posts and strawbales to prevent them from slipping out. Not needed when there is planking to hold the bales.",
       "types": {
@@ -965,6 +965,10 @@ interface Resources {
         "crossSectionMismatch": "Cross section does not match available options for this material",
         "dimensionsMismatch": "Post dimensions ({{width, length}}×{{thickness, length}}) don't match available cross sections",
         "wallTooThin": "Wall thickness ({{wallThickness, length}}) is not wide enough for double posts requiring {{required, length}} minimum"
+      },
+      "prefabModules": {
+        "tooSmall": "The module is smaller than the minimum dimensions.",
+        "tooThin": "The wall is too thin for the prefab module."
       },
       "ringBeam": {
         "doubleNotSupported": "Double ring beam construction is not yet supported."

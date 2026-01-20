@@ -2,7 +2,7 @@ import type { WallConstructionArea } from '@/construction/geometry'
 import { BaseOpeningAssembly } from '@/construction/openings/base'
 import type { EmptyOpeningConfig } from '@/construction/openings/types'
 import type { ConstructionResult } from '@/construction/results'
-import type { InfillMethod } from '@/construction/walls'
+import type { SegmentInfillMethod } from '@/construction/walls'
 import type { Length } from '@/shared/geometry'
 
 export class EmptyOpeningAssembly extends BaseOpeningAssembly<EmptyOpeningConfig> {
@@ -10,7 +10,7 @@ export class EmptyOpeningAssembly extends BaseOpeningAssembly<EmptyOpeningConfig
     _area: WallConstructionArea,
     _adjustedHeader: Length,
     _adjustedSill: Length,
-    _infill: InfillMethod
+    _infill: SegmentInfillMethod
   ): Generator<ConstructionResult> {
     // Intentionally empty
   }

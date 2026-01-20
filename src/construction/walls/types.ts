@@ -84,7 +84,7 @@ export type WallConfig =
   | NonStrawbaleWallConfig
   | PrefabModulesWallConfig
 
-export type InfillMethod = (area: WallConstructionArea) => Generator<ConstructionResult>
+export type SegmentInfillMethod = (area: WallConstructionArea, type: 'lintel' | 'sill') => Generator<ConstructionResult>
 
 // Validation
 

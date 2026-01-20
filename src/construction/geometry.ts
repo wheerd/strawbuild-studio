@@ -467,4 +467,8 @@ export class WallConstructionArea {
   public get isEmpty() {
     return this.size[0] <= 0 || this.size[1] <= 0 || this.size[2] <= 0
   }
+
+  public get isFlat() {
+    return this.topOffsets == null || Math.min(...this.topOffsets.map(o => o[1])) === 0
+  }
 }

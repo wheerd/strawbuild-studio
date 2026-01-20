@@ -15,7 +15,7 @@ import {
   TAG_SILL_HEIGHT,
   type Tag
 } from '@/construction/tags'
-import type { InfillMethod } from '@/construction/walls'
+import type { SegmentInfillMethod } from '@/construction/walls'
 import { type Length, newVec3 } from '@/shared/geometry'
 
 import { SimpleOpeningAssembly } from './simple'
@@ -60,7 +60,7 @@ const createMockInfillGenerator = function* (numElements = 2): Generator<Constru
   }
 }
 
-const mockInfillMethod = vi.fn<InfillMethod>(_area => createMockInfillGenerator())
+const mockInfillMethod = vi.fn<SegmentInfillMethod>(_area => createMockInfillGenerator())
 
 describe('SimpleOpeningAssembly', () => {
   beforeEach(() => {

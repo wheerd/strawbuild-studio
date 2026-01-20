@@ -23,7 +23,7 @@ import {
   TAG_WALL_HEIGHT,
   TAG_WALL_LENGTH
 } from '@/construction/tags'
-import type { InfillMethod, WallLayersConfig } from '@/construction/walls'
+import type { SegmentInfillMethod, WallLayersConfig } from '@/construction/walls'
 import {
   type WallTopOffsets,
   convertHeightLineToWallOffsets,
@@ -40,7 +40,7 @@ export function* segmentedWallConstruction(
   storeyContext: StoreyContext,
   layers: WallLayersConfig,
   wallConstruction: WallSegmentConstruction,
-  infillMethod: InfillMethod,
+  infillMethod: SegmentInfillMethod,
   wallOpeningAssemblyId?: OpeningAssemblyId,
   splitAtHeightJumps = true
 ): Generator<ConstructionResult> {
@@ -269,7 +269,7 @@ function* constructOpeningGroup(
   end: Length,
   cornerInfo: WallCornerInfo,
   dimensions: WallDimensions,
-  infillMethod: InfillMethod,
+  infillMethod: SegmentInfillMethod,
   wallOpeningAssemblyId?: OpeningAssemblyId
 ): Generator<ConstructionResult> {
   const group = item.openings
@@ -319,7 +319,7 @@ function* constructWallSegments(
   cornerInfo: WallCornerInfo,
   dimensions: WallDimensions,
   wallConstruction: WallSegmentConstruction,
-  infillMethod: InfillMethod,
+  infillMethod: SegmentInfillMethod,
   wallOpeningAssemblyId: OpeningAssemblyId | undefined,
   splitAtHeightJumps: boolean
 ): Generator<ConstructionResult> {

@@ -2,7 +2,7 @@ import type { WallConstructionArea } from '@/construction/geometry'
 import type { MaterialId } from '@/construction/materials/material'
 import { type PostConfig, validatePosts } from '@/construction/materials/posts'
 import type { ConstructionResult } from '@/construction/results'
-import { type InfillMethod } from '@/construction/walls/types'
+import { type SegmentInfillMethod } from '@/construction/walls/types'
 import type { Length } from '@/shared/geometry'
 
 export interface OpeningAssembly {
@@ -10,7 +10,7 @@ export interface OpeningAssembly {
     area: WallConstructionArea,
     adjustedHeader: Length,
     adjustedSill: Length,
-    infill: InfillMethod
+    infill: SegmentInfillMethod
   ) => Generator<ConstructionResult>
 
   get segmentationPadding(): Length
@@ -67,8 +67,8 @@ export const validateOpeningConfig = (config: OpeningConfig): void => {
     if (config.sillThickness < 0) {
       throw new Error('Sill thickness must not be negative')
     }
-    if (config.headerThickness <= 0) {
-      throw new Error('Header thickness must be positive')
+    if (config.headerThickness < 0) {
+      throw new Error('Header thickness must not be negative')
     }
   }
 
