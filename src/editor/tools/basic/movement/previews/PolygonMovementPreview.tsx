@@ -21,8 +21,8 @@ export function PolygonMovementPreview<TEntity>({
           cx={movementState.snapResult.position[0]}
           cy={movementState.snapResult.position[1]}
           r={50}
-          fill="var(--blue-9)"
-          stroke="var(--gray-1)"
+          fill="var(--color-blue-600)"
+          stroke="var(--color-border-contrast)"
           strokeWidth={5}
           opacity={0.8}
         />
@@ -31,13 +31,18 @@ export function PolygonMovementPreview<TEntity>({
       <path
         d={pathData}
         fill="none"
-        stroke={isValid ? 'var(--green-9)' : 'var(--red-9)'}
+        stroke={isValid ? 'var(--color-green-600)' : 'var(--color-red-600)'}
         strokeWidth={20}
         strokeDasharray="80 40"
         opacity={0.6}
       />
 
-      <path d={pathData} fill={isValid ? 'var(--green-9)' : 'var(--red-9)'} stroke="none" opacity={0.3} />
+      <path
+        d={pathData}
+        fill={isValid ? 'var(--color-green-600)' : 'var(--color-red-600)'}
+        stroke="none"
+        opacity={0.3}
+      />
     </g>
   )
 }

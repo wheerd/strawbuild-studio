@@ -1,8 +1,9 @@
 import { EyeClosedIcon, EyeOpenIcon } from '@radix-ui/react-icons'
-import { DropdownMenu, Flex, IconButton, Text } from '@radix-ui/themes'
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 
+import { Button } from '@/components/ui/button'
+import { DropdownMenu } from '@/components/ui/dropdown-menu'
 import type { GroupOrElement } from '@/construction/elements'
 import type { ConstructionModel } from '@/construction/model'
 import { type Tag, type TagCategoryId, type TagId } from '@/construction/tags'
@@ -88,7 +89,7 @@ export function TagVisibilityMenu({ model }: TagVisibilityMenuProps): React.JSX.
       case 'visible':
         return <EyeOpenIcon />
       case 'partial':
-        return <EyeOpenIcon style={{ opacity: 0.5 }} />
+        return <EyeOpenIcon className="opacity-50" />
       case 'hidden':
         return <EyeClosedIcon />
     }
@@ -96,29 +97,27 @@ export function TagVisibilityMenu({ model }: TagVisibilityMenuProps): React.JSX.
 
   if (sortedCategories.length === 0) {
     return (
-      <DropdownMenu.Root>
-        <DropdownMenu.Trigger>
-          <IconButton size="1" variant="outline" title={t($ => $.tagVisibility.title)} disabled>
+      <DropdownMenu>
+        <DropdownMenu.Trigger asChild>
+          <Button size="icon-xs" variant="outline" title={t($ => $.tagVisibility.title)} disabled>
             <EyeOpenIcon />
-          </IconButton>
+          </Button>
         </DropdownMenu.Trigger>
         <DropdownMenu.Content>
           <DropdownMenu.Item disabled>
-            <Text size="1" color="gray">
-              {t($ => $.tagVisibility.noTags)}
-            </Text>
+            <span className="text-sm">{t($ => $.tagVisibility.noTags)}</span>
           </DropdownMenu.Item>
         </DropdownMenu.Content>
-      </DropdownMenu.Root>
+      </DropdownMenu>
     )
   }
 
   return (
-    <DropdownMenu.Root>
-      <DropdownMenu.Trigger>
-        <IconButton size="1" variant="solid" title={t($ => $.tagVisibility.title)}>
+    <DropdownMenu>
+      <DropdownMenu.Trigger asChild>
+        <Button size="icon-xs" variant="default" title={t($ => $.tagVisibility.title)}>
           <EyeOpenIcon />
-        </IconButton>
+        </Button>
       </DropdownMenu.Trigger>
       <DropdownMenu.Content>
         {sortedCategories.map(([categoryId, tags]) => {
@@ -128,12 +127,12 @@ export function TagVisibilityMenu({ model }: TagVisibilityMenuProps): React.JSX.
           return (
             <DropdownMenu.Sub key={categoryId}>
               <DropdownMenu.SubTrigger>
-                <Flex align="center" justify="between" width="100%" gap="2">
-                  <Text size="1">
+                <div className="flex w-full items-center justify-between gap-2">
+                  <span className="text-sm">
                     <CategoryLabel categoryId={categoryId} />
-                  </Text>
+                  </span>
                   {renderVisibilityIcon(categoryState)}
-                </Flex>
+                </div>
               </DropdownMenu.SubTrigger>
               <DropdownMenu.SubContent>
                 {/* Category-wide toggle */}
@@ -142,23 +141,20 @@ export function TagVisibilityMenu({ model }: TagVisibilityMenuProps): React.JSX.
                     e.preventDefault()
                   }}
                 >
-                  <Flex
-                    align="center"
-                    justify="between"
-                    width="100%"
-                    gap="2"
+                  <div
+                    className="flex w-full items-center justify-between gap-2"
                     onClick={e => {
                       e.stopPropagation()
                       toggleTagOrCategory(categoryId)
                     }}
                   >
-                    <Text size="1" weight="bold">
+                    <span className="text-sm font-bold">
                       {isTagOrCategoryVisible(categoryId)
                         ? t($ => $.tagVisibility.hideCategory)
                         : t($ => $.tagVisibility.showCategory)}
-                    </Text>
+                    </span>
                     {isTagOrCategoryVisible(categoryId) ? <EyeOpenIcon /> : <EyeClosedIcon />}
-                  </Flex>
+                  </div>
                 </DropdownMenu.Item>
                 <DropdownMenu.Separator />
                 {/* Individual tag toggles */}
@@ -169,21 +165,18 @@ export function TagVisibilityMenu({ model }: TagVisibilityMenuProps): React.JSX.
                       e.preventDefault()
                     }}
                   >
-                    <Flex
-                      align="center"
-                      justify="between"
-                      width="100%"
-                      gap="2"
+                    <div
+                      className="flex w-full items-center justify-between gap-2"
                       onClick={e => {
                         e.stopPropagation()
                         toggleTagOrCategory(tag.id)
                       }}
                     >
-                      <Text size="1">
+                      <span className="text-sm">
                         <TagLabel tag={tag} />
-                      </Text>
+                      </span>
                       {isTagOrCategoryVisible(tag.id) ? <EyeOpenIcon /> : <EyeClosedIcon />}
-                    </Flex>
+                    </div>
                   </DropdownMenu.Item>
                 ))}
               </DropdownMenu.SubContent>
@@ -191,6 +184,6 @@ export function TagVisibilityMenu({ model }: TagVisibilityMenuProps): React.JSX.
           )
         })}
       </DropdownMenu.Content>
-    </DropdownMenu.Root>
+    </DropdownMenu>
   )
 }

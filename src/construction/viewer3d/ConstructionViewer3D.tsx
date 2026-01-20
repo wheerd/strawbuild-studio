@@ -1,11 +1,14 @@
 import { ExclamationTriangleIcon } from '@radix-ui/react-icons'
-import { AlertDialog, Box, Button, Card, Code, Flex, Text } from '@radix-ui/themes'
 import { OrbitControls } from '@react-three/drei'
 import { Canvas, useThree } from '@react-three/fiber'
 import { useTheme } from 'next-themes'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
+import { AlertDialog } from '@/components/ui/alert-dialog'
+import { Button } from '@/components/ui/button'
+import { Card } from '@/components/ui/card'
+import { Code } from '@/components/ui/code'
 import type { ConstructionModel } from '@/construction/model'
 import { matAppToThree, toThreeTransform } from '@/construction/viewer3d/utils/geometry'
 import { type SketchUpErrorCode, SketchUpExportError } from '@/exporters/sketchup'
@@ -48,7 +51,7 @@ function ConstructionViewer3D({ model, containerSize }: ConstructionViewer3DProp
   const cameraThreeZ = -centerY + cameraDistance * 0.7
 
   const gridSize = Math.max(maxSize * 3, 10000)
-  const gridColor = isDarkTheme ? '#EEEEEE' : '#111111'
+  const gridColor = isDarkTheme ? '#CCCCCC' : '#333333'
   const gridHelperArgs = useMemo<[number, number, string, string]>(
     () => [gridSize, 50, gridColor, gridColor],
     [gridSize, gridColor]
@@ -100,7 +103,7 @@ function ConstructionViewer3D({ model, containerSize }: ConstructionViewer3DProp
   const { position, rotation, scale } = toThreeTransform(matAppToThree)
 
   return (
-    <div style={{ position: 'relative', width: '100%', height: '100%' }}>
+    <div className="relative h-full w-full">
       <Canvas
         frameloop="always"
         camera={{
@@ -137,26 +140,20 @@ function ConstructionViewer3D({ model, containerSize }: ConstructionViewer3DProp
         <SceneExporter onExportReady={handleExportReady} />
       </Canvas>
 
-      <Box position="absolute" top="3" left="3" style={{ zIndex: 10 }}>
-        <Card size="1" variant="surface" className="shadow-md">
-          <Flex direction="row" align="center" gap="1" m="-2" p="0">
-            <TagOpacityMenu model={model} />
-            <GridToggleButton />
-          </Flex>
-        </Card>
-      </Box>
+      <Card size="sm" variant="surface" className="absolute top-3 left-3 z-10 shadow-md">
+        <div className="-m-2 flex flex-row items-center gap-1 p-0.5">
+          <TagOpacityMenu model={model} />
+          <GridToggleButton />
+        </div>
+      </Card>
 
-      <Box position="absolute" top="3" right="3" style={{ zIndex: 10 }}>
-        <Card size="1" variant="surface" className="shadow-md">
-          <Flex direction="column" align="center" gap="2" m="-2" p="0">
-            <ExportButton
-              onExport={format => {
-                void handleExport(format)
-              }}
-            />
-          </Flex>
-        </Card>
-      </Box>
+      <div className="absolute top-3 right-3 z-10 p-0 shadow-md">
+        <ExportButton
+          onExport={format => {
+            void handleExport(format)
+          }}
+        />
+      </div>
 
       <AlertDialog.Root
         open={exportError !== null}
@@ -166,31 +163,29 @@ function ConstructionViewer3D({ model, containerSize }: ConstructionViewer3DProp
       >
         <AlertDialog.Content maxWidth="450px">
           <AlertDialog.Title>
-            <Flex align="center" gap="2">
-              <ExclamationTriangleIcon color="var(--red-9)" />
-              <Text color="red">{t($ => $.export.exportError.title)}</Text>
-            </Flex>
+            <div className="flex items-center gap-2">
+              <ExclamationTriangleIcon color="var(--color-red-600)" />
+              <span className="text-red-800">{t($ => $.export.exportError.title)}</span>
+            </div>
           </AlertDialog.Title>
           <AlertDialog.Description>
-            <Flex direction="column" gap="3">
-              <Text>{exportError && t($ => $.export.exportError[exportError.code])}</Text>
+            <div className="flex flex-col gap-3">
+              <span>{exportError && t($ => $.export.exportError[exportError.code])}</span>
               {exportError?.details && (
-                <Flex direction="column" gap="1">
-                  <Text size="2" weight="bold">
-                    {t($ => $.export.exportError.details)}
-                  </Text>
-                  <Code size="1" style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
+                <div className="flex flex-col gap-1">
+                  <span className="text-base font-bold">{t($ => $.export.exportError.details)}</span>
+                  <Code size="sm" className="break-words whitespace-pre-wrap">
                     {exportError.details}
                   </Code>
-                </Flex>
+                </div>
               )}
-            </Flex>
+            </div>
           </AlertDialog.Description>
-          <Flex gap="3" mt="4" justify="end">
-            <AlertDialog.Cancel>
-              <Button variant="solid">{t($ => $.export.exportError.close)}</Button>
+          <div className="mt-4 flex justify-end gap-3">
+            <AlertDialog.Cancel asChild>
+              <Button variant="default">{t($ => $.export.exportError.close)}</Button>
             </AlertDialog.Cancel>
-          </Flex>
+          </div>
         </AlertDialog.Content>
       </AlertDialog.Root>
     </div>

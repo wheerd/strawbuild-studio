@@ -1,17 +1,5 @@
 import { CopyIcon, InfoCircledIcon } from '@radix-ui/react-icons'
 import * as Label from '@radix-ui/react-label'
-import {
-  Box,
-  Callout,
-  DropdownMenu,
-  Flex,
-  Grid,
-  IconButton,
-  SegmentedControl,
-  Separator,
-  Text,
-  Tooltip
-} from '@radix-ui/themes'
 import type { Resources } from 'i18next'
 import { useCallback, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -19,6 +7,12 @@ import { useTranslation } from 'react-i18next'
 import { OpeningPreview } from '@/building/components/inspectors/OpeningPreview'
 import type { OpeningAssemblyId, OpeningType } from '@/building/model'
 import { useActiveStoreyId, useModelActions, useWallOpenings } from '@/building/store'
+import { Button } from '@/components/ui/button'
+import { Callout, CalloutIcon, CalloutText } from '@/components/ui/callout'
+import { DropdownMenu } from '@/components/ui/dropdown-menu'
+import { Separator } from '@/components/ui/separator'
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
+import { Tooltip } from '@/components/ui/tooltip'
 import { OpeningAssemblySelectWithEdit } from '@/construction/config/components/OpeningAssemblySelectWithEdit'
 import { useDefaultOpeningAssemblyId, useOpeningAssemblyById } from '@/construction/config/store'
 import { createWallStoreyContext } from '@/construction/storeys/context'
@@ -199,8 +193,10 @@ function AddOpeningToolInspectorImpl({ tool }: AddOpeningToolInspectorImplProps)
 
   // Event handlers with stable references
   const handleTypeChange = useCallback(
-    (newType: OpeningType) => {
-      tool.setOpeningType(newType)
+    (newType: OpeningType | '') => {
+      if (newType) {
+        tool.setOpeningType(newType)
+      }
     },
     [tool]
   )
@@ -224,8 +220,10 @@ function AddOpeningToolInspectorImpl({ tool }: AddOpeningToolInspectorImplProps)
   )
 
   const handleDimensionModeChange = useCallback(
-    (mode: 'fitting' | 'finished') => {
-      tool.setDimensionMode(mode)
+    (mode: 'fitting' | 'finished' | '') => {
+      if (mode) {
+        tool.setDimensionMode(mode)
+      }
     },
     [tool]
   )
@@ -238,22 +236,20 @@ function AddOpeningToolInspectorImpl({ tool }: AddOpeningToolInspectorImplProps)
   )
 
   return (
-    <Flex direction="column" gap="4">
+    <div className="flex flex-col gap-4">
       {/* Informational Note */}
-      <Callout.Root color="blue">
-        <Callout.Icon>
+      <Callout color="blue">
+        <CalloutIcon>
           <InfoCircledIcon />
-        </Callout.Icon>
-        <Callout.Text>
-          <Text size="1">{t($ => $.addOpening.info)}</Text>
-        </Callout.Text>
-      </Callout.Root>
+        </CalloutIcon>
+        <CalloutText>
+          <span className="text-sm">{t($ => $.addOpening.info)}</span>
+        </CalloutText>
+      </Callout>
       {/* Dimension Mode Toggle */}
-      <Flex align="center" justify="between" gap="2">
-        <Flex gap="1" align="center">
-          <Text size="1" weight="medium" color="gray">
-            {t($ => $.addOpening.dimensionMode)}
-          </Text>
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex items-center gap-1">
+          <span className="text-sm font-medium">{t($ => $.addOpening.dimensionMode)}</span>
           <Tooltip
             content={
               state.dimensionMode === 'finished'
@@ -261,16 +257,22 @@ function AddOpeningToolInspectorImpl({ tool }: AddOpeningToolInspectorImplProps)
                 : t($ => $.addOpening.dimensionModeFittingTooltip)
             }
           >
-            <InfoCircledIcon cursor="help" width={12} height={12} style={{ color: 'var(--gray-9)' }} />
+            <InfoCircledIcon cursor="help" width={12} height={12} style={{ color: 'var(--color-gray-900)' }} />
           </Tooltip>
-        </Flex>
-        <SegmentedControl.Root value={state.dimensionMode} onValueChange={handleDimensionModeChange} size="1">
-          <SegmentedControl.Item value="finished">{t($ => $.addOpening.dimensionModeFinished)}</SegmentedControl.Item>
-          <SegmentedControl.Item value="fitting">{t($ => $.addOpening.dimensionModeFitting)}</SegmentedControl.Item>
-        </SegmentedControl.Root>
-      </Flex>
+        </div>
+        <ToggleGroup
+          type="single"
+          variant="outline"
+          value={state.dimensionMode}
+          onValueChange={handleDimensionModeChange}
+          size="sm"
+        >
+          <ToggleGroupItem value="finished">{t($ => $.addOpening.dimensionModeFinished)}</ToggleGroupItem>
+          <ToggleGroupItem value="fitting">{t($ => $.addOpening.dimensionModeFitting)}</ToggleGroupItem>
+        </ToggleGroup>
+      </div>
       {/* Preview */}
-      <Flex direction="column" align="center">
+      <div className="flex flex-col items-center">
         <OpeningPreview
           opening={{
             openingType: state.openingType,
@@ -283,55 +285,47 @@ function AddOpeningToolInspectorImpl({ tool }: AddOpeningToolInspectorImplProps)
           highlightMode={state.dimensionMode}
           focusedField={focusedField}
         />
-      </Flex>
+      </div>
       {/* Type Selection */}
-      <Flex align="center" justify="between" gap="2">
-        <Flex gap="1" align="center">
-          <Text size="1" weight="medium" color="gray">
-            {t($ => $.addOpening.openingType)}
-          </Text>
-        </Flex>
-        <SegmentedControl.Root value={state.openingType} onValueChange={handleTypeChange} size="2">
-          <SegmentedControl.Item value="door">
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex items-center gap-1">
+          <span className="text-sm font-medium">{t($ => $.addOpening.openingType)}</span>
+        </div>
+        <ToggleGroup type="single" variant="outline" value={state.openingType} onValueChange={handleTypeChange}>
+          <ToggleGroupItem value="door">
             <Tooltip content={t($ => $.addOpening.typeDoor)}>
-              <Box>
+              <div>
                 <DoorIcon width={20} height={20} />
-              </Box>
+              </div>
             </Tooltip>
-          </SegmentedControl.Item>
+          </ToggleGroupItem>
 
-          <SegmentedControl.Item value="window">
+          <ToggleGroupItem value="window">
             <Tooltip content={t($ => $.addOpening.typeWindow)}>
-              <Box>
+              <div>
                 <WindowIcon width={20} height={20} />
-              </Box>
+              </div>
             </Tooltip>
-          </SegmentedControl.Item>
+          </ToggleGroupItem>
 
-          <SegmentedControl.Item value="passage">
+          <ToggleGroupItem value="passage">
             <Tooltip content={t($ => $.addOpening.typePassage)}>
-              <Box>
+              <div>
                 <PassageIcon width={20} height={20} />
-              </Box>
+              </div>
             </Tooltip>
-          </SegmentedControl.Item>
-        </SegmentedControl.Root>
-      </Flex>
-      <Flex align="center" gap="2">
-        <Text size="1" weight="medium" color="gray">
-          {t($ => $.addOpening.padding)}
-        </Text>
-        <Text size="1" color="gray">
-          {formatLength(currentPadding)}
-        </Text>
-      </Flex>
+          </ToggleGroupItem>
+        </ToggleGroup>
+      </div>
+      <div className="flex items-center gap-2">
+        <span className="text-sm font-medium">{t($ => $.addOpening.padding)}</span>
+        <span className="text-sm">{formatLength(currentPadding)}</span>
+      </div>
       {/* Dimension inputs in Radix Grid layout */}
-      <Grid columns="auto min-content auto min-content" rows="2" gap="2" gapX="3" align="center">
+      <div className="grid grid-cols-[auto_min-content_auto_min-content] grid-rows-2 items-center gap-2 gap-x-3">
         {/* Row 1, Column 1: Width Label */}
         <Label.Root htmlFor="opening-width">
-          <Text size="1" weight="medium" color="gray">
-            {t($ => $.addOpening.width)}
-          </Text>
+          <span className="text-sm font-medium">{t($ => $.addOpening.width)}</span>
         </Label.Root>
 
         {/* Row 1, Column 2: Width Input */}
@@ -344,8 +338,8 @@ function AddOpeningToolInspectorImpl({ tool }: AddOpeningToolInspectorImplProps)
           min={100}
           max={5000}
           step={100}
-          size="1"
-          style={{ width: '80px' }}
+          size="sm"
+          className="w-20"
           onFocus={() => {
             setFocusedField('width')
           }}
@@ -356,9 +350,7 @@ function AddOpeningToolInspectorImpl({ tool }: AddOpeningToolInspectorImplProps)
 
         {/* Row 1, Column 3: Height Label */}
         <Label.Root htmlFor="opening-height">
-          <Text size="1" weight="medium" color="gray">
-            {t($ => $.addOpening.height)}
-          </Text>
+          <span className="text-sm font-medium">{t($ => $.addOpening.height)}</span>
         </Label.Root>
 
         {/* Row 1, Column 4: Height Input */}
@@ -371,8 +363,8 @@ function AddOpeningToolInspectorImpl({ tool }: AddOpeningToolInspectorImplProps)
           min={100}
           max={4000}
           step={100}
-          size="1"
-          style={{ width: '80px' }}
+          size="sm"
+          className="w-20"
           onFocus={() => {
             setFocusedField('height')
           }}
@@ -383,9 +375,7 @@ function AddOpeningToolInspectorImpl({ tool }: AddOpeningToolInspectorImplProps)
 
         {/* Row 2, Column 1: Sill Height Label */}
         <Label.Root htmlFor="opening-sill-height">
-          <Text size="1" weight="medium" color="gray">
-            {t($ => $.addOpening.sill)}
-          </Text>
+          <span className="text-sm font-medium">{t($ => $.addOpening.sill)}</span>
         </Label.Root>
 
         {/* Row 2, Column 2: Sill Height Input */}
@@ -398,8 +388,8 @@ function AddOpeningToolInspectorImpl({ tool }: AddOpeningToolInspectorImplProps)
           min={0}
           max={2000}
           step={100}
-          size="1"
-          style={{ width: '80px' }}
+          size="sm"
+          className="w-20"
           onFocus={() => {
             setFocusedField('sillHeight')
           }}
@@ -410,9 +400,7 @@ function AddOpeningToolInspectorImpl({ tool }: AddOpeningToolInspectorImplProps)
 
         {/* Row 2, Column 3: Top Height Label */}
         <Label.Root htmlFor="opening-top-height">
-          <Text size="1" weight="medium" color="gray">
-            {t($ => $.addOpening.top)}
-          </Text>
+          <span className="text-sm font-medium">{t($ => $.addOpening.top)}</span>
         </Label.Root>
 
         {/* Row 2, Column 4: Top Height Input */}
@@ -427,8 +415,8 @@ function AddOpeningToolInspectorImpl({ tool }: AddOpeningToolInspectorImplProps)
           min={getDisplayValue(state.sillHeight ?? 0, 'sillHeight') + 100}
           max={5000}
           step={100}
-          size="1"
-          style={{ width: '80px' }}
+          size="sm"
+          className="w-20"
           onFocus={() => {
             setFocusedField('topHeight')
           }}
@@ -436,13 +424,13 @@ function AddOpeningToolInspectorImpl({ tool }: AddOpeningToolInspectorImplProps)
             setFocusedField(undefined)
           }}
         />
-      </Grid>
-      <Flex align="center" justify="end" gap="2">
-        <DropdownMenu.Root>
+      </div>
+      <div className="flex items-center justify-end gap-2">
+        <DropdownMenu>
           <DropdownMenu.Trigger disabled={allOpeningConfigs.length === 0}>
-            <IconButton size="2" title={t($ => $.addOpening.copyConfigurationTooltip)}>
+            <Button size="icon-sm" title={t($ => $.addOpening.copyConfigurationTooltip)}>
               <CopyIcon />
-            </IconButton>
+            </Button>
           </DropdownMenu.Trigger>
           <DropdownMenu.Content>
             {allOpeningConfigs.map((config, index) => (
@@ -452,27 +440,25 @@ function AddOpeningToolInspectorImpl({ tool }: AddOpeningToolInspectorImplProps)
                   handlePresetOrCopyClick(config)
                 }}
               >
-                <Flex align="center" gap="2">
+                <div className="flex items-center gap-2">
                   {(config.type === 'window' ? WindowIcon : config.type === 'door' ? DoorIcon : PassageIcon)({})}
-                  <Text>{config.label}</Text>
-                </Flex>
+                  <span>{config.label}</span>
+                </div>
               </DropdownMenu.Item>
             ))}
           </DropdownMenu.Content>
-        </DropdownMenu.Root>
-      </Flex>
-      <Separator size="4" />
+        </DropdownMenu>
+      </div>
+      <Separator />
       {/* Presets Section */}
-      <Flex direction="column" gap="2">
-        <Text size="1" weight="medium" color="gray">
-          {t($ => $.addOpening.presets.title)}
-        </Text>
-        <Grid columns="6" gap="1">
+      <div className="flex flex-col gap-2">
+        <span className="text-sm font-medium">{t($ => $.addOpening.presets.title)}</span>
+        <div className="grid grid-cols-6 gap-1">
           {ALL_OPENING_PRESETS.map((preset: PresetConfig, index: number) => (
-            <IconButton
+            <Button
+              size="icon"
               key={index}
-              variant="surface"
-              size="3"
+              variant="soft"
               onClick={() => {
                 handlePresetOrCopyClick(preset)
               }}
@@ -492,29 +478,26 @@ function AddOpeningToolInspectorImpl({ tool }: AddOpeningToolInspectorImplProps)
               }
             >
               {preset.icon}
-            </IconButton>
+            </Button>
           ))}
-        </Grid>
-      </Flex>
-      <Separator size="4" />
+        </div>
+      </div>
+      <Separator />
       {/* Opening Assembly Selector */}
-      <Flex direction="column" gap="1">
-        <Flex gap="1" align="center">
-          <Text size="1" weight="medium" color="gray">
-            {t($ => $.addOpening.openingAssembly)}
-          </Text>
+      <div className="flex flex-col gap-1">
+        <div className="flex items-center gap-1">
+          <span className="text-sm font-medium">{t($ => $.addOpening.openingAssembly)}</span>
           <Tooltip content={t($ => $.addOpening.openingAssemblyTooltip)}>
-            <InfoCircledIcon cursor="help" width={12} height={12} style={{ color: 'var(--gray-9)' }} />
+            <InfoCircledIcon cursor="help" width={12} height={12} style={{ color: 'var(--color-gray-900)' }} />
           </Tooltip>
-        </Flex>
+        </div>
         <OpeningAssemblySelectWithEdit
           value={state.openingAssemblyId}
           onValueChange={handleAssemblyChange}
           allowDefault
           showDefaultIndicator
-          size="2"
         />
-      </Flex>
-    </Flex>
+      </div>
+    </div>
   )
 }

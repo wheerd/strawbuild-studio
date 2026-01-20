@@ -1,7 +1,9 @@
 import { ChevronDownIcon, ChevronUpIcon } from '@radix-ui/react-icons'
-import { IconButton, Text, TextField } from '@radix-ui/themes'
 import { forwardRef } from 'react'
 import { useTranslation } from 'react-i18next'
+
+import { Button } from '@/components/ui/button'
+import { cn } from '@/lib/utils'
 
 import { useLengthFieldState } from './hooks/useLengthFieldState'
 import type { LengthFieldProps } from './types'
@@ -38,7 +40,7 @@ export const LengthField = forwardRef<HTMLInputElement, LengthFieldProps>(functi
     precision,
     min,
     max,
-    size = '2',
+    size = 'base',
     placeholder,
     disabled = false,
     className,
@@ -76,62 +78,67 @@ export const LengthField = forwardRef<HTMLInputElement, LengthFieldProps>(functi
     onFocus?.(e)
   }
 
+  const sizeClasses = {
+    sm: 'h-7 text-xs',
+    base: 'h-9 text-sm',
+    lg: 'h-10 text-base'
+  }
+
   return (
-    <TextField.Root
-      ref={ref}
-      value={displayValue}
-      onChange={e => {
-        handleChange(e.target.value)
-      }}
-      onBlur={handleBlurEvent}
-      onFocus={handleFocusEvent}
-      onKeyDown={handleKeyDown}
-      placeholder={placeholder}
-      size={size}
-      disabled={disabled}
-      className={`${className ?? ''} length-field`}
-      style={{
-        textAlign: 'right',
-        ...style
-      }}
-      color={isValid ? undefined : 'red'}
-      {...props}
+    <div
+      className={cn(
+        'border-input bg-background ring-offset-background focus-within:ring-ring flex min-w-25 items-center rounded-md border focus-within:ring-2 focus-within:ring-offset-2',
+        sizeClasses[size],
+        !isValid && 'border-destructive',
+        disabled && 'cursor-not-allowed opacity-50',
+        className
+      )}
+      style={style}
     >
       {children}
+      <input
+        ref={ref}
+        value={displayValue}
+        onChange={e => {
+          handleChange(e.target.value)
+        }}
+        onBlur={handleBlurEvent}
+        onFocus={handleFocusEvent}
+        onKeyDown={handleKeyDown}
+        placeholder={placeholder}
+        disabled={disabled}
+        className={cn('w-[5em] min-w-0 flex-1 bg-transparent px-2 text-right outline-none', sizeClasses[size])}
+        {...props}
+      />
+      <div className="ml--4 flex h-full items-center gap-px">
+        <span className="text-muted-foreground text-xs">{unit}</span>
 
-      <TextField.Slot side="right" style={{ display: 'flex', alignItems: 'center', gap: '1px', padding: '0 4px' }}>
-        <Text size="1" color="gray">
-          {unit}
-        </Text>
-
-        <div className="flex flex-col" style={{ marginLeft: '4px' }}>
-          <IconButton
+        <div className="ml-1 flex h-full flex-col">
+          <Button
             type="button"
-            size="1"
-            variant="ghost"
+            variant="outline"
+            size="icon-xs"
             disabled={disabled || !canStepUp}
             onClick={stepUp}
-            className="h-[10px] p-0 leading-none m-0"
-            style={{ fontSize: '10px', minHeight: '10px', minWidth: '12px', padding: '0 2px' }}
+            className="border-input h-1/2 w-6 rounded-l-none rounded-br-none border-b-[0.5px] border-l focus-visible:relative"
             tabIndex={-1}
           >
             <ChevronUpIcon />
-          </IconButton>
+          </Button>
 
-          <IconButton
+          <Button
             type="button"
-            size="1"
-            variant="ghost"
+            className="border-input h-1/2 w-6 rounded-l-none rounded-tr-none border-t-[0.5px] border-l focus-visible:relative"
+            variant="outline"
+            size="icon-xs"
             disabled={disabled || !canStepDown}
             onClick={stepDown}
-            className="h-[10px] p-0 leading-none m-0"
-            style={{ fontSize: '10px', minHeight: '10px', minWidth: '12px', padding: '0 2px' }}
             tabIndex={-1}
           >
             <ChevronDownIcon />
-          </IconButton>
+          </Button>
         </div>
-      </TextField.Slot>
-    </TextField.Root>
+      </div>
+    </div>
   )
 })

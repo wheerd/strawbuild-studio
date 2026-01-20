@@ -1,8 +1,10 @@
+import { HoverCardTrigger } from '@radix-ui/react-hover-card'
 import { InfoCircledIcon } from '@radix-ui/react-icons'
-import { HoverCard, IconButton, Inset } from '@radix-ui/themes'
 import { type ComponentProps, type JSX, useId } from 'react'
 import { useTranslation } from 'react-i18next'
 
+import { Button } from '@/components/ui/button'
+import { HoverCard, HoverCardContent } from '@/components/ui/hover-card'
 import { SvgMeasurementIndicator } from '@/construction/components/SvgMeasurementIndicator'
 import { BaseModal } from '@/shared/components/BaseModal'
 import { degreesToRadians, newVec2 } from '@/shared/geometry'
@@ -156,19 +158,19 @@ export function ConstructionSchematic({
 
   const overhangLeftX = wallLeft - overhang
 
-  const textFill = 'var(--gray-12)'
-  const highlightFill = 'var(--accent-4)'
-  const highlightStroke = 'var(--accent-10)'
-  const measurementNeutralColor = 'var(--gray-10)'
-  const finishedLevelColor = 'var(--teal-10)'
-  const finishedSideColor = 'var(--sky-11)'
+  const textFill = 'var(--color-foreground)'
+  const highlightFill = 'var(--color-blue-200)'
+  const highlightStroke = 'var(--color-blue-700)'
+  const measurementNeutralColor = 'var(--color-schematic-gray-3)'
+  const finishedLevelColor = 'var(--color-teal-600)'
+  const finishedSideColor = 'var(--color-sky-600)'
 
   const partIsHighlighted = (part?: ConstructionPart): boolean => Boolean(part && highlightedPart === part)
 
   const getPartFill = (part: ConstructionPart | undefined, defaultFill: string): string =>
     partIsHighlighted(part) ? highlightFill : defaultFill
 
-  const getPartStroke = (part: ConstructionPart | undefined, defaultStroke = 'var(--gray-12)'): string =>
+  const getPartStroke = (part: ConstructionPart | undefined, defaultStroke = 'var(--color-border-contrast)'): string =>
     partIsHighlighted(part) ? highlightStroke : defaultStroke
 
   const partLabelVisible = (part: ConstructionPart): boolean => showPartLabels || highlightedPart === part
@@ -235,7 +237,7 @@ export function ConstructionSchematic({
             v ${roofTopThicknessVertical}
             L ${overhangLeftX} ${roofOutsideCornerY + overhangDelta - roofConstructionThicknessVertical}
             Z`}
-        fill={getPartFill('roofTopLayers', 'var(--gray-6)')}
+        fill={getPartFill('roofTopLayers', 'var(--color-schematic-gray-2)')}
         stroke={getPartStroke('roofTopLayers')}
         strokeWidth="5"
       />
@@ -250,7 +252,7 @@ export function ConstructionSchematic({
             V ${roofOutsideCornerY}
             L ${overhangLeftX} ${roofOutsideCornerY + overhangDelta}
             Z`}
-        fill={getPartFill('roofConstruction', 'var(--gray-7)')}
+        fill={getPartFill('roofConstruction', 'var(--color-schematic-gray-3)')}
         stroke={getPartStroke('roofConstruction')}
         strokeWidth="5"
       />
@@ -261,7 +263,7 @@ export function ConstructionSchematic({
             v ${roofBottomThicknessVertical}
             L ${inside} ${roofInsideCornerY - insideLayerDelta + roofBottomThicknessVertical}
             Z`}
-        fill={getPartFill('roofBottomLayers', 'var(--gray-6)')}
+        fill={getPartFill('roofBottomLayers', 'var(--color-schematic-gray-2)')}
         stroke={getPartStroke('roofBottomLayers')}
         strokeWidth="5"
       />
@@ -272,7 +274,7 @@ export function ConstructionSchematic({
             v ${overhangBottomThicknessVertical}
             L ${outside} ${roofOutsideCornerY + outsideLayerDelta + overhangBottomThicknessVertical}
             Z`}
-        fill={getPartFill('overhangBottomLayers', 'var(--gray-6)')}
+        fill={getPartFill('overhangBottomLayers', 'var(--color-schematic-gray-2)')}
         stroke={getPartStroke('overhangBottomLayers')}
         strokeWidth="5"
       />
@@ -287,7 +289,7 @@ export function ConstructionSchematic({
         y={wallAssemblyTopY}
         width={wallWidth}
         height={topPlateThickness}
-        fill={getPartFill('topPlate', 'var(--gray-8)')}
+        fill={getPartFill('topPlate', 'var(--color-schematic-gray-4)')}
         stroke={getPartStroke('topPlate')}
         strokeWidth="5"
       />
@@ -297,7 +299,7 @@ export function ConstructionSchematic({
         y={wallCoreTopY}
         width={wallWidth}
         height={totalHeight - wallCoreTopY}
-        fill={getPartFill('wallConstruction', 'var(--gray-7)')}
+        fill={getPartFill('wallConstruction', 'var(--color-schematic-gray-3)')}
         stroke={getPartStroke('wallConstruction')}
         strokeWidth="5"
       />
@@ -308,7 +310,7 @@ export function ConstructionSchematic({
             V ${totalHeight}
             h -${insideThickness}
             Z`}
-        fill={getPartFill('insideLayer', 'var(--gray-5)')}
+        fill={getPartFill('insideLayer', 'var(--color-schematic-gray-1)')}
         stroke={getPartStroke('insideLayer')}
         strokeWidth="5"
       />
@@ -319,7 +321,7 @@ export function ConstructionSchematic({
             V ${totalHeight}
             h ${outsideThickness}
             Z`}
-        fill={getPartFill('outsideLayer', 'var(--gray-5)')}
+        fill={getPartFill('outsideLayer', 'var(--color-schematic-gray-1)')}
         stroke={getPartStroke('outsideLayer')}
         strokeWidth="5"
       />
@@ -451,7 +453,7 @@ export function ConstructionSchematic({
           ) rotate(${-roofAngle})`}
           fontSize={60}
           dominantBaseline="text-before-edge"
-          fill={assemblyOutlineStroke('roofAssembly', 'var(--amber-10)')}
+          fill={assemblyOutlineStroke('roofAssembly', 'var(--color-orange-1000)')}
         >
           {t($ => $.measurements.roofAssembly)}
         </text>
@@ -595,12 +597,12 @@ export function ConstructionSchematic({
     >
       <defs>
         <linearGradient id={marginBottomGradientId} x1="0" x2="0" y1="0" y2="1">
-          <stop offset="0%" stop-color="var(--color-background)" stop-opacity="0" />
-          <stop offset="90%" stop-color="var(--color-background)" stop-opacity="1" />
+          <stop offset="0%" stopColor="var(--color-background)" stopOpacity="0" />
+          <stop offset="90%" stopColor="var(--color-background)" stopOpacity="1" />
         </linearGradient>
         <linearGradient id={marginRightGradientId} x1="0" x2="1" y1="0" y2="0">
-          <stop offset="0%" stop-color="var(--color-background)" stop-opacity="0" />
-          <stop offset="90%" stop-color="var(--color-background)" stop-opacity="1" />
+          <stop offset="0%" stopColor="var(--color-background)" stopOpacity="0" />
+          <stop offset="90%" stopColor="var(--color-background)" stopOpacity="1" />
         </linearGradient>
         <path id={roofPathId} d={roofOutlinePath} />
         <clipPath id={roofClipId} clipPathUnits="userSpaceOnUse">
@@ -621,7 +623,7 @@ export function ConstructionSchematic({
           href={`#${roofPathId}`}
           clipPath={`url(#${roofClipId})`}
           fill="none"
-          stroke={assemblyOutlineStroke('roofAssembly', 'var(--amber-10)')}
+          stroke={assemblyOutlineStroke('roofAssembly', 'var(--color-orange-1000)')}
           strokeWidth={50}
           strokeLinejoin="round"
           opacity={0.4}
@@ -739,25 +741,23 @@ export function RoofMeasurementInfo(config: MeasurementDisplayConfig): React.JSX
   const { t } = useTranslation('construction')
 
   return (
-    <HoverCard.Root>
-      <HoverCard.Trigger>
-        <IconButton
-          style={{ cursor: 'help' }}
-          color="gray"
-          radius="full"
+    <HoverCard>
+      <HoverCardTrigger>
+        <Button
+          size="icon"
+          className="cursor-help rounded-full"
           title={t($ => $.measurements.measurements)}
           variant="ghost"
-          size="1"
         >
           <InfoCircledIcon width={12} height={12} />
-        </IconButton>
-      </HoverCard.Trigger>
-      <HoverCard.Content side="right">
-        <Inset>
+        </Button>
+      </HoverCardTrigger>
+      <HoverCardContent side="right">
+        <div className="-m-4">
           <ConstructionSchematic {...config} />
-        </Inset>
-      </HoverCard.Content>
-    </HoverCard.Root>
+        </div>
+      </HoverCardContent>
+    </HoverCard>
   )
 }
 
@@ -767,9 +767,9 @@ export function RoofMeasurementModal(): React.JSX.Element {
     <BaseModal
       title={t($ => $.measurements.roofMeasurementDetails)}
       trigger={
-        <IconButton>
+        <Button size="icon">
           <InfoCircledIcon />
-        </IconButton>
+        </Button>
       }
     >
       <ConstructionSchematic

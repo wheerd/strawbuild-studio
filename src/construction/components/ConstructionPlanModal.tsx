@@ -1,9 +1,12 @@
 import { CrossCircledIcon } from '@radix-ui/react-icons'
-import { Callout, Skeleton, Spinner, Tabs } from '@radix-ui/themes'
 import React, { Suspense, use, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
-import { FullScreenModal } from '@/components/ui/FullScreenModal'
+import { Callout, CalloutIcon, CalloutText } from '@/components/ui/callout'
+import { FullScreenModal } from '@/components/ui/full-screen-modal'
+import { Skeleton } from '@/components/ui/skeleton'
+import { Spinner } from '@/components/ui/spinner'
+import { Tabs } from '@/components/ui/tabs'
 import { ConstructionPartsList } from '@/construction/components/parts/ConstructionPartsList'
 import { ConstructionVirtualPartsList } from '@/construction/components/parts/ConstructionVirtualPartsList'
 import { IssueDescriptionPanel } from '@/construction/components/plan/IssueDescriptionPanel'
@@ -157,25 +160,18 @@ function ModalContent({
       onValueChange={value => {
         setActiveTab(value as 'plan' | 'parts' | 'modules')
       }}
-      className="flex flex-col h-full -mt-2 "
+      className="-mt-2 flex h-full w-full flex-col"
     >
-      <div className="flex-shrink-0">
+      <div className="flex shrink-0">
         <Tabs.List>
           <Tabs.Trigger value="plan">{t($ => $.planModal.tabs.planIssues)}</Tabs.Trigger>
           <Tabs.Trigger value="parts">{t($ => $.planModal.tabs.partsList)}</Tabs.Trigger>
           <Tabs.Trigger value="modules">{t($ => $.planModal.tabs.modules)}</Tabs.Trigger>
         </Tabs.List>
       </div>
-      <Tabs.Content value="plan" className="flex-1 min-h-0 pt-3">
-        <div className="flex flex-col gap-3 h-full overflow-hidden">
-          <div
-            ref={containerRef}
-            className="flex-1 min-h-0 overflow-hidden border rounded-md"
-            style={{
-              position: 'relative',
-              borderColor: 'var(--gray-6)'
-            }}
-          >
+      <Tabs.Content value="plan" className="flex min-h-0 flex-1 p-0">
+        <div className="flex h-full w-full flex-col gap-2 overflow-hidden">
+          <div ref={containerRef} className="relative flex min-h-0 flex-1 overflow-hidden rounded-md border">
             {modelPromise ? (
               <Suspense fallback={<PlanSkeleton />}>
                 <TagVisibilityProvider defaultHidden={defaultHiddenTags}>
@@ -193,7 +189,7 @@ function ModalContent({
             <PartHighlightPanel />
           </div>
 
-          <div className="flex-shrink-0">
+          <div className="flex w-full shrink-0">
             {modelPromise ? (
               <Suspense fallback={<PlanSkeleton />}>
                 <IssueDescriptionPanel modelPromise={modelPromise} />
@@ -202,7 +198,7 @@ function ModalContent({
           </div>
         </div>
       </Tabs.Content>
-      <Tabs.Content value="parts" className="flex-1 min-h-0 overflow-auto pt-3">
+      <Tabs.Content value="parts" className="flex min-h-0 flex-1 overflow-auto pt-3">
         {partsDataPromise ? (
           <Suspense fallback={<PartsSkeleton />}>
             <PartsTabContent partsDataPromise={partsDataPromise} onViewInPlan={handleViewInPlan} />
@@ -211,7 +207,7 @@ function ModalContent({
           <PartsSkeleton />
         )}
       </Tabs.Content>
-      <Tabs.Content value="modules" className="flex-1 min-h-0 overflow-auto pt-3">
+      <Tabs.Content value="modules" className="flex min-h-0 flex-1 overflow-auto pt-3">
         {partsDataPromise ? (
           <Suspense fallback={<PartsSkeleton />}>
             <ModulesTabContent partsDataPromise={partsDataPromise} onViewInPlan={handleViewInPlan} />
@@ -245,12 +241,12 @@ function ConstructionPlanModalContent({
   if (!constructionModel) {
     return (
       <div className="flex items-center justify-center">
-        <Callout.Root color="red" size="2">
-          <Callout.Icon>
+        <Callout className="text-destructive">
+          <CalloutIcon>
             <CrossCircledIcon />
-          </Callout.Icon>
-          <Callout.Text>{t($ => $.planModal.errors.failedModel)}</Callout.Text>
-        </Callout.Root>
+          </CalloutIcon>
+          <CalloutText>{t($ => $.planModal.errors.failedModel)}</CalloutText>
+        </Callout>
       </div>
     )
   }
@@ -280,12 +276,12 @@ function PartsTabContent({
   if (partsData == null) {
     return (
       <div className="flex">
-        <Callout.Root color="red" size="2">
-          <Callout.Icon>
+        <Callout className="text-destructive">
+          <CalloutIcon>
             <CrossCircledIcon />
-          </Callout.Icon>
-          <Callout.Text>{t($ => $.planModal.errors.failedPartsList)}</Callout.Text>
-        </Callout.Root>
+          </CalloutIcon>
+          <CalloutText>{t($ => $.planModal.errors.failedPartsList)}</CalloutText>
+        </Callout>
       </div>
     )
   }
@@ -306,12 +302,12 @@ function ModulesTabContent({
   if (partsData == null) {
     return (
       <div className="flex">
-        <Callout.Root color="red" size="2">
-          <Callout.Icon>
+        <Callout className="text-destructive">
+          <CalloutIcon>
             <CrossCircledIcon />
-          </Callout.Icon>
-          <Callout.Text>{t($ => $.planModal.errors.failedModulesList)}</Callout.Text>
-        </Callout.Root>
+          </CalloutIcon>
+          <CalloutText>{t($ => $.planModal.errors.failedModulesList)}</CalloutText>
+        </Callout>
       </div>
     )
   }
@@ -321,35 +317,13 @@ function ModulesTabContent({
 
 function PlanSkeleton() {
   return (
-    <div style={{ position: 'relative', width: '100%', height: '100%' }}>
+    <div className="relative h-full w-full">
       <Skeleton height="95vh" />
-      <div
-        style={{
-          position: 'absolute',
-          top: '30%',
-          left: '50%',
-          transform: 'translate(-50%, -50%) scale(3)',
-          zIndex: 10
-        }}
-      >
-        <Spinner size="3" />
+      <div className="absolute top-[30%] left-1/2 z-10 -translate-x-1/2 -translate-y-1/2 scale-[3]">
+        <Spinner size="lg" />
       </div>
-      <div
-        style={{
-          position: 'absolute',
-          top: '12px',
-          left: '12px',
-          zIndex: 10
-        }}
-      >
-        <Skeleton
-          height="48px"
-          width="90px"
-          style={{
-            borderRadius: 'var(--radius-3)',
-            boxShadow: 'var(--shadow-3)'
-          }}
-        />
+      <div className="absolute top-[12px] left-[12px] z-10">
+        <Skeleton height="48px" width="90px" className="rounded-lg shadow-lg" />
       </div>
     </div>
   )
@@ -357,7 +331,7 @@ function PlanSkeleton() {
 
 function PartsSkeleton() {
   return (
-    <div className="flex flex-col gap-4 h-full overflow-hidden">
+    <div className="flex h-full flex-col gap-4 overflow-hidden">
       <CardSkeleton />
       <CardSkeleton />
     </div>
@@ -365,12 +339,5 @@ function PartsSkeleton() {
 }
 
 function CardSkeleton() {
-  return (
-    <Skeleton
-      style={{
-        height: '160px',
-        borderRadius: 'var(--radius-3)'
-      }}
-    />
-  )
+  return <Skeleton className="h-[160px] rounded-lg" />
 }

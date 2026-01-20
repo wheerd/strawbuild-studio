@@ -25,7 +25,7 @@ export function PerimeterWallShape({ wallId }: { wallId: PerimeterWallId }): Rea
   return (
     <g data-entity-id={wall.id} data-entity-type="perimeter-wall" data-parent-ids={JSON.stringify([wall.perimeterId])}>
       {/* Main wall body - fill the area between inside and outside lines */}
-      <path d={wallPath} fill={fillColor} stroke="var(--gray-11)" strokeWidth={10} />
+      <path d={wallPath} fill={fillColor} className="stroke-border-contrast stroke-10" />
 
       {/* Length indicators when selected */}
       {isSelected && (
@@ -35,7 +35,7 @@ export function PerimeterWallShape({ wallId }: { wallId: PerimeterWallId }): Rea
             endPoint={endCorner.insidePoint}
             label={formatLength(wall.insideLength)}
             offset={-60}
-            color="var(--gray-12)"
+            color="var(--color-foreground)"
             fontSize={60}
             strokeWidth={5}
           />
@@ -44,7 +44,7 @@ export function PerimeterWallShape({ wallId }: { wallId: PerimeterWallId }): Rea
             endPoint={endCorner.outsidePoint}
             label={formatLength(wall.outsideLength)}
             offset={60}
-            color="var(--gray-12)"
+            color="var(--color-foreground)"
             fontSize={60}
             strokeWidth={5}
           />

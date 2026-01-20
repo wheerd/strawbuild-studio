@@ -39,8 +39,8 @@ export function OpeningMovementPreview({
       {/* Show opening rectangle */}
       <path
         d={pathData}
-        fill={isValid ? 'var(--green-9)' : 'var(--red-9)'}
-        stroke="var(--gray-1)"
+        fill={isValid ? 'var(--color-green-600)' : 'var(--color-red-600)'}
+        stroke="var(--color-border-contrast)"
         strokeWidth={5}
         opacity={0.6}
       />
@@ -51,7 +51,7 @@ export function OpeningMovementPreview({
         y1={originalStart[1]}
         x2={openingStart[0]}
         y2={openingStart[1]}
-        stroke="var(--gray-11)"
+        stroke="var(--color-border-contrast)"
         strokeWidth={10}
         strokeDasharray="20 20"
         opacity={0.7}

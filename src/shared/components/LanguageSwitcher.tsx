@@ -1,7 +1,15 @@
 import { GlobeIcon } from '@radix-ui/react-icons'
-import { DropdownMenu, IconButton } from '@radix-ui/themes'
 import React from 'react'
 import { useTranslation } from 'react-i18next'
+
+import { Button } from '@/components/ui/button'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuTrigger
+} from '@/components/ui/dropdown-menu'
 
 interface Language {
   code: string
@@ -24,7 +32,7 @@ const LANGUAGES: Language[] = [
  * - English (en)
  * - German (de)
  */
-export function LanguageSwitcher(): React.JSX.Element {
+export function LanguageSwitcher({ size }: { size: 'sm' | 'lg' }): React.JSX.Element {
   const { i18n, t } = useTranslation('common')
 
   const currentLanguage = LANGUAGES.find(lang => lang.code === i18n.language) ?? LANGUAGES[0]
@@ -34,34 +42,39 @@ export function LanguageSwitcher(): React.JSX.Element {
   }
 
   return (
-    <DropdownMenu.Root>
-      <DropdownMenu.Trigger>
-        <IconButton
-          variant="soft"
-          size="1"
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button
+          variant="secondary"
+          size={size === 'sm' ? 'icon-sm' : 'icon'}
+          className={size === 'sm' ? 'h-7 w-7' : 'h-10 w-10'}
           title={t($ => $.currentLanguageWithLabel, {
             language: currentLanguage.name,
             defaultValue: 'Current language: {{language}}'
           })}
           aria-label={t($ => $.app.changeLanguage)}
         >
-          <GlobeIcon />
-        </IconButton>
-      </DropdownMenu.Trigger>
-      <DropdownMenu.Content>
-        <DropdownMenu.RadioGroup
+          <GlobeIcon
+            className={size === 'sm' ? undefined : 'h-9! w-9!'}
+            width={size === 'sm' ? '14' : '30'}
+            height={size === 'sm' ? '14' : '30'}
+          />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent>
+        <DropdownMenuRadioGroup
           value={i18n.language}
           onValueChange={value => {
             changeLanguage(value)
           }}
         >
           {LANGUAGES.map(lang => (
-            <DropdownMenu.RadioItem key={lang.code} value={lang.code}>
+            <DropdownMenuRadioItem key={lang.code} value={lang.code}>
               {lang.flag} {lang.name}
-            </DropdownMenu.RadioItem>
+            </DropdownMenuRadioItem>
           ))}
-        </DropdownMenu.RadioGroup>
-      </DropdownMenu.Content>
-    </DropdownMenu.Root>
+        </DropdownMenuRadioGroup>
+      </DropdownMenuContent>
+    </DropdownMenu>
   )
 }

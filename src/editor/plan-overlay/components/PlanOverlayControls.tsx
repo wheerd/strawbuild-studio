@@ -1,9 +1,11 @@
 import { ExclamationTriangleIcon, ImageIcon } from '@radix-ui/react-icons'
-import { AlertDialog, Button, DropdownMenu, Flex, IconButton, Text } from '@radix-ui/themes'
 import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { useActiveStoreyId, useStoreyById } from '@/building/store'
+import { AlertDialog } from '@/components/ui/alert-dialog'
+import { Button } from '@/components/ui/button'
+import { DropdownMenu } from '@/components/ui/dropdown-menu'
 import { PlanImportModal } from '@/editor/plan-overlay/components/PlanImportModal'
 import { useFloorPlanActions, useFloorPlanForStorey } from '@/editor/plan-overlay/store'
 import type { FloorPlanPlacement } from '@/editor/plan-overlay/types'
@@ -22,15 +24,20 @@ export function PlanOverlayControls(): React.JSX.Element | null {
   }
 
   return (
-    <Flex align="center" gap="2">
+    <div className="flex items-center gap-2">
       <PlanImportModal floorId={activeStoreyId} open={modalOpen} onOpenChange={setModalOpen} existingPlan={plan} />
       {plan ? (
         <>
-          <DropdownMenu.Root>
-            <DropdownMenu.Trigger>
-              <IconButton size="1" variant="soft" aria-label={t($ => $.planControls.ariaLabel)}>
+          <DropdownMenu>
+            <DropdownMenu.Trigger asChild>
+              <Button
+                size="icon-sm"
+                className="size-7"
+                variant="secondary"
+                aria-label={t($ => $.planControls.ariaLabel)}
+              >
                 <ImageIcon />
-              </IconButton>
+              </Button>
             </DropdownMenu.Trigger>
             <DropdownMenu.Content>
               <DropdownMenu.Label>{t($ => $.planControls.label)}</DropdownMenu.Label>
@@ -56,7 +63,7 @@ export function PlanOverlayControls(): React.JSX.Element | null {
                 {t($ => $.planControls.recalibrate)}
               </DropdownMenu.Item>
               <DropdownMenu.Item
-                color="red"
+                className="text-destructive"
                 onSelect={() => {
                   setConfirmOpen(true)
                 }}
@@ -64,24 +71,24 @@ export function PlanOverlayControls(): React.JSX.Element | null {
                 {t($ => $.planControls.removePlan)}
               </DropdownMenu.Item>
             </DropdownMenu.Content>
-          </DropdownMenu.Root>
+          </DropdownMenu>
 
           <AlertDialog.Root open={confirmOpen} onOpenChange={setConfirmOpen}>
-            <AlertDialog.Content maxWidth="400px">
-              <Flex direction="column" gap="3">
+            <AlertDialog.Content>
+              <div className="flex flex-col gap-3">
                 <AlertDialog.Title>
-                  <Flex align="center" gap="2">
+                  <div className="flex items-center gap-2">
                     <ExclamationTriangleIcon />
-                    <Text>{t($ => $.planControls.confirmRemove.title)}</Text>
-                  </Flex>
+                    <span>{t($ => $.planControls.confirmRemove.title)}</span>
+                  </div>
                 </AlertDialog.Title>
                 <AlertDialog.Description>
                   {t($ => $.planControls.confirmRemove.description, {
                     floor: storey?.name ?? 'this floor'
                   })}
                 </AlertDialog.Description>
-                <Flex justify="end" gap="2">
-                  <AlertDialog.Cancel>
+                <div className="justify-end gap-2">
+                  <AlertDialog.Cancel asChild>
                     <Button
                       variant="soft"
                       onClick={() => {
@@ -91,9 +98,9 @@ export function PlanOverlayControls(): React.JSX.Element | null {
                       {t($ => $.planControls.confirmRemove.cancel)}
                     </Button>
                   </AlertDialog.Cancel>
-                  <AlertDialog.Action>
+                  <AlertDialog.Action asChild>
                     <Button
-                      color="red"
+                      variant="destructive"
                       onClick={() => {
                         clearPlan(activeStoreyId)
                         setConfirmOpen(false)
@@ -102,23 +109,24 @@ export function PlanOverlayControls(): React.JSX.Element | null {
                       {t($ => $.planControls.confirmRemove.confirm)}
                     </Button>
                   </AlertDialog.Action>
-                </Flex>
-              </Flex>
+                </div>
+              </div>
             </AlertDialog.Content>
           </AlertDialog.Root>
         </>
       ) : (
-        <IconButton
-          size="1"
-          variant="surface"
+        <Button
+          size="icon-sm"
+          className="size-7"
+          variant="secondary"
           onClick={() => {
             setModalOpen(true)
           }}
           title={t($ => $.planControls.importPlan)}
         >
           <ImageIcon />
-        </IconButton>
+        </Button>
       )}
-    </Flex>
+    </div>
   )
 }

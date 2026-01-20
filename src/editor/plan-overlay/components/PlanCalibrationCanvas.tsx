@@ -1,7 +1,7 @@
-import { Box, Card, Flex, Text } from '@radix-ui/themes'
 import React, { type PointerEvent, useCallback, useMemo, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 
+import { Card } from '@/components/ui/card'
 import type { ImagePoint } from '@/editor/plan-overlay/types'
 import { SVGViewport, type SVGViewportRef } from '@/shared/components/SVGViewport'
 import { Bounds2D, ZERO_VEC2, newVec2 } from '@/shared/geometry'
@@ -89,7 +89,7 @@ export function PlanCalibrationCanvas({
         y1={start.y}
         x2={end.x}
         y2={end.y}
-        stroke="var(--accent-9)"
+        stroke="var(--color-primary)"
         strokeWidth={2}
         strokeDasharray="12 8"
         pointerEvents="none"
@@ -105,7 +105,7 @@ export function PlanCalibrationCanvas({
         y1={point.y - 12}
         x2={point.x + 12}
         y2={point.y + 12}
-        stroke="var(--gray-12)"
+        stroke="var(--color-gray-900)"
         strokeWidth={3}
         opacity={0.4}
       />
@@ -114,7 +114,7 @@ export function PlanCalibrationCanvas({
         y1={point.y + 12}
         x2={point.x + 12}
         y2={point.y - 12}
-        stroke="var(--gray-12)"
+        stroke="var(--color-gray-900)"
         strokeWidth={3}
         opacity={0.4}
       />
@@ -123,7 +123,7 @@ export function PlanCalibrationCanvas({
         y1={point.y - 12}
         x2={point.x + 12}
         y2={point.y + 12}
-        stroke="var(--gray-1)"
+        stroke="var(--color-schematic-gray-1)"
         strokeWidth={1.5}
       />
       <line
@@ -131,7 +131,7 @@ export function PlanCalibrationCanvas({
         y1={point.y + 12}
         x2={point.x + 12}
         y2={point.y - 12}
-        stroke="var(--gray-1)"
+        stroke="var(--color-schematic-gray-1)"
         strokeWidth={1.5}
       />
     </g>
@@ -140,8 +140,8 @@ export function PlanCalibrationCanvas({
   return (
     <div
       ref={setContainerRef}
-      style={{ borderColor: 'var(--gray-6)' }}
-      className="border rounded-md relative w-full h-full flex items-center justify-center overflow-hidden p0"
+      style={{ borderColor: 'var(--color-gray-600)' }}
+      className="p0 relative flex h-full w-full grow items-center justify-center overflow-hidden rounded-md border"
     >
       {image ? (
         <SVGViewport ref={viewportRef} svgSize={containerSize} contentBounds={contentBounds}>
@@ -150,7 +150,7 @@ export function PlanCalibrationCanvas({
             y={0}
             width={image.naturalWidth}
             height={image.naturalHeight}
-            fill="var(--gray-2)"
+            fill="var(--color-muted)"
             pointerEvents="none"
           />
           <image
@@ -165,21 +165,21 @@ export function PlanCalibrationCanvas({
             onPointerUp={handlePointerUp}
           />
           {renderReferenceLine()}
-          {referencePoints.map(point => renderCrosshair(point, 'var(--accent-9)'))}
-          {originPoint && renderCrosshair(originPoint, 'var(--red-9)')}
+          {referencePoints.map(point => renderCrosshair(point, 'var(--color-primary)'))}
+          {originPoint && renderCrosshair(originPoint, 'var(--color-red-600)')}
         </SVGViewport>
       ) : (
-        <Text color="gray">{t($ => $.canvas.uploadToBegin)}</Text>
+        <span className="">{t($ => $.canvas.uploadToBegin)}</span>
       )}
       {image && (
-        <Box position="absolute" bottom="3" right="3" style={{ zIndex: 10 }}>
-          <Card size="1" variant="surface" className="shadow-md">
-            <Flex align="center" gap="3" m="-2" p="1">
-              <Text size="1">{t($ => $.canvas.scrollToZoom)}</Text>
-              <Text size="1">Shift + drag to pan</Text>
-            </Flex>
+        <div className="absolute right-3 bottom-3 z-10">
+          <Card size="sm" variant="soft" className="shadow-md">
+            <div className="-m-2 items-center gap-3 p-1">
+              <span className="text-sm">{t($ => $.canvas.scrollToZoom)}</span>
+              <span className="text-sm">Shift + drag to pan</span>
+            </div>
           </Card>
-        </Box>
+        </div>
       )}
     </div>
   )

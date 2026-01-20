@@ -1,8 +1,9 @@
-import { Cross2Icon } from '@radix-ui/react-icons'
-import { Dialog, Flex, IconButton } from '@radix-ui/themes'
+import { DialogTrigger } from '@radix-ui/react-dialog'
 import React from 'react'
 import { ErrorBoundary } from 'react-error-boundary'
 
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
+import { cn } from '@/lib/utils'
 import { FeatureErrorFallback } from '@/shared/components/ErrorBoundary'
 
 export interface BaseModalProps {
@@ -12,7 +13,7 @@ export interface BaseModalProps {
   titleIcon?: React.ReactNode
   children: React.ReactNode
   trigger?: React.ReactNode
-  size?: '1' | '2' | '3' | '4'
+  size?: 'sm' | 'base' | 'lg' | '4'
   width?: string
   maxWidth?: string
   height?: string
@@ -25,6 +26,13 @@ export interface BaseModalProps {
   style?: React.CSSProperties
 }
 
+const sizeClasses = {
+  sm: 'max-w-sm',
+  base: 'max-w-lg',
+  lg: 'max-w-2xl',
+  '4': 'max-w-4xl'
+}
+
 export function BaseModal({
   open,
   onOpenChange,
@@ -32,12 +40,11 @@ export function BaseModal({
   titleIcon,
   children,
   trigger,
-  size,
+  size = 'base',
   width,
   maxWidth,
   height,
   maxHeight,
-  showCloseButton = true,
   onEscapeKeyDown,
   'aria-describedby': ariaDescribedBy,
   resetKeys = [],
@@ -45,44 +52,36 @@ export function BaseModal({
   style
 }: BaseModalProps): React.JSX.Element {
   return (
-    <Dialog.Root open={open} onOpenChange={onOpenChange}>
-      {trigger && <Dialog.Trigger>{trigger}</Dialog.Trigger>}
-      <Dialog.Content
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogTrigger asChild>{trigger}</DialogTrigger>
+      <DialogContent
         aria-describedby={ariaDescribedBy}
-        size={size}
-        width={width}
-        maxWidth={maxWidth}
-        height={height}
-        maxHeight={maxHeight}
-        className={className}
+        className={cn(sizeClasses[size], className)}
         onEscapeKeyDown={e => {
           if (onEscapeKeyDown) {
             onEscapeKeyDown(e)
           }
           e.stopPropagation()
         }}
-        style={style}
+        style={{
+          width,
+          maxWidth: maxWidth ?? undefined,
+          height,
+          maxHeight: maxHeight ?? undefined,
+          ...style
+        }}
       >
-        <Dialog.Title>
-          <Flex justify="between" align="center">
-            <Flex align="center" gap="2">
-              {titleIcon}
-              {title}
-            </Flex>
-            {showCloseButton && (
-              <Dialog.Close>
-                <IconButton variant="ghost" highContrast>
-                  <Cross2Icon />
-                </IconButton>
-              </Dialog.Close>
-            )}
-          </Flex>
-        </Dialog.Title>
+        <DialogTitle className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            {titleIcon}
+            {title}
+          </div>
+        </DialogTitle>
 
         <ErrorBoundary FallbackComponent={FeatureErrorFallback} resetKeys={[open, ...resetKeys]}>
           {children}
         </ErrorBoundary>
-      </Dialog.Content>
-    </Dialog.Root>
+      </DialogContent>
+    </Dialog>
   )
 }

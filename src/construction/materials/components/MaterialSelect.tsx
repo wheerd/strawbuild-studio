@@ -1,8 +1,8 @@
 import { CircleIcon, CubeIcon, LayersIcon, OpacityIcon } from '@radix-ui/react-icons'
-import { Flex, Select, Text } from '@radix-ui/themes'
 import React from 'react'
 import { useTranslation } from 'react-i18next'
 
+import { Select, SelectValue } from '@/components/ui/select'
 import type { Material, MaterialId, MaterialType } from '@/construction/materials/material'
 import { useMaterials } from '@/construction/materials/store'
 
@@ -12,7 +12,7 @@ export interface MaterialSelectProps {
   value: MaterialId | null | undefined
   onValueChange: (materialId: MaterialId | null) => void
   placeholder?: string
-  size?: '1' | '2' | '3'
+  size?: 'sm' | 'base' | 'lg'
   disabled?: boolean
   materials?: Material[]
   allowEmpty?: boolean
@@ -88,7 +88,6 @@ export function MaterialSelect({
   value,
   onValueChange,
   placeholder,
-  size = '2',
   disabled = false,
   materials: materialsProp,
   allowEmpty = false,
@@ -130,18 +129,19 @@ export function MaterialSelect({
         onValueChange(val === NONE_VALUE ? null : (val as MaterialId))
       }}
       disabled={disabled}
-      size={size}
     >
-      <Select.Trigger placeholder={translatedPlaceholder} />
+      <Select.Trigger>
+        <SelectValue placeholder={<span className="text-muted-foreground">{translatedPlaceholder}</span>} />
+      </Select.Trigger>
       <Select.Content>
         {allowEmpty && (
           <Select.Item value={NONE_VALUE}>
-            <Text color="gray">{translatedEmptyLabel}</Text>
+            <span className="text-muted-foreground">{translatedEmptyLabel}</span>
           </Select.Item>
         )}
         {materials.length === 0 ? (
           <Select.Item value="-" disabled>
-            <Text color="gray">{tConstruction($ => $.materialSelect.noMaterialsAvailable)}</Text>
+            <span className="text-muted-foreground">{tConstruction($ => $.materialSelect.noMaterialsAvailable)}</span>
           </Select.Item>
         ) : (
           sortedMaterials.map(material => {
@@ -149,19 +149,12 @@ export function MaterialSelect({
             const displayName = getMaterialDisplayName(material)
             return (
               <Select.Item key={material.id} value={material.id}>
-                <Flex align="center" gap="2">
+                <div className="flex items-center gap-2">
                   <div
                     style={{
-                      width: '16px',
-                      height: '16px',
-                      backgroundColor: material.color,
-                      borderRadius: '2px',
-                      border: '1px solid var(--gray-7)',
-                      flexShrink: 0,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center'
+                      backgroundColor: material.color
                     }}
+                    className="flex h-[16px] w-[16px] shrink-0 items-center justify-center rounded-[2px] border border-gray-700"
                   >
                     <Icon
                       width="12"
@@ -169,8 +162,8 @@ export function MaterialSelect({
                       style={{ color: 'white', filter: 'drop-shadow(0 0 1px rgba(0,0,0,0.5))' }}
                     />
                   </div>
-                  <Text>{displayName}</Text>
-                </Flex>
+                  <span>{displayName}</span>
+                </div>
               </Select.Item>
             )
           })

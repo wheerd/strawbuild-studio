@@ -1,9 +1,11 @@
-import { Button, Dialog, Flex, Grid, Heading, SegmentedControl, Text } from '@radix-ui/themes'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import type { PerimeterReferenceSide } from '@/building/model'
 import type { WallAssemblyId } from '@/building/model/ids'
+import { Button } from '@/components/ui/button'
+import { DialogClose } from '@/components/ui/dialog'
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 import { RingBeamAssemblySelectWithEdit } from '@/construction/config/components/RingBeamAssemblySelectWithEdit'
 import { WallAssemblySelectWithEdit } from '@/construction/config/components/WallAssemblySelectWithEdit'
 import {
@@ -63,21 +65,17 @@ export function RectangularPresetDialog({ onConfirm, trigger }: PresetDialogProp
   const referencePoints = useMemo(() => preset.getPolygonPoints(config), [preset, config.width, config.length])
 
   return (
-    <BaseModal title={t($ => $.presetDialogs.rectangular.title)} trigger={trigger} size="3" maxWidth="700px">
-      <Flex direction="column" gap="4">
-        <Grid columns="1fr auto" gap="5">
+    <BaseModal title={t($ => $.presetDialogs.rectangular.title)} trigger={trigger} size="lg" maxWidth="700px">
+      <div className="flex flex-col gap-4">
+        <div className="grid grid-cols-[1fr_auto] gap-5">
           {/* Left Column - Properties in 2x3 Grid */}
-          <Flex direction="column" gap="3">
-            <Heading size="2" weight="medium">
-              {t($ => $.presetDialogs.rectangular.configuration)}
-            </Heading>
+          <div className="flex flex-col gap-3">
+            <h2 className="font-medium">{t($ => $.presetDialogs.rectangular.configuration)}</h2>
 
-            <Grid columns="2" gapY="3" gapX="2">
+            <div className="grid grid-cols-2 gap-x-2 gap-y-3">
               {/* Width */}
-              <Flex direction="column" gap="1">
-                <Text size="1" color="gray">
-                  {t($ => $.presetDialogs.rectangular.width)}
-                </Text>
+              <div className="flex flex-col gap-1">
+                <span className="text-sm">{t($ => $.presetDialogs.rectangular.width)}</span>
                 <LengthField
                   value={config.width}
                   onChange={value => {
@@ -87,16 +85,14 @@ export function RectangularPresetDialog({ onConfirm, trigger }: PresetDialogProp
                   step={100}
                   unit="m"
                   precision={3}
-                  size="1"
-                  style={{ width: '100%' }}
+                  size="sm"
+                  className="w-full"
                 />
-              </Flex>
+              </div>
 
               {/* Length */}
-              <Flex direction="column" gap="1">
-                <Text size="1" color="gray">
-                  {t($ => $.presetDialogs.rectangular.length)}
-                </Text>
+              <div className="flex flex-col gap-1">
+                <span className="text-sm">{t($ => $.presetDialogs.rectangular.length)}</span>
                 <LengthField
                   value={config.length}
                   onChange={value => {
@@ -106,19 +102,17 @@ export function RectangularPresetDialog({ onConfirm, trigger }: PresetDialogProp
                   step={100}
                   unit="m"
                   precision={3}
-                  size="1"
-                  style={{ width: '100%' }}
+                  size="sm"
+                  className="w-full"
                 />
-              </Flex>
+              </div>
 
               {/* Wall Thickness */}
-              <Flex direction="column" gap="1">
-                <Flex align="center" gap="1">
-                  <Text size="1" color="gray">
-                    {t($ => $.presetDialogs.rectangular.wallThickness)}
-                  </Text>
+              <div className="flex flex-col gap-1">
+                <div className="flex items-center gap-1">
+                  <span className="text-sm">{t($ => $.presetDialogs.rectangular.wallThickness)}</span>
                   <MeasurementInfo highlightedMeasurement="totalWallThickness" showFinishedSides />
-                </Flex>
+                </div>
                 <LengthField
                   value={config.thickness}
                   onChange={value => {
@@ -128,118 +122,108 @@ export function RectangularPresetDialog({ onConfirm, trigger }: PresetDialogProp
                   max={1500}
                   step={10}
                   unit="cm"
-                  size="1"
-                  style={{ width: '100%' }}
+                  size="sm"
+                  className="w-full"
                 />
-              </Flex>
+              </div>
 
               {/* Wall Assembly */}
-              <Flex direction="column" gap="1">
-                <Flex align="center" gap="1">
-                  <Text size="1" color="gray">
-                    {t($ => $.presetDialogs.rectangular.wallAssembly)}
-                  </Text>
+              <div className="flex flex-col gap-1">
+                <div className="flex items-center gap-1">
+                  <span className="text-sm">{t($ => $.presetDialogs.rectangular.wallAssembly)}</span>
                   <MeasurementInfo highlightedAssembly="wallAssembly" />
-                </Flex>
+                </div>
                 <WallAssemblySelectWithEdit
                   value={config.wallAssemblyId}
                   onValueChange={(value: WallAssemblyId) => {
                     setConfig(prev => ({ ...prev, wallAssemblyId: value }))
                   }}
                   placeholder={t($ => $.presetDialogs.rectangular.selectAssembly)}
-                  size="1"
+                  size="sm"
                 />
-              </Flex>
+              </div>
 
               {/* Base Plate */}
-              <Flex direction="column" gap="1">
-                <Flex align="center" gap="1">
-                  <Text size="1" color="gray">
-                    {t($ => $.presetDialogs.rectangular.basePlate)}
-                  </Text>
+              <div className="flex flex-col gap-1">
+                <div className="flex items-center gap-1">
+                  <span className="text-sm">{t($ => $.presetDialogs.rectangular.basePlate)}</span>
                   <MeasurementInfo highlightedPart="basePlate" />
-                </Flex>
+                </div>
                 <RingBeamAssemblySelectWithEdit
                   value={config.baseRingBeamAssemblyId}
                   onValueChange={value => {
                     setConfig(prev => ({ ...prev, baseRingBeamAssemblyId: value }))
                   }}
                   placeholder={t($ => $.presetDialogs.rectangular.none)}
-                  size="1"
+                  size="sm"
                   allowNone
                 />
-              </Flex>
+              </div>
 
               {/* Top Plate */}
-              <Flex direction="column" gap="1">
-                <Flex align="center" gap="1">
-                  <Text size="1" color="gray">
-                    {t($ => $.presetDialogs.rectangular.topPlate)}
-                  </Text>
+              <div className="flex flex-col gap-1">
+                <div className="flex items-center gap-1">
+                  <span className="text-sm">{t($ => $.presetDialogs.rectangular.topPlate)}</span>
                   <MeasurementInfo highlightedPart="topPlate" />
-                </Flex>
+                </div>
                 <RingBeamAssemblySelectWithEdit
                   value={config.topRingBeamAssemblyId}
                   onValueChange={value => {
                     setConfig(prev => ({ ...prev, topRingBeamAssemblyId: value }))
                   }}
                   placeholder={t($ => $.presetDialogs.rectangular.none)}
-                  size="1"
+                  size="sm"
                   allowNone
                 />
-              </Flex>
-            </Grid>
-          </Flex>
+              </div>
+            </div>
+          </div>
 
           {/* Right Column - Preview */}
-          <Flex direction="column" gap="3">
-            <Heading align="center" size="2" weight="medium">
-              {t($ => $.presetDialogs.rectangular.preview)}
-            </Heading>
+          <div className="flex flex-col gap-3 pl-5">
+            <h2 className="text-center font-medium">{t($ => $.presetDialogs.rectangular.preview)}</h2>
 
             {/* Reference Side */}
-            <Flex direction="column" gap="1">
-              <Text size="1" color="gray">
-                {t($ => $.presetDialogs.rectangular.referenceSide)}
-              </Text>
-              <SegmentedControl.Root
-                size="1"
+            <div className="flex flex-col gap-1">
+              <span className="text-sm">{t($ => $.presetDialogs.rectangular.referenceSide)}</span>
+              <ToggleGroup
+                type="single"
+                variant="outline"
+                size="sm"
                 value={config.referenceSide}
                 onValueChange={value => {
-                  setConfig(prev => ({ ...prev, referenceSide: value as PerimeterReferenceSide }))
+                  if (value) {
+                    setConfig(prev => ({ ...prev, referenceSide: value as PerimeterReferenceSide }))
+                  }
                 }}
               >
-                <SegmentedControl.Item value="inside">
-                  {t($ => $.presetDialogs.rectangular.inside)}
-                </SegmentedControl.Item>
-                <SegmentedControl.Item value="outside">
-                  {t($ => $.presetDialogs.rectangular.outside)}
-                </SegmentedControl.Item>
-              </SegmentedControl.Root>
-            </Flex>
+                <ToggleGroupItem value="inside">{t($ => $.presetDialogs.rectangular.inside)}</ToggleGroupItem>
+                <ToggleGroupItem value="outside">{t($ => $.presetDialogs.rectangular.outside)}</ToggleGroupItem>
+              </ToggleGroup>
+            </div>
 
             <PolygonReferencePreview
               referencePoints={referencePoints}
               thickness={config.thickness}
               referenceSide={config.referenceSide}
             />
-          </Flex>
-        </Grid>
+          </div>
+        </div>
 
         {/* Actions */}
-        <Flex justify="end" gap="3" mt="4">
-          <Dialog.Close>
-            <Button variant="soft" color="gray">
+        <div className="mt-4 flex justify-end gap-3">
+          <DialogClose>
+            <Button variant="soft" className="">
               {t($ => $.presetDialogs.rectangular.cancel)}
             </Button>
-          </Dialog.Close>
-          <Dialog.Close>
+          </DialogClose>
+          <DialogClose asChild>
             <Button onClick={handleConfirm} disabled={!isValid}>
               {t($ => $.presetDialogs.rectangular.confirm)}
             </Button>
-          </Dialog.Close>
-        </Flex>
-      </Flex>
+          </DialogClose>
+        </div>
+      </div>
     </BaseModal>
   )
 }

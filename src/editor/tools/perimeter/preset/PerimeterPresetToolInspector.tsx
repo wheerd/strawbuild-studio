@@ -1,7 +1,8 @@
 import { InfoCircledIcon } from '@radix-ui/react-icons'
-import { Box, Button, Callout, Flex, Text } from '@radix-ui/themes'
 import { useTranslation } from 'react-i18next'
 
+import { Button } from '@/components/ui/button'
+import { Callout, CalloutIcon, CalloutText } from '@/components/ui/callout'
 import { useReactiveTool } from '@/editor/tools/system/hooks/useReactiveTool'
 import type { ToolInspectorProps } from '@/editor/tools/system/types'
 
@@ -12,23 +13,23 @@ export function PerimeterPresetToolInspector({ tool }: ToolInspectorProps<Perime
   useReactiveTool(tool)
 
   return (
-    <Box p="2">
-      <Flex direction="column" gap="3">
+    <div className="p-2">
+      <div className="flex flex-col gap-3">
         {/* Informational Note */}
-        <Callout.Root color="blue">
-          <Callout.Icon>
+        <Callout color="blue">
+          <CalloutIcon>
             <InfoCircledIcon />
-          </Callout.Icon>
-          <Callout.Text>
-            <Text size="1">{t($ => $.perimeterPreset.info)}</Text>
-          </Callout.Text>
-        </Callout.Root>
+          </CalloutIcon>
+          <CalloutText>
+            <span className="text-sm">{t($ => $.perimeterPreset.info)}</span>
+          </CalloutText>
+        </Callout>
 
         {tool.availablePresets.map(preset => (
           <preset.dialog
             key={preset.type}
             trigger={
-              <Button className="w-full" size="2">
+              <Button className="w-full" size="default">
                 <preset.icon />
                 {t($ => $.perimeterPreset.types[preset.type])}
               </Button>
@@ -36,7 +37,7 @@ export function PerimeterPresetToolInspector({ tool }: ToolInspectorProps<Perime
             onConfirm={config => tool.placePerimeter(preset, config)}
           />
         ))}
-      </Flex>
-    </Box>
+      </div>
+    </div>
   )
 }

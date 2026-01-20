@@ -1,9 +1,11 @@
-import { Button, Dialog, Flex, Grid, Heading, SegmentedControl, Text } from '@radix-ui/themes'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import type { PerimeterReferenceSide } from '@/building/model'
 import type { WallAssemblyId } from '@/building/model/ids'
+import { Button } from '@/components/ui/button'
+import { DialogClose } from '@/components/ui/dialog'
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 import { RingBeamAssemblySelectWithEdit } from '@/construction/config/components/RingBeamAssemblySelectWithEdit'
 import { WallAssemblySelectWithEdit } from '@/construction/config/components/WallAssemblySelectWithEdit'
 import {
@@ -65,24 +67,18 @@ export function LShapedPresetDialog({ onConfirm, trigger }: PresetDialogProps): 
 
   return (
     <BaseModal title={t($ => $.presetDialogs.lShaped.title)} trigger={trigger} size="4" maxWidth="800px">
-      <Flex direction="column" gap="4">
-        <Grid columns="1fr auto" gap="5">
+      <div className="flex flex-col gap-4">
+        <div className="flex flex-row gap-5">
           {/* Left Column - Configuration */}
-          <Flex direction="column" gap="3">
-            <Heading size="2" weight="medium">
-              {t($ => $.presetDialogs.lShaped.configuration)}
-            </Heading>
+          <div className="flex grow flex-col gap-3">
+            <h2 className="font-medium">{t($ => $.presetDialogs.lShaped.configuration)}</h2>
 
             {/* Main Rectangle Dimensions */}
-            <Flex direction="column" gap="2">
-              <Text size="2" weight="medium" color="gray">
-                {t($ => $.presetDialogs.lShaped.mainRectangle)}
-              </Text>
-              <Grid columns="2" gap="3">
-                <Flex direction="column" gap="1">
-                  <Text size="1" color="gray">
-                    {t($ => $.presetDialogs.lShaped.width1)}
-                  </Text>
+            <div className="flex flex-col gap-2">
+              <span className="text-sm font-medium text-gray-700">{t($ => $.presetDialogs.lShaped.mainRectangle)}</span>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="col-auto flex flex-col gap-1">
+                  <span className="text-sm text-gray-700">{t($ => $.presetDialogs.lShaped.width1)}</span>
                   <LengthField
                     value={config.width1}
                     onChange={value => {
@@ -93,15 +89,13 @@ export function LShapedPresetDialog({ onConfirm, trigger }: PresetDialogProps): 
                     step={100}
                     unit="m"
                     precision={3}
-                    size="1"
-                    style={{ width: '100%' }}
+                    size="sm"
+                    className="w-full"
                   />
-                </Flex>
+                </div>
 
-                <Flex direction="column" gap="1">
-                  <Text size="1" color="gray">
-                    {t($ => $.presetDialogs.lShaped.length1)}
-                  </Text>
+                <div className="col-auto flex flex-col gap-1">
+                  <span className="text-sm text-gray-700">{t($ => $.presetDialogs.lShaped.length1)}</span>
                   <LengthField
                     value={config.length1}
                     onChange={value => {
@@ -112,23 +106,21 @@ export function LShapedPresetDialog({ onConfirm, trigger }: PresetDialogProps): 
                     step={100}
                     unit="m"
                     precision={3}
-                    size="1"
-                    style={{ width: '100%' }}
+                    size="sm"
+                    className="w-full"
                   />
-                </Flex>
-              </Grid>
-            </Flex>
+                </div>
+              </div>
+            </div>
 
             {/* Extension Rectangle Dimensions */}
-            <Flex direction="column" gap="2">
-              <Text size="2" weight="medium" color="gray">
+            <div className="flex flex-col gap-2">
+              <span className="text-sm font-medium text-gray-700">
                 {t($ => $.presetDialogs.lShaped.extensionRectangle)}
-              </Text>
-              <Grid columns="2" gap="3">
-                <Flex direction="column" gap="1">
-                  <Text size="1" color="gray">
-                    {t($ => $.presetDialogs.lShaped.width2)}
-                  </Text>
+              </span>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="flex flex-col gap-1">
+                  <span className="text-sm text-gray-700">{t($ => $.presetDialogs.lShaped.width2)}</span>
 
                   <LengthField
                     value={config.width2}
@@ -140,15 +132,13 @@ export function LShapedPresetDialog({ onConfirm, trigger }: PresetDialogProps): 
                     step={100}
                     unit="m"
                     precision={3}
-                    size="1"
-                    style={{ width: '100%' }}
+                    size="sm"
+                    className="w-full"
                   />
-                </Flex>
+                </div>
 
-                <Flex direction="column" gap="1">
-                  <Text size="1" color="gray">
-                    {t($ => $.presetDialogs.lShaped.length2)}
-                  </Text>
+                <div className="flex flex-col gap-1">
+                  <span className="text-sm text-gray-700">{t($ => $.presetDialogs.lShaped.length2)}</span>
 
                   <LengthField
                     value={config.length2}
@@ -160,50 +150,50 @@ export function LShapedPresetDialog({ onConfirm, trigger }: PresetDialogProps): 
                     step={100}
                     unit="m"
                     precision={3}
-                    size="1"
-                    style={{ width: '100%' }}
+                    size="sm"
+                    className="w-full"
                   />
-                </Flex>
-              </Grid>
-            </Flex>
+                </div>
+              </div>
+            </div>
 
             {/* Rotation */}
-            <Flex direction="column" gap="2">
-              <Text size="1" color="gray">
-                {t($ => $.presetDialogs.lShaped.rotation)}
-              </Text>
-              <SegmentedControl.Root
+            <div className="flex flex-col gap-2">
+              <span className="text-sm text-gray-700">{t($ => $.presetDialogs.lShaped.rotation)}</span>
+              <ToggleGroup
+                type="single"
+                variant="outline"
                 value={config.rotation.toString()}
                 onValueChange={value => {
-                  setConfig(prev => ({ ...prev, rotation: parseInt(value) as 0 | 90 | 180 | 270 }))
+                  if (value) {
+                    setConfig(prev => ({ ...prev, rotation: parseInt(value) as 0 | 90 | 180 | 270 }))
+                  }
                 }}
-                size="1"
+                size="sm"
               >
-                <SegmentedControl.Item value="0">
+                <ToggleGroupItem value="0">
                   <LShape0Icon />
-                </SegmentedControl.Item>
-                <SegmentedControl.Item value="90">
+                </ToggleGroupItem>
+                <ToggleGroupItem value="90">
                   <LShape90Icon />
-                </SegmentedControl.Item>
-                <SegmentedControl.Item value="180">
+                </ToggleGroupItem>
+                <ToggleGroupItem value="180">
                   <LShape180Icon />
-                </SegmentedControl.Item>
-                <SegmentedControl.Item value="270">
+                </ToggleGroupItem>
+                <ToggleGroupItem value="270">
                   <LShape270Icon />
-                </SegmentedControl.Item>
-              </SegmentedControl.Root>
-            </Flex>
+                </ToggleGroupItem>
+              </ToggleGroup>
+            </div>
 
             {/* Construction Settings */}
-            <Grid columns="2" gap="3">
+            <div className="grid grid-cols-2 gap-3">
               {/* Wall Thickness */}
-              <Flex direction="column" gap="1">
-                <Flex align="center" gap="1">
-                  <Text size="1" color="gray">
-                    {t($ => $.presetDialogs.lShaped.wallThickness)}
-                  </Text>
+              <div className="flex flex-col gap-1">
+                <div className="flex items-center gap-1">
+                  <span className="text-sm text-gray-700">{t($ => $.presetDialogs.lShaped.wallThickness)}</span>
                   <MeasurementInfo highlightedMeasurement="totalWallThickness" showFinishedSides />
-                </Flex>
+                </div>
                 <LengthField
                   value={config.thickness}
                   onChange={value => {
@@ -213,91 +203,85 @@ export function LShapedPresetDialog({ onConfirm, trigger }: PresetDialogProps): 
                   max={1500}
                   step={10}
                   unit="cm"
-                  size="1"
-                  style={{ width: '100%' }}
+                  size="sm"
+                  className="w-full"
                 />
-              </Flex>
+              </div>
 
               {/* Wall Assembly */}
-              <Flex direction="column" gap="1">
-                <Flex align="center" gap="1">
-                  <Text size="1" color="gray">
-                    {t($ => $.presetDialogs.lShaped.wallAssembly)}
-                  </Text>
+              <div className="flex flex-col gap-1">
+                <div className="flex items-center gap-1">
+                  <span className="text-sm text-gray-700">{t($ => $.presetDialogs.lShaped.wallAssembly)}</span>
                   <MeasurementInfo highlightedAssembly="wallAssembly" />
-                </Flex>
+                </div>
                 <WallAssemblySelectWithEdit
                   value={config.wallAssemblyId}
                   onValueChange={(value: WallAssemblyId) => {
                     setConfig(prev => ({ ...prev, wallAssemblyId: value }))
                   }}
                   placeholder={t($ => $.presetDialogs.lShaped.selectAssembly)}
-                  size="1"
+                  size="sm"
                 />
-              </Flex>
+              </div>
 
               {/* Base Plate */}
-              <Flex direction="column" gap="1">
-                <Flex align="center" gap="1">
-                  <Text size="1" color="gray">
-                    {t($ => $.presetDialogs.lShaped.basePlate)}
-                  </Text>
+              <div className="flex flex-col gap-1">
+                <div className="flex items-center gap-1">
+                  <span className="text-sm text-gray-700">{t($ => $.presetDialogs.lShaped.basePlate)}</span>
                   <MeasurementInfo highlightedPart="basePlate" />
-                </Flex>
+                </div>
                 <RingBeamAssemblySelectWithEdit
                   value={config.baseRingBeamAssemblyId}
                   onValueChange={value => {
                     setConfig(prev => ({ ...prev, baseRingBeamAssemblyId: value }))
                   }}
                   placeholder={t($ => $.presetDialogs.lShaped.none)}
-                  size="1"
+                  size="sm"
                   allowNone
                 />
-              </Flex>
+              </div>
 
               {/* Top Plate */}
-              <Flex direction="column" gap="1">
-                <Flex align="center" gap="1">
-                  <Text size="1" color="gray">
-                    {t($ => $.presetDialogs.lShaped.topPlate)}
-                  </Text>
+              <div className="flex flex-col gap-1">
+                <div className="flex items-center gap-1">
+                  <span className="text-sm text-gray-700">{t($ => $.presetDialogs.lShaped.topPlate)}</span>
                   <MeasurementInfo highlightedPart="topPlate" />
-                </Flex>
+                </div>
                 <RingBeamAssemblySelectWithEdit
                   value={config.topRingBeamAssemblyId}
                   onValueChange={value => {
                     setConfig(prev => ({ ...prev, topRingBeamAssemblyId: value }))
                   }}
                   placeholder={t($ => $.presetDialogs.lShaped.none)}
-                  size="1"
+                  size="sm"
                   allowNone
                 />
-              </Flex>
-            </Grid>
-          </Flex>
+              </div>
+            </div>
+          </div>
 
           {/* Right Column - Preview */}
-          <Flex direction="column" gap="3">
-            <Heading align="center" size="2" weight="medium">
-              {t($ => $.presetDialogs.lShaped.preview)}
-            </Heading>
+          <div className="flex flex-col gap-3 pl-5">
+            <h2 className="text-center font-medium">{t($ => $.presetDialogs.lShaped.preview)}</h2>
 
             {/* Reference Side */}
-            <Flex direction="column" gap="1">
-              <Text size="1" color="gray">
-                {t($ => $.presetDialogs.lShaped.referenceSide)}
-              </Text>
-              <SegmentedControl.Root
-                size="1"
+            <div className="flex flex-col gap-1 pb-5">
+              <span className="text-sm text-gray-700">{t($ => $.presetDialogs.lShaped.referenceSide)}</span>
+              <ToggleGroup
+                type="single"
+                variant="outline"
+                size="sm"
                 value={config.referenceSide}
                 onValueChange={value => {
-                  setConfig(prev => ({ ...prev, referenceSide: value as PerimeterReferenceSide }))
+                  if (value) {
+                    setConfig(prev => ({ ...prev, referenceSide: value as PerimeterReferenceSide }))
+                  }
                 }}
               >
-                <SegmentedControl.Item value="inside">{t($ => $.presetDialogs.lShaped.inside)}</SegmentedControl.Item>
-                <SegmentedControl.Item value="outside">{t($ => $.presetDialogs.lShaped.outside)}</SegmentedControl.Item>
-              </SegmentedControl.Root>
-            </Flex>
+                <ToggleGroupItem value="inside">{t($ => $.presetDialogs.lShaped.inside)}</ToggleGroupItem>
+                <ToggleGroupItem value="outside">{t($ => $.presetDialogs.lShaped.outside)}</ToggleGroupItem>
+              </ToggleGroup>
+            </div>
 
             {isValid ? (
               <PolygonReferencePreview
@@ -306,29 +290,25 @@ export function LShapedPresetDialog({ onConfirm, trigger }: PresetDialogProps): 
                 referenceSide={config.referenceSide}
               />
             ) : (
-              <Flex align="center" justify="center" style={{ height: '240px' }}>
-                <Text size="1" color="red">
-                  {t($ => $.presetDialogs.lShaped.invalidConfig)}
-                </Text>
-              </Flex>
+              <div className="flex h-[240px] items-center justify-center">
+                <span className="text-sm text-red-900">{t($ => $.presetDialogs.lShaped.invalidConfig)}</span>
+              </div>
             )}
-          </Flex>
-        </Grid>
+          </div>
+        </div>
 
         {/* Actions */}
-        <Flex justify="end" gap="3" mt="4">
-          <Dialog.Close>
-            <Button variant="soft" color="gray">
-              {t($ => $.presetDialogs.lShaped.cancel)}
-            </Button>
-          </Dialog.Close>
-          <Dialog.Close>
+        <div className="mt-4 flex justify-end gap-3">
+          <DialogClose asChild>
+            <Button variant="soft">{t($ => $.presetDialogs.lShaped.cancel)}</Button>
+          </DialogClose>
+          <DialogClose asChild>
             <Button onClick={handleConfirm} disabled={!isValid}>
               {t($ => $.presetDialogs.lShaped.confirm)}
             </Button>
-          </Dialog.Close>
-        </Flex>
-      </Flex>
+          </DialogClose>
+        </div>
+      </div>
     </BaseModal>
   )
 }

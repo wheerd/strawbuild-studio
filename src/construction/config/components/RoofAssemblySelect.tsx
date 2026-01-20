@@ -1,10 +1,11 @@
-import { Flex, Select, Text } from '@radix-ui/themes'
 import React from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 
 import type { RoofAssemblyId } from '@/building/model/ids'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import type { NamedAssembly } from '@/construction/config'
 import { useRoofAssemblies } from '@/construction/config/store'
+import { cn } from '@/lib/utils'
 
 import { getRoofAssemblyTypeIcon } from './Icons'
 
@@ -12,17 +13,23 @@ export interface RoofAssemblySelectProps {
   value: RoofAssemblyId | null | undefined
   onValueChange: (assemblyId: RoofAssemblyId) => void
   placeholder?: string
-  size?: '1' | '2' | '3'
+  size?: 'sm' | 'base' | 'lg'
   disabled?: boolean
   showDefaultIndicator?: boolean
   defaultAssemblyId?: RoofAssemblyId
+}
+
+const sizeClasses = {
+  sm: 'h-7 text-xs',
+  base: 'h-9 text-sm',
+  lg: 'h-10 text-base'
 }
 
 export function RoofAssemblySelect({
   value,
   onValueChange,
   placeholder = 'Select roof assembly...',
-  size = '2',
+  size = 'base',
   disabled = false,
   showDefaultIndicator = false,
   defaultAssemblyId
@@ -35,44 +42,49 @@ export function RoofAssemblySelect({
   }
 
   return (
-    <Select.Root
+    <Select
       value={value ?? ''}
       onValueChange={val => {
         onValueChange(val as RoofAssemblyId)
       }}
       disabled={disabled}
-      size={size}
     >
-      <Select.Trigger placeholder={placeholder} />
-      <Select.Content>
+      <SelectTrigger className={cn(sizeClasses[size])}>
+        <SelectValue placeholder={placeholder} />
+      </SelectTrigger>
+      <SelectContent>
         {roofAssemblies.length === 0 ? (
-          <Select.Item value="" disabled>
-            <Text color="gray">{t($ => $.roofs.emptyList)}</Text>
-          </Select.Item>
+          <SelectItem value="" disabled>
+            <span className="text-muted-foreground">{t($ => $.roofs.emptyList)}</span>
+          </SelectItem>
         ) : (
           roofAssemblies.map(assembly => {
             const Icon = getRoofAssemblyTypeIcon(assembly.type)
             const isDefault = showDefaultIndicator && assembly.id === defaultAssemblyId
             const label = getDisplayName(assembly)
             return (
-              <Select.Item key={assembly.id} value={assembly.id}>
-                <Flex align="center" gap="2">
-                  <Icon style={{ flexShrink: 0 }} />
-                  <Text>
+              <SelectItem key={assembly.id} value={assembly.id}>
+                <div className="flex items-center gap-2">
+                  <Icon className="shrink-0" />
+                  <span>
                     {isDefault ? (
-                      <Trans t={t} i18nKey={$ => $.roofs.defaultLabel} components={{ gray: <Text color="gray" /> }}>
-                        <>{{ label }}</> <Text color="gray"> (default)</Text>
+                      <Trans
+                        t={t}
+                        i18nKey={$ => $.roofs.defaultLabel}
+                        components={{ gray: <span className="text-muted-foreground" /> }}
+                      >
+                        <>{{ label }}</> <span className="text-muted-foreground"> (default)</span>
                       </Trans>
                     ) : (
                       <>{label}</>
                     )}
-                  </Text>
-                </Flex>
-              </Select.Item>
+                  </span>
+                </div>
+              </SelectItem>
             )
           })
         )}
-      </Select.Content>
-    </Select.Root>
+      </SelectContent>
+    </Select>
   )
 }

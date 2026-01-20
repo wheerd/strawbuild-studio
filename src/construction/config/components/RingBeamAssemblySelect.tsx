@@ -1,10 +1,11 @@
-import { Flex, Select, Text } from '@radix-ui/themes'
 import React from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 
 import type { RingBeamAssemblyId } from '@/building/model/ids'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import type { NamedAssembly } from '@/construction/config'
 import { useRingBeamAssemblies } from '@/construction/config/store'
+import { cn } from '@/lib/utils'
 
 import { getRingBeamTypeIcon } from './Icons'
 
@@ -12,18 +13,24 @@ export interface RingBeamAssemblySelectProps {
   value: RingBeamAssemblyId | null | undefined
   onValueChange: (assemblyId: RingBeamAssemblyId | undefined) => void
   placeholder?: string
-  size?: '1' | '2' | '3'
+  size?: 'sm' | 'base' | 'lg'
   disabled?: boolean
   allowNone?: boolean
   showDefaultIndicator?: boolean
   defaultAssemblyIds?: RingBeamAssemblyId[]
 }
 
+const sizeClasses = {
+  sm: 'h-7 text-xs',
+  base: 'h-9 text-sm',
+  lg: 'h-10 text-base'
+}
+
 export function RingBeamAssemblySelect({
   value,
   onValueChange,
   placeholder = 'Select ring beam assembly...',
-  size = '2',
+  size = 'base',
   disabled = false,
   allowNone = false,
   showDefaultIndicator = false,
@@ -37,7 +44,7 @@ export function RingBeamAssemblySelect({
   }
 
   return (
-    <Select.Root
+    <Select
       value={value ?? (allowNone ? 'none' : '')}
       onValueChange={val => {
         if (val === 'none') {
@@ -47,43 +54,48 @@ export function RingBeamAssemblySelect({
         }
       }}
       disabled={disabled}
-      size={size}
     >
-      <Select.Trigger placeholder={placeholder} />
-      <Select.Content>
+      <SelectTrigger className={cn(sizeClasses[size])}>
+        <SelectValue placeholder={placeholder} />
+      </SelectTrigger>
+      <SelectContent>
         {allowNone && (
-          <Select.Item value="none">
-            <Text color="gray">{t($ => $.ringBeams.none)}</Text>
-          </Select.Item>
+          <SelectItem value="none">
+            <span className="text-muted-foreground">{t($ => $.ringBeams.none)}</span>
+          </SelectItem>
         )}
         {ringBeamAssemblies.length === 0 ? (
-          <Select.Item value="" disabled>
-            <Text color="gray">{t($ => $.ringBeams.emptyList)}</Text>
-          </Select.Item>
+          <SelectItem value="" disabled>
+            <span className="text-muted-foreground">{t($ => $.ringBeams.emptyList)}</span>
+          </SelectItem>
         ) : (
           ringBeamAssemblies.map(assembly => {
             const Icon = getRingBeamTypeIcon(assembly.type)
             const isDefault = showDefaultIndicator && defaultAssemblyIds.includes(assembly.id)
             const label = getDisplayName(assembly)
             return (
-              <Select.Item key={assembly.id} value={assembly.id}>
-                <Flex align="center" gap="2">
-                  <Icon style={{ flexShrink: 0 }} />
-                  <Text>
+              <SelectItem key={assembly.id} value={assembly.id}>
+                <div className="flex items-center gap-2">
+                  <Icon className="shrink-0" />
+                  <span>
                     {isDefault ? (
-                      <Trans t={t} i18nKey={$ => $.ringBeams.defaultLabel} components={{ gray: <Text color="gray" /> }}>
-                        <>{{ label }}</> <Text color="gray"> (default)</Text>
+                      <Trans
+                        t={t}
+                        i18nKey={$ => $.ringBeams.defaultLabel}
+                        components={{ gray: <span className="text-muted-foreground" /> }}
+                      >
+                        <>{{ label }}</> <span className="text-muted-foreground"> (default)</span>
                       </Trans>
                     ) : (
                       <>{label}</>
                     )}
-                  </Text>
-                </Flex>
-              </Select.Item>
+                  </span>
+                </div>
+              </SelectItem>
             )
           })
         )}
-      </Select.Content>
-    </Select.Root>
+      </SelectContent>
+    </Select>
   )
 }

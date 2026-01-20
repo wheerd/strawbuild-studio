@@ -1,18 +1,18 @@
 .area-polygon-inner-perimeter path {
   fill: var(--gray-4);
   stroke-width: 50;
-  stroke: var(--gray-10);
+  stroke: var(--color-border-contrast);
 }
 
 .area-polygon-outer-perimeter path {
   fill: none;
   stroke-width: 50;
-  stroke: var(--gray-10);
+  stroke: var(--color-border-contrast);
 }
 
 .area-polygon-corner path {
   fill: none;
-  stroke: var(--gray-12);
+  stroke: var(--color-border-contrast);
   stroke-width: 20;
   stroke-dasharray: 50, 50;
   opacity: 0.7;
@@ -24,7 +24,7 @@
   font-size: 100px;
   text-anchor: middle;
   opacity: 0.7;
-  color: var(--gray12);
+  fill: var(--color-foreground);
 }
 
 .area-cuboid-window path {
@@ -42,7 +42,7 @@
 
 .area-cuboid-passage path {
   fill: none;
-  stroke: var(--gray-8);
+  stroke: var(--color-border);
   stroke-width: 20;
   stroke-dasharray: 200, 100;
   opacity: 0.7;
@@ -50,8 +50,8 @@
 
 .area-polygon-bottom-plate path,
 .area-polygon-top-plate path {
-  fill: var(--gray-8);
-  stroke: var(--gray-12);
+  fill: var(--color-gray-500);
+  stroke: var(--color-border-contrast);
   stroke-width: 20;
   stroke-dasharray: 20, 20;
   opacity: 0.7;
@@ -64,7 +64,7 @@
 }
 
 .area-cut-floor-level line {
-  stroke: var(--gray-12);
+  stroke: var(--color-foreground);
   stroke-width: 10;
   stroke-dasharray: 100, 50;
   opacity: 0.7;
@@ -100,48 +100,46 @@
   0%,
   100% {
     outline-width: 40;
-    filter: drop-shadow(0 0 20px var(--accent-a6));
-    fill: var(--accent-8) !important;
+    filter: drop-shadow(0 0 20px var(--color-accent));
+    fill: var(--color-accent) !important;
   }
   50% {
     outline-width: 50;
-    filter: drop-shadow(0 0 30px var(--accent-a8));
-    fill: var(--accent-7) !important;
+    filter: drop-shadow(0 0 30px var(--color-accent));
+    fill: var(--color-accent) !important;
   }
 }
 
 .construction-error {
-  stroke: var(--red-11);
+  stroke: var(--color-red-600);
   stroke-width: 30;
-  fill: var(--red-9);
+  fill: var(--color-red-400);
   fill-opacity: 0.4;
   stroke-dasharray: 50, 50;
 }
 
 .construction-warning {
-  stroke: var(--amber-10);
+  stroke: var(--color-amber-600);
   stroke-width: 30;
-  fill: var(--amber-9);
+  fill: var(--color-amber-400);
   fill-opacity: 0.4;
   stroke-dasharray: 50, 50;
 }
 
+@reference "tailwindcss";
+
 .show-straw-types g.tag__straw_full-bale {
-  outline: solid 20px var(--grass-a8);
-  outline-offset: -30px;
+  @apply outline-20 -outline-offset-30 outline-green-600/50;
 }
 
 .show-straw-types g.tag__straw_partial-bale {
-  outline: solid 20px var(--blue-a8);
-  outline-offset: -30px;
+  @apply outline-20 -outline-offset-30 outline-blue-600/50;
 }
 
 .show-straw-types g.tag__straw_flakes {
-  outline: solid 20px var(--purple-a8);
-  outline-offset: -30px;
+  @apply outline-20 -outline-offset-30 outline-purple-600/50;
 }
 
 .show-straw-types g.tag__straw_stuffed {
-  outline: solid 20px var(--red-a8);
-  outline-offset: -30px;
+  @apply outline-20 -outline-offset-30 outline-red-600/50;
 }

@@ -1,10 +1,11 @@
-import { Flex, Select, Text } from '@radix-ui/themes'
 import React from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 
 import type { FloorAssemblyId } from '@/building/model/ids'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import type { NamedAssembly } from '@/construction/config'
 import { useFloorAssemblies } from '@/construction/config/store'
+import { cn } from '@/lib/utils'
 
 import { getFloorAssemblyTypeIcon } from './Icons'
 
@@ -12,17 +13,23 @@ export interface FloorAssemblySelectProps {
   value: FloorAssemblyId | null | undefined
   onValueChange: (configId: FloorAssemblyId) => void
   placeholder?: string
-  size?: '1' | '2' | '3'
+  size?: 'sm' | 'base' | 'lg'
   disabled?: boolean
   showDefaultIndicator?: boolean
   defaultConfigId?: FloorAssemblyId
+}
+
+const sizeClasses = {
+  sm: 'h-7 text-xs',
+  base: 'h-9 text-sm',
+  lg: 'h-10 text-base'
 }
 
 export function FloorAssemblySelect({
   value,
   onValueChange,
   placeholder = 'Select floor assembly...',
-  size = '2',
+  size = 'base',
   disabled = false,
   showDefaultIndicator = false,
   defaultConfigId
@@ -35,44 +42,49 @@ export function FloorAssemblySelect({
   }
 
   return (
-    <Select.Root
+    <Select
       value={value ?? ''}
       onValueChange={val => {
         onValueChange(val as FloorAssemblyId)
       }}
       disabled={disabled}
-      size={size}
     >
-      <Select.Trigger placeholder={placeholder} />
-      <Select.Content>
+      <SelectTrigger className={cn(sizeClasses[size])}>
+        <SelectValue placeholder={placeholder} />
+      </SelectTrigger>
+      <SelectContent>
         {floorAssemblyConfigs.length === 0 ? (
-          <Select.Item value="" disabled>
-            <Text color="gray">{t($ => $.floors.emptyList)}</Text>
-          </Select.Item>
+          <SelectItem value="" disabled>
+            <span className="text-muted-foreground">{t($ => $.floors.emptyList)}</span>
+          </SelectItem>
         ) : (
           floorAssemblyConfigs.map(config => {
             const Icon = getFloorAssemblyTypeIcon(config.type)
             const isDefault = showDefaultIndicator && config.id === defaultConfigId
             const label = getDisplayName(config)
             return (
-              <Select.Item key={config.id} value={config.id}>
-                <Flex align="center" gap="2">
-                  <Icon style={{ flexShrink: 0 }} />
-                  <Text>
+              <SelectItem key={config.id} value={config.id}>
+                <div className="flex items-center gap-2">
+                  <Icon className="shrink-0" />
+                  <span>
                     {isDefault ? (
-                      <Trans t={t} i18nKey={$ => $.floors.defaultLabel} components={{ gray: <Text color="gray" /> }}>
-                        <>{{ label }}</> <Text color="gray"> (default)</Text>
+                      <Trans
+                        t={t}
+                        i18nKey={$ => $.floors.defaultLabel}
+                        components={{ gray: <span className="text-muted-foreground" /> }}
+                      >
+                        <>{{ label }}</> <span className="text-muted-foreground"> (default)</span>
                       </Trans>
                     ) : (
                       <>{label}</>
                     )}
-                  </Text>
-                </Flex>
-              </Select.Item>
+                  </span>
+                </div>
+              </SelectItem>
             )
           })
         )}
-      </Select.Content>
-    </Select.Root>
+      </SelectContent>
+    </Select>
   )
 }

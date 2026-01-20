@@ -1,10 +1,12 @@
 import { TrashIcon } from '@radix-ui/react-icons'
-import { Box, DataList, Flex, IconButton, Separator, Text } from '@radix-ui/themes'
 import { useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import type { FloorAreaId } from '@/building/model/ids'
 import { useFloorAreaById, useModelActions } from '@/building/store'
+import { Button } from '@/components/ui/button'
+import { DataList } from '@/components/ui/data-list'
+import { Separator } from '@/components/ui/separator'
 import { popSelection } from '@/editor/hooks/useSelectionStore'
 import { useViewportActions } from '@/editor/hooks/useViewportStore'
 import { FitToViewIcon } from '@/shared/components/Icons'
@@ -40,18 +42,16 @@ export function FloorAreaInspector({ floorAreaId }: FloorAreaInspectorProps): Re
 
   if (!floorArea) {
     return (
-      <Box p="2">
-        <Text size="1" color="red" weight="bold">
-          {t($ => $.floorArea.notFound)}
-        </Text>
-      </Box>
+      <div className="p-2">
+        <span className="text-sm font-bold text-red-800">{t($ => $.floorArea.notFound)}</span>
+      </div>
     )
   }
 
   return (
-    <Box p="2">
-      <Flex direction="column" gap="3">
-        <DataList.Root size="1">
+    <div className="p-2">
+      <div className="flex flex-col gap-3">
+        <DataList.Root>
           <DataList.Item>
             <DataList.Label>{t($ => $.floorArea.perimeter)}</DataList.Label>
             <DataList.Value>{formatLength(perimeterLength)}</DataList.Value>
@@ -62,15 +62,15 @@ export function FloorAreaInspector({ floorAreaId }: FloorAreaInspectorProps): Re
           </DataList.Item>
         </DataList.Root>
 
-        <Separator size="4" />
+        <Separator />
 
-        <Flex gap="2" justify="end">
-          <IconButton size="2" title={t($ => $.floorArea.fitToView)} onClick={handleFitToView}>
+        <div className="flex justify-end gap-2">
+          <Button size="icon" title={t($ => $.floorArea.fitToView)} onClick={handleFitToView}>
             <FitToViewIcon />
-          </IconButton>
-          <IconButton
-            size="2"
-            color="red"
+          </Button>
+          <Button
+            size="icon"
+            variant="destructive"
             title={t($ => $.floorArea.removeFloorArea)}
             onClick={() => {
               removeFloorArea(floorArea.id)
@@ -78,9 +78,9 @@ export function FloorAreaInspector({ floorAreaId }: FloorAreaInspectorProps): Re
             }}
           >
             <TrashIcon />
-          </IconButton>
-        </Flex>
-      </Flex>
-    </Box>
+          </Button>
+        </div>
+      </div>
+    </div>
   )
 }

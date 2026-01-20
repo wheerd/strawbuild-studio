@@ -1,9 +1,20 @@
 import { ExclamationTriangleIcon, ReloadIcon } from '@radix-ui/react-icons'
-import { AlertDialog, Button, Callout, Code, Flex, Heading, Text } from '@radix-ui/themes'
 import { useState } from 'react'
 import type { FallbackProps } from 'react-error-boundary'
 import { useTranslation } from 'react-i18next'
 
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogTitle,
+  AlertDialogTrigger
+} from '@/components/ui/alert-dialog'
+import { Button } from '@/components/ui/button'
+import { Callout, CalloutIcon, CalloutText } from '@/components/ui/callout'
 import { hardReset } from '@/shared/utils/hardReset'
 
 export function ErrorFallback({ error, resetErrorBoundary }: FallbackProps): React.JSX.Element {
@@ -19,71 +30,48 @@ export function ErrorFallback({ error, resetErrorBoundary }: FallbackProps): Rea
   }
 
   return (
-    <Flex
-      direction="column"
-      align="center"
-      justify="center"
-      style={{
-        minHeight: '100vh',
-        padding: 'var(--space-4)',
-        backgroundColor: 'var(--gray-2)'
-      }}
-    >
-      <Flex direction="column" gap="4" style={{ maxWidth: '600px', width: '100%' }}>
-        <Flex direction="column" gap="2" align="center">
-          <ExclamationTriangleIcon width="48" height="48" color="var(--red-9)" />
-          <Heading size="6">{t($ => $.boundary.title)}</Heading>
-          <Text color="gray" align="center">
-            {t($ => $.boundary.description)}
-          </Text>
-        </Flex>
+    <div className="bg-muted flex min-h-screen flex-col items-center justify-center p-4">
+      <div className="flex w-full max-w-[600px] flex-col gap-4">
+        <div className="flex flex-col items-center gap-2">
+          <ExclamationTriangleIcon className="h-12 w-12 text-red-500" />
+          <h1 className="text-2xl font-bold">{t($ => $.boundary.title)}</h1>
+          <p className="text-muted-foreground text-center">{t($ => $.boundary.description)}</p>
+        </div>
 
-        <Callout.Root color="red">
-          <Callout.Icon>
+        <Callout className="text-destructive">
+          <CalloutIcon>
             <ExclamationTriangleIcon />
-          </Callout.Icon>
-          <Callout.Text>
+          </CalloutIcon>
+          <CalloutText>
             <strong>{message}</strong>
-          </Callout.Text>
-        </Callout.Root>
+          </CalloutText>
+        </Callout>
 
         {showDetails && stack && (
-          <Flex direction="column" gap="2">
-            <Text size="2" weight="bold">
-              {t($ => $.boundary.errorDetails)}
-            </Text>
-            <Code
-              style={{
-                display: 'block',
-                padding: 'var(--space-3)',
-                whiteSpace: 'pre-wrap',
-                wordBreak: 'break-word',
-                maxHeight: '200px',
-                overflow: 'auto'
-              }}
-            >
+          <div className="flex flex-col gap-2">
+            <span className="text-sm font-bold">{t($ => $.boundary.errorDetails)}</span>
+            <code className="bg-muted border-border block max-h-[200px] overflow-auto rounded border p-3 text-xs wrap-break-word whitespace-pre-wrap">
               {stack}
-            </Code>
-          </Flex>
+            </code>
+          </div>
         )}
 
-        <Flex direction="column" gap="2">
+        <div className="flex flex-col gap-2">
           <Button
-            size="3"
+            size="lg"
             onClick={() => {
               window.location.reload()
             }}
           >
-            <ReloadIcon />
+            <ReloadIcon className="mr-2" />
             {t($ => $.boundary.reloadPage)}
           </Button>
 
-          <Button size="3" variant="soft" onClick={resetErrorBoundary}>
+          <Button size="lg" variant="secondary" onClick={resetErrorBoundary}>
             {t($ => $.boundary.tryAgain)}
           </Button>
 
           <Button
-            size="2"
             variant="outline"
             onClick={() => {
               setShowDetails(!showDetails)
@@ -92,46 +80,40 @@ export function ErrorFallback({ error, resetErrorBoundary }: FallbackProps): Rea
             {showDetails ? t($ => $.boundary.hideDetails) : t($ => $.boundary.showDetails)}
           </Button>
 
-          <Button size="2" variant="ghost" onClick={handleCopyError}>
+          <Button variant="ghost" onClick={handleCopyError}>
             {t($ => $.boundary.copyError)}
           </Button>
-        </Flex>
+        </div>
 
-        <Callout.Root color="orange" variant="surface">
-          <Callout.Icon>
+        <Callout color="orange">
+          <CalloutIcon>
             <ExclamationTriangleIcon />
-          </Callout.Icon>
-          <Callout.Text>
-            <Flex direction="column" gap="2">
-              <Text weight="bold">{t($ => $.boundary.dataRecovery.title)}</Text>
-              <Text size="2">{t($ => $.boundary.dataRecovery.description)}</Text>
-              <AlertDialog.Root>
-                <AlertDialog.Trigger>
-                  <Button size="2" color="orange" variant="soft">
+          </CalloutIcon>
+          <CalloutText>
+            <div className="flex flex-col gap-2">
+              <span className="font-bold">{t($ => $.boundary.dataRecovery.title)}</span>
+              <span className="text-sm">{t($ => $.boundary.dataRecovery.description)}</span>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button variant="secondary" className="text-orange-600 dark:text-orange-400">
                     {t($ => $.boundary.dataRecovery.hardReset)}
                   </Button>
-                </AlertDialog.Trigger>
-                <AlertDialog.Content>
-                  <AlertDialog.Title>{t($ => $.boundary.dataRecovery.dialogTitle)}</AlertDialog.Title>
-                  <AlertDialog.Description>{t($ => $.boundary.dataRecovery.dialogDescription)}</AlertDialog.Description>
-                  <Flex gap="3" mt="4" justify="end">
-                    <AlertDialog.Cancel>
-                      <Button variant="soft" color="gray">
-                        {t($ => $.boundary.dataRecovery.cancel)}
-                      </Button>
-                    </AlertDialog.Cancel>
-                    <AlertDialog.Action>
-                      <Button variant="solid" color="red" onClick={hardReset}>
-                        {t($ => $.boundary.dataRecovery.confirm)}
-                      </Button>
-                    </AlertDialog.Action>
-                  </Flex>
-                </AlertDialog.Content>
-              </AlertDialog.Root>
-            </Flex>
-          </Callout.Text>
-        </Callout.Root>
-      </Flex>
-    </Flex>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogTitle>{t($ => $.boundary.dataRecovery.dialogTitle)}</AlertDialogTitle>
+                  <AlertDialogDescription>{t($ => $.boundary.dataRecovery.dialogDescription)}</AlertDialogDescription>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>{t($ => $.boundary.dataRecovery.cancel)}</AlertDialogCancel>
+                    <AlertDialogAction onClick={hardReset} className="bg-red-600 hover:bg-red-700">
+                      {t($ => $.boundary.dataRecovery.confirm)}
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            </div>
+          </CalloutText>
+        </Callout>
+      </div>
+    </div>
   )
 }

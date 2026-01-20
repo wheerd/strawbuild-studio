@@ -1,8 +1,10 @@
-import { Cross2Icon, ExclamationTriangleIcon, GitHubLogoIcon } from '@radix-ui/react-icons'
-import { Button, Callout, Dialog, Flex, Grid, Heading, IconButton, Link, Text } from '@radix-ui/themes'
+import { ExclamationTriangleIcon, GitHubLogoIcon } from '@radix-ui/react-icons'
 import React from 'react'
 import { useTranslation } from 'react-i18next'
 
+import { Button } from '@/components/ui/button'
+import { Callout, CalloutIcon, CalloutText } from '@/components/ui/callout'
+import { Dialog, DialogContent, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { VERSION_INFO } from '@/shared/utils/version'
 
 import { LanguageSwitcher } from './LanguageSwitcher'
@@ -28,12 +30,11 @@ export function WelcomeModal({ isOpen, mode, onAccept, trigger }: WelcomeModalPr
   }
 
   return (
-    <Dialog.Root open={isOpen} onOpenChange={handleOpenChange}>
-      {trigger && <Dialog.Trigger>{trigger}</Dialog.Trigger>}
-      <Dialog.Content
+    <Dialog open={isOpen} onOpenChange={handleOpenChange}>
+      {trigger && <DialogTrigger asChild>{trigger}</DialogTrigger>}
+      <DialogContent
         aria-describedby={undefined}
-        size="3"
-        maxWidth="90vw"
+        className="h-full max-h-[90vh] max-w-[90vw] overflow-y-auto"
         onEscapeKeyDown={e => {
           if (isFirstVisit) e.preventDefault()
         }}
@@ -43,34 +44,28 @@ export function WelcomeModal({ isOpen, mode, onAccept, trigger }: WelcomeModalPr
         onInteractOutside={e => {
           if (isFirstVisit) e.preventDefault()
         }}
+        showCloseButton={!isFirstVisit}
       >
-        <Flex direction="column" gap="4">
-          <Dialog.Title>
-            <Flex justify="between" align="center">
-              <Flex align="center" gap="2">
+        <div className="flex flex-col gap-4">
+          <DialogTitle>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
                 <Logo />
-              </Flex>
-              <Flex gap="2" align="center">
-                <LanguageSwitcher />
-                {!isFirstVisit && (
-                  <Dialog.Close>
-                    <IconButton variant="ghost" highContrast>
-                      <Cross2Icon />
-                    </IconButton>
-                  </Dialog.Close>
-                )}
-              </Flex>
-            </Flex>
-          </Dialog.Title>
+              </div>
+              <div className="flex items-center gap-2 pr-5">
+                <LanguageSwitcher size="lg" />
+              </div>
+            </div>
+          </DialogTitle>
 
-          <Flex direction="column" mt="-2" p="0" gap="3">
-            <Text>{t($ => $.introduction)}</Text>
+          <div className="mt--2 flex flex-col gap-3 p-0">
+            <span>{t($ => $.introduction)}</span>
 
-            <Grid columns="1fr 1fr" gap="4">
-              <Flex direction="column" gap="2">
-                <Heading size="3">{t($ => $.keyFeatures.title)}</Heading>
-                <Text as="div" size="1">
-                  <ul style={{ listStyleType: 'disc', margin: 0, paddingLeft: '1.5rem' }}>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="flex flex-col gap-2">
+                <h3>{t($ => $.keyFeatures.title)}</h3>
+                <div className="text-sm">
+                  <ul className="m-0 list-disc pl-6">
                     {(
                       t($ => $.keyFeatures.items, {
                         returnObjects: true
@@ -79,13 +74,13 @@ export function WelcomeModal({ isOpen, mode, onAccept, trigger }: WelcomeModalPr
                       <li key={index}>{item}</li>
                     ))}
                   </ul>
-                </Text>
-              </Flex>
+                </div>
+              </div>
 
-              <Flex direction="column" gap="2">
-                <Heading size="3">{t($ => $.plannedFeatures.title)}</Heading>
-                <Text as="div" size="1">
-                  <ul style={{ listStyleType: 'disc', margin: 0, paddingLeft: '1.5rem' }}>
+              <div className="flex flex-col gap-2">
+                <h3>{t($ => $.plannedFeatures.title)}</h3>
+                <div className="text-sm">
+                  <ul className="m-0 list-disc pl-6">
                     {(
                       t($ => $.plannedFeatures.items, {
                         returnObjects: true
@@ -94,38 +89,36 @@ export function WelcomeModal({ isOpen, mode, onAccept, trigger }: WelcomeModalPr
                       <li key={index}>{item}</li>
                     ))}
                   </ul>
-                </Text>
-              </Flex>
-            </Grid>
+                </div>
+              </div>
+            </div>
 
-            <Grid columns="1fr 1fr" gap="4">
-              <Flex direction="column" gap="2">
-                <Heading size="3">{t($ => $.demoVideo.title)}</Heading>
-                <Text size="2">{t($ => $.demoVideo.description)}</Text>
-                <Flex direction="row" gap="4" align="center">
-                  <Link
-                    size="2"
-                    weight="bold"
+            <div className="grid grid-cols-2 gap-4">
+              <div className="flex flex-col gap-2">
+                <h3>{t($ => $.demoVideo.title)}</h3>
+                <span className="text-base">{t($ => $.demoVideo.description)}</span>
+                <div className="flex flex-row items-center gap-4">
+                  <a
+                    className="font-bold underline"
                     href="https://www.youtube.com/watch?v=oe9VnhEW0JE"
                     target="_blank"
                     rel="noopener noreferrer"
                   >
                     {t($ => $.demoVideo.demo01)}
-                  </Link>
-                  <Link
-                    size="2"
-                    weight="bold"
+                  </a>
+                  <a
+                    className="font-bold underline"
                     href="https://www.youtube.com/watch?v=7Ed09YNGSn8"
                     target="_blank"
                     rel="noopener noreferrer"
                   >
                     {t($ => $.demoVideo.demo02)}
-                  </Link>
-                </Flex>
-                <Heading size="3">{t($ => $.localStorage.title)}</Heading>
-                <Text as="div" size="1">
+                  </a>
+                </div>
+                <h3>{t($ => $.localStorage.title)}</h3>
+                <div className="text-sm">
                   {t($ => $.localStorage.description)}
-                  <ul style={{ margin: '0.5rem 0 0 0', paddingLeft: '1.5rem' }}>
+                  <ul className="mt-2 pl-6">
                     {(
                       t($ => $.localStorage.items, {
                         returnObjects: true
@@ -134,65 +127,59 @@ export function WelcomeModal({ isOpen, mode, onAccept, trigger }: WelcomeModalPr
                       <li key={index}>{item}</li>
                     ))}
                   </ul>
-                </Text>
-                <Text size="2" color="gray">
-                  {t($ => $.localStorage.privacy)}
-                </Text>
-              </Flex>
+                </div>
+                <span className="text-base">{t($ => $.localStorage.privacy)}</span>
+              </div>
 
-              <Callout.Root color="orange" variant="surface">
-                <Callout.Icon>
+              <Callout color="orange" variant="soft">
+                <CalloutIcon>
                   <ExclamationTriangleIcon />
-                </Callout.Icon>
-                <Callout.Text>
-                  <Flex direction="column" gap="2" as="span">
-                    <Text weight="bold">{t($ => $.disclaimer.title)}</Text>
-                    <Text>{t($ => $.disclaimer.intro)}</Text>
-                    <Flex direction="column" ml="4" gap="0" as="span">
+                </CalloutIcon>
+                <CalloutText>
+                  <span className="flex flex-col gap-2">
+                    <span className="font-bold">{t($ => $.disclaimer.title)}</span>
+                    <span>{t($ => $.disclaimer.intro)}</span>
+                    <span className="ml-4 flex flex-col gap-0">
                       {(
                         t($ => $.disclaimer.items, {
                           returnObjects: true
                         }) as string[]
                       ).map((item, index) => (
-                        <Text key={index}>{index === 3 ? <strong>{item}</strong> : item}</Text>
+                        <span key={index}>{index === 3 ? <strong>{item}</strong> : item}</span>
                       ))}
-                    </Flex>
-                  </Flex>
-                </Callout.Text>
-              </Callout.Root>
-            </Grid>
+                    </span>
+                  </span>
+                </CalloutText>
+              </Callout>
+            </div>
 
-            <Flex direction="column" gap="2" align="center">
-              <Button size="3" onClick={onAccept} style={{ width: '100%' }}>
+            <div className="flex flex-col items-center gap-2">
+              <Button size="lg" onClick={onAccept} className="w-full">
                 {t($ => $.continueButton)}
               </Button>
-              {isFirstVisit && (
-                <Text size="1" color="gray" align="center">
-                  {t($ => $.reviewInfo)}
-                </Text>
-              )}
-              <Flex direction="column" gap="1" align="center" style={{ marginTop: 'var(--space-2)' }}>
-                <Text size="1" color="gray" align="center">
+              {isFirstVisit && <span className="flex items-center text-sm">{t($ => $.reviewInfo)}</span>}
+              <div className="mt-2 flex flex-col items-center gap-1">
+                <span className="flex items-center text-sm">
                   {t($ => $.version, {
                     version: VERSION_INFO.version
                   })}
-                </Text>
-                <Flex gap="2" align="center" justify="center">
+                </span>
+                <div className="flex items-center justify-center gap-2">
                   <GitHubLogoIcon width="14" height="14" />
-                  <Link
-                    size="1"
+                  <a
+                    className="text-sm"
                     href="https://github.com/wheerd/strawbaler-online"
                     target="_blank"
                     rel="noopener noreferrer"
                   >
                     {t($ => $.viewOnGitHub)}
-                  </Link>
-                </Flex>
-              </Flex>
-            </Flex>
-          </Flex>
-        </Flex>
-      </Dialog.Content>
-    </Dialog.Root>
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
   )
 }

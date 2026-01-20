@@ -1,6 +1,6 @@
-import { Box, TextField } from '@radix-ui/themes'
 import { useCallback, useEffect, useRef, useState } from 'react'
 
+import { TextField } from '@/components/ui/text-field'
 import { useStageHeight, useStageWidth } from '@/editor/hooks/useViewportStore'
 
 import { lengthInputService } from './LengthInputService'
@@ -127,8 +127,8 @@ export function LengthInputComponent(): React.JSX.Element | null {
   }
 
   return (
-    <Box
-      className="absolute z-1000 pointer-events-auto"
+    <div
+      className="pointer-events-auto absolute z-1000"
       style={{
         left: constrainedPosition.x,
         top: constrainedPosition.y,
@@ -136,33 +136,25 @@ export function LengthInputComponent(): React.JSX.Element | null {
       }}
     >
       <TextField.Root
-        ref={inputRef}
         value={state.inputValue}
         onChange={handleInputChange}
         onKeyDown={handleKeyDown}
         onBlur={handleBlur}
         placeholder={placeholder ?? 'Enter length...'}
-        size="3"
-        variant="surface"
-        color={state.isValid ? undefined : 'red'}
-        className="w-20 text-center shadow-lg"
-        style={{
-          border: state.isValid ? '2px solid var(--accent-9)' : '2px solid var(--red-9)'
-        }}
-      />
+        size="lg"
+        variant="soft"
+        className={'w-20 text-center shadow-lg' + (state.isValid ? '' : ' text-red-600 ring-red-600/50!')}
+      >
+        <TextField.Input ref={inputRef} />
+      </TextField.Root>
 
       {/* Error message */}
       {!state.isValid && state.errorMessage && (
-        <Box
-          className="absolute top-full left-1/2 -translate-x-1/2 mt-1 px-2 py-1 text-white text-xs rounded whitespace-nowrap shadow-md"
-          style={{
-            backgroundColor: 'var(--red-9)'
-          }}
-        >
+        <div className="absolute top-full left-1/2 mt-2 -translate-x-1/2 rounded bg-red-300 px-2 py-1 text-xs whitespace-nowrap text-white shadow-md">
           {state.errorMessage}
-        </Box>
+        </div>
       )}
-    </Box>
+    </div>
   )
 }
 

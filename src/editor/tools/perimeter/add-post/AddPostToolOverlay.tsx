@@ -17,7 +17,7 @@ export function AddPostToolOverlay({ tool }: ToolOverlayComponentProps<AddPostTo
 
   const halfWidth = state.width / 2
 
-  const fillColor = state.canPlace ? 'var(--gray-1)' : 'var(--red-9)'
+  const fillColor = state.canPlace ? 'var(--color-schematic-gray-1)' : 'var(--color-red-600)'
 
   return (
     <g
@@ -32,7 +32,7 @@ export function AddPostToolOverlay({ tool }: ToolOverlayComponentProps<AddPostTo
         width={state.width}
         height={wall.thickness}
         fill={fillColor}
-        stroke="var(--gray-11)"
+        stroke="var(--color-gray-900)"
         strokeWidth={3}
       />
 
@@ -44,7 +44,7 @@ export function AddPostToolOverlay({ tool }: ToolOverlayComponentProps<AddPostTo
           width={state.width}
           height={wall.thickness / 3}
           fill={MATERIAL_COLORS.woodSupport}
-          stroke="var(--gray-11)"
+          stroke="var(--color-gray-900)"
           strokeWidth={2}
         />
       )}
@@ -56,7 +56,7 @@ export function AddPostToolOverlay({ tool }: ToolOverlayComponentProps<AddPostTo
           width={state.width}
           height={wall.thickness / 3}
           fill={MATERIAL_COLORS.woodSupport}
-          stroke="var(--gray-11)"
+          stroke="var(--color-gray-900)"
           strokeWidth={2}
         />
       )}
@@ -68,7 +68,7 @@ export function AddPostToolOverlay({ tool }: ToolOverlayComponentProps<AddPostTo
           width={state.width}
           height={wall.thickness / 3}
           fill={MATERIAL_COLORS.woodSupport}
-          stroke="var(--gray-11)"
+          stroke="var(--color-gray-900)"
           strokeWidth={2}
         />
       )}
@@ -79,8 +79,8 @@ export function AddPostToolOverlay({ tool }: ToolOverlayComponentProps<AddPostTo
           cx={state.snapDirection === 'right' ? -halfWidth : halfWidth}
           cy={wall.thickness / 2}
           r={wall.thickness * 0.15}
-          fill="var(--accent-9)"
-          stroke="var(--gray-1)"
+          fill="var(--color-primary)"
+          stroke="var(--color-schematic-gray-1)"
           strokeWidth={2}
           opacity={0.9}
         />

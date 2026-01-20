@@ -18,9 +18,9 @@ import * as formatters from './formatters'
  *
  *   return (
  *     <div>
- *       <Text>Length: {formatLength(1234)}</Text>
- *       <Text>Area: {formatArea(1500000)}</Text>
- *       <Text>Weight: {formatWeight(500)}</Text>
+ *       <span>Length: {formatLength(1234)}</span>
+ *       <span>Area: {formatArea(1500000)}</span>
+ *       <span>Weight: {formatWeight(500)}</span>
  *     </div>
  *   )
  * }

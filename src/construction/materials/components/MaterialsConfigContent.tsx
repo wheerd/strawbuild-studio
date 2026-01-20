@@ -11,22 +11,17 @@ import {
   TrashIcon
 } from '@radix-ui/react-icons'
 import * as Label from '@radix-ui/react-label'
-import {
-  AlertDialog,
-  Badge,
-  Button,
-  Callout,
-  DropdownMenu,
-  Flex,
-  Grid,
-  IconButton,
-  SegmentedControl,
-  Text,
-  TextField
-} from '@radix-ui/themes'
 import React, { useCallback, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
+import { AlertDialog } from '@/components/ui/alert-dialog'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Callout, CalloutIcon, CalloutText } from '@/components/ui/callout'
+import { Card } from '@/components/ui/card'
+import { DropdownMenu } from '@/components/ui/dropdown-menu'
+import { TextField } from '@/components/ui/text-field'
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 import { type EntityId, useEntityLabel } from '@/construction/config/components/useEntityLabel'
 import { useConfigActions, useDefaultStrawMaterialId } from '@/construction/config/store'
 import type {
@@ -35,6 +30,7 @@ import type {
   Material,
   MaterialId,
   SheetMaterial,
+  SheetType,
   StrawbaleMaterial,
   VolumeMaterial
 } from '@/construction/materials/material'
@@ -42,6 +38,7 @@ import { strawbale } from '@/construction/materials/material'
 import { useMaterialActions, useMaterials } from '@/construction/materials/store'
 import { type MaterialUsage, useMaterialUsage } from '@/construction/materials/usage'
 import { LengthField } from '@/shared/components/LengthField/LengthField'
+import { NumberField } from '@/shared/components/NumberField'
 import { VolumeField } from '@/shared/components/VolumeField/VolumeField'
 import type { Length } from '@/shared/geometry'
 import { useFormatters } from '@/shared/i18n/useFormatters'
@@ -186,11 +183,11 @@ export function MaterialsConfigContent({ initialSelectionId }: MaterialsConfigCo
 
   const nameKey = selectedMaterial?.nameKey
   return (
-    <Flex direction="column" gap="4" style={{ width: '100%' }}>
-      <Grid columns="2" gap="2">
+    <div className="flex w-full flex-col gap-4">
+      <div className="grid grid-cols-2 gap-2">
         {/* Selector + Actions */}
-        <Flex gap="2" align="center" width="100%">
-          <Flex direction="column" flexGrow="1">
+        <div className="flex w-full items-center gap-2">
+          <div className="flex grow flex-col">
             <MaterialSelect
               value={selectedMaterialId ?? null}
               onValueChange={materialId => {
@@ -198,12 +195,12 @@ export function MaterialsConfigContent({ initialSelectionId }: MaterialsConfigCo
               }}
               placeholder={t($ => $.common.placeholders.selectMaterial)}
             />
-          </Flex>
-          <DropdownMenu.Root>
-            <DropdownMenu.Trigger>
-              <IconButton title={t($ => $.common.addNew)}>
+          </div>
+          <DropdownMenu>
+            <DropdownMenu.Trigger asChild>
+              <Button size="icon" title={t($ => $.common.addNew)}>
                 <PlusIcon />
-              </IconButton>
+              </Button>
             </DropdownMenu.Trigger>
             <DropdownMenu.Content>
               <DropdownMenu.Item
@@ -211,70 +208,72 @@ export function MaterialsConfigContent({ initialSelectionId }: MaterialsConfigCo
                   handleAddNew('dimensional')
                 }}
               >
-                <Flex align="center" gap="1">
+                <div className="flex items-center gap-1">
                   <CubeIcon />
                   {t($ => $.materials.typeDimensional)}
-                </Flex>
+                </div>
               </DropdownMenu.Item>
               <DropdownMenu.Item
                 onSelect={() => {
                   handleAddNew('strawbale')
                 }}
               >
-                <Flex align="center" gap="1">
+                <div className="flex items-center gap-1">
                   <CubeIcon />
                   {t($ => $.materials.typeStrawbale)}
-                </Flex>
+                </div>
               </DropdownMenu.Item>
               <DropdownMenu.Item
                 onSelect={() => {
                   handleAddNew('sheet')
                 }}
               >
-                <Flex align="center" gap="1">
+                <div className="flex items-center gap-1">
                   <LayersIcon />
                   {t($ => $.materials.typeSheet)}
-                </Flex>
+                </div>
               </DropdownMenu.Item>
               <DropdownMenu.Item
                 onSelect={() => {
                   handleAddNew('volume')
                 }}
               >
-                <Flex align="center" gap="1">
+                <div className="flex items-center gap-1">
                   <OpacityIcon />
                   {t($ => $.materials.typeVolume)}
-                </Flex>
+                </div>
               </DropdownMenu.Item>
               <DropdownMenu.Item
                 onSelect={() => {
                   handleAddNew('generic')
                 }}
               >
-                <Flex align="center" gap="1">
+                <div className="flex items-center gap-1">
                   <CircleIcon />
                   {t($ => $.materials.typeGeneric)}
-                </Flex>
+                </div>
               </DropdownMenu.Item>
             </DropdownMenu.Content>
-          </DropdownMenu.Root>
-          <IconButton
+          </DropdownMenu>
+          <Button
+            size="icon"
             onClick={handleDuplicate}
             disabled={!selectedMaterial}
             title={t($ => $.common.duplicate)}
             variant="soft"
           >
             <CopyIcon />
-          </IconButton>
+          </Button>
           <AlertDialog.Root>
             <AlertDialog.Trigger>
-              <IconButton
+              <Button
+                variant="destructive"
+                size="icon"
                 disabled={!selectedMaterial || usage.isUsed}
-                color="red"
                 title={usage.isUsed ? t($ => $.common.inUseCannotDelete) : t($ => $.common.delete)}
               >
                 <TrashIcon />
-              </IconButton>
+              </Button>
             </AlertDialog.Trigger>
             <AlertDialog.Content>
               <AlertDialog.Title>{t($ => $.materials.deleteTitle)}</AlertDialog.Title>
@@ -283,50 +282,53 @@ export function MaterialsConfigContent({ initialSelectionId }: MaterialsConfigCo
                   name: selectedMaterial?.name
                 })}
               </AlertDialog.Description>
-              <Flex gap="3" mt="4" justify="end">
-                <AlertDialog.Cancel>
-                  <Button variant="soft" color="gray">
+              <div className="mt-4 flex justify-end gap-3">
+                <AlertDialog.Cancel asChild>
+                  <Button variant="soft" className="">
                     {t($ => $.common.cancel)}
                   </Button>
                 </AlertDialog.Cancel>
-                <AlertDialog.Action>
-                  <Button variant="solid" color="red" onClick={handleDelete}>
+                <AlertDialog.Action asChild>
+                  <Button variant="destructive" onClick={handleDelete}>
                     {t($ => $.common.delete)}
                   </Button>
                 </AlertDialog.Action>
-              </Flex>
+              </div>
             </AlertDialog.Content>
           </AlertDialog.Root>
           <AlertDialog.Root>
             <AlertDialog.Trigger>
-              <IconButton color="red" variant="outline" title={t($ => $.common.resetToDefaults)}>
+              <Button
+                size="icon"
+                className="text-destructive"
+                variant="outline"
+                title={t($ => $.common.resetToDefaults)}
+              >
                 <ResetIcon />
-              </IconButton>
+              </Button>
             </AlertDialog.Trigger>
             <AlertDialog.Content>
               <AlertDialog.Title>{t($ => $.materials.resetTitle)}</AlertDialog.Title>
               <AlertDialog.Description>{t($ => $.materials.resetConfirm)}</AlertDialog.Description>
-              <Flex gap="3" mt="4" justify="end">
-                <AlertDialog.Cancel>
-                  <Button variant="soft" color="gray">
+              <div className="mt-4 flex justify-end gap-3">
+                <AlertDialog.Cancel asChild>
+                  <Button variant="soft" className="">
                     {t($ => $.common.cancel)}
                   </Button>
                 </AlertDialog.Cancel>
-                <AlertDialog.Action>
-                  <Button variant="solid" color="red" onClick={handleReset}>
+                <AlertDialog.Action asChild>
+                  <Button variant="destructive" onClick={handleReset}>
                     {t($ => $.common.reset)}
                   </Button>
                 </AlertDialog.Action>
-              </Flex>
+              </div>
             </AlertDialog.Content>
           </AlertDialog.Root>
-        </Flex>
+        </div>
 
-        <Grid columns="auto 1fr" gap="2" align="center">
+        <div className="grid grid-cols-[auto_1fr] items-center gap-2">
           <Label.Root>
-            <Text size="1" weight="medium" color="gray">
-              {t($ => $.materials.defaultStrawMaterial)}
-            </Text>
+            <span className="text-sm font-medium">{t($ => $.materials.defaultStrawMaterial)}</span>
           </Label.Root>
           <MaterialSelect
             value={defaultStrawMaterialId}
@@ -336,24 +338,16 @@ export function MaterialsConfigContent({ initialSelectionId }: MaterialsConfigCo
               }
             }}
             placeholder={t($ => $.materials.selectStrawMaterial)}
-            size="2"
             materials={materials}
           />
-        </Grid>
-      </Grid>
+        </div>
+      </div>
       {/* Form */}
       {selectedMaterial && (
-        <Flex
-          direction="column"
-          gap="3"
-          p="3"
-          style={{ border: '1px solid var(--gray-6)', borderRadius: 'var(--radius-2)' }}
-        >
-          <Grid columns="4em 1fr" gap="2" gapX="3" align="center">
+        <Card className="flex flex-col gap-3 p-3">
+          <div className="grid grid-cols-[4em_1fr] items-center gap-2 gap-x-3">
             <Label.Root>
-              <Text size="2" weight="medium" color="gray">
-                {t($ => $.common.name)}
-              </Text>
+              <span className="text-base font-medium">{t($ => $.common.name)}</span>
             </Label.Root>
             <TextField.Root
               value={nameKey ? t($ => $.materials.defaults[nameKey]) : selectedMaterial.name}
@@ -361,26 +355,19 @@ export function MaterialsConfigContent({ initialSelectionId }: MaterialsConfigCo
                 handleUpdate({ name: e.target.value })
               }}
               placeholder={t($ => $.materials.materialName)}
-              size="2"
             />
-          </Grid>
-          <Grid columns="4em 1fr auto 1fr auto auto" gap="2" gapX="3" align="center">
+          </div>
+          <div className="grid grid-cols-[4em_1fr_auto_1fr_auto_auto] items-center gap-2 gap-x-3">
             <Label.Root>
-              <Text size="2" weight="medium" color="gray">
-                {t($ => $.common.type)}
-              </Text>
+              <span className="text-base font-medium">{t($ => $.common.type)}</span>
             </Label.Root>
-            <Flex gap="2" align="center">
+            <div className="flex items-center gap-2">
               {Icon && <Icon width="12" height="12" />}
-              <Text size="2" color="gray">
-                {getMaterialTypeName(selectedMaterial.type)}
-              </Text>
-            </Flex>
+              <span className="text-base">{getMaterialTypeName(selectedMaterial.type)}</span>
+            </div>
 
             <Label.Root>
-              <Text size="2" weight="medium" color="gray">
-                {t($ => $.common.color)}
-              </Text>
+              <span className="text-base font-medium">{t($ => $.common.color)}</span>
             </Label.Root>
             <input
               type="color"
@@ -388,34 +375,26 @@ export function MaterialsConfigContent({ initialSelectionId }: MaterialsConfigCo
               onChange={e => {
                 handleUpdate({ color: e.target.value })
               }}
-              style={{ width: '60px', height: '24px', cursor: 'pointer' }}
+              className="h-[24px] w-[60px] cursor-pointer"
             />
             <Label.Root>
-              <Text size="2" weight="medium" color="gray">
-                {t($ => $.common.density)}
-              </Text>
+              <span className="text-base font-medium">{t($ => $.common.density)}</span>
             </Label.Root>
-            <TextField.Root
-              type="number"
-              value={selectedMaterial.density ?? ''}
-              onChange={e => {
-                const next = e.target.value
-                const parsed = Number(next)
-                handleUpdate({ density: Number.isNaN(parsed) || parsed === 0 ? undefined : parsed })
+            <NumberField.Root
+              value={selectedMaterial.density}
+              onChange={value => {
+                handleUpdate({ density: value })
               }}
               placeholder="—"
-              size="2"
-              min="0"
-              step="1"
-              style={{ textAlign: 'right', width: '6em' }}
             >
-              <TextField.Slot side="right" style={{ paddingInline: '6px' }}>
-                <Text size="1" color="gray">
+              <NumberField.Input min="0" step="1" className="w-20 text-right" />
+              <NumberField.Slot side="right" className="ml--4 pointer-events-none px-1">
+                <span className="text-muted-foreground pointer-events-none text-sm">
                   {t($ => $.common.densityUnit)}
-                </Text>
-              </TextField.Slot>
-            </TextField.Root>
-          </Grid>
+                </span>
+              </NumberField.Slot>
+            </NumberField.Root>
+          </div>
 
           {selectedMaterial.type === 'dimensional' && (
             <DimensionalMaterialFields material={selectedMaterial} onUpdate={handleUpdate} />
@@ -432,22 +411,22 @@ export function MaterialsConfigContent({ initialSelectionId }: MaterialsConfigCo
           {selectedMaterial.type === 'strawbale' && (
             <StrawbaleMaterialFields material={selectedMaterial} onUpdate={handleUpdate} />
           )}
-        </Flex>
+        </Card>
       )}
       {!selectedMaterial && materials.length === 0 && (
-        <Flex justify="center" align="center" p="5">
-          <Text color="gray">{t($ => $.materials.noMaterialsYet)}</Text>
-        </Flex>
+        <div className="flex items-center justify-center p-5">
+          <span className="">{t($ => $.materials.noMaterialsYet)}</span>
+        </div>
       )}
       {usage.isUsed && <UsageDisplay usage={usage} />}
-    </Flex>
+    </div>
   )
 }
 
 function UsageBadge({ id }: { id: EntityId }) {
   const label = useEntityLabel(id)
   return (
-    <Badge key={id} size="2" variant="soft">
+    <Badge key={id} variant="soft" color="blue">
       {label}
     </Badge>
   )
@@ -457,15 +436,13 @@ function UsageDisplay({ usage }: { usage: MaterialUsage }): React.JSX.Element {
   const { t } = useTranslation('config')
 
   return (
-    <Grid columns="auto 1fr" gap="2" gapX="3" align="baseline">
+    <div className="grid grid-cols-[auto_1fr] items-baseline gap-2 gap-x-3">
       <Label.Root>
-        <Text size="2" weight="medium" color="gray">
-          {t($ => $.usage.usedBy)}
-        </Text>
+        <span className="text-base font-medium">{t($ => $.usage.usedBy)}</span>
       </Label.Root>
-      <Flex gap="1" wrap="wrap">
+      <div className="flex flex-wrap gap-1">
         {usage.isDefaultStraw && (
-          <Badge size="2" variant="soft" color="blue">
+          <Badge variant="soft" color="blue">
             {t($ => $.usage.globalDefault_straw)}
           </Badge>
         )}
@@ -473,12 +450,12 @@ function UsageDisplay({ usage }: { usage: MaterialUsage }): React.JSX.Element {
           <UsageBadge key={id} id={id} />
         ))}
         {usage.usedInWallPosts && (
-          <Badge size="2" variant="soft">
+          <Badge variant="soft" color="blue">
             {t($ => $.usage.usedInWallPosts)}
           </Badge>
         )}
-      </Flex>
-    </Grid>
+      </div>
+    </div>
   )
 }
 
@@ -546,125 +523,126 @@ function DimensionalMaterialFields({
   )
 
   return (
-    <Flex direction="column" gap="3">
-      <Flex direction="row" justify="between" align="end">
-        <Flex direction="column" gap="2">
-          <Text size="2" weight="medium" color="gray" id="crossSections">
+    <div className="flex flex-col gap-3">
+      <div className="flex flex-row items-end justify-between">
+        <div className="flex flex-col gap-2">
+          <span className="text-base font-medium" id="crossSections">
             {t($ => $.materials.crossSections)}
-          </Text>
-          <Flex gap="2" wrap="wrap" role="list" aria-labelledby="crossSections">
+          </span>
+          <div className="flex grow flex-wrap gap-2" role="list" aria-labelledby="crossSections">
             {material.crossSections.map(section => (
-              <Badge role="listitem" key={`${section.smallerLength}x${section.biggerLength}`} size="2" variant="soft">
-                <Flex align="center" gap="1">
+              <Badge
+                size="sm"
+                role="listitem"
+                key={`${section.smallerLength}x${section.biggerLength}`}
+                variant="soft"
+                color="blue"
+              >
+                <div className="flex items-center gap-1">
                   {formatDimensions2D([section.smallerLength, section.biggerLength], false)}
-                  <IconButton
-                    size="1"
+                  <Button
+                    size="icon-xs"
                     variant="ghost"
-                    color="gray"
+                    className="cursor-pointer"
                     onClick={() => {
                       handleRemoveCrossSection(section)
                     }}
-                    style={{ cursor: 'pointer' }}
                     aria-label={t($ => $.materials.removeCrossSection)}
                   >
                     <Cross2Icon width="10" height="10" />
-                  </IconButton>
-                </Flex>
+                  </Button>
+                </div>
               </Badge>
             ))}
             {material.crossSections.length === 0 && (
-              <Callout.Root color="amber" size="1">
-                <Callout.Icon>
+              <Callout color="orange" size="sm">
+                <CalloutIcon>
                   <ExclamationTriangleIcon />
-                </Callout.Icon>
-                <Callout.Text>{t($ => $.materials.noCrossSections)}</Callout.Text>
-              </Callout.Root>
+                </CalloutIcon>
+                <CalloutText>{t($ => $.materials.noCrossSections)}</CalloutText>
+              </Callout>
             )}
-          </Flex>
-        </Flex>
-        <Grid columns="5em auto 5em auto" gap="2" align="center" justify="end">
+          </div>
+        </div>
+        <div className="grid grow-0 grid-cols-[auto_auto_auto_auto] items-center justify-end gap-2">
           <LengthField
             value={newDim1}
             onChange={setNewDim1}
             unit="cm"
-            size="2"
             aria-label={t($ => $.materials.crossSectionSmaller)}
           />
-          <Text>x</Text>
+          <span>x</span>
           <LengthField
             value={newDim2}
             onChange={setNewDim2}
             unit="cm"
-            size="2"
             aria-label={t($ => $.materials.crossSectionLarger)}
           />
-          <IconButton
+          <Button
+            size="icon-sm"
             title={t($ => $.common.add)}
             aria-label={t($ => $.materials.addCrossSection)}
             onClick={handleAddCrossSection}
-            variant="surface"
-            size="2"
+            variant="soft"
           >
             <PlusIcon />
-          </IconButton>
-        </Grid>
-      </Flex>
-      <Flex direction="row" justify="between" align="end">
-        <Flex direction="column" gap="2">
-          <Text size="2" weight="medium" color="gray" id="stock-lengths">
+          </Button>
+        </div>
+      </div>
+      <div className="flex flex-row items-end justify-between">
+        <div className="flex flex-col gap-2">
+          <span className="text-base font-medium" id="stock-lengths">
             {t($ => $.materials.stockLengths)}
-          </Text>
-          <Flex gap="2" wrap="wrap" role="list" aria-labelledby="stock-lengths">
+          </span>
+          <div className="flex flex-wrap gap-2" role="list" aria-labelledby="stock-lengths">
             {material.lengths.map(length => (
-              <Badge role="listitem" key={length} size="2" variant="soft">
-                <Flex align="center" gap="1">
+              <Badge role="listitem" key={length} variant="soft" size="sm" color="blue">
+                <div className="flex items-center gap-1">
                   {formatLength(length)}
-                  <IconButton
-                    size="1"
+                  <Button
+                    size="icon-xs"
                     variant="ghost"
-                    color="gray"
+                    className="cursor-pointer"
                     onClick={() => {
                       handleRemoveLength(length)
                     }}
-                    style={{ cursor: 'pointer' }}
                     aria-label={t($ => $.materials.removeStockLength)}
                   >
                     <Cross2Icon width="10" height="10" />
-                  </IconButton>
-                </Flex>
+                  </Button>
+                </div>
               </Badge>
             ))}
             {material.lengths.length === 0 && (
-              <Callout.Root color="amber" size="1">
-                <Callout.Icon>
+              <Callout color="orange" size="sm">
+                <CalloutIcon>
                   <ExclamationTriangleIcon />
-                </Callout.Icon>
-                <Callout.Text>{t($ => $.materials.noLengths)}</Callout.Text>
-              </Callout.Root>
+                </CalloutIcon>
+                <CalloutText>{t($ => $.materials.noLengths)}</CalloutText>
+              </Callout>
             )}
-          </Flex>
-        </Flex>
-        <Flex gap="2" align="end">
+          </div>
+        </div>
+        <div className="flex items-end gap-2">
           <LengthField
             value={newLengthInput}
             onChange={setNewLengthInput}
             unit="cm"
-            size="2"
-            style={{ width: '8em' }}
+            className="w-[8em]"
             aria-label={t($ => $.materials.stockLengthInput)}
           />
-          <IconButton
+          <Button
+            size="icon-sm"
             title={t($ => $.materials.add)}
             aria-label={t($ => $.materials.addStockLength)}
             onClick={handleAddLength}
-            variant="surface"
-            size="2"
+            variant="soft"
           >
             <PlusIcon />
-          </IconButton>
-        </Flex>
-      </Flex>
-    </Flex>
+          </Button>
+        </div>
+      </div>
+    </div>
   )
 }
 
@@ -727,143 +705,138 @@ function SheetMaterialFields({
   )
 
   return (
-    <Flex direction="column" gap="3">
-      <Flex direction="row" justify="between" align="end">
-        <Flex direction="column" gap="2">
-          <Text size="2" weight="medium" color="gray" id="sheet-sizes">
+    <div className="flex flex-col gap-3">
+      <div className="flex flex-row items-end justify-between">
+        <div className="flex flex-col gap-2">
+          <span className="text-base font-medium" id="sheet-sizes">
             {t($ => $.materials.sheetSizes)}
-          </Text>
-          <Flex gap="2" wrap="wrap" role="list" aria-labelledby="sheet-sizes">
+          </span>
+          <div className="flex flex-wrap gap-2" role="list" aria-labelledby="sheet-sizes">
             {material.sizes.map(size => (
-              <Badge role="listitem" key={`${size.smallerLength}x${size.biggerLength}`} size="2" variant="soft">
-                <Flex align="center" gap="1">
+              <Badge
+                size="sm"
+                role="listitem"
+                key={`${size.smallerLength}x${size.biggerLength}`}
+                variant="soft"
+                color="blue"
+              >
+                <div className="flex items-center gap-1">
                   {formatDimensions2D([size.smallerLength, size.biggerLength], false)}
-                  <IconButton
-                    size="1"
+                  <Button
+                    size="icon-xs"
                     variant="ghost"
-                    color="gray"
+                    className="cursor-pointer"
                     onClick={() => {
                       handleRemoveSize(size)
                     }}
-                    style={{ cursor: 'pointer' }}
                     aria-label={t($ => $.materials.removeSheetSize)}
                   >
                     <Cross2Icon width="10" height="10" />
-                  </IconButton>
-                </Flex>
+                  </Button>
+                </div>
               </Badge>
             ))}
             {material.sizes.length === 0 && (
-              <Callout.Root color="amber" size="1">
-                <Callout.Icon>
+              <Callout color="orange" size="sm">
+                <CalloutIcon>
                   <ExclamationTriangleIcon />
-                </Callout.Icon>
-                <Callout.Text>{t($ => $.materials.noSizes)}</Callout.Text>
-              </Callout.Root>
+                </CalloutIcon>
+                <CalloutText>{t($ => $.materials.noSizes)}</CalloutText>
+              </Callout>
             )}
-          </Flex>
-        </Flex>
-        <Grid columns="6em auto 6em auto" gap="2" align="center" justify="end">
-          <LengthField
-            value={newWidth}
-            onChange={setNewWidth}
-            unit="cm"
-            size="2"
-            aria-label={t($ => $.materials.sheetWidth)}
-          />
-          <Text>x</Text>
+          </div>
+        </div>
+        <div className="grid grid-cols-[6em_auto_6em_auto] items-center justify-end gap-2">
+          <LengthField value={newWidth} onChange={setNewWidth} unit="cm" aria-label={t($ => $.materials.sheetWidth)} />
+          <span>x</span>
           <LengthField
             value={newLength}
             onChange={setNewLength}
             unit="cm"
-            size="2"
             aria-label={t($ => $.materials.sheetLength)}
           />
-          <IconButton
+          <Button
+            size="icon-sm"
             title={t($ => $.materials.addSize)}
             aria-label={t($ => $.materials.addSheetSize)}
             onClick={handleAddSize}
-            variant="surface"
-            size="2"
+            variant="soft"
           >
             <PlusIcon />
-          </IconButton>
-        </Grid>
-      </Flex>
-      <Flex direction="row" justify="between" align="end">
-        <Flex direction="column" gap="2">
-          <Text size="2" weight="medium" color="gray" id="sheet-thicknesses">
+          </Button>
+        </div>
+      </div>
+      <div className="flex flex-row items-end justify-between">
+        <div className="flex flex-col gap-2">
+          <span className="text-base font-medium" id="sheet-thicknesses">
             {t($ => $.materials.thicknesses)}
-          </Text>
-          <Flex gap="2" wrap="wrap" role="list" aria-labelledby="sheet-thicknesses">
+          </span>
+          <div className="flex flex-wrap gap-2" role="list" aria-labelledby="sheet-thicknesses">
             {material.thicknesses.map(thickness => (
-              <Badge role="listitem" key={thickness} size="2" variant="soft">
-                <Flex align="center" gap="1">
+              <Badge role="listitem" key={thickness} variant="soft" size="sm" color="blue">
+                <div className="flex items-center gap-1">
                   {formatLength(thickness)}
-                  <IconButton
-                    size="1"
+                  <Button
+                    size="icon-xs"
                     variant="ghost"
-                    color="gray"
+                    className="cursor-pointer"
                     onClick={() => {
                       handleRemoveThickness(thickness)
                     }}
-                    style={{ cursor: 'pointer' }}
                     aria-label={t($ => $.materials.removeThickness)}
                   >
                     <Cross2Icon width="10" height="10" />
-                  </IconButton>
-                </Flex>
+                  </Button>
+                </div>
               </Badge>
             ))}
             {material.thicknesses.length === 0 && (
-              <Callout.Root color="amber" size="1">
-                <Callout.Icon>
+              <Callout color="orange" size="sm">
+                <CalloutIcon>
                   <ExclamationTriangleIcon />
-                </Callout.Icon>
-                <Callout.Text>{t($ => $.materials.noThicknesses)}</Callout.Text>
-              </Callout.Root>
+                </CalloutIcon>
+                <CalloutText>{t($ => $.materials.noThicknesses)}</CalloutText>
+              </Callout>
             )}
-          </Flex>
-        </Flex>
-        <Flex gap="2" align="end">
+          </div>
+        </div>
+        <div className="flex items-end gap-2">
           <LengthField
             value={newThickness}
             onChange={setNewThickness}
             unit="mm"
-            size="2"
-            style={{ width: '8em' }}
+            className="w-[8em]"
             aria-label={t($ => $.materials.thicknessInput)}
           />
-          <IconButton
+          <Button
+            size="icon-sm"
             title={t($ => $.materials.addThickness)}
             aria-label={t($ => $.materials.addThickness)}
             onClick={handleAddThickness}
-            variant="surface"
-            size="2"
+            variant="soft"
           >
             <PlusIcon />
-          </IconButton>
-        </Flex>
-      </Flex>
-      <Flex direction="column" gap="2">
-        <Text size="2" weight="medium" color="gray">
-          {t($ => $.materials.sheetType)}
-        </Text>
-        <SegmentedControl.Root
+          </Button>
+        </div>
+      </div>
+      <div className="flex flex-col gap-2">
+        <span className="text-base font-medium">{t($ => $.materials.sheetType)}</span>
+        <ToggleGroup
+          type="single"
+          variant="outline"
           value={material.sheetType}
           onValueChange={value => {
-            onUpdate({ sheetType: value as SheetMaterial['sheetType'] })
+            if (value) {
+              onUpdate({ sheetType: value as SheetType })
+            }
           }}
-          size="2"
         >
-          <SegmentedControl.Item value="solid">{t($ => $.materials.sheetTypeSolid)}</SegmentedControl.Item>
-          <SegmentedControl.Item value="tongueAndGroove">
-            {t($ => $.materials.sheetTypeTongueAndGroove)}
-          </SegmentedControl.Item>
-          <SegmentedControl.Item value="flexible">{t($ => $.materials.sheetTypeFlexible)}</SegmentedControl.Item>
-        </SegmentedControl.Root>
-      </Flex>
-    </Flex>
+          <ToggleGroupItem value="solid">{t($ => $.materials.sheetTypeSolid)}</ToggleGroupItem>
+          <ToggleGroupItem value="tongueAndGroove">{t($ => $.materials.sheetTypeTongueAndGroove)}</ToggleGroupItem>
+          <ToggleGroupItem value="flexible">{t($ => $.materials.sheetTypeFlexible)}</ToggleGroupItem>
+        </ToggleGroup>
+      </div>
+    </div>
   )
 }
 
@@ -898,76 +871,78 @@ function VolumeMaterialFields({
   )
 
   return (
-    <Flex direction="column" gap="3">
-      <Flex direction="row" justify="between" align="end">
-        <Flex direction="column" gap="2">
-          <Text size="2" weight="medium" color="gray" id="available-volumes">
+    <div className="flex flex-col gap-3">
+      <div className="flex flex-row items-end justify-between">
+        <div className="flex flex-col gap-2">
+          <span className="text-base font-medium" id="available-volumes">
             {t($ => $.materials.availableVolumes)}
-          </Text>
-          <Flex gap="2" wrap="wrap" role="list" aria-labelledby="available-volumes">
+          </span>
+          <div className="flex flex-wrap gap-2" role="list" aria-labelledby="available-volumes">
             {material.availableVolumes.map(volume => (
-              <Badge role="listitem" key={volume} size="2" variant="soft">
-                <Flex align="center" gap="1">
+              <Badge role="listitem" key={volume} variant="soft" size="sm" color="blue">
+                <div className="flex items-center gap-1">
                   {volumeUnit === 'liter' ? formatVolumeInLiters(volume) : formatVolume(volume)}
-                  <IconButton
-                    size="1"
+                  <Button
+                    size="icon-xs"
                     variant="ghost"
-                    color="gray"
+                    className="cursor-pointer"
                     onClick={() => {
                       handleRemoveVolume(volume)
                     }}
-                    style={{ cursor: 'pointer' }}
                     aria-label={t($ => $.materials.removeVolume)}
                   >
                     <Cross2Icon width="10" height="10" />
-                  </IconButton>
-                </Flex>
+                  </Button>
+                </div>
               </Badge>
             ))}
             {material.availableVolumes.length === 0 && (
-              <Callout.Root color="amber" size="1">
-                <Callout.Icon>
+              <Callout color="orange" size="sm">
+                <CalloutIcon>
                   <ExclamationTriangleIcon />
-                </Callout.Icon>
-                <Callout.Text>{t($ => $.materials.noVolumes)}</Callout.Text>
-              </Callout.Root>
+                </CalloutIcon>
+                <CalloutText>{t($ => $.materials.noVolumes)}</CalloutText>
+              </Callout>
             )}
-          </Flex>
-        </Flex>
+          </div>
+        </div>
 
-        <Flex direction="column" gap="2" align="end" style={{ minWidth: '14em' }}>
-          <SegmentedControl.Root
+        <div className="flex min-w-[14em] flex-col items-end gap-2">
+          <ToggleGroup
+            type="single"
+            variant="outline"
             value={volumeUnit}
             onValueChange={value => {
-              setVolumeUnit(value as 'liter' | 'm3')
+              if (value) {
+                setVolumeUnit(value as 'liter' | 'm3')
+              }
             }}
-            size="1"
+            size="sm"
           >
-            <SegmentedControl.Item value="liter">{t($ => $.units.liter, { ns: 'common' })}</SegmentedControl.Item>
-            <SegmentedControl.Item value="m3">{t($ => $.units.m3, { ns: 'common' })}</SegmentedControl.Item>
-          </SegmentedControl.Root>
-          <Flex gap="2" align="end">
+            <ToggleGroupItem value="liter">{t($ => $.units.liter, { ns: 'common' })}</ToggleGroupItem>
+            <ToggleGroupItem value="m3">{t($ => $.units.m3, { ns: 'common' })}</ToggleGroupItem>
+          </ToggleGroup>
+          <div className="flex items-end gap-2">
             <VolumeField
               value={newVolumeInput}
               onChange={setNewVolumeInput}
               unit={volumeUnit}
-              size="2"
-              style={{ width: '8em' }}
+              className="w-[8em]"
               aria-label={t($ => $.materials.volumeInput)}
             />
-            <IconButton
+            <Button
+              size="icon-sm"
               title={t($ => $.materials.addVolume)}
               aria-label={t($ => $.materials.addVolumeOption)}
               onClick={handleAddVolume}
-              variant="surface"
-              size="2"
+              variant="soft"
             >
               <PlusIcon />
-            </IconButton>
-          </Flex>
-        </Flex>
-      </Flex>
-    </Flex>
+            </Button>
+          </div>
+        </div>
+      </div>
+    </div>
   )
 }
 
@@ -980,12 +955,10 @@ function StrawbaleMaterialFields({
 }) {
   const { t } = useTranslation('config')
   return (
-    <Flex direction="column" gap="3">
-      <Grid columns="8em 1fr 8em 1fr" gap="3" gapX="4">
+    <div className="flex flex-col gap-3">
+      <div className="grid grid-cols-[8em_1fr_8em_1fr] gap-3 gap-x-4">
         <Label.Root>
-          <Text size="1" weight="medium" color="gray">
-            {t($ => $.materials.minBaleLength)}
-          </Text>
+          <span className="text-sm font-medium">{t($ => $.materials.minBaleLength)}</span>
         </Label.Root>
         <LengthField
           value={material.baleMinLength}
@@ -993,13 +966,10 @@ function StrawbaleMaterialFields({
             onUpdate({ baleMinLength })
           }}
           unit="cm"
-          size="2"
         />
 
         <Label.Root>
-          <Text size="1" weight="medium" color="gray">
-            {t($ => $.materials.maxBaleLength)}
-          </Text>
+          <span className="text-sm font-medium">{t($ => $.materials.maxBaleLength)}</span>
         </Label.Root>
         <LengthField
           value={material.baleMaxLength}
@@ -1007,13 +977,10 @@ function StrawbaleMaterialFields({
             onUpdate({ baleMaxLength })
           }}
           unit="cm"
-          size="2"
         />
 
         <Label.Root>
-          <Text size="1" weight="medium" color="gray">
-            {t($ => $.materials.baleHeight)}
-          </Text>
+          <span className="text-sm font-medium">{t($ => $.materials.baleHeight)}</span>
         </Label.Root>
         <LengthField
           value={material.baleHeight}
@@ -1021,13 +988,10 @@ function StrawbaleMaterialFields({
             onUpdate({ baleHeight })
           }}
           unit="cm"
-          size="2"
         />
 
         <Label.Root>
-          <Text size="1" weight="medium" color="gray">
-            {t($ => $.materials.baleWidth)}
-          </Text>
+          <span className="text-sm font-medium">{t($ => $.materials.baleWidth)}</span>
         </Label.Root>
         <LengthField
           value={material.baleWidth}
@@ -1035,14 +999,11 @@ function StrawbaleMaterialFields({
             onUpdate({ baleWidth })
           }}
           unit="cm"
-          size="2"
         />
-      </Grid>
-      <Grid columns="8em 1fr 8em 1fr" gap="3" gapX="4">
+      </div>
+      <div className="grid grid-cols-[8em_1fr_8em_1fr] gap-3 gap-x-4">
         <Label.Root>
-          <Text size="1" weight="medium" color="gray">
-            {t($ => $.materials.tolerance)}
-          </Text>
+          <span className="text-sm font-medium">{t($ => $.materials.tolerance)}</span>
         </Label.Root>
         <LengthField
           value={material.tolerance}
@@ -1050,13 +1011,10 @@ function StrawbaleMaterialFields({
             onUpdate({ tolerance })
           }}
           unit="mm"
-          size="2"
         />
 
         <Label.Root>
-          <Text size="1" weight="medium" color="gray">
-            {t($ => $.materials.topCutoffLimit)}
-          </Text>
+          <span className="text-sm font-medium">{t($ => $.materials.topCutoffLimit)}</span>
         </Label.Root>
         <LengthField
           value={material.topCutoffLimit}
@@ -1064,13 +1022,10 @@ function StrawbaleMaterialFields({
             onUpdate({ topCutoffLimit })
           }}
           unit="cm"
-          size="2"
         />
 
         <Label.Root>
-          <Text size="1" weight="medium" color="gray">
-            {t($ => $.materials.flakeSize)}
-          </Text>
+          <span className="text-sm font-medium">{t($ => $.materials.flakeSize)}</span>
         </Label.Root>
         <LengthField
           value={material.flakeSize}
@@ -1078,9 +1033,8 @@ function StrawbaleMaterialFields({
             onUpdate({ flakeSize })
           }}
           unit="cm"
-          size="2"
         />
-      </Grid>
-    </Flex>
+      </div>
+    </div>
   )
 }

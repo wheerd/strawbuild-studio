@@ -75,7 +75,7 @@ function generateLabels(
           fill={color}
           className="font-mono"
           transform={`rotate(${textAngle})`}
-          style={{ filter: 'drop-shadow(1px 1px 2px var(--gray-1))' }}
+          style={{ filter: 'drop-shadow(1px 1px 2px var(--color-schematic-gray-1))' }}
         >
           {formatLength(length)}
         </text>
@@ -142,7 +142,7 @@ export function PolygonReferencePreview({
       scaledReferencePoints,
       referencePolygon.points,
       referenceSide === 'inside' ? 'inward' : 'outward',
-      'var(--accent-12)',
+      'var(--color-primary)',
       formatLength
     )
 
@@ -152,7 +152,7 @@ export function PolygonReferencePreview({
             scaledDerivedPoints,
             derivedPoints,
             referenceSide === 'inside' ? 'outward' : 'inward',
-            'var(--gray-12)',
+            'var(--color-gray-900)',
             formatLength
           )
         : null
@@ -165,11 +165,12 @@ export function PolygonReferencePreview({
     }
   }, [referencePoints, thickness, referenceSide, size])
 
-  const referenceFill = referenceSide === 'inside' ? 'var(--accent-3)' : 'var(--accent-3)'
-  const referenceStroke = referenceSide === 'inside' ? 'var(--accent-8)' : 'var(--accent-8)'
+  const referenceFill = referenceSide === 'inside' ? 'var(--color-accent)' : 'var(--color-accent)'
+  const referenceStroke =
+    referenceSide === 'inside' ? 'var(--color-accent-foreground)' : 'var(--color-accent-foreground)'
 
-  const derivedFill = referenceSide === 'inside' ? 'var(--gray-3)' : 'var(--gray-2)'
-  const derivedStroke = referenceSide === 'inside' ? 'var(--gray-8)' : 'var(--gray-8)'
+  const derivedFill = referenceSide === 'inside' ? 'var(--color-schematic-gray-3)' : 'var(--color-schematic-gray-2)'
+  const derivedStroke = referenceSide === 'inside' ? 'var(--color-gray-800)' : 'var(--color-gray-800)'
 
   const showDerived = derivedPath.length > 0
 

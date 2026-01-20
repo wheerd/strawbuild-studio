@@ -10,15 +10,32 @@
     <meta name="theme-color" content="#e6c547" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Strawbaler Online - Floor Plan Editor</title>
+    <script>
+      // Apply dark class before paint to prevent flash
+      const theme = localStorage.getItem('theme')
+      if (theme === 'dark' || (!theme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+        document.documentElement.classList.add('dark')
+      }
+    </script>
     <style>
       :root {
-        color-scheme: only light;
-        --loading-bg: #fdf8ec;
-        --loading-card: #ffffff;
-        --loading-text: #3a210a;
-        --loading-muted: #6f4e2c;
+        --loading-bg: oklch(0.9842 0.0034 247.8575);
+        --loading-card: oklch(1 0 0);
+        --loading-text: oklch(0.2795 0.0368 260.031);
+        --loading-muted: oklch(0.551 0.0234 264.3637);
         --loading-accent: #d2960f;
+        --loading-border: oklch(0.8717 0.0093 258.3382);
         --loading-shadow: rgba(58, 33, 10, 0.08);
+      }
+
+      .dark {
+        --loading-bg: oklch(0.2427 0.0381 259.9437);
+        --loading-card: oklch(0.2795 0.0368 260.031);
+        --loading-text: oklch(0.9288 0.0126 255.5078);
+        --loading-muted: oklch(0.7137 0.0192 261.3246);
+        --loading-accent: #d2960f;
+        --loading-border: oklch(0.4461 0.0263 256.8018);
+        --loading-shadow: rgba(0, 0, 0, 0.3);
       }
 
       * {
@@ -31,19 +48,6 @@
         min-height: 100%;
       }
 
-      body {
-        font-family:
-          'Inter',
-          'Segoe UI',
-          system-ui,
-          -apple-system,
-          BlinkMacSystemFont,
-          'Helvetica Neue',
-          sans-serif;
-        background: var(--loading-bg);
-        color: var(--loading-text);
-      }
-
       #root {
         min-height: 100vh;
       }
@@ -54,6 +58,16 @@
         align-items: center;
         justify-content: center;
         padding: 2rem;
+        font-family:
+          'Inter',
+          'Segoe UI',
+          system-ui,
+          -apple-system,
+          BlinkMacSystemFont,
+          'Helvetica Neue',
+          sans-serif;
+        background: var(--loading-bg);
+        color: var(--loading-text);
       }
 
       .loading-card {

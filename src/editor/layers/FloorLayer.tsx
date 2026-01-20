@@ -34,10 +34,7 @@ export function FloorLayer(): React.JSX.Element {
             key={index}
             d={polygonWithHolesToSvgPath(polygon)}
             fillRule="evenodd"
-            fill="var(--gray-2)"
-            stroke="var(--gray-11)"
-            strokeWidth={20}
-            className="pointer-events-none"
+            className="fill-muted stroke-border-contrast pointer-events-none stroke-20"
           />
         ))}
       </g>

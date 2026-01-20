@@ -105,7 +105,7 @@
     }
   },
   "layers": {
-    "copyFrom": "Von \"{{name}}\" kopieren",
+    "copyFrom": "Kopieren von...",
     "defaultName_monolithic": "Monolithische Schicht",
     "defaultName_striped": "Gestreifte Schicht",
     "defaults": {
@@ -323,12 +323,12 @@
       "cornerHandlingInterweave": "Abgestuft",
       "offsetFromInsideEdge": "Versatz von Innenkante"
     },
-    "newName_brick": "Neue Mauerwerk-Aufbau",
-    "newName_double": "Neue Doppel-Aufbau",
-    "newName_full": "Neue Massiv-Aufbau",
+    "newName_brick": "Neuer Mauerwerk-Aufbau",
+    "newName_double": "Neuer Doppel-Aufbau",
+    "newName_full": "Neuer Massiv-Aufbau",
     "none": "Keine",
     "placeholders": {
-      "name": "Name der Ringankeraufbau"
+      "name": "Name des Ringankeraufbaus"
     },
     "resetConfirm": "Möchtest du die Standard-Ringankeraufbauten wirklich zurücksetzen? Dies stellt die ursprünglichen Standardaufbauten wieder her, behält aber alle benutzerdefinierten Aufbauten bei. Diese Aktion kann nicht rückgängig gemacht werden.",
     "resetTitle": "Ringankeraufbauten zurücksetzen",

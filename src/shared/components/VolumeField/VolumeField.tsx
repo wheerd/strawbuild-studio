@@ -1,5 +1,6 @@
-import { Text, TextField } from '@radix-ui/themes'
 import { forwardRef } from 'react'
+
+import { cn } from '@/lib/utils'
 
 export type VolumeUnit = 'liter' | 'm3'
 
@@ -14,20 +15,18 @@ const UNIT_CONFIG: Record<VolumeUnit, { label: string; factor: number }> = {
   }
 }
 
-export interface VolumeFieldProps extends Omit<
-  React.ComponentPropsWithoutRef<typeof TextField.Root>,
-  'value' | 'onChange'
-> {
+export interface VolumeFieldProps extends Omit<React.ComponentPropsWithoutRef<'input'>, 'value' | 'onChange' | 'size'> {
   value: number
   onChange: (value: number) => void
   unit?: VolumeUnit
   min?: number
   max?: number
   step?: number
+  size?: 'sm' | 'base' | 'lg'
 }
 
 export const VolumeField = forwardRef<HTMLInputElement, VolumeFieldProps>(function VolumeField(
-  { value, onChange, unit = 'liter', min, max, step, size = '2', placeholder, disabled, style, className, ...props },
+  { value, onChange, unit = 'liter', min, max, step, size = 'base', placeholder, disabled, style, className, ...props },
   ref
 ) {
   const { label, factor } = UNIT_CONFIG[unit]
@@ -52,28 +51,34 @@ export const VolumeField = forwardRef<HTMLInputElement, VolumeFieldProps>(functi
     onChange(mmValue)
   }
 
+  const sizeClasses = {
+    sm: 'h-7 text-xs',
+    base: 'h-9 text-sm',
+    lg: 'h-10 text-base'
+  }
+
   return (
-    <TextField.Root
-      ref={ref}
-      type="number"
-      value={Number.isFinite(displayValue) ? String(displayValue) : ''}
-      onChange={handleChange}
-      placeholder={placeholder}
-      size={size}
-      disabled={disabled}
-      step={step}
-      className={className}
-      style={{
-        textAlign: 'right',
-        ...style
-      }}
-      {...props}
+    <div
+      className={cn(
+        'border-input bg-background ring-offset-background focus-within:ring-ring flex items-center rounded-md border focus-within:ring-2 focus-within:ring-offset-2',
+        sizeClasses[size],
+        disabled && 'cursor-not-allowed opacity-50',
+        className
+      )}
+      style={style}
     >
-      <TextField.Slot side="right" style={{ paddingInline: '6px' }}>
-        <Text size="1" color="gray">
-          {label}
-        </Text>
-      </TextField.Slot>
-    </TextField.Root>
+      <input
+        ref={ref}
+        type="number"
+        value={Number.isFinite(displayValue) ? String(displayValue) : ''}
+        onChange={handleChange}
+        placeholder={placeholder}
+        disabled={disabled}
+        step={step}
+        className={cn('min-w-0 flex-1 bg-transparent px-2 text-right outline-none', sizeClasses[size])}
+        {...props}
+      />
+      <span className="text-muted-foreground px-1.5 text-xs">{label}</span>
+    </div>
   )
 })

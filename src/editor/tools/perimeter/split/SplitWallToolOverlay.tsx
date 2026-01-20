@@ -52,8 +52,12 @@ export function SplitWallToolOverlay({ tool }: ToolOverlayComponentProps<SplitWa
 
   // Colors based on validation state
   const isWallSelected = state.selectedWallId ? isCurrentSelection(state.selectedWallId) : false
-  const hoverColor = state.isValidHover ? (isWallSelected ? 'var(--gray-9)' : 'var(--accent-9)') : 'var(--red-9)'
-  const splitColor = state.isValidSplit ? 'var(--green-9)' : 'var(--red-9)'
+  const hoverColor = state.isValidHover
+    ? isWallSelected
+      ? 'var(--color-gray-700)'
+      : 'var(--color-blue-600)'
+    : 'var(--color-red-600)'
+  const splitColor = state.isValidSplit ? 'var(--color-green-600)' : 'var(--color-red-600)'
 
   return (
     <g pointerEvents="none">

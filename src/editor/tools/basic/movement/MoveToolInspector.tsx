@@ -1,7 +1,8 @@
 import { InfoCircledIcon } from '@radix-ui/react-icons'
-import { Box, Callout, Flex, Kbd, Text } from '@radix-ui/themes'
 import { useTranslation } from 'react-i18next'
 
+import { Callout, CalloutIcon, CalloutText } from '@/components/ui/callout'
+import { Kbd } from '@/components/ui/kbd'
 import { useReactiveTool } from '@/editor/tools/system/hooks/useReactiveTool'
 import type { ToolInspectorProps } from '@/editor/tools/system/types'
 
@@ -12,53 +13,45 @@ export function MoveToolInspector({ tool }: ToolInspectorProps<MoveTool>): React
   const toolState = useReactiveTool(tool).getToolState()
 
   return (
-    <Box p="2">
-      <Flex direction="column" gap="3">
+    <div className="p-2">
+      <div className="flex flex-col gap-3">
         {/* Informational Note */}
-        <Callout.Root color="blue">
-          <Callout.Icon>
+        <Callout color="blue">
+          <CalloutIcon>
             <InfoCircledIcon />
-          </Callout.Icon>
-          <Callout.Text>
-            <Text size="1">{t($ => $.move.info)}</Text>
-          </Callout.Text>
-        </Callout.Root>
+          </CalloutIcon>
+          <CalloutText>
+            <span className="text-xs">{t($ => $.move.info)}</span>
+          </CalloutText>
+        </Callout>
 
         {/* Help Text */}
-        <Flex direction="column" gap="2">
-          <Text size="1" weight="medium">
-            {t($ => $.move.controlsHeading)}
-          </Text>
-          <Text size="1" color="gray">
-            • {t($ => $.move.controlDrag)}
-          </Text>
-          <Text size="1" color="gray">
-            • {t($ => $.move.controlSnap)}
-          </Text>
-          <Text size="1" color="gray">
-            • {t($ => $.move.controlPrecise)}
-          </Text>
-          <Text size="1" color="gray">
+        <div className="flex flex-col gap-2">
+          <span className="text-xs font-medium">{t($ => $.move.controlsHeading)}</span>
+          <span className="text-muted-foreground text-xs">• {t($ => $.move.controlDrag)}</span>
+          <span className="text-muted-foreground text-xs">• {t($ => $.move.controlSnap)}</span>
+          <span className="text-muted-foreground text-xs">• {t($ => $.move.controlPrecise)}</span>
+          <span className="text-muted-foreground text-xs">
             •{' '}
             {t($ => $.move.controlCancel, {
               key: 'Esc'
             }).replace('{{key}}', '')}
             <Kbd>{t($ => $.keyboard.esc)}</Kbd>
             {' to cancel ongoing movement'}
-          </Text>
-        </Flex>
+          </span>
+        </div>
 
         {/* Movement State Display */}
         {toolState.isMoving && (
-          <Callout.Root color={toolState.isValid ? 'green' : 'red'}>
-            <Callout.Text>
-              <Text size="1" weight="medium">
+          <Callout color={toolState.isValid ? 'green' : 'red'}>
+            <CalloutText>
+              <span className="text-xs font-medium">
                 {toolState.isValid ? t($ => $.move.moving) : t($ => $.move.invalidPosition)}
-              </Text>
-            </Callout.Text>
-          </Callout.Root>
+              </span>
+            </CalloutText>
+          </Callout>
         )}
-      </Flex>
-    </Box>
+      </div>
+    </div>
   )
 }

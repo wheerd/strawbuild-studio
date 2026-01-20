@@ -10,7 +10,7 @@ export function generateMaterialCSS(materials: Material[]): string {
       material =>
         `.${material.id} .apply-material {
   fill: ${material.color};
-  stroke: #000;
+  stroke: var(--color-border-contrast);
   stroke-width: 5;
 }`
     )

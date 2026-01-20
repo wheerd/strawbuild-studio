@@ -10,21 +10,16 @@ import {
   TrashIcon,
   WidthIcon
 } from '@radix-ui/react-icons'
-import {
-  Card,
-  Checkbox,
-  DropdownMenu,
-  Flex,
-  Grid,
-  IconButton,
-  Select,
-  Text,
-  TextField,
-  Tooltip
-} from '@radix-ui/themes'
 import React, { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
+import { Button } from '@/components/ui/button'
+import { Card } from '@/components/ui/card'
+import { Checkbox } from '@/components/ui/checkbox'
+import { DropdownMenu } from '@/components/ui/dropdown-menu'
+import { Select } from '@/components/ui/select'
+import { TextField } from '@/components/ui/text-field'
+import { Tooltip } from '@/components/ui/tooltip'
 import { sumLayerThickness } from '@/construction/config/store/layerUtils'
 import type { LayerPreset } from '@/construction/layers/defaults'
 import type {
@@ -113,27 +108,23 @@ export function LayerListEditor({
   }
 
   return (
-    <Flex direction="column" gap="2">
-      <Flex align="center" justify="between">
-        <Flex align="center" gap="2">
-          <Text size="2" weight="bold">
-            {title}
-          </Text>
+    <div className="flex flex-col gap-2">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <span className="text-base font-bold">{title}</span>
           {measurementInfo}
-          <Text size="1" color="gray">
-            {t($ => $.layers.totalThicknessLabel, { thickness: totalThickness })}
-          </Text>
-        </Flex>
-        <Flex gap="1">
+          <span className="text-sm">{t($ => $.layers.totalThicknessLabel, { thickness: totalThickness })}</span>
+        </div>
+        <div className="flex gap-1">
           {layerCopySources && (
-            <DropdownMenu.Root>
-              <DropdownMenu.Trigger>
-                <IconButton title={t($ => $.layers.copyFrom)} size="1" variant="soft">
+            <DropdownMenu>
+              <DropdownMenu.Trigger asChild>
+                <Button size="icon-sm" title={t($ => $.layers.copyFrom)} variant="soft">
                   <CopyIcon />
-                </IconButton>
+                </Button>
               </DropdownMenu.Trigger>
               <DropdownMenu.Content>
-                <DropdownMenu.Label>Copy from...</DropdownMenu.Label>
+                <DropdownMenu.Label>{t($ => $.layers.copyFrom)}</DropdownMenu.Label>
                 {layerCopySources.map(({ name, totalThickness, layerSource }) => (
                   <DropdownMenu.Item
                     key={name}
@@ -141,24 +132,22 @@ export function LayerListEditor({
                       applyPreset(layerSource())
                     }}
                   >
-                    <Flex align="center" gap="2">
-                      <Text>{name}</Text>
-                      <Text size="1" color="gray">
-                        · {formatLength(totalThickness)}
-                      </Text>
-                    </Flex>
+                    <div className="flex items-center gap-2">
+                      <span>{name}</span>
+                      <span className="text-sm">· {formatLength(totalThickness)}</span>
+                    </div>
                   </DropdownMenu.Item>
                 ))}
               </DropdownMenu.Content>
-            </DropdownMenu.Root>
+            </DropdownMenu>
           )}
 
           {hasPresetMenu && (
-            <DropdownMenu.Root>
-              <DropdownMenu.Trigger>
-                <IconButton title={t($ => $.layers.presetsLabel)} size="1" variant="soft">
+            <DropdownMenu>
+              <DropdownMenu.Trigger asChild>
+                <Button size="icon-sm" title={t($ => $.layers.presetsLabel)} variant="soft">
                   <MagicWandIcon />
-                </IconButton>
+                </Button>
               </DropdownMenu.Trigger>
               <DropdownMenu.Content>
                 {layerPresets.map(preset => (
@@ -168,23 +157,21 @@ export function LayerListEditor({
                       applyPreset(preset.layers)
                     }}
                   >
-                    <Flex align="center" gap="2">
-                      <Text>{t(preset.nameKey)}</Text>
-                      <Text size="1" color="gray">
-                        · {formatLength(sumLayerThickness(preset.layers))}
-                      </Text>
-                    </Flex>
+                    <div className="flex items-center gap-2">
+                      <span>{t(preset.nameKey)}</span>
+                      <span className="text-sm">· {formatLength(sumLayerThickness(preset.layers))}</span>
+                    </div>
                   </DropdownMenu.Item>
                 ))}
               </DropdownMenu.Content>
-            </DropdownMenu.Root>
+            </DropdownMenu>
           )}
 
-          <DropdownMenu.Root>
-            <DropdownMenu.Trigger>
-              <IconButton title={addLabel} size="1" variant="soft">
+          <DropdownMenu>
+            <DropdownMenu.Trigger asChild>
+              <Button size="icon-sm" title={addLabel} variant="default">
                 <PlusIcon />
-              </IconButton>
+              </Button>
             </DropdownMenu.Trigger>
             <DropdownMenu.Content>
               <DropdownMenu.Item
@@ -198,10 +185,10 @@ export function LayerListEditor({
                   )
                 }}
               >
-                <Flex align="center" gap="1">
+                <div className="flex items-center gap-1">
                   <LayerTypeIcon type="monolithic" />
                   {t($ => $.layers.defaultName_monolithic)}
-                </Flex>
+                </div>
               </DropdownMenu.Item>
               <DropdownMenu.Item
                 onSelect={() => {
@@ -214,33 +201,29 @@ export function LayerListEditor({
                   )
                 }}
               >
-                <Flex align="center" gap="1">
+                <div className="flex items-center gap-1">
                   <LayerTypeIcon type="striped" />
                   {t($ => $.layers.defaultName_striped)}
-                </Flex>
+                </div>
               </DropdownMenu.Item>
             </DropdownMenu.Content>
-          </DropdownMenu.Root>
-        </Flex>
-      </Flex>
+          </DropdownMenu>
+        </div>
+      </div>
 
       {!hasLayers && (
-        <Card variant="surface">
-          <Flex align="center" justify="center" minHeight="3.5rem">
-            <Text size="1" color="gray">
-              {emptyHint}
-            </Text>
-          </Flex>
+        <Card variant="soft">
+          <div className="flex min-h-14 items-center justify-center">
+            <span className="text-muted-foreground text-sm">{emptyHint}</span>
+          </div>
         </Card>
       )}
 
       {hasLayers && (
-        <Grid columns="1" gap="2" align="center" justify="center">
-          <Flex justify="center">
-            <Text size="1" color="gray">
-              {beforeLabel}
-            </Text>
-          </Flex>
+        <div className="grid grid-cols-1 items-center justify-center gap-2">
+          <div className="flex justify-center">
+            <span className="text-sm">{beforeLabel}</span>
+          </div>
           {layers.map((layer, index) => (
             <LayerCard
               key={`${layer.type}-${index}`}
@@ -253,14 +236,12 @@ export function LayerListEditor({
               onRemoveLayer={onRemoveLayer}
             />
           ))}
-          <Flex justify="center">
-            <Text size="1" color="gray">
-              {afterLabel}
-            </Text>
-          </Flex>
-        </Grid>
+          <div className="flex justify-center">
+            <span className="text-sm">{afterLabel}</span>
+          </div>
+        </div>
       )}
-    </Flex>
+    </div>
   )
 }
 
@@ -317,13 +298,13 @@ function LayerCard({
   }
 
   return (
-    <Card variant="surface" style={{ padding: '0.75rem' }}>
-      <Flex direction="column" gap="2">
-        <Grid columns="auto 1fr auto auto auto" align="center" gap="1">
+    <Card variant="soft" className="p-3">
+      <div className="flex flex-col gap-2">
+        <div className="grid grid-cols-[auto_1fr_auto_auto_auto] items-center gap-1">
           <LayerTypeIcon type={layer.type} />
           <TextField.Root
             title={t($ => $.common.name)}
-            size="1"
+            size="sm"
             value={nameInput}
             onChange={event => {
               setNameInput(event.target.value)
@@ -343,10 +324,10 @@ function LayerCard({
               onUpdateLayer(index, { thickness: value })
             }}
             unit="mm"
-            size="1"
-            style={{ width: '8em' }}
+            size="sm"
+            className="w-[10em]"
           >
-            <TextField.Slot title={t($ => $.common.thickness)} side="left" className="pl-1 pr-0">
+            <TextField.Slot title={t($ => $.common.thickness)} side="left" className="pr-0 pl-1">
               <HeightIcon />
             </TextField.Slot>
           </LengthField>
@@ -359,10 +340,10 @@ function LayerCard({
             title={t($ => $.layers.overlap)}
           />
 
-          <Flex gap="1">
-            <IconButton
-              size="1"
-              variant="soft"
+          <div className="flex gap-1">
+            <Button
+              size="icon-sm"
+              variant="outline"
               onClick={() => {
                 onMoveLayer(index, index - 1)
               }}
@@ -370,10 +351,10 @@ function LayerCard({
               title={t($ => $.layers.moveUp)}
             >
               <ChevronUpIcon />
-            </IconButton>
-            <IconButton
-              size="1"
-              variant="soft"
+            </Button>
+            <Button
+              size="icon-sm"
+              variant="outline"
               onClick={() => {
                 onMoveLayer(index, index + 1)
               }}
@@ -381,39 +362,36 @@ function LayerCard({
               title={t($ => $.layers.moveDown)}
             >
               <ChevronDownIcon />
-            </IconButton>
-            <IconButton
-              size="1"
-              variant="soft"
-              color="red"
+            </Button>
+            <Button
+              size="icon-sm"
+              variant="destructive"
               onClick={() => {
                 onRemoveLayer(index)
               }}
               title={t($ => $.layers.removeLayer)}
             >
               <TrashIcon />
-            </IconButton>
-          </Flex>
-        </Grid>
+            </Button>
+          </div>
+        </div>
 
         {layer.type === 'monolithic' && (
           <MonolithicLayerFields index={index} layer={layer} onUpdateLayer={onUpdateLayer} />
         )}
 
         {layer.type === 'striped' && <StripedLayerFields index={index} layer={layer} onUpdateLayer={onUpdateLayer} />}
-      </Flex>
+      </div>
     </Card>
   )
 }
 
 function Field({ label, control }: { label: string; control: React.ReactNode }): React.JSX.Element {
   return (
-    <Grid columns="auto 1fr" gap="2" align="center">
-      <Text size="1" color="gray">
-        {label}
-      </Text>
+    <div className="grid grid-cols-[auto_1fr] items-center gap-2">
+      <span className="text-sm">{label}</span>
       {control}
-    </Grid>
+    </div>
   )
 }
 
@@ -438,7 +416,7 @@ function MonolithicLayerFields({
             onUpdateLayer(index, { material })
           }}
           placeholder={t($ => $.layers.selectMaterial)}
-          size="1"
+          size="sm"
           preferredTypes={['sheet', 'volume']}
         />
       }
@@ -466,7 +444,6 @@ function StripedLayerFields({
             onValueChange={value => {
               onUpdateLayer(index, { direction: value as StripeDirection })
             }}
-            size="1"
           >
             <Select.Trigger />
             <Select.Content>
@@ -477,27 +454,23 @@ function StripedLayerFields({
           </Select.Root>
         }
       />
-      <Grid columns="auto auto auto 1fr" align="center" gapX="2" gapY="2">
-        <Text size="1" color="gray">
-          {t($ => $.layers.stripe)}
-        </Text>
+      <div className="grid grid-cols-[auto_auto_auto_1fr] items-center gap-x-2 gap-y-2">
+        <span className="text-sm">{t($ => $.layers.stripe)}</span>
         <LengthField
           value={layer.stripeWidth}
           onChange={value => {
             onUpdateLayer(index, { stripeWidth: value })
           }}
           unit="mm"
-          size="1"
-          style={{ width: '8em' }}
+          size="sm"
+          className="w-[8em]"
         >
-          <TextField.Slot title={t($ => $.common.width)} side="left" className="pl-1 pr-0">
+          <TextField.Slot title={t($ => $.common.width)} side="left" className="pr-0 pl-1">
             <WidthIcon />
           </TextField.Slot>
         </LengthField>
 
-        <Text size="1" color="gray">
-          {t($ => $.common.materialLabel)}
-        </Text>
+        <span className="text-sm">{t($ => $.common.materialLabel)}</span>
         <MaterialSelectWithEdit
           value={layer.stripeMaterial}
           onValueChange={material => {
@@ -505,30 +478,26 @@ function StripedLayerFields({
             onUpdateLayer(index, { stripeMaterial: material })
           }}
           placeholder={t($ => $.layers.selectMaterial)}
-          size="1"
+          size="sm"
           preferredTypes={['dimensional']}
         />
 
-        <Text size="1" color="gray">
-          {t($ => $.layers.gap)}
-        </Text>
+        <span className="text-sm">{t($ => $.layers.gap)}</span>
         <LengthField
           value={layer.gapWidth}
           onChange={value => {
             onUpdateLayer(index, { gapWidth: value })
           }}
           unit="mm"
-          size="1"
-          style={{ width: '8em' }}
+          size="sm"
+          className="w-[8em]"
         >
-          <TextField.Slot title={t($ => $.common.width)} side="left" className="pl-1 pr-0">
+          <TextField.Slot title={t($ => $.common.width)} side="left" className="pr-0 pl-1">
             <WidthIcon />
           </TextField.Slot>
         </LengthField>
 
-        <Text size="1" color="gray">
-          {t($ => $.common.materialLabel)}
-        </Text>
+        <span className="text-sm">{t($ => $.common.materialLabel)}</span>
         <MaterialSelectWithEdit
           value={layer.gapMaterial}
           allowEmpty
@@ -537,10 +506,10 @@ function StripedLayerFields({
             onUpdateLayer(index, { gapMaterial: material ?? undefined })
           }}
           placeholder={t($ => $.layers.selectMaterial)}
-          size="1"
+          size="sm"
           preferredTypes={['sheet', 'volume']}
         />
-      </Grid>
+      </div>
     </>
   )
 }

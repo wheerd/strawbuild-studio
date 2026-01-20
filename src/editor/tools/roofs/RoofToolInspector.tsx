@@ -1,16 +1,21 @@
 import { InfoCircledIcon } from '@radix-ui/react-icons'
 import * as Label from '@radix-ui/react-label'
-import { Box, Button, Callout, Flex, Kbd, SegmentedControl, Separator, Text, TextField } from '@radix-ui/themes'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { RoofPreview } from '@/building/components/inspectors/RoofPreview'
 import type { RoofType } from '@/building/model'
+import { Button } from '@/components/ui/button'
+import { Callout, CalloutIcon, CalloutText } from '@/components/ui/callout'
+import { Kbd } from '@/components/ui/kbd'
+import { Separator } from '@/components/ui/separator'
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 import { RoofAssemblySelectWithEdit } from '@/construction/config/components/RoofAssemblySelectWithEdit'
 import { useDefaultRoofAssemblyId } from '@/construction/config/store'
 import { useReactiveTool } from '@/editor/tools/system/hooks/useReactiveTool'
 import type { ToolInspectorProps } from '@/editor/tools/system/types'
 import { LengthField } from '@/shared/components/LengthField'
+import { NumberField } from '@/shared/components/NumberField'
 import { degreesToRadians, radiansToDegrees } from '@/shared/geometry'
 
 import type { RoofTool } from './RoofTool'
@@ -32,30 +37,28 @@ export function RoofToolInspector({ tool }: ToolInspectorProps<RoofTool>): React
   )
 
   return (
-    <Box p="2">
-      <Flex direction="column" gap="2">
+    <div className="p-2">
+      <div className="flex flex-col gap-2">
         {/* Informational Note */}
-        <Callout.Root color="blue">
-          <Callout.Icon>
+        <Callout color="blue">
+          <CalloutIcon>
             <InfoCircledIcon />
-          </Callout.Icon>
-          <Callout.Text>
-            <Text size="1">{t($ => $.roof.info)}</Text>
-          </Callout.Text>
-        </Callout.Root>
+          </CalloutIcon>
+          <CalloutText>
+            <span className="text-xs">{t($ => $.roof.info)}</span>
+          </CalloutText>
+        </Callout>
 
         {/* Tool Properties */}
-        <Flex direction="column" gap="2">
-          <Flex justify="center">
+        <div className="flex flex-col gap-2">
+          <div className="flex justify-center">
             <RoofPreview slope={state.slope} type={state.type} />
-          </Flex>
+          </div>
 
           {/* Assembly */}
-          <Flex direction="column" gap="1">
+          <div className="flex flex-col gap-1">
             <Label.Root>
-              <Text size="1" weight="medium" color="gray">
-                {t($ => $.roof.assembly)}
-              </Text>
+              <span className="text-muted-foreground text-xs font-medium">{t($ => $.roof.assembly)}</span>
             </Label.Root>
             <RoofAssemblySelectWithEdit
               value={state.assemblyId}
@@ -64,83 +67,74 @@ export function RoofToolInspector({ tool }: ToolInspectorProps<RoofTool>): React
               }}
               showDefaultIndicator
               defaultAssemblyId={defaultAssemblyId}
-              size="1"
+              size="sm"
             />
-          </Flex>
+          </div>
 
           {/* Roof Type */}
-          <Flex align="center" gap="2" justify="between">
+          <div className="flex items-center justify-between gap-2">
             <Label.Root>
-              <Text size="1" weight="medium" color="gray">
-                {t($ => $.roof.type)}
-              </Text>
+              <span className="text-muted-foreground text-xs font-medium">{t($ => $.roof.type)}</span>
             </Label.Root>
-            <SegmentedControl.Root
-              size="1"
+            <ToggleGroup
+              type="single"
+              variant="outline"
+              size="sm"
               value={state.type}
               onValueChange={value => {
-                tool.setType(value as RoofType)
+                if (value) {
+                  tool.setType(value as RoofType)
+                }
               }}
             >
-              <SegmentedControl.Item value="gable">{t($ => $.roof.typeGable)}</SegmentedControl.Item>
-              <SegmentedControl.Item value="shed">{t($ => $.roof.typeShed)}</SegmentedControl.Item>
-            </SegmentedControl.Root>
-          </Flex>
+              <ToggleGroupItem value="gable">{t($ => $.roof.typeGable)}</ToggleGroupItem>
+              <ToggleGroupItem value="shed">{t($ => $.roof.typeShed)}</ToggleGroupItem>
+            </ToggleGroup>
+          </div>
 
           {/* Slope */}
-          <Flex align="center" gap="2" justify="between">
+          <div className="flex items-center justify-between gap-2">
             <Label.Root htmlFor="roof-slope">
-              <Text size="1" weight="medium" color="gray">
-                {t($ => $.roof.slope)}
-              </Text>
+              <span className="text-muted-foreground text-xs font-medium">{t($ => $.roof.slope)}</span>
             </Label.Root>
 
-            <Flex align="center" gap="2">
-              <TextField.Root
-                id="roof-slope"
-                type="number"
-                value={state.slope.toFixed(3).replace(/\.?0+$/, '')}
-                onChange={e => {
-                  const value = parseFloat(e.target.value)
-                  if (!isNaN(value) && value >= 0 && value <= 90) {
+            <div className="flex items-center gap-2">
+              <NumberField.Root
+                value={state.slope}
+                onChange={value => {
+                  if (value != null && value >= 0 && value <= 90) {
                     tool.setSlope(value)
                   }
                 }}
-                size="1"
-                min={0}
-                max={90}
-                style={{ width: '6em', textAlign: 'right' }}
+                precision={2}
+                size="sm"
               >
-                <TextField.Slot side="right">°</TextField.Slot>
-              </TextField.Root>
+                <NumberField.Input id="roof-slope" className="w-15" min={0} max={90} />
+                <NumberField.Slot side="right">°</NumberField.Slot>
+                <NumberField.Spinner />
+              </NumberField.Root>
 
-              <TextField.Root
-                id="roof-slope"
-                type="number"
-                value={(Math.tan(degreesToRadians(state.slope)) * 100).toFixed(3).replace(/\.?0+$/, '')}
-                onChange={e => {
-                  const value = parseFloat(e.target.value)
-                  if (!isNaN(value)) {
+              <NumberField.Root
+                value={Math.tan(degreesToRadians(state.slope)) * 100}
+                onChange={value => {
+                  if (value != null) {
                     tool.setSlope(radiansToDegrees(Math.atan(value / 100)))
                   }
                 }}
-                size="1"
-                min={0}
-                max={100}
-                step={1}
-                style={{ width: '6em', textAlign: 'right' }}
+                precision={2}
+                size="sm"
               >
-                <TextField.Slot side="right">%</TextField.Slot>
-              </TextField.Root>
-            </Flex>
-          </Flex>
+                <NumberField.Input className="w-15" min={0} max={100} step={1} />
+                <NumberField.Slot side="right">%</NumberField.Slot>
+                <NumberField.Spinner />
+              </NumberField.Root>
+            </div>
+          </div>
 
           {/* Vertical Offset */}
-          <Flex align="center" gap="2" justify="between">
+          <div className="flex items-center justify-between gap-2">
             <Label.Root htmlFor="vertical-offset">
-              <Text size="1" weight="medium" color="gray">
-                {t($ => $.roof.verticalOffset)}
-              </Text>
+              <span className="text-muted-foreground text-xs font-medium">{t($ => $.roof.verticalOffset)}</span>
             </Label.Root>
             <LengthField
               id="vertical-offset"
@@ -151,18 +145,15 @@ export function RoofToolInspector({ tool }: ToolInspectorProps<RoofTool>): React
               min={-10000}
               max={10000}
               step={10}
-              size="1"
-              unit="mm"
-              style={{ width: '5rem' }}
+              size="sm"
+              unit="cm"
             />
-          </Flex>
+          </div>
 
           {/* Overhang */}
-          <Flex align="center" gap="2" justify="between">
+          <div className="flex items-center justify-between gap-2">
             <Label.Root htmlFor="roof-overhang">
-              <Text size="1" weight="medium" color="gray">
-                {t($ => $.roof.overhang)}
-              </Text>
+              <span className="text-muted-foreground text-xs font-medium">{t($ => $.roof.overhang)}</span>
             </Label.Root>
             <LengthField
               id="roof-overhang"
@@ -173,91 +164,80 @@ export function RoofToolInspector({ tool }: ToolInspectorProps<RoofTool>): React
               min={0}
               max={2000}
               step={10}
-              size="1"
-              unit="mm"
-              style={{ width: '5rem' }}
+              size="sm"
+              unit="cm"
             />
-          </Flex>
-        </Flex>
+          </div>
+        </div>
 
         {/* Help Text */}
-        <Separator size="4" />
-        <Flex direction="column" gap="2">
-          <Text size="1" weight="medium">
-            {t($ => $.roof.controlsHeading)}
-          </Text>
-          <Text size="1" color="gray">
-            • {t($ => $.roof.controlPlace)}
-          </Text>
-          <Text size="1" color="gray">
-            • {t($ => $.roof.controlSnap)}
-          </Text>
-          <Text size="1" color="gray">
-            • <Kbd>{t($ => $.keyboard.esc)}</Kbd>{' '}
+        <Separator />
+        <div className="flex flex-col gap-2">
+          <span className="text-xs font-medium">{t($ => $.roof.controlsHeading)}</span>
+          <span className="text-muted-foreground text-xs">• {t($ => $.roof.controlPlace)}</span>
+          <span className="text-muted-foreground text-xs">• {t($ => $.roof.controlSnap)}</span>
+          <span className="text-muted-foreground text-xs">
+            • <Kbd size="sm">{t($ => $.keyboard.esc)}</Kbd>{' '}
             {t($ => $.roof.controlEsc, {
               key: ''
             })
               .replace('{{key}}', '')
               .trim()}
-          </Text>
+          </span>
           {state.points.length >= 3 && (
             <>
-              <Text size="1" color="gray">
-                • <Kbd>{t($ => $.keyboard.enter)}</Kbd>{' '}
+              <span className="text-muted-foreground text-xs">
+                • <Kbd size="sm">{t($ => $.keyboard.enter)}</Kbd>{' '}
                 {t($ => $.roof.controlEnter, {
                   key: ''
                 })
                   .replace('{{key}}', '')
                   .trim()}
-              </Text>
-              <Text size="1" color="gray">
-                • {t($ => $.roof.controlClickFirst)}
-              </Text>
+              </span>
+              <span className="text-muted-foreground text-xs">• {t($ => $.roof.controlClickFirst)}</span>
             </>
           )}
-        </Flex>
+        </div>
 
         {/* Actions */}
         {state.points.length > 0 && (
           <>
-            <Separator size="4" />
-            <Flex direction="column" gap="2">
+            <Separator />
+            <div className="flex flex-col gap-2">
               {state.points.length >= 3 && (
                 <Button
-                  size="2"
-                  color="green"
+                  size="sm"
+                  className="w-full bg-green-600 hover:bg-green-700"
                   onClick={() => {
                     tool.complete()
                   }}
                   disabled={!state.isClosingSegmentValid}
                   title={t($ => $.roof.completeTooltip)}
-                  style={{ width: '100%' }}
                 >
-                  <Text size="1">{t($ => $.roof.completeRoof)}</Text>
-                  <Kbd size="1" style={{ marginLeft: 'auto' }}>
+                  <span className="text-xs">{t($ => $.roof.completeRoof)}</span>
+                  <Kbd size="sm" className="ml-auto">
                     {t($ => $.keyboard.enter)}
                   </Kbd>
                 </Button>
               )}
               <Button
-                size="2"
-                color="red"
-                variant="soft"
+                size="sm"
+                variant="secondary"
+                className="text-destructive w-full"
                 onClick={() => {
                   tool.cancel()
                 }}
                 title={t($ => $.roof.cancelTooltip)}
-                style={{ width: '100%' }}
               >
-                <Text size="1">{t($ => $.roof.cancelRoof)}</Text>
-                <Kbd size="1" style={{ marginLeft: 'auto' }}>
+                <span className="text-xs">{t($ => $.roof.cancelRoof)}</span>
+                <Kbd size="sm" className="ml-auto">
                   {t($ => $.keyboard.esc)}
                 </Kbd>
               </Button>
-            </Flex>
+            </div>
           </>
         )}
-      </Flex>
-    </Box>
+      </div>
+    </div>
   )
 }

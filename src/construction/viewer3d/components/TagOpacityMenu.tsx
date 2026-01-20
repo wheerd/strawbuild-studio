@@ -1,8 +1,9 @@
 import { EyeClosedIcon, EyeOpenIcon } from '@radix-ui/react-icons'
-import { DropdownMenu, Flex, IconButton, Text } from '@radix-ui/themes'
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 
+import { Button } from '@/components/ui/button'
+import { DropdownMenu } from '@/components/ui/dropdown-menu'
 import type { GroupOrElement } from '@/construction/elements'
 import type { ConstructionModel } from '@/construction/model'
 import { type Tag, type TagCategoryId, type TagId } from '@/construction/tags'
@@ -86,7 +87,7 @@ export function TagOpacityMenu({ model }: TagOpacityMenuProps): React.JSX.Elemen
     if (opacity === 1.0) {
       return <EyeOpenIcon />
     } else if (opacity === 0.5) {
-      return <EyeOpenIcon style={{ opacity: 0.5 }} />
+      return <EyeOpenIcon className="opacity-50" />
     } else {
       return <EyeClosedIcon />
     }
@@ -97,7 +98,7 @@ export function TagOpacityMenu({ model }: TagOpacityMenuProps): React.JSX.Elemen
       case 'visible':
         return <EyeOpenIcon />
       case 'partial':
-        return <EyeOpenIcon style={{ opacity: 0.5 }} />
+        return <EyeOpenIcon className="opacity-50" />
       case 'hidden':
         return <EyeClosedIcon />
     }
@@ -105,29 +106,27 @@ export function TagOpacityMenu({ model }: TagOpacityMenuProps): React.JSX.Elemen
 
   if (sortedCategories.length === 0) {
     return (
-      <DropdownMenu.Root>
-        <DropdownMenu.Trigger>
-          <IconButton size="1" variant="outline" title={t($ => $.tagOpacity.title)} disabled>
+      <DropdownMenu>
+        <DropdownMenu.Trigger asChild>
+          <Button size="icon-sm" variant="outline" title={t($ => $.tagOpacity.title)} disabled>
             <EyeOpenIcon />
-          </IconButton>
+          </Button>
         </DropdownMenu.Trigger>
         <DropdownMenu.Content>
           <DropdownMenu.Item disabled>
-            <Text size="1" color="gray">
-              {t($ => $.tagOpacity.noTags)}
-            </Text>
+            <span className="text-sm">{t($ => $.tagOpacity.noTags)}</span>
           </DropdownMenu.Item>
         </DropdownMenu.Content>
-      </DropdownMenu.Root>
+      </DropdownMenu>
     )
   }
 
   return (
-    <DropdownMenu.Root>
-      <DropdownMenu.Trigger>
-        <IconButton size="1" variant="solid" title={t($ => $.tagOpacity.title)}>
+    <DropdownMenu>
+      <DropdownMenu.Trigger asChild>
+        <Button size="icon-sm" variant="default" title={t($ => $.tagOpacity.title)}>
           <EyeOpenIcon />
-        </IconButton>
+        </Button>
       </DropdownMenu.Trigger>
       <DropdownMenu.Content>
         {sortedCategories.map(([categoryId, tags]) => {
@@ -138,12 +137,12 @@ export function TagOpacityMenu({ model }: TagOpacityMenuProps): React.JSX.Elemen
           return (
             <DropdownMenu.Sub key={categoryId}>
               <DropdownMenu.SubTrigger>
-                <Flex align="center" justify="between" width="100%" gap="2">
-                  <Text size="1">
+                <div className="flex w-full items-center justify-between gap-2">
+                  <span className="text-sm">
                     <CategoryLabel categoryId={categoryId} />
-                  </Text>
+                  </span>
                   {renderStateIcon(categoryState)}
-                </Flex>
+                </div>
               </DropdownMenu.SubTrigger>
               <DropdownMenu.SubContent>
                 {/* Category-wide opacity cycle */}
@@ -152,21 +151,16 @@ export function TagOpacityMenu({ model }: TagOpacityMenuProps): React.JSX.Elemen
                     e.preventDefault()
                   }}
                 >
-                  <Flex
-                    align="center"
-                    justify="between"
-                    width="100%"
-                    gap="2"
+                  <div
+                    className="flex w-full items-center justify-between gap-2"
                     onClick={e => {
                       e.stopPropagation()
                       cycleTagOrCategoryOpacity(categoryId)
                     }}
                   >
-                    <Text size="1" weight="bold">
-                      {getOpacityLabel(categoryOpacity)}
-                    </Text>
+                    <span className="text-sm font-bold">{getOpacityLabel(categoryOpacity)}</span>
                     {renderOpacityIcon(categoryOpacity)}
-                  </Flex>
+                  </div>
                 </DropdownMenu.Item>
                 <DropdownMenu.Separator />
                 {/* Individual tag opacity controls */}
@@ -179,21 +173,18 @@ export function TagOpacityMenu({ model }: TagOpacityMenuProps): React.JSX.Elemen
                         e.preventDefault()
                       }}
                     >
-                      <Flex
-                        align="center"
-                        justify="between"
-                        width="100%"
-                        gap="2"
+                      <div
+                        className="flex w-full items-center justify-between gap-2"
                         onClick={e => {
                           e.stopPropagation()
                           cycleTagOrCategoryOpacity(tag.id)
                         }}
                       >
-                        <Text size="1">
+                        <span className="text-sm">
                           <TagLabel tag={tag} />
-                        </Text>
+                        </span>
                         {renderOpacityIcon(tagOpacity)}
-                      </Flex>
+                      </div>
                     </DropdownMenu.Item>
                   )
                 })}
@@ -202,6 +193,6 @@ export function TagOpacityMenu({ model }: TagOpacityMenuProps): React.JSX.Elemen
           )
         })}
       </DropdownMenu.Content>
-    </DropdownMenu.Root>
+    </DropdownMenu>
   )
 }

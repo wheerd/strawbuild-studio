@@ -1,22 +1,16 @@
 import { CopyIcon, InfoCircledIcon } from '@radix-ui/react-icons'
 import * as Label from '@radix-ui/react-label'
-import {
-  Button,
-  Callout,
-  DropdownMenu,
-  Flex,
-  Grid,
-  IconButton,
-  SegmentedControl,
-  Separator,
-  Switch,
-  Text
-} from '@radix-ui/themes'
 import { useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import type { WallPostType } from '@/building/model'
 import { useWallPosts } from '@/building/store'
+import { Button } from '@/components/ui/button'
+import { Callout, CalloutIcon, CalloutText } from '@/components/ui/callout'
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
+import { Separator } from '@/components/ui/separator'
+import { Switch } from '@/components/ui/switch'
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 import { useWallAssemblies } from '@/construction/config/store'
 import { MaterialSelectWithEdit } from '@/construction/materials/components/MaterialSelectWithEdit'
 import { type MaterialId } from '@/construction/materials/material'
@@ -115,8 +109,10 @@ function AddPostToolInspectorImpl({ tool }: AddPostToolInspectorImplProps): Reac
 
   // Event handlers
   const handleTypeChange = useCallback(
-    (newType: WallPostType) => {
-      tool.setPostType(newType)
+    (newType: string) => {
+      if (newType) {
+        tool.setPostType(newType as WallPostType)
+      }
     },
     [tool]
   )
@@ -158,49 +154,39 @@ function AddPostToolInspectorImpl({ tool }: AddPostToolInspectorImplProps): Reac
   )
 
   return (
-    <Flex direction="column" gap="4">
+    <div className="flex flex-col gap-4">
       {/* Informational Note */}
-      <Callout.Root color="blue">
-        <Callout.Icon>
+      <Callout color="blue">
+        <CalloutIcon>
           <InfoCircledIcon />
-        </Callout.Icon>
-        <Callout.Text>
-          <Text size="1">{t($ => $.addPost.info)}</Text>
-        </Callout.Text>
-      </Callout.Root>
+        </CalloutIcon>
+        <CalloutText>
+          <span className="text-sm">{t($ => $.addPost.info)}</span>
+        </CalloutText>
+      </Callout>
       {/* Type Selection */}
-      <Flex align="center" justify="between" gap="2">
-        <Text size="1" weight="medium" color="gray">
-          {t($ => $.addPost.type)}
-        </Text>
-        <SegmentedControl.Root value={state.type} onValueChange={handleTypeChange} size="1">
-          <SegmentedControl.Item value="inside">{t($ => $.addPost.types.inside)}</SegmentedControl.Item>
-          <SegmentedControl.Item value="center">{t($ => $.addPost.types.center)}</SegmentedControl.Item>
-          <SegmentedControl.Item value="outside">{t($ => $.addPost.types.outside)}</SegmentedControl.Item>
-          <SegmentedControl.Item value="double">{t($ => $.addPost.types.double)}</SegmentedControl.Item>
-        </SegmentedControl.Root>
-      </Flex>
-      <Flex align="center" justify="between" gap="2">
-        <Text size="1" weight="medium" color="gray">
-          {t($ => $.addPost.behavior)}
-        </Text>
-        <Flex align="center" gap="2">
-          <Text size="1" color="gray">
-            {t($ => $.addPost.actsAsPost)}
-          </Text>
-          <Switch checked={!state.replacesPosts} size="1" onCheckedChange={handleReplacesPostsChange} />
-          <Text size="1" color="gray">
-            {t($ => $.addPost.flankedByPosts)}
-          </Text>
-        </Flex>
-      </Flex>
+      <div className="flex items-center justify-between gap-2">
+        <span className="text-sm font-medium">{t($ => $.addPost.type)}</span>
+        <ToggleGroup type="single" variant="outline" value={state.type} onValueChange={handleTypeChange} size="sm">
+          <ToggleGroupItem value="inside">{t($ => $.addPost.types.inside)}</ToggleGroupItem>
+          <ToggleGroupItem value="center">{t($ => $.addPost.types.center)}</ToggleGroupItem>
+          <ToggleGroupItem value="outside">{t($ => $.addPost.types.outside)}</ToggleGroupItem>
+          <ToggleGroupItem value="double">{t($ => $.addPost.types.double)}</ToggleGroupItem>
+        </ToggleGroup>
+      </div>
+      <div className="flex items-center justify-between gap-2">
+        <span className="text-sm font-medium">{t($ => $.addPost.behavior)}</span>
+        <div className="flex items-center gap-2">
+          <span className="text-sm">{t($ => $.addPost.actsAsPost)}</span>
+          <Switch checked={!state.replacesPosts} size="sm" onCheckedChange={handleReplacesPostsChange} />
+          <span className="text-sm">{t($ => $.addPost.flankedByPosts)}</span>
+        </div>
+      </div>
       {/* Dimension inputs */}
-      <Grid columns="auto 1fr auto 1fr" rows="1" gap="2" gapX="3" align="center">
+      <div className="grid grid-cols-[auto_1fr_auto_1fr] grid-rows-1 items-center gap-2 gap-x-3">
         {/* Width Label */}
         <Label.Root htmlFor="post-width">
-          <Text size="1" weight="medium" color="gray">
-            {t($ => $.addPost.width)}
-          </Text>
+          <span className="text-sm font-medium">{t($ => $.addPost.width)}</span>
         </Label.Root>
 
         {/* Width Input */}
@@ -213,15 +199,13 @@ function AddPostToolInspectorImpl({ tool }: AddPostToolInspectorImplProps): Reac
           min={10}
           max={500}
           step={10}
-          size="1"
-          style={{ width: '80px' }}
+          size="sm"
+          className="w-20"
         />
 
         {/* Thickness Label */}
         <Label.Root htmlFor="post-thickness">
-          <Text size="1" weight="medium" color="gray">
-            {t($ => $.addPost.thickness)}
-          </Text>
+          <span className="text-sm font-medium">{t($ => $.addPost.thickness)}</span>
         </Label.Root>
 
         {/* Thickness Input */}
@@ -234,46 +218,40 @@ function AddPostToolInspectorImpl({ tool }: AddPostToolInspectorImplProps): Reac
           min={50}
           max={1000}
           step={10}
-          size="1"
-          style={{ width: '80px' }}
+          size="sm"
+          className="w-20"
         />
-      </Grid>
+      </div>
       {/* Material Selection */}
-      <Flex direction="column" gap="2">
-        <Text size="1" weight="medium" color="gray">
-          {t($ => $.addPost.postMaterial)}
-        </Text>
+      <div className="flex flex-col gap-2">
+        <span className="text-sm font-medium">{t($ => $.addPost.postMaterial)}</span>
         <MaterialSelectWithEdit
           value={state.material}
           onValueChange={handleMaterialChange}
-          size="1"
+          size="sm"
           preferredTypes={['dimensional']}
         />
-      </Flex>
+      </div>
       {/* Infill Material Selection */}
-      <Flex direction="column" gap="2">
-        <Text size="1" weight="medium" color="gray">
-          {t($ => $.addPost.infillMaterial)}
-        </Text>
-        <MaterialSelectWithEdit value={state.infillMaterial} onValueChange={handleInfillMaterialChange} size="1" />
-      </Flex>
-      <Separator size="4" />
+      <div className="flex flex-col gap-2">
+        <span className="text-sm font-medium">{t($ => $.addPost.infillMaterial)}</span>
+        <MaterialSelectWithEdit value={state.infillMaterial} onValueChange={handleInfillMaterialChange} size="sm" />
+      </div>
+      <Separator />
       {/* Quick presets */}
-      <Flex direction="column" gap="2">
+      <div className="flex flex-col gap-2">
         {/* Copy Existing Configuration */}
-        <Flex align="center" justify="between" gap="2">
-          <Text size="1" weight="medium" color="gray">
-            {t($ => $.addPost.presets.title)}
-          </Text>
-          <DropdownMenu.Root>
-            <DropdownMenu.Trigger disabled={allPostConfigs.length === 0}>
-              <IconButton size="2" title={t($ => $.addPost.copyConfigurationTooltip)}>
+        <div className="flex items-center justify-between gap-2">
+          <span className="text-sm font-medium">{t($ => $.addPost.presets.title)}</span>
+          <DropdownMenu>
+            <DropdownMenuTrigger disabled={allPostConfigs.length === 0} asChild>
+              <Button size="icon" title={t($ => $.addPost.copyConfigurationTooltip)}>
                 <CopyIcon />
-              </IconButton>
-            </DropdownMenu.Trigger>
-            <DropdownMenu.Content>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
               {allPostConfigs.map((config, index) => (
-                <DropdownMenu.Item
+                <DropdownMenuItem
                   key={index}
                   onClick={() => {
                     handleCopyClick(config)
@@ -285,15 +263,15 @@ function AddPostToolInspectorImpl({ tool }: AddPostToolInspectorImplProps): Reac
                     width: config.width,
                     thickness: config.thickness
                   })}
-                </DropdownMenu.Item>
+                </DropdownMenuItem>
               ))}
-            </DropdownMenu.Content>
-          </DropdownMenu.Root>
-        </Flex>
-        <Grid columns="2" gap="2">
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+        <div className="grid grid-cols-2 gap-2">
           <Button
-            size="1"
-            variant="surface"
+            size="sm"
+            variant="soft"
             onClick={() => {
               tool.setPostType('center')
               tool.setWidth(60)
@@ -303,8 +281,8 @@ function AddPostToolInspectorImpl({ tool }: AddPostToolInspectorImplProps): Reac
             {t($ => $.addPost.presets.single6x36)}
           </Button>
           <Button
-            size="1"
-            variant="surface"
+            size="sm"
+            variant="soft"
             onClick={() => {
               tool.setPostType('double')
               tool.setWidth(60)
@@ -314,8 +292,8 @@ function AddPostToolInspectorImpl({ tool }: AddPostToolInspectorImplProps): Reac
             {t($ => $.addPost.presets.double6x12)}
           </Button>
           <Button
-            size="1"
-            variant="surface"
+            size="sm"
+            variant="soft"
             onClick={() => {
               tool.setPostType('outside')
               tool.setWidth(140)
@@ -325,8 +303,8 @@ function AddPostToolInspectorImpl({ tool }: AddPostToolInspectorImplProps): Reac
             {t($ => $.addPost.presets.single14x14)}
           </Button>
           <Button
-            size="1"
-            variant="surface"
+            size="sm"
+            variant="soft"
             onClick={() => {
               tool.setPostType('double')
               tool.setWidth(140)
@@ -335,8 +313,8 @@ function AddPostToolInspectorImpl({ tool }: AddPostToolInspectorImplProps): Reac
           >
             {t($ => $.addPost.presets.double14x14)}
           </Button>
-        </Grid>
-      </Flex>
-    </Flex>
+        </div>
+      </div>
+    </div>
   )
 }

@@ -1,9 +1,12 @@
 import { CrossCircledIcon } from '@radix-ui/react-icons'
-import { Callout, Skeleton, Spinner, Tabs } from '@radix-ui/themes'
 import React, { Suspense, use, useCallback, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
-import { FullScreenModal } from '@/components/ui/FullScreenModal'
+import { Callout, CalloutIcon, CalloutText } from '@/components/ui/callout'
+import { FullScreenModal } from '@/components/ui/full-screen-modal'
+import { Skeleton } from '@/components/ui/skeleton'
+import { Spinner } from '@/components/ui/spinner'
+import { Tabs } from '@/components/ui/tabs'
 import { ConstructionPartsList } from '@/construction/components/parts/ConstructionPartsList'
 import { ConstructionVirtualPartsList } from '@/construction/components/parts/ConstructionVirtualPartsList'
 import type { ConstructionModel } from '@/construction/model'
@@ -71,16 +74,15 @@ export function ConstructionPartsListModal({
         onValueChange={value => {
           setActiveTab(value as 'materials' | 'modules')
         }}
-        className="flex flex-col h-full -mt-2"
+        className="-mt-2 flex h-full w-full flex-col"
       >
-        <div className="flex-shrink-0">
+        <div className="flex shrink-0">
           <Tabs.List>
             <Tabs.Trigger value="materials">{t($ => $.partsListModal.tabs.materials)}</Tabs.Trigger>
             <Tabs.Trigger value="modules">{t($ => $.partsListModal.tabs.modules)}</Tabs.Trigger>
           </Tabs.List>
         </div>
-
-        <Tabs.Content value="materials" className="flex-1 min-h-0 overflow-auto pt-3">
+        <Tabs.Content value="materials" className="flex min-h-0 w-full flex-1 overflow-auto pt-3">
           {partsDataPromise ? (
             <Suspense fallback={<PartsSkeleton />}>
               <MaterialPartsContent partsDataPromise={partsDataPromise} />
@@ -90,7 +92,7 @@ export function ConstructionPartsListModal({
           )}
         </Tabs.Content>
 
-        <Tabs.Content value="modules" className="flex-1 min-h-0 overflow-auto pt-3">
+        <Tabs.Content value="modules" className="flex min-h-0 flex-1 overflow-auto pt-3">
           {partsDataPromise ? (
             <Suspense fallback={<PartsSkeleton />}>
               <ModulePartsContent partsDataPromise={partsDataPromise} />
@@ -111,12 +113,12 @@ function MaterialPartsContent({ partsDataPromise }: { partsDataPromise: Promise<
   if (!partsData) {
     return (
       <div className="flex">
-        <Callout.Root color="red" size="2">
-          <Callout.Icon>
+        <Callout className="text-destructive">
+          <CalloutIcon>
             <CrossCircledIcon />
-          </Callout.Icon>
-          <Callout.Text>{t($ => $.partsListModal.errors.failedPartsList)}</Callout.Text>
-        </Callout.Root>
+          </CalloutIcon>
+          <CalloutText>{t($ => $.partsListModal.errors.failedPartsList)}</CalloutText>
+        </Callout>
       </div>
     )
   }
@@ -131,12 +133,12 @@ function ModulePartsContent({ partsDataPromise }: { partsDataPromise: Promise<Pa
   if (!partsData) {
     return (
       <div className="flex">
-        <Callout.Root color="red" size="2">
-          <Callout.Icon>
+        <Callout className="text-destructive">
+          <CalloutIcon>
             <CrossCircledIcon />
-          </Callout.Icon>
-          <Callout.Text>{t($ => $.partsListModal.errors.failedModulesList)}</Callout.Text>
-        </Callout.Root>
+          </CalloutIcon>
+          <CalloutText>{t($ => $.partsListModal.errors.failedModulesList)}</CalloutText>
+        </Callout>
       </div>
     )
   }
@@ -149,18 +151,11 @@ function PartsSkeleton() {
     <div className="flex flex-col gap-4">
       <CardSkeleton />
       <CardSkeleton />
-      <Spinner size="2" style={{ alignSelf: 'center' }} />
+      <Spinner className="self-center" />
     </div>
   )
 }
 
 function CardSkeleton() {
-  return (
-    <Skeleton
-      style={{
-        height: '160px',
-        borderRadius: 'var(--radius-3)'
-      }}
-    />
-  )
+  return <Skeleton className="h-[160px] rounded-lg" />
 }

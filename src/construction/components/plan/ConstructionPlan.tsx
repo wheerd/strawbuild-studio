@@ -1,8 +1,10 @@
 import { CubeIcon, ExclamationTriangleIcon, GroupIcon, RulerHorizontalIcon } from '@radix-ui/react-icons'
-import { Box, Card, Flex, Grid, Heading, IconButton, SegmentedControl, Text } from '@radix-ui/themes'
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
+import { Button } from '@/components/ui/button'
+import { Card } from '@/components/ui/card'
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 import { CutAreaShape } from '@/construction/components/plan/CutAreaShape'
 import { Measurements } from '@/construction/components/plan/Measurements'
 import { sanitizeForCssClass } from '@/construction/components/plan/cssHelpers'
@@ -235,10 +237,11 @@ export function ConstructionPlan({
   const partHighlightStyles = highlightedPartId
     ? `
     .part-${sanitizeForCssClass(highlightedPartId)} path {
-      fill: var(--accent-8) !important;
-      stroke: var(--accent-10) !important;
-      outline: var(--accent-9);
-      outline-width: 40;
+      fill: var(--color-accent) !important;
+      stroke: var(--color-accent-foreground) !important;
+      outline-style: solid;
+      outline-color: var(--color-primary);
+      outline-width: 40px;
       filter: drop-shadow(0 0 20px var(--accent-a6));
       animation: pulse-part-highlight 2s ease-in-out infinite;
     }
@@ -272,12 +275,12 @@ export function ConstructionPlan({
   }, [highlightedPartId])
 
   return (
-    <div className="relative w-full h-full">
+    <div className="relative h-full w-full">
       <SVGViewport
         ref={viewportRef}
         contentBounds={contentBounds}
         padding={0.05} // 5% padding for wall construction
-        className={`w-full h-full ${midCutEnabled ? 'mid-cut-enabled' : ''} ${showStrawTypes ? 'show-straw-types' : ''}`}
+        className={`h-full w-full ${midCutEnabled ? 'mid-cut-enabled' : ''} ${showStrawTypes ? 'show-straw-types' : ''}`}
         resetButtonPosition="top-right"
         svgSize={containerSize}
       >
@@ -376,113 +379,109 @@ export function ConstructionPlan({
 
       {/* Overlay controls in top-left corner */}
 
-      <Box position="absolute" top="3" left="3" className="z-10">
-        <Card size="1" variant="surface" className="shadow-md">
-          <Flex direction="column" gap="2" m="-2">
+      <div className="absolute top-3 left-3 z-10">
+        <Card size="sm" variant="soft" className="bg-card shadow-md">
+          <div className="-m-2 flex flex-col gap-2">
             {/* View selector - only show if multiple views */}
             {views.length > 1 && (
-              <SegmentedControl.Root
+              <ToggleGroup
+                type="single"
+                variant="outline"
                 value={currentViewIndex.toString()}
                 onValueChange={value => {
-                  setCurrentViewIndex(parseInt(value, 10))
+                  if (value) {
+                    setCurrentViewIndex(parseInt(value, 10))
+                  }
                 }}
-                size="1"
+                size="sm"
               >
                 {views.map((viewOption, index) => (
-                  <SegmentedControl.Item key={index} value={index.toString()}>
+                  <ToggleGroupItem key={index} value={index.toString()} className="h-7 text-xs">
                     {viewOption.label}
-                  </SegmentedControl.Item>
+                  </ToggleGroupItem>
                 ))}
-              </SegmentedControl.Root>
+              </ToggleGroup>
             )}
 
-            <Grid columns="6" gap="1" align="center" justify="center">
+            <div className="grid grid-cols-6 items-center justify-center gap-1">
               {/* Mid-cut toggle */}
-              <IconButton
-                variant={midCutEnabled ? 'solid' : 'outline'}
-                size="1"
+              <Button
+                size="icon-xs"
+                variant={midCutEnabled ? 'default' : 'outline'}
                 title={t($ => $.plan.midCut)}
                 onClick={() => {
                   setMidCutEnabled(!midCutEnabled)
                 }}
               >
                 {currentView.plane === 'xy' ? <MidCutYIcon /> : <MidCutXIcon />}
-              </IconButton>
+              </Button>
 
               {/* Area toggle */}
-              <IconButton
-                variant={hideAreas ? 'outline' : 'solid'}
-                size="1"
+              <Button
+                size="icon-xs"
+                variant={hideAreas ? 'outline' : 'default'}
                 title={t($ => $.plan.hideAreas)}
                 onClick={() => {
                   setHideAreas(!hideAreas)
                 }}
               >
                 <GroupIcon />
-              </IconButton>
+              </Button>
 
               {/* Issues toggle */}
-              <IconButton
-                variant={hideIssues ? 'outline' : 'solid'}
-                size="1"
+              <Button
+                size="icon-xs"
+                variant={hideIssues ? 'outline' : 'default'}
                 title={t($ => $.plan.hideIssues)}
                 onClick={() => {
                   setHideIssues(!hideIssues)
                 }}
               >
                 <ExclamationTriangleIcon />
-              </IconButton>
+              </Button>
 
               {/* Measurements toggle */}
-              <IconButton
-                variant={hideMeasurements ? 'outline' : 'solid'}
-                size="1"
+              <Button
+                size="icon-xs"
+                variant={hideMeasurements ? 'outline' : 'default'}
                 title={t($ => $.plan.hideMeasurements)}
                 onClick={() => {
                   setHideMeasurements(!hideMeasurements)
                 }}
               >
                 <RulerHorizontalIcon />
-              </IconButton>
+              </Button>
 
               {/* Straw types toggle */}
-              <IconButton
-                variant={showStrawTypes ? 'solid' : 'outline'}
-                size="1"
+              <Button
+                size="icon-xs"
+                variant={showStrawTypes ? 'default' : 'outline'}
                 title={t($ => $.plan.showStrawTypes)}
                 onClick={() => {
                   setShowStrawTypes(!showStrawTypes)
                 }}
               >
                 <CubeIcon />
-              </IconButton>
+              </Button>
 
               {/* Tag visibility menu */}
               <TagVisibilityMenu model={model} />
-            </Grid>
+            </div>
 
             {showStrawTypes && (
-              <Flex direction="column" p="2" mt="-2">
-                <Heading size="1">{t($ => $.plan.strawTypesHeading)}</Heading>
-                <Grid columns="1fr 1fr">
-                  <Text size="1" color="grass">
-                    {t($ => $.plan.strawTypes.fullBale)}
-                  </Text>
-                  <Text size="1" color="purple">
-                    {t($ => $.plan.strawTypes.partialBale)}
-                  </Text>
-                  <Text size="1" color="blue">
-                    {t($ => $.plan.strawTypes.flakes)}
-                  </Text>
-                  <Text size="1" color="red">
-                    {t($ => $.plan.strawTypes.stuffed)}
-                  </Text>
-                </Grid>
-              </Flex>
+              <div className="flex flex-col">
+                <h4>{t($ => $.plan.strawTypesHeading)}</h4>
+                <div className="grid grid-cols-2">
+                  <span className="text-sm text-lime-600">{t($ => $.plan.strawTypes.fullBale)}</span>
+                  <span className="text-sm text-purple-600">{t($ => $.plan.strawTypes.partialBale)}</span>
+                  <span className="text-sm text-sky-600">{t($ => $.plan.strawTypes.flakes)}</span>
+                  <span className="text-sm text-red-800">{t($ => $.plan.strawTypes.stuffed)}</span>
+                </div>
+              </div>
             )}
-          </Flex>
+          </div>
         </Card>
-      </Box>
+      </div>
     </div>
   )
 }

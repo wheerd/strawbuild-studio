@@ -1,5 +1,4 @@
 import { Pencil1Icon } from '@radix-ui/react-icons'
-import { Code, Flex, IconButton, Select, Text } from '@radix-ui/themes'
 import React, { useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -8,21 +7,24 @@ import { useStoreyName } from '@/building/hooks/useStoreyName'
 import type { Storey } from '@/building/model'
 import type { StoreyId } from '@/building/model/ids'
 import { useActiveStoreyId, useModelActions, useStoreysOrderedByLevel } from '@/building/store'
+import { Button } from '@/components/ui/button'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { clearSelection } from '@/editor/hooks/useSelectionStore'
+import { cn } from '@/lib/utils'
 
-export function getLevelColor(level: number): 'grass' | 'indigo' | 'brown' {
+export function getLevelColor(level: number): string {
   if (level === 0) {
-    return 'grass'
+    return 'text-green-600 dark:text-green-400'
   } else if (level > 0) {
-    return 'indigo'
+    return 'text-indigo-600 dark:text-indigo-400'
   } else {
-    return 'brown'
+    return 'text-amber-800 dark:text-amber-600'
   }
 }
 
 function StoreyName({ storey }: { storey: Storey }) {
   const name = useStoreyName(storey)
-  return <Text>{name}</Text>
+  return <span>{name}</span>
 }
 
 export function StoreySelector(): React.JSX.Element {
@@ -44,30 +46,36 @@ export function StoreySelector(): React.JSX.Element {
   )
 
   return (
-    <Flex align="center" gap="2">
-      <Select.Root size="1" value={activeStoreyId} onValueChange={handleStoreyChange}>
-        <Select.Trigger />
-        <Select.Content position="popper" variant="soft">
+    <div className="flex items-center gap-2">
+      <Select value={activeStoreyId} onValueChange={handleStoreyChange}>
+        <SelectTrigger className="h-7 text-xs">
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
           {storeysDisplayOrder.map(storey => (
-            <Select.Item key={storey.id} value={storey.id}>
-              <Flex align="center" gap="2" as="span">
-                <Code variant="ghost" size="2" weight="bold" color={getLevelColor(storey.level)}>
-                  L{storey.level}
-                </Code>
+            <SelectItem key={storey.id} value={storey.id}>
+              <span className="flex items-center gap-2">
+                <span className={cn('font-mono text-sm font-bold', getLevelColor(storey.level))}>L{storey.level}</span>
                 <StoreyName storey={storey} />
-              </Flex>
-            </Select.Item>
+              </span>
+            </SelectItem>
           ))}
-        </Select.Content>
-      </Select.Root>
+        </SelectContent>
+      </Select>
 
       <StoreyManagementModal
         trigger={
-          <IconButton size="1" title={t($ => $.storeys.manageFloorsTooltip)} type="button" variant="soft">
+          <Button
+            size="icon-sm"
+            className="size-7"
+            title={t($ => $.storeys.manageFloorsTooltip)}
+            type="button"
+            variant="secondary"
+          >
             <Pencil1Icon />
-          </IconButton>
+          </Button>
         }
       />
-    </Flex>
+    </div>
   )
 }

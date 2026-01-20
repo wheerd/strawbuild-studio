@@ -1,8 +1,9 @@
-import { Skeleton, Spinner, Text } from '@radix-ui/themes'
 import React, { Suspense, lazy, use, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
-import { FullScreenModal } from '@/components/ui/FullScreenModal'
+import { FullScreenModal } from '@/components/ui/full-screen-modal'
+import { Skeleton } from '@/components/ui/skeleton'
+import { Spinner } from '@/components/ui/spinner'
 import type { ConstructionModel } from '@/construction/model'
 import { elementSizeRef } from '@/shared/hooks/useElementSize'
 
@@ -49,38 +50,26 @@ export function ConstructionViewer3DModal({
       title={t($ => $.viewer3DModal.title)}
       trigger={trigger}
     >
-      <div className="h-full flex flex-col">
+      <div className="flex h-full w-full flex-col">
         <div
           ref={containerRef}
-          className="relative flex-1 min-h-0 overflow-hidden border rounded-md"
+          className="relative min-h-0 flex-1 overflow-hidden rounded-md border"
           style={{
-            borderColor: 'var(--gray-6)'
+            borderColor: 'var(--color-gray-600)'
           }}
         >
           {modelPromise ? (
             <Suspense
               fallback={
-                <div style={{ position: 'relative', width: '100%', height: '100%' }}>
+                <div className="relative h-full w-full">
                   <Skeleton height="100%" />
                   <div
-                    style={{
-                      position: 'absolute',
-                      top: '50%',
-                      left: '50%',
-                      transform: 'translate(-50%, -50%) scale(3)',
-                      zIndex: 10
-                    }}
+                    className="absolute top-1/2 left-1/2 z-10 scale-[3]"
+                    style={{ transform: 'translate(-50%, -50%)' }}
                   >
-                    <Spinner size="3" />
+                    <Spinner size="lg" />
                   </div>
-                  <div
-                    style={{
-                      position: 'absolute',
-                      top: '12px',
-                      left: '12px',
-                      zIndex: 10
-                    }}
-                  >
+                  <div className="absolute top-[12px] left-[12px] z-10">
                     <Skeleton
                       height="48px"
                       width="90px"
@@ -140,20 +129,20 @@ function ConstructionViewer3DContent({
 
   if (!constructionModel) {
     return (
-      <div className="flex items-center justify-center h-full">
-        <Text align="center" color="gray">
-          <Text size="6">⚠</Text>
+      <div className="flex h-full items-center justify-center">
+        <span className="flex items-center">
+          <span className="text-6xl">⚠</span>
           <br />
-          <Text size="2">{t($ => $.planModal.errors.failedModel)}</Text>
-        </Text>
+          <span className="text-base">{t($ => $.planModal.errors.failedModel)}</span>
+        </span>
       </div>
     )
   }
 
   if (!shouldRenderCanvas) {
     return (
-      <div className="flex items-center justify-center h-full">
-        <Spinner size="3" />
+      <div className="flex h-full items-center justify-center">
+        <Spinner size="lg" />
       </div>
     )
   }

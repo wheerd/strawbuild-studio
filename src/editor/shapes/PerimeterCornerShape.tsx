@@ -44,7 +44,7 @@ export function PerimeterCornerShape({ cornerId }: { cornerId: PerimeterCornerId
       data-parent-ids={JSON.stringify([corner.perimeterId])}
     >
       {/* Corner polygon fill */}
-      <path d={pathD} fill={cornerColor} stroke="var(--gray-11)" strokeWidth={10} />
+      <path d={pathD} fill={cornerColor} stroke="var(--color-border-contrast)" strokeWidth={10} />
 
       {/* Rounded rectangle overlay for near-straight corners */}
       {isNearStraight && (
@@ -56,7 +56,7 @@ export function PerimeterCornerShape({ cornerId }: { cornerId: PerimeterCornerId
             `${corner.outsidePoint[0] - normal[0] * overlayHalfWidth},${corner.outsidePoint[1] - normal[1] * overlayHalfWidth}`
           ].join(' ')}
           fill={cornerColor}
-          stroke="var(--gray-11)"
+          stroke="var(--color-border-contrast)"
           strokeWidth={8}
           opacity={0.5}
           strokeDasharray="20 20"
@@ -70,7 +70,7 @@ export function PerimeterCornerShape({ cornerId }: { cornerId: PerimeterCornerId
           y1={corner.insidePoint[1]}
           x2={corner.outsidePoint[0]}
           y2={corner.outsidePoint[1]}
-          stroke="var(--gray-12)"
+          stroke="var(--color-border-contrast)"
           opacity={0.5}
           strokeWidth={8}
           strokeDasharray="20 20"
@@ -78,7 +78,7 @@ export function PerimeterCornerShape({ cornerId }: { cornerId: PerimeterCornerId
       )}
 
       {/* Corner ownership indicator - arrow when selected */}
-      {isSelected && <Arrow color="var(--gray-1)" strokeWidth={30} arrowStart={arrowStart} arrowEnd={arrowEnd} />}
+      {isSelected && <Arrow color="var(--color-white)" strokeWidth={30} arrowStart={arrowStart} arrowEnd={arrowEnd} />}
     </g>
   )
 }

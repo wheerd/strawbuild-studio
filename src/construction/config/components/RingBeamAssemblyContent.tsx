@@ -1,25 +1,18 @@
 import { CopyIcon, PlusIcon, ResetIcon, TrashIcon } from '@radix-ui/react-icons'
 import * as Label from '@radix-ui/react-label'
-import {
-  AlertDialog,
-  Badge,
-  Box,
-  Button,
-  DropdownMenu,
-  Flex,
-  Grid,
-  Heading,
-  IconButton,
-  SegmentedControl,
-  Separator,
-  Text,
-  TextField
-} from '@radix-ui/themes'
 import React, { useCallback, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import type { RingBeamAssemblyId } from '@/building/model/ids'
 import { usePerimeterWalls } from '@/building/store'
+import { AlertDialog } from '@/components/ui/alert-dialog'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Card } from '@/components/ui/card'
+import { DropdownMenu } from '@/components/ui/dropdown-menu'
+import { Separator } from '@/components/ui/separator'
+import { TextField } from '@/components/ui/text-field'
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 import type { RingBeamAssemblyConfig } from '@/construction/config'
 import { type EntityId, useEntityLabel } from '@/construction/config/components/useEntityLabel'
 import {
@@ -163,11 +156,11 @@ export function RingBeamAssemblyContent({ initialSelectionId }: RingBeamAssembly
   }, [resetRingBeamAssembliesToDefaults, selectedAssemblyId, ringBeamAssemblies])
 
   return (
-    <Flex direction="column" gap="4" width="100%">
+    <div className="flex w-full flex-col gap-4">
       {/* Selector + Actions */}
-      <Flex direction="column" gap="2">
-        <Flex gap="2" align="end">
-          <Flex direction="column" gap="1" flexGrow="1">
+      <div className="flex w-full flex-col gap-2">
+        <div className="flex items-end gap-2">
+          <div className="flex grow flex-col gap-1">
             <RingBeamAssemblySelect
               value={selectedAssemblyId as RingBeamAssemblyId | undefined}
               onValueChange={value => {
@@ -176,13 +169,13 @@ export function RingBeamAssemblyContent({ initialSelectionId }: RingBeamAssembly
               showDefaultIndicator
               defaultAssemblyIds={[defaultBaseId, defaultTopId].filter(Boolean) as RingBeamAssemblyId[]}
             />
-          </Flex>
+          </div>
 
-          <DropdownMenu.Root>
-            <DropdownMenu.Trigger>
-              <IconButton title={t($ => $.common.addNew)}>
+          <DropdownMenu>
+            <DropdownMenu.Trigger asChild>
+              <Button size="icon" title={t($ => $.common.addNew)}>
                 <PlusIcon />
-              </IconButton>
+              </Button>
             </DropdownMenu.Trigger>
             <DropdownMenu.Content>
               <DropdownMenu.Item
@@ -190,145 +183,146 @@ export function RingBeamAssemblyContent({ initialSelectionId }: RingBeamAssembly
                   handleAddNew('full')
                 }}
               >
-                <Flex align="center" gap="1">
+                <div className="flex items-center gap-1">
                   {React.createElement(getRingBeamTypeIcon('full'))}
                   {t($ => $.ringBeams.types.full)}
-                </Flex>
+                </div>
               </DropdownMenu.Item>
               <DropdownMenu.Item
                 onSelect={() => {
                   handleAddNew('double')
                 }}
               >
-                <Flex align="center" gap="1">
+                <div className="flex items-center gap-1">
                   {React.createElement(getRingBeamTypeIcon('double'))}
                   {t($ => $.ringBeams.types.double)}
-                </Flex>
+                </div>
               </DropdownMenu.Item>
               <DropdownMenu.Item
                 onSelect={() => {
                   handleAddNew('brick')
                 }}
               >
-                <Flex align="center" gap="1">
+                <div className="flex items-center gap-1">
                   {React.createElement(getRingBeamTypeIcon('brick'))}
                   {t($ => $.ringBeams.types.brick)}
-                </Flex>
+                </div>
               </DropdownMenu.Item>
             </DropdownMenu.Content>
-          </DropdownMenu.Root>
+          </DropdownMenu>
 
-          <IconButton
+          <Button
+            size="icon"
             onClick={handleDuplicate}
             disabled={!selectedAssembly}
             title={t($ => $.common.duplicate)}
             variant="soft"
           >
             <CopyIcon />
-          </IconButton>
+          </Button>
 
           <AlertDialog.Root>
             <AlertDialog.Trigger>
-              <IconButton
+              <Button
+                size="icon"
                 disabled={!selectedAssembly || usage.isUsed}
-                color="red"
+                variant="destructive"
                 title={usage.isUsed ? t($ => $.common.inUseCannotDelete) : t($ => $.common.delete)}
               >
                 <TrashIcon />
-              </IconButton>
+              </Button>
             </AlertDialog.Trigger>
             <AlertDialog.Content>
               <AlertDialog.Title>{t($ => $.ringBeams.deleteTitle)}</AlertDialog.Title>
               <AlertDialog.Description>
                 {t($ => $.ringBeams.deleteConfirm, { name: selectedAssembly?.name })}
               </AlertDialog.Description>
-              <Flex gap="3" mt="4" justify="end">
-                <AlertDialog.Cancel>
-                  <Button variant="soft" color="gray">
+              <div className="mt-4 flex justify-end gap-3">
+                <AlertDialog.Cancel asChild>
+                  <Button variant="soft" className="">
                     {t($ => $.common.cancel)}
                   </Button>
                 </AlertDialog.Cancel>
-                <AlertDialog.Action>
-                  <Button variant="solid" color="red" onClick={handleDelete}>
+                <AlertDialog.Action asChild>
+                  <Button variant="destructive" onClick={handleDelete}>
                     {t($ => $.common.delete)}
                   </Button>
                 </AlertDialog.Action>
-              </Flex>
+              </div>
             </AlertDialog.Content>
           </AlertDialog.Root>
 
           <AlertDialog.Root>
             <AlertDialog.Trigger>
-              <IconButton color="red" variant="outline" title={t($ => $.common.resetToDefaults)}>
+              <Button
+                size="icon"
+                className="text-destructive"
+                variant="outline"
+                title={t($ => $.common.resetToDefaults)}
+              >
                 <ResetIcon />
-              </IconButton>
+              </Button>
             </AlertDialog.Trigger>
             <AlertDialog.Content>
               <AlertDialog.Title>{t($ => $.ringBeams.resetTitle)}</AlertDialog.Title>
               <AlertDialog.Description>{t($ => $.ringBeams.resetConfirm)}</AlertDialog.Description>
-              <Flex gap="3" mt="4" justify="end">
-                <AlertDialog.Cancel>
-                  <Button variant="soft" color="gray">
+              <div className="mt-4 flex justify-end gap-3">
+                <AlertDialog.Cancel asChild>
+                  <Button variant="soft" className="">
                     {t($ => $.common.cancel)}
                   </Button>
                 </AlertDialog.Cancel>
-                <AlertDialog.Action>
-                  <Button variant="solid" color="red" onClick={handleReset}>
+                <AlertDialog.Action asChild>
+                  <Button variant="destructive" onClick={handleReset}>
                     {t($ => $.common.reset)}
                   </Button>
                 </AlertDialog.Action>
-              </Flex>
+              </div>
             </AlertDialog.Content>
           </AlertDialog.Root>
-        </Flex>
-      </Flex>
+        </div>
+      </div>
       {/* Form */}
       {selectedAssembly && <ConfigForm assembly={selectedAssembly} />}
       {!selectedAssembly && ringBeamAssemblies.length === 0 && (
-        <Flex justify="center" align="center" p="5">
-          <Text color="gray">No ring beam assemblies yet. Create one using the "New" button above.</Text>
-        </Flex>
+        <div className="flex items-center justify-center p-5">
+          <span className="">No ring beam assemblies yet. Create one using the "New" button above.</span>
+        </div>
       )}
       {/* Defaults Section */}
-      <Separator size="4" />
-      <Flex direction="column" gap="3">
-        <Grid columns="auto 1fr auto 1fr" gap="2" gapX="3" align="center">
-          <Flex align="center" gap="1">
+      <Separator />
+      <div className="flex flex-col gap-3">
+        <div className="grid grid-cols-[auto_1fr_auto_1fr] items-center gap-2 gap-x-3">
+          <div className="flex items-center gap-1">
             <Label.Root>
-              <Text size="2" weight="medium" color="gray">
-                {t($ => $.ringBeams.defaultBasePlate)}
-              </Text>
+              <span className="text-base font-medium">{t($ => $.ringBeams.defaultBasePlate)}</span>
             </Label.Root>
             <MeasurementInfo highlightedPart="basePlate" />
-          </Flex>
+          </div>
           <RingBeamAssemblySelect
             value={defaultBaseId}
             onValueChange={setDefaultBaseRingBeamAssembly}
             placeholder={t($ => $.common.placeholders.selectDefault)}
-            size="2"
             allowNone
           />
 
-          <Flex align="center" gap="1">
+          <div className="flex items-center gap-1">
             <Label.Root>
-              <Text size="2" weight="medium" color="gray">
-                {t($ => $.ringBeams.defaultTopPlate)}
-              </Text>
+              <span className="text-base font-medium">{t($ => $.ringBeams.defaultTopPlate)}</span>
             </Label.Root>
             <MeasurementInfo highlightedPart="topPlate" />
-          </Flex>
+          </div>
           <RingBeamAssemblySelect
             value={defaultTopId}
             onValueChange={setDefaultTopRingBeamAssembly}
             placeholder={t($ => $.common.placeholders.selectDefault)}
-            size="2"
             allowNone
           />
-        </Grid>
+        </div>
 
         {usage.isUsed && <UsageDisplay usage={usage} />}
-      </Flex>
-    </Flex>
+      </div>
+    </div>
   )
 }
 
@@ -359,18 +353,11 @@ function ConfigForm({ assembly }: { assembly: RingBeamAssemblyConfig }): React.R
   const totalHeight = useMemo(() => formatLength(resolveRingBeamAssembly(assembly).height), [assembly, formatLength])
 
   return (
-    <Flex
-      direction="column"
-      gap="3"
-      p="3"
-      style={{ border: '1px solid var(--gray-6)', borderRadius: 'var(--radius-2)' }}
-    >
-      <Grid columns="1fr 1fr" gap="2" gapX="3" align="center">
-        <Grid columns="auto 1fr" gapX="2" align="center">
+    <Card className="flex flex-col gap-3 p-3">
+      <div className="grid grid-cols-2 items-center gap-2 gap-x-3">
+        <div className="grid grid-cols-[auto_1fr] items-center gap-x-2">
           <Label.Root>
-            <Text size="2" weight="medium" color="gray">
-              {t($ => $.common.name)}
-            </Text>
+            <span className="text-base font-medium">{t($ => $.common.name)}</span>
           </Label.Root>
           <TextField.Root
             value={nameInput.value}
@@ -380,44 +367,35 @@ function ConfigForm({ assembly }: { assembly: RingBeamAssemblyConfig }): React.R
             onBlur={nameInput.handleBlur}
             onKeyDown={nameInput.handleKeyDown}
             placeholder={t($ => $.ringBeams.placeholders.name)}
-            size="2"
           />
-        </Grid>
+        </div>
 
-        <Grid columns="1fr 1fr" gap="2" gapX="3" align="center">
-          <Flex gap="2" align="center">
+        <div className="grid grid-cols-2 items-center gap-2 gap-x-3">
+          <div className="flex items-center gap-2">
             <Label.Root>
-              <Text size="2" weight="medium" color="gray">
-                {t($ => $.common.type)}
-              </Text>
+              <span className="text-base font-medium">{t($ => $.common.type)}</span>
             </Label.Root>
-            <Flex gap="2" align="center">
+            <div className="flex items-center gap-2">
               {React.createElement(getRingBeamTypeIcon(assembly.type))}
-              <Text size="2" color="gray">
-                {t($ => $.ringBeams.types[assembly.type])}
-              </Text>
-            </Flex>
-          </Flex>
+              <span className="text-base">{t($ => $.ringBeams.types[assembly.type])}</span>
+            </div>
+          </div>
 
-          <Flex gap="2" align="center">
+          <div className="flex items-center gap-2">
             <Label.Root>
-              <Text size="2" weight="medium" color="gray">
-                {t($ => $.common.totalHeight)}
-              </Text>
+              <span className="text-base font-medium">{t($ => $.common.totalHeight)}</span>
             </Label.Root>
-            <Text size="2" color="gray">
-              {totalHeight}
-            </Text>
-          </Flex>
-        </Grid>
-      </Grid>
+            <span className="text-base">{totalHeight}</span>
+          </div>
+        </div>
+      </div>
 
-      <Separator size="4" />
+      <Separator />
 
       {assembly.type === 'full' && <FullRingBeamFields config={assembly} onUpdate={handleUpdateConfig} />}
       {assembly.type === 'double' && <DoubleRingBeamFields config={assembly} onUpdate={handleUpdateConfig} />}
       {assembly.type === 'brick' && <BrickRingBeamFields config={assembly} onUpdate={handleUpdateConfig} />}
-    </Flex>
+    </Card>
   )
 }
 
@@ -431,11 +409,9 @@ function FullRingBeamFields({
   const { t } = useTranslation('config')
   return (
     <>
-      <Grid columns="auto 1fr auto 1fr" gap="2" gapX="3" align="center">
+      <div className="grid grid-cols-[auto_1fr_auto_1fr] items-center gap-2 gap-x-3">
         <Label.Root>
-          <Text size="2" weight="medium" color="gray">
-            {t($ => $.common.materialLabel)}
-          </Text>
+          <span className="text-base font-medium">{t($ => $.common.materialLabel)}</span>
         </Label.Root>
         <MaterialSelectWithEdit
           value={config.material}
@@ -444,31 +420,25 @@ function FullRingBeamFields({
             onUpdate({ material })
           }}
           placeholder={t($ => $.common.placeholders.selectMaterial)}
-          size="2"
           preferredTypes={['dimensional']}
         />
 
-        <Flex align="center" gap="1">
+        <div className="flex items-center gap-1">
           <Label.Root>
-            <Text size="2" weight="medium" color="gray">
-              {t($ => $.common.height)}
-            </Text>
+            <span className="text-base font-medium">{t($ => $.common.height)}</span>
           </Label.Root>
           <MeasurementInfo highlightedPart="plates" />
-        </Flex>
+        </div>
         <LengthField
           value={config.height}
           onChange={height => {
             onUpdate({ height })
           }}
           unit="mm"
-          size="2"
         />
 
         <Label.Root>
-          <Text size="2" weight="medium" color="gray">
-            {t($ => $.common.width)}
-          </Text>
+          <span className="text-base font-medium">{t($ => $.common.width)}</span>
         </Label.Root>
         <LengthField
           value={config.width}
@@ -476,13 +446,10 @@ function FullRingBeamFields({
             onUpdate({ width })
           }}
           unit="mm"
-          size="2"
         />
 
         <Label.Root>
-          <Text size="2" weight="medium" color="gray">
-            {t($ => $.ringBeams.labels.offsetFromInsideEdge)}
-          </Text>
+          <span className="text-base font-medium">{t($ => $.ringBeams.labels.offsetFromInsideEdge)}</span>
         </Label.Root>
         <LengthField
           value={config.offsetFromEdge}
@@ -490,9 +457,8 @@ function FullRingBeamFields({
             onUpdate({ offsetFromEdge })
           }}
           unit="mm"
-          size="2"
         />
-      </Grid>
+      </div>
     </>
   )
 }
@@ -506,11 +472,9 @@ function DoubleRingBeamFields({
 }) {
   const { t } = useTranslation('config')
   return (
-    <Grid columns="auto 1fr auto 1fr" gap="2" gapX="3" align="center">
+    <div className="grid grid-cols-[auto_1fr_auto_1fr] items-center gap-2 gap-x-3">
       <Label.Root>
-        <Text size="2" weight="medium" color="gray">
-          {t($ => $.common.materialLabel)}
-        </Text>
+        <span className="text-base font-medium">{t($ => $.common.materialLabel)}</span>
       </Label.Root>
       <MaterialSelectWithEdit
         value={config.material}
@@ -519,14 +483,11 @@ function DoubleRingBeamFields({
           onUpdate({ material })
         }}
         placeholder={t($ => $.common.placeholders.selectMaterial)}
-        size="2"
         preferredTypes={['dimensional']}
       />
 
       <Label.Root>
-        <Text size="2" weight="medium" color="gray">
-          {t($ => $.common.materialLabel)}
-        </Text>
+        <span className="text-base font-medium">{t($ => $.common.materialLabel)}</span>
       </Label.Root>
       <MaterialSelectWithEdit
         value={config.infillMaterial}
@@ -535,96 +496,82 @@ function DoubleRingBeamFields({
           onUpdate({ infillMaterial })
         }}
         placeholder={t($ => $.common.placeholders.selectMaterial)}
-        size="2"
       />
 
-      <Flex align="center" gap="1">
+      <div className="flex items-center gap-1">
         <Label.Root>
-          <Text size="2" weight="medium" color="gray">
-            {t($ => $.common.height)}
-          </Text>
+          <span className="text-base font-medium">{t($ => $.common.height)}</span>
         </Label.Root>
         <MeasurementInfo highlightedPart="plates" />
-      </Flex>
+      </div>
       <LengthField
         value={config.height}
         onChange={height => {
           onUpdate({ height })
         }}
         unit="mm"
-        size="2"
       />
 
-      <Flex align="center" gap="1">
+      <div className="flex items-center gap-1">
         <Label.Root>
-          <Text size="2" weight="medium" color="gray">
-            {t($ => $.common.thickness)}
-          </Text>
+          <span className="text-base font-medium">{t($ => $.common.thickness)}</span>
         </Label.Root>
         <MeasurementInfo highlightedPart="plates" />
-      </Flex>
+      </div>
       <LengthField
         value={config.thickness}
         onChange={thickness => {
           onUpdate({ thickness })
         }}
         unit="mm"
-        size="2"
       />
 
-      <Flex align="center" gap="1">
+      <div className="flex items-center gap-1">
         <Label.Root>
-          <Text size="2" weight="medium" color="gray">
-            {t($ => $.common.spacing)}
-          </Text>
+          <span className="text-base font-medium">{t($ => $.common.spacing)}</span>
         </Label.Root>
         <MeasurementInfo highlightedPart="plates" />
-      </Flex>
+      </div>
       <LengthField
         value={config.spacing}
         onChange={spacing => {
           onUpdate({ spacing })
         }}
         unit="mm"
-        size="2"
       />
 
-      <Flex align="center" gap="1">
+      <div className="flex items-center gap-1">
         <Label.Root>
-          <Text size="2" weight="medium" color="gray">
-            {t($ => $.ringBeams.labels.offsetFromInsideEdge)}
-          </Text>
+          <span className="text-base font-medium">{t($ => $.ringBeams.labels.offsetFromInsideEdge)}</span>
         </Label.Root>
         <MeasurementInfo highlightedPart="plates" />
-      </Flex>
+      </div>
       <LengthField
         value={config.offsetFromEdge}
         onChange={offsetFromEdge => {
           onUpdate({ offsetFromEdge })
         }}
         unit="mm"
-        size="2"
       />
 
-      <Text size="2" weight="medium" color="gray">
-        {t($ => $.ringBeams.labels.cornerHandling)}
-      </Text>
+      <span className="text-base font-medium">{t($ => $.ringBeams.labels.cornerHandling)}</span>
 
-      <Box gridColumn="span 3">
-        <SegmentedControl.Root
+      <div className="col-span-3">
+        <ToggleGroup
+          type="single"
+          variant="outline"
           value={config.cornerHandling}
           onValueChange={value => {
-            onUpdate({ cornerHandling: value as CornerHandling })
+            if (value) {
+              onUpdate({ cornerHandling: value as CornerHandling })
+            }
           }}
-          size="2"
         >
-          <SegmentedControl.Item value="cut">{t($ => $.ringBeams.labels.cornerHandlingCut)}</SegmentedControl.Item>
-          <SegmentedControl.Item value="interweave">
-            {t($ => $.ringBeams.labels.cornerHandlingInterweave)}
-          </SegmentedControl.Item>
-        </SegmentedControl.Root>
-      </Box>
-    </Grid>
+          <ToggleGroupItem value="cut">{t($ => $.ringBeams.labels.cornerHandlingCut)}</ToggleGroupItem>
+          <ToggleGroupItem value="interweave">{t($ => $.ringBeams.labels.cornerHandlingInterweave)}</ToggleGroupItem>
+        </ToggleGroup>
+      </div>
+    </div>
   )
 }
 
@@ -638,13 +585,11 @@ function BrickRingBeamFields({
   const { t } = useTranslation('config')
   return (
     <>
-      <Heading size="2">{t($ => $.ringBeams.sections.stemWall)}</Heading>
+      <h2>{t($ => $.ringBeams.sections.stemWall)}</h2>
 
-      <Grid columns="auto 1fr auto 1fr" gap="2" gapX="3" align="center">
+      <div className="grid grid-cols-[auto_1fr_auto_1fr] items-center gap-2 gap-x-3">
         <Label.Root>
-          <Text size="2" weight="medium" color="gray">
-            {t($ => $.common.height)}
-          </Text>
+          <span className="text-base font-medium">{t($ => $.common.height)}</span>
         </Label.Root>
         <LengthField
           value={config.wallHeight}
@@ -653,13 +598,10 @@ function BrickRingBeamFields({
           }}
           unit="cm"
           min={0}
-          size="2"
         />
 
         <Label.Root>
-          <Text size="2" weight="medium" color="gray">
-            {t($ => $.common.width)}
-          </Text>
+          <span className="text-base font-medium">{t($ => $.common.width)}</span>
         </Label.Root>
         <LengthField
           value={config.wallWidth}
@@ -668,13 +610,10 @@ function BrickRingBeamFields({
           }}
           unit="cm"
           min={0}
-          size="2"
         />
 
         <Label.Root>
-          <Text size="2" weight="medium" color="gray">
-            {t($ => $.common.materialLabel)}
-          </Text>
+          <span className="text-base font-medium">{t($ => $.common.materialLabel)}</span>
         </Label.Root>
         <MaterialSelectWithEdit
           value={config.wallMaterial}
@@ -683,20 +622,17 @@ function BrickRingBeamFields({
             onUpdate({ wallMaterial })
           }}
           placeholder={t($ => $.common.placeholders.selectMaterial)}
-          size="2"
           preferredTypes={['dimensional']}
         />
-      </Grid>
+      </div>
 
-      <Separator size="4" />
+      <Separator />
 
-      <Heading size="2">{t($ => $.ringBeams.sections.insulation)}</Heading>
+      <h2>{t($ => $.ringBeams.sections.insulation)}</h2>
 
-      <Grid columns="auto 1fr auto 1fr" gap="2" gapX="3" align="center">
+      <div className="grid grid-cols-[auto_1fr_auto_1fr] items-center gap-2 gap-x-3">
         <Label.Root>
-          <Text size="2" weight="medium" color="gray">
-            {t($ => $.common.thickness)}
-          </Text>
+          <span className="text-base font-medium">{t($ => $.common.thickness)}</span>
         </Label.Root>
         <LengthField
           value={config.insulationThickness}
@@ -705,13 +641,10 @@ function BrickRingBeamFields({
           }}
           unit="cm"
           min={0}
-          size="2"
         />
 
         <Label.Root>
-          <Text size="2" weight="medium" color="gray">
-            {t($ => $.common.materialLabel)}
-          </Text>
+          <span className="text-base font-medium">{t($ => $.common.materialLabel)}</span>
         </Label.Root>
         <MaterialSelectWithEdit
           value={config.insulationMaterial}
@@ -720,19 +653,16 @@ function BrickRingBeamFields({
             onUpdate({ insulationMaterial })
           }}
           placeholder={t($ => $.common.placeholders.selectMaterial)}
-          size="2"
         />
-      </Grid>
+      </div>
 
-      <Separator size="4" />
+      <Separator />
 
-      <Heading size="2">{t($ => $.ringBeams.sections.beam)}</Heading>
+      <h2>{t($ => $.ringBeams.sections.beam)}</h2>
 
-      <Grid columns="auto 1fr auto 1fr" gap="2" gapX="3" align="center">
+      <div className="grid grid-cols-[auto_1fr_auto_1fr] items-center gap-2 gap-x-3">
         <Label.Root>
-          <Text size="2" weight="medium" color="gray">
-            {t($ => $.common.thickness)}
-          </Text>
+          <span className="text-base font-medium">{t($ => $.common.thickness)}</span>
         </Label.Root>
         <LengthField
           value={config.beamThickness}
@@ -741,13 +671,10 @@ function BrickRingBeamFields({
           }}
           unit="cm"
           min={0}
-          size="2"
         />
 
         <Label.Root>
-          <Text size="2" weight="medium" color="gray">
-            {t($ => $.common.width)}
-          </Text>
+          <span className="text-base font-medium">{t($ => $.common.width)}</span>
         </Label.Root>
         <LengthField
           value={config.beamWidth}
@@ -756,13 +683,10 @@ function BrickRingBeamFields({
           }}
           unit="cm"
           min={0}
-          size="2"
         />
 
         <Label.Root>
-          <Text size="2" weight="medium" color="gray">
-            {t($ => $.common.materialLabel)}
-          </Text>
+          <span className="text-base font-medium">{t($ => $.common.materialLabel)}</span>
         </Label.Root>
         <MaterialSelectWithEdit
           value={config.beamMaterial}
@@ -771,20 +695,17 @@ function BrickRingBeamFields({
             onUpdate({ beamMaterial })
           }}
           placeholder={t($ => $.common.placeholders.selectMaterial)}
-          size="2"
           preferredTypes={['dimensional']}
         />
-      </Grid>
+      </div>
 
-      <Separator size="4" />
+      <Separator />
 
-      <Heading size="2">{t($ => $.ringBeams.sections.waterproofing)}</Heading>
+      <h2>{t($ => $.ringBeams.sections.waterproofing)}</h2>
 
-      <Grid columns="auto 1fr auto 1fr" gap="2" gapX="3" align="center">
+      <div className="grid grid-cols-[auto_1fr_auto_1fr] items-center gap-2 gap-x-3">
         <Label.Root>
-          <Text size="2" weight="medium" color="gray">
-            {t($ => $.common.thickness)}
-          </Text>
+          <span className="text-base font-medium">{t($ => $.common.thickness)}</span>
         </Label.Root>
         <LengthField
           value={config.waterproofingThickness}
@@ -793,13 +714,10 @@ function BrickRingBeamFields({
           }}
           unit="mm"
           min={0}
-          size="2"
         />
 
         <Label.Root>
-          <Text size="2" weight="medium" color="gray">
-            {t($ => $.common.materialLabel)}
-          </Text>
+          <span className="text-base font-medium">{t($ => $.common.materialLabel)}</span>
         </Label.Root>
         <MaterialSelectWithEdit
           value={config.waterproofingMaterial}
@@ -808,10 +726,9 @@ function BrickRingBeamFields({
             onUpdate({ waterproofingMaterial })
           }}
           placeholder={t($ => $.common.placeholders.selectMaterial)}
-          size="2"
           preferredTypes={['sheet']}
         />
-      </Grid>
+      </div>
     </>
   )
 }
@@ -819,7 +736,7 @@ function BrickRingBeamFields({
 function UsageBadge({ id }: { id: EntityId }) {
   const label = useEntityLabel(id)
   return (
-    <Badge key={id} size="2" variant="soft">
+    <Badge key={id} variant="soft">
       {label}
     </Badge>
   )
@@ -829,27 +746,25 @@ function UsageDisplay({ usage }: { usage: RingBeamAssemblyUsage }): React.JSX.El
   const { t } = useTranslation('config')
 
   return (
-    <Grid columns="auto 1fr" gap="2" gapX="3" align="center">
+    <div className="grid grid-cols-[auto_1fr] items-center gap-2 gap-x-3">
       <Label.Root>
-        <Text size="2" weight="medium" color="gray">
-          {t($ => $.usage.usedBy)}
-        </Text>
+        <span className="text-base font-medium">{t($ => $.usage.usedBy)}</span>
       </Label.Root>
-      <Flex gap="1" wrap="wrap">
+      <div className="flex flex-wrap gap-1">
         {usage.isDefaultBase && (
-          <Badge size="2" variant="soft" color="blue">
+          <Badge variant="soft" color="blue">
             {t($ => $.usage.globalDefault_ringBeamBase)}
           </Badge>
         )}
         {usage.isDefaultTop && (
-          <Badge size="2" variant="soft" color="blue">
+          <Badge variant="soft" color="blue">
             {t($ => $.usage.globalDefault_ringBeamTop)}
           </Badge>
         )}
         {usage.storeyIds.map(id => (
           <UsageBadge key={id} id={id} />
         ))}
-      </Flex>
-    </Grid>
+      </div>
+    </div>
   )
 }

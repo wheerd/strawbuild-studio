@@ -1,8 +1,8 @@
 import { CheckCircledIcon, CrossCircledIcon, ExclamationTriangleIcon } from '@radix-ui/react-icons'
-import { Callout, Flex, Text } from '@radix-ui/themes'
 import { use } from 'react'
 import { useTranslation } from 'react-i18next'
 
+import { Callout, CalloutIcon, CalloutText } from '@/components/ui/callout'
 import type { ConstructionModel } from '@/construction/model'
 
 import { usePlanHighlight } from './PlanHighlightContext'
@@ -17,29 +17,29 @@ export const IssueDescriptionPanel = ({ modelPromise }: IssueDescriptionPanelPro
   const { t } = useTranslation('construction')
 
   return (
-    <Flex direction="column" gap="2" p="2" style={{ maxHeight: '120px', overflowY: 'auto' }}>
+    <div className="flex max-h-[120px] w-full flex-col gap-2 overflow-y-auto py-2">
       {model ? (
         <>
           {model.errors.length > 0 && (
-            <Callout.Root color="red" size="1">
-              <Callout.Icon>
+            <Callout className="text-destructive" size="sm">
+              <CalloutIcon>
                 <CrossCircledIcon />
-              </Callout.Icon>
-              <Flex direction="column" gap="2">
-                <Text weight="medium" size="2">
+              </CalloutIcon>
+              <div className="flex flex-col gap-2">
+                <span className="text-base font-medium">
                   {t($ => $.planModal.issuesPanel.errorsTitle, { count: model.errors.length })}
-                </Text>
-                <Flex direction="column" gap="1">
+                </span>
+                <div className="flex flex-col gap-1">
                   {model.errors.map(error => (
-                    <Text
+                    <span
                       key={error.id}
-                      size="1"
                       onMouseEnter={() => {
                         setHoveredIssueId(error.id)
                       }}
                       onMouseLeave={() => {
                         setHoveredIssueId(null)
                       }}
+                      className="text-sm"
                       style={{
                         cursor: 'pointer',
                         padding: 'var(--space-1)',
@@ -50,27 +50,27 @@ export const IssueDescriptionPanel = ({ modelPromise }: IssueDescriptionPanelPro
                       }}
                     >
                       • {t(error.messageKey, { ...error.params, ns: 'errors' })}
-                    </Text>
+                    </span>
                   ))}
-                </Flex>
-              </Flex>
-            </Callout.Root>
+                </div>
+              </div>
+            </Callout>
           )}
 
           {model.warnings.length > 0 && (
-            <Callout.Root color="amber" size="1">
-              <Callout.Icon>
+            <Callout color="orange" size="sm">
+              <CalloutIcon>
                 <ExclamationTriangleIcon />
-              </Callout.Icon>
-              <Flex direction="column" gap="2">
-                <Text weight="medium" size="2">
+              </CalloutIcon>
+              <div className="flex flex-col gap-2">
+                <span className="text-base font-medium">
                   {t($ => $.planModal.issuesPanel.warningsTitle, { count: model.warnings.length })}
-                </Text>
-                <Flex direction="column" gap="1">
+                </span>
+                <div className="flex flex-col gap-1">
                   {model.warnings.map(warning => (
-                    <Text
+                    <span
                       key={warning.id}
-                      size="1"
+                      className="text-sm"
                       onMouseEnter={() => {
                         setHoveredIssueId(warning.id)
                       }}
@@ -82,40 +82,38 @@ export const IssueDescriptionPanel = ({ modelPromise }: IssueDescriptionPanelPro
                         padding: 'var(--space-1)',
                         margin: 'calc(-1 * var(--space-1))',
                         borderRadius: 'var(--radius-1)',
-                        backgroundColor: hoveredIssueId === warning.id ? 'var(--amber-a3)' : 'transparent',
+                        backgroundColor: hoveredIssueId === warning.id ? 'var(--orange-a3)' : 'transparent',
                         transition: 'background-color 0.15s ease'
                       }}
                     >
                       • {t(warning.messageKey, { ...warning.params, ns: 'errors' })}
-                    </Text>
+                    </span>
                   ))}
-                </Flex>
-              </Flex>
-            </Callout.Root>
+                </div>
+              </div>
+            </Callout>
           )}
 
           {model.errors.length === 0 && model.warnings.length === 0 && (
-            <Callout.Root color="green" size="1">
-              <Callout.Icon>
+            <Callout color="green" size="sm">
+              <CalloutIcon>
                 <CheckCircledIcon />
-              </Callout.Icon>
-              <Flex direction="column" gap="1">
-                <Text weight="medium" size="2">
-                  {t($ => $.planModal.issuesPanel.noIssuesTitle)}
-                </Text>
-                <Text size="1">{t($ => $.planModal.issuesPanel.noIssuesMessage)}</Text>
-              </Flex>
-            </Callout.Root>
+              </CalloutIcon>
+              <div className="flex flex-col gap-1">
+                <span className="text-base font-medium">{t($ => $.planModal.issuesPanel.noIssuesTitle)}</span>
+                <span className="text-sm">{t($ => $.planModal.issuesPanel.noIssuesMessage)}</span>
+              </div>
+            </Callout>
           )}
         </>
       ) : (
-        <Callout.Root color="red" size="1">
-          <Callout.Icon>
+        <Callout className="text-destructive" size="sm">
+          <CalloutIcon>
             <CrossCircledIcon />
-          </Callout.Icon>
-          <Callout.Text>{t($ => $.planModal.errors.failedModel)}</Callout.Text>
-        </Callout.Root>
+          </CalloutIcon>
+          <CalloutText>{t($ => $.planModal.errors.failedModel)}</CalloutText>
+        </Callout>
       )}
-    </Flex>
+    </div>
   )
 }

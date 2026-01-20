@@ -78,7 +78,7 @@ export function GridMeasurementSystem({
           y1={displayBounds.min[1]}
           x2={coord.displayX}
           y2={displayBounds.max[1]}
-          stroke="var(--gray-11)"
+          stroke="var(--color-gray-900)"
           strokeWidth={SCALED.strokeWidth}
           strokeDasharray={SCALED.dashArray}
           opacity={0.5}
@@ -95,7 +95,7 @@ export function GridMeasurementSystem({
           y1={y}
           x2={displayBounds.max[0]}
           y2={y}
-          stroke="var(--gray-11)"
+          stroke="var(--color-gray-900)"
           strokeWidth={SCALED.strokeWidth}
           strokeDasharray={SCALED.dashArray}
           opacity={0.5}
@@ -112,7 +112,7 @@ export function GridMeasurementSystem({
           endPoint={newVec2(displayBounds.max[0], displayBounds.max[1])}
           label={totalWidth.toFixed(0)}
           offset={SCALED.totalOffset}
-          color="var(--gray-11)"
+          color="var(--color-gray-900)"
           fontSize={SCALED.fontSize}
           strokeWidth={SCALED.strokeWidth}
         />,
@@ -123,7 +123,7 @@ export function GridMeasurementSystem({
           endPoint={newVec2(displayBounds.max[0], displayBounds.min[1])}
           label={totalWidth.toFixed(0)}
           offset={-SCALED.totalOffset}
-          color="var(--gray-11)"
+          color="var(--color-gray-900)"
           fontSize={SCALED.fontSize}
           strokeWidth={SCALED.strokeWidth}
         />
@@ -152,7 +152,7 @@ export function GridMeasurementSystem({
           endPoint={newVec2(next.displayX, displayBounds.min[1])}
           label={distance.toFixed(0)}
           offset={-SCALED.segmentOffset}
-          color="var(--gray-11)"
+          color="var(--color-gray-900)"
           fontSize={SCALED.fontSize}
           strokeWidth={SCALED.strokeWidth}
           labelOrientation={labelOrientation}
@@ -167,7 +167,7 @@ export function GridMeasurementSystem({
           endPoint={newVec2(next.displayX, displayBounds.max[1])}
           label={distance.toFixed(0)}
           offset={SCALED.segmentOffset}
-          color="var(--gray-11)"
+          color="var(--color-gray-900)"
           fontSize={SCALED.fontSize}
           strokeWidth={SCALED.strokeWidth}
           labelOrientation={labelOrientation}
@@ -184,7 +184,7 @@ export function GridMeasurementSystem({
           endPoint={newVec2(displayBounds.min[0], displayBounds.max[1])}
           label={totalHeight.toFixed(0)}
           offset={SCALED.totalOffset}
-          color="var(--gray-11)"
+          color="var(--color-gray-900)"
           fontSize={SCALED.fontSize}
           strokeWidth={SCALED.strokeWidth}
         />,
@@ -195,7 +195,7 @@ export function GridMeasurementSystem({
           endPoint={newVec2(displayBounds.max[0], displayBounds.max[1])}
           label={totalHeight.toFixed(0)}
           offset={-SCALED.totalOffset}
-          color="var(--gray-11)"
+          color="var(--color-gray-900)"
           fontSize={SCALED.fontSize}
           strokeWidth={SCALED.strokeWidth}
         />
@@ -222,7 +222,7 @@ export function GridMeasurementSystem({
           endPoint={newVec2(displayBounds.min[0], nextY)}
           label={distance.toFixed(0)}
           offset={SCALED.segmentOffset}
-          color="var(--gray-11)"
+          color="var(--color-gray-900)"
           fontSize={SCALED.fontSize}
           strokeWidth={SCALED.strokeWidth}
           labelOrientation={labelOrientation}
@@ -237,7 +237,7 @@ export function GridMeasurementSystem({
           endPoint={newVec2(displayBounds.max[0], nextY)}
           label={distance.toFixed(0)}
           offset={-SCALED.segmentOffset}
-          color="var(--gray-11)"
+          color="var(--color-gray-900)"
           fontSize={SCALED.fontSize}
           strokeWidth={SCALED.strokeWidth}
           labelOrientation={labelOrientation}

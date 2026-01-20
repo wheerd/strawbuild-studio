@@ -1,18 +1,5 @@
 import { ExclamationTriangleIcon, TrashIcon } from '@radix-ui/react-icons'
 import * as Label from '@radix-ui/react-label'
-import {
-  Box,
-  Callout,
-  DataList,
-  DropdownMenu,
-  Flex,
-  Heading,
-  IconButton,
-  SegmentedControl,
-  Separator,
-  Text,
-  Tooltip
-} from '@radix-ui/themes'
 import React, { useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -25,6 +12,13 @@ import {
   usePerimeterWallsById,
   useRoofsOfActiveStorey
 } from '@/building/store'
+import { Button } from '@/components/ui/button'
+import { Callout, CalloutIcon, CalloutText } from '@/components/ui/callout'
+import { DataList } from '@/components/ui/data-list'
+import { DropdownMenu } from '@/components/ui/dropdown-menu'
+import { Separator } from '@/components/ui/separator'
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
+import { Tooltip } from '@/components/ui/tooltip'
 import TopDownPlanModal from '@/construction/components/TopDownPlanModal'
 import { useDefaultRoofAssemblyId } from '@/construction/config'
 import { RingBeamAssemblySelectWithEdit } from '@/construction/config/components/RingBeamAssemblySelectWithEdit'
@@ -95,7 +89,7 @@ function detectMixedRingBeams(
 function MixedStateIndicator({ tooltip }: { tooltip: string }) {
   return (
     <Tooltip content={tooltip}>
-      <ExclamationTriangleIcon width={14} height={14} style={{ color: 'var(--amber-9)' }} />
+      <ExclamationTriangleIcon className="text-orange-900" width={14} height={14} />
     </Tooltip>
   )
 }
@@ -196,270 +190,252 @@ export function PerimeterInspector({ selectedId }: PerimeterInspectorProps): Rea
   )
 
   return (
-    <Box p="2">
-      <Flex direction="column" gap="3">
-        {/* Basic Information */}
-        <DataList.Root size="1">
-          <DataList.Item>
-            <DataList.Label minWidth="88px">{t($ => $.perimeter.totalInnerPerimeter)}</DataList.Label>
-            <DataList.Value>{formatLength(totalInnerPerimeter)}</DataList.Value>
-          </DataList.Item>
-          <DataList.Item>
-            <DataList.Label minWidth="88px">{t($ => $.perimeter.totalInsideArea)}</DataList.Label>
-            <DataList.Value>{formatArea(totalInnerArea)}</DataList.Value>
-          </DataList.Item>
-          <DataList.Item>
-            <DataList.Label minWidth="88px">{t($ => $.perimeter.totalOuterPerimeter)}</DataList.Label>
-            <DataList.Value>{formatLength(totalOuterPerimeter)}</DataList.Value>
-          </DataList.Item>
-          <DataList.Item>
-            <DataList.Label minWidth="88px">{t($ => $.perimeter.totalOverbuiltArea)}</DataList.Label>
-            <DataList.Value>{formatArea(totalOuterArea)}</DataList.Value>
-          </DataList.Item>
-        </DataList.Root>
+    <div className="flex flex-col gap-3">
+      {/* Basic Information */}
+      <DataList.Root>
+        <DataList.Item>
+          <DataList.Label>{t($ => $.perimeter.totalInnerPerimeter)}</DataList.Label>
+          <DataList.Value>{formatLength(totalInnerPerimeter)}</DataList.Value>
+        </DataList.Item>
+        <DataList.Item>
+          <DataList.Label>{t($ => $.perimeter.totalInsideArea)}</DataList.Label>
+          <DataList.Value>{formatArea(totalInnerArea)}</DataList.Value>
+        </DataList.Item>
+        <DataList.Item>
+          <DataList.Label>{t($ => $.perimeter.totalOuterPerimeter)}</DataList.Label>
+          <DataList.Value>{formatLength(totalOuterPerimeter)}</DataList.Value>
+        </DataList.Item>
+        <DataList.Item>
+          <DataList.Label>{t($ => $.perimeter.totalOverbuiltArea)}</DataList.Label>
+          <DataList.Value>{formatArea(totalOuterArea)}</DataList.Value>
+        </DataList.Item>
+      </DataList.Root>
 
-        <Flex align="center" gap="2">
-          <Text size="1" color="gray" weight="medium">
-            {t($ => $.perimeter.referenceSide)}
-          </Text>
-          <SegmentedControl.Root
-            size="1"
-            value={perimeter.referenceSide}
-            onValueChange={value => {
+      <div className="flex items-center gap-2">
+        <span className="text-sm font-medium">{t($ => $.perimeter.referenceSide)}</span>
+        <ToggleGroup
+          type="single"
+          size="sm"
+          value={perimeter.referenceSide}
+          onValueChange={value => {
+            if (value) {
               setPerimeterReferenceSide(perimeter.id, value as PerimeterReferenceSide)
+            }
+          }}
+          variant="outline"
+        >
+          <ToggleGroupItem value="inside">{t($ => $.perimeter.referenceSideInside)}</ToggleGroupItem>
+          <ToggleGroupItem value="outside">{t($ => $.perimeter.referenceSideOutside)}</ToggleGroupItem>
+        </ToggleGroup>
+      </div>
+
+      {/* Non-standard angle warning */}
+      {hasNonStandardAngles && (
+        <Callout color="orange">
+          <CalloutIcon>
+            <ExclamationTriangleIcon />
+          </CalloutIcon>
+          <CalloutText>
+            <span className="font-bold">{t($ => $.perimeter.nonRightAnglesWarning)}</span>
+            <br />
+            <span className="text-sm">{t($ => $.perimeter.nonRightAnglesDescription)}</span>
+          </CalloutText>
+        </Callout>
+      )}
+
+      <div className="flex flex-row items-center justify-center gap-3 pt-1">
+        <TopDownPlanModal
+          title={t($ => $.perimeter.constructionPlanTitle)}
+          factory={() => Promise.resolve(constructPerimeter(perimeter))}
+          refreshKey={perimeter}
+          trigger={
+            <Button size="icon" title={t($ => $.perimeter.viewConstructionPlan)}>
+              <ConstructionPlanIcon width={24} height={24} />
+            </Button>
+          }
+        />
+        <ConstructionViewer3DModal
+          constructionModelFactory={() => Promise.resolve(constructPerimeter(perimeter))}
+          refreshKey={perimeter}
+          trigger={
+            <Button size="icon" title={t($ => $.perimeter.view3DConstruction)} variant="outline">
+              <Model3DIcon width={24} height={24} />
+            </Button>
+          }
+        />
+      </div>
+
+      <Separator />
+
+      {/* Wall Configuration */}
+      <div className="flex flex-col gap-2">
+        <h4>{t($ => $.perimeter.wallConfiguration)}</h4>
+
+        {/* Wall Assembly */}
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-1">
+            <Label.Root htmlFor="wall-assembly">
+              <div className="flex items-center gap-1">
+                <span className="text-sm font-medium">{t($ => $.perimeter.wallAssembly)}</span>
+                <MeasurementInfo highlightedAssembly="wallAssembly" />
+                {wallAssemblyState.isMixed && <MixedStateIndicator tooltip={t($ => $.perimeter.mixedValuesTooltip)} />}
+              </div>
+            </Label.Root>
+          </div>
+          <WallAssemblySelectWithEdit
+            value={wallAssemblyState.isMixed ? undefined : (wallAssemblyState.value as WallAssemblyId | undefined)}
+            onValueChange={(value: WallAssemblyId) => {
+              updateAllPerimeterWallsAssembly(selectedId, value)
             }}
-          >
-            <SegmentedControl.Item value="inside">{t($ => $.perimeter.referenceSideInside)}</SegmentedControl.Item>
-            <SegmentedControl.Item value="outside">{t($ => $.perimeter.referenceSideOutside)}</SegmentedControl.Item>
-          </SegmentedControl.Root>
-        </Flex>
+            placeholder={
+              wallAssemblyState.isMixed
+                ? t($ => $.perimeter.mixedPlaceholder)
+                : t($ => $.perimeter.selectAssemblyPlaceholder)
+            }
+            size="sm"
+          />
+        </div>
 
-        {/* Non-standard angle warning */}
-        {hasNonStandardAngles && (
-          <Callout.Root color="amber">
-            <Callout.Icon>
-              <ExclamationTriangleIcon />
-            </Callout.Icon>
-            <Callout.Text>
-              <Text weight="bold">{t($ => $.perimeter.nonRightAnglesWarning)}</Text>
-              <br />
-              <Text size="1">{t($ => $.perimeter.nonRightAnglesDescription)}</Text>
-            </Callout.Text>
-          </Callout.Root>
+        {/* Thickness Input */}
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-1">
+            <Label.Root htmlFor="perimeter-thickness">
+              <div className="flex items-center gap-1">
+                <span className="text-sm font-medium">{t($ => $.perimeter.wallThickness)}</span>
+                <MeasurementInfo highlightedMeasurement="totalWallThickness" showFinishedSides />
+                {thicknessState.isMixed && <MixedStateIndicator tooltip={t($ => $.perimeter.mixedValuesTooltip)} />}
+              </div>
+            </Label.Root>
+          </div>
+          <LengthField
+            id="perimeter-thickness"
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+            value={thicknessState.value!}
+            placeholder={thicknessState.isMixed ? t($ => $.perimeter.mixedPlaceholder) : undefined}
+            onCommit={value => {
+              updateAllPerimeterWallsThickness(selectedId, value)
+            }}
+            min={50}
+            max={1500}
+            step={10}
+            size="sm"
+            unit="cm"
+            className="w-[5rem]"
+          />
+        </div>
+      </div>
+
+      <Separator />
+
+      {/* Ring Beam Configuration */}
+      <div className="flex flex-col gap-2">
+        <h2>{t($ => $.perimeter.ringBeams)}</h2>
+
+        {/* Base Ring Beam */}
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-1">
+            <Label.Root htmlFor="base-ring-beam">
+              <div className="flex items-center gap-1">
+                <span className="text-sm font-medium">{t($ => $.perimeter.basePlate)}</span>
+                <MeasurementInfo highlightedPart="basePlate" />
+                {baseRingBeamState.isMixed && <MixedStateIndicator tooltip={t($ => $.perimeter.mixedValuesTooltip)} />}
+              </div>
+            </Label.Root>
+          </div>
+          <RingBeamAssemblySelectWithEdit
+            value={
+              baseRingBeamState.isMixed
+                ? ('' as RingBeamAssemblyId)
+                : (baseRingBeamState.value as RingBeamAssemblyId | undefined)
+            }
+            onValueChange={value => {
+              if (value === undefined) {
+                removeAllWallsBaseRingBeam(selectedId)
+              } else {
+                setAllWallsBaseRingBeam(selectedId, value)
+              }
+            }}
+            placeholder={
+              baseRingBeamState.isMixed ? t($ => $.perimeter.mixedPlaceholder) : t($ => $.perimeter.nonePlaceholder)
+            }
+            size="sm"
+            allowNone
+          />
+        </div>
+
+        {/* Top Ring Beam */}
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-1">
+            <Label.Root htmlFor="top-ring-beam">
+              <div className="flex items-center gap-1">
+                <span className="text-sm font-medium">{t($ => $.perimeter.topPlate)}</span>
+                <MeasurementInfo highlightedPart="topPlate" />
+                {topRingBeamState.isMixed && <MixedStateIndicator tooltip={t($ => $.perimeter.mixedValuesTooltip)} />}
+              </div>
+            </Label.Root>
+          </div>
+          <RingBeamAssemblySelectWithEdit
+            value={
+              topRingBeamState.isMixed
+                ? ('' as RingBeamAssemblyId)
+                : (topRingBeamState.value as RingBeamAssemblyId | undefined)
+            }
+            onValueChange={value => {
+              if (value === undefined) {
+                removeAllWallsTopRingBeam(selectedId)
+              } else {
+                setAllWallsTopRingBeam(selectedId, value)
+              }
+            }}
+            placeholder={
+              topRingBeamState.isMixed ? t($ => $.perimeter.mixedPlaceholder) : t($ => $.perimeter.nonePlaceholder)
+            }
+            size="sm"
+            allowNone
+          />
+        </div>
+      </div>
+
+      <Separator />
+
+      {/* Action Buttons */}
+      <div className="flex justify-end gap-2">
+        {associatedRoof ? (
+          <Button size="icon-sm" title={t($ => $.perimeter.viewAssociatedRoof)} onClick={handleNavigateToRoof}>
+            <RoofIcon />
+          </Button>
+        ) : (
+          <DropdownMenu>
+            <DropdownMenu.Trigger asChild>
+              <Button size="icon-sm" title={t($ => $.perimeter.addRoofBasedOnPerimeter)}>
+                <RoofIcon />
+              </Button>
+            </DropdownMenu.Trigger>
+            <DropdownMenu.Content>
+              <DropdownMenu.Item
+                onClick={() => {
+                  handleAddRoof('gable')
+                }}
+              >
+                {t($ => $.perimeter.addGableRoof)}
+              </DropdownMenu.Item>
+              <DropdownMenu.Item
+                onClick={() => {
+                  handleAddRoof('shed')
+                }}
+              >
+                {t($ => $.perimeter.addShedRoof)}
+              </DropdownMenu.Item>
+            </DropdownMenu.Content>
+          </DropdownMenu>
         )}
-
-        <Flex direction="row" gap="3" pt="1" align="center" justify="center">
-          <TopDownPlanModal
-            title={t($ => $.perimeter.constructionPlanTitle)}
-            factory={() => Promise.resolve(constructPerimeter(perimeter))}
-            refreshKey={perimeter}
-            trigger={
-              <IconButton title={t($ => $.perimeter.viewConstructionPlan)} size="3">
-                <ConstructionPlanIcon width={24} height={24} />
-              </IconButton>
-            }
-          />
-          <ConstructionViewer3DModal
-            constructionModelFactory={() => Promise.resolve(constructPerimeter(perimeter))}
-            refreshKey={perimeter}
-            trigger={
-              <IconButton title={t($ => $.perimeter.view3DConstruction)} size="3" variant="outline">
-                <Model3DIcon width={24} height={24} />
-              </IconButton>
-            }
-          />
-        </Flex>
-
-        {/* Wall Configuration */}
-        <Box pt="1" style={{ borderTop: '1px solid var(--gray-6)' }}>
-          <Heading size="2" mb="2">
-            {t($ => $.perimeter.wallConfiguration)}
-          </Heading>
-
-          <Flex direction="column" gap="2">
-            {/* Wall Assembly */}
-            <Flex align="center" justify="between" gap="3">
-              <Flex align="center" gap="1">
-                <Label.Root htmlFor="wall-assembly">
-                  <Flex align="center" gap="2">
-                    <Text size="1" weight="medium" color="gray">
-                      {t($ => $.perimeter.wallAssembly)}
-                    </Text>
-                    <MeasurementInfo highlightedAssembly="wallAssembly" />
-                    {wallAssemblyState.isMixed && (
-                      <MixedStateIndicator tooltip={t($ => $.perimeter.mixedValuesTooltip)} />
-                    )}
-                  </Flex>
-                </Label.Root>
-              </Flex>
-              <WallAssemblySelectWithEdit
-                value={wallAssemblyState.isMixed ? undefined : (wallAssemblyState.value as WallAssemblyId | undefined)}
-                onValueChange={(value: WallAssemblyId) => {
-                  updateAllPerimeterWallsAssembly(selectedId, value)
-                }}
-                placeholder={
-                  wallAssemblyState.isMixed
-                    ? t($ => $.perimeter.mixedPlaceholder)
-                    : t($ => $.perimeter.selectAssemblyPlaceholder)
-                }
-                size="1"
-              />
-            </Flex>
-
-            {/* Thickness Input */}
-            <Flex align="center" justify="between" gap="3">
-              <Flex align="center" gap="1">
-                <Label.Root htmlFor="perimeter-thickness">
-                  <Flex align="center" gap="2">
-                    <Text size="1" weight="medium" color="gray">
-                      {t($ => $.perimeter.wallThickness)}
-                    </Text>
-                    <MeasurementInfo highlightedMeasurement="totalWallThickness" showFinishedSides />
-                    {thicknessState.isMixed && <MixedStateIndicator tooltip={t($ => $.perimeter.mixedValuesTooltip)} />}
-                  </Flex>
-                </Label.Root>
-              </Flex>
-              <LengthField
-                id="perimeter-thickness"
-                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-                value={thicknessState.value!}
-                placeholder={thicknessState.isMixed ? t($ => $.perimeter.mixedPlaceholder) : undefined}
-                onCommit={value => {
-                  updateAllPerimeterWallsThickness(selectedId, value)
-                }}
-                min={50}
-                max={1500}
-                step={10}
-                size="1"
-                unit="cm"
-                style={{ width: '5rem' }}
-              />
-            </Flex>
-          </Flex>
-        </Box>
-
-        {/* Ring Beam Configuration */}
-        <Box pt="1" style={{ borderTop: '1px solid var(--gray-6)' }}>
-          <Heading size="2" mb="2">
-            {t($ => $.perimeter.ringBeams)}
-          </Heading>
-
-          <Flex direction="column" gap="2">
-            {/* Base Ring Beam */}
-            <Flex align="center" justify="between" gap="3">
-              <Flex align="center" gap="1">
-                <Label.Root htmlFor="base-ring-beam">
-                  <Flex align="center" gap="2">
-                    <Text size="1" weight="medium" color="gray">
-                      {t($ => $.perimeter.basePlate)}
-                    </Text>
-                    <MeasurementInfo highlightedPart="basePlate" />
-                    {baseRingBeamState.isMixed && (
-                      <MixedStateIndicator tooltip={t($ => $.perimeter.mixedValuesTooltip)} />
-                    )}
-                  </Flex>
-                </Label.Root>
-              </Flex>
-              <RingBeamAssemblySelectWithEdit
-                value={
-                  baseRingBeamState.isMixed
-                    ? ('' as RingBeamAssemblyId)
-                    : (baseRingBeamState.value as RingBeamAssemblyId | undefined)
-                }
-                onValueChange={value => {
-                  if (value === undefined) {
-                    removeAllWallsBaseRingBeam(selectedId)
-                  } else {
-                    setAllWallsBaseRingBeam(selectedId, value)
-                  }
-                }}
-                placeholder={
-                  baseRingBeamState.isMixed ? t($ => $.perimeter.mixedPlaceholder) : t($ => $.perimeter.nonePlaceholder)
-                }
-                size="1"
-                allowNone
-              />
-            </Flex>
-
-            {/* Top Ring Beam */}
-            <Flex align="center" justify="between" gap="3">
-              <Flex align="center" gap="1">
-                <Label.Root htmlFor="top-ring-beam">
-                  <Flex align="center" gap="2">
-                    <Text size="1" weight="medium" color="gray">
-                      {t($ => $.perimeter.topPlate)}
-                    </Text>
-                    <MeasurementInfo highlightedPart="topPlate" />
-                    {topRingBeamState.isMixed && (
-                      <MixedStateIndicator tooltip={t($ => $.perimeter.mixedValuesTooltip)} />
-                    )}
-                  </Flex>
-                </Label.Root>
-              </Flex>
-              <RingBeamAssemblySelectWithEdit
-                value={
-                  topRingBeamState.isMixed
-                    ? ('' as RingBeamAssemblyId)
-                    : (topRingBeamState.value as RingBeamAssemblyId | undefined)
-                }
-                onValueChange={value => {
-                  if (value === undefined) {
-                    removeAllWallsTopRingBeam(selectedId)
-                  } else {
-                    setAllWallsTopRingBeam(selectedId, value)
-                  }
-                }}
-                placeholder={
-                  topRingBeamState.isMixed ? t($ => $.perimeter.mixedPlaceholder) : t($ => $.perimeter.nonePlaceholder)
-                }
-                size="1"
-                allowNone
-              />
-            </Flex>
-          </Flex>
-        </Box>
-
-        <Separator size="4" />
-
-        {/* Action Buttons */}
-        <Flex gap="2" justify="end">
-          {associatedRoof ? (
-            <IconButton size="2" title={t($ => $.perimeter.viewAssociatedRoof)} onClick={handleNavigateToRoof}>
-              <RoofIcon />
-            </IconButton>
-          ) : (
-            <DropdownMenu.Root>
-              <DropdownMenu.Trigger>
-                <IconButton size="2" title={t($ => $.perimeter.addRoofBasedOnPerimeter)}>
-                  <RoofIcon />
-                </IconButton>
-              </DropdownMenu.Trigger>
-              <DropdownMenu.Content>
-                <DropdownMenu.Item
-                  onClick={() => {
-                    handleAddRoof('gable')
-                  }}
-                >
-                  {t($ => $.perimeter.addGableRoof)}
-                </DropdownMenu.Item>
-                <DropdownMenu.Item
-                  onClick={() => {
-                    handleAddRoof('shed')
-                  }}
-                >
-                  {t($ => $.perimeter.addShedRoof)}
-                </DropdownMenu.Item>
-              </DropdownMenu.Content>
-            </DropdownMenu.Root>
-          )}
-          <IconButton size="2" title={t($ => $.perimeter.fitToView)} onClick={handleFitToView}>
-            <FitToViewIcon />
-          </IconButton>
-          <IconButton size="2" color="red" title={t($ => $.perimeter.deletePerimeter)} onClick={handleDelete}>
-            <TrashIcon />
-          </IconButton>
-        </Flex>
-      </Flex>
-    </Box>
+        <Button size="icon-sm" title={t($ => $.perimeter.fitToView)} onClick={handleFitToView}>
+          <FitToViewIcon />
+        </Button>
+        <Button variant="destructive" size="icon-sm" title={t($ => $.perimeter.deletePerimeter)} onClick={handleDelete}>
+          <TrashIcon />
+        </Button>
+      </div>
+    </div>
   )
 }

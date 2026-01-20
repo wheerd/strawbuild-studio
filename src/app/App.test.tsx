@@ -1,4 +1,3 @@
-import { Theme } from '@radix-ui/themes'
 import { render, screen, waitFor } from '@testing-library/react'
 import { vi } from 'vitest'
 
@@ -17,22 +16,14 @@ vi.mock('@/editor/FloorPlanEditor', () => ({
 }))
 
 test('renders loading state initially', () => {
-  render(
-    <Theme>
-      <App />
-    </Theme>
-  )
+  render(<App />)
 
   const skeletonElement = screen.getByTestId('app-skeleton')
   expect(skeletonElement).toBeInTheDocument()
 })
 
 test('renders floor plan editor after loading', async () => {
-  render(
-    <Theme>
-      <App />
-    </Theme>
-  )
+  render(<App />)
 
   // Wait for the floor plan editor to load
   await waitFor(
@@ -45,11 +36,7 @@ test('renders floor plan editor after loading', async () => {
 }, 1500)
 
 test('renders toolbar with select tool after loading', async () => {
-  render(
-    <Theme>
-      <App />
-    </Theme>
-  )
+  render(<App />)
 
   // Wait for the toolbar to load
   await waitFor(

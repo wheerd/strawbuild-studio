@@ -1,4 +1,3 @@
-import { Theme } from '@radix-ui/themes'
 import { render } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 
@@ -32,19 +31,17 @@ describe('ConstructionPlan', () => {
 
     const views: ViewOption[] = [{ view: TOP_VIEW, label: 'Top' }]
     const { container } = render(
-      <Theme>
-        <PlanHighlightProvider>
-          <TagVisibilityProvider>
-            <ConstructionPlan
-              model={model}
-              views={views}
-              containerSize={{ width: 800, height: 600 }}
-              currentViewIndex={0}
-              setCurrentViewIndex={vi.fn()}
-            />
-          </TagVisibilityProvider>
-        </PlanHighlightProvider>
-      </Theme>
+      <PlanHighlightProvider>
+        <TagVisibilityProvider>
+          <ConstructionPlan
+            model={model}
+            views={views}
+            containerSize={{ width: 800, height: 600 }}
+            currentViewIndex={0}
+            setCurrentViewIndex={vi.fn()}
+          />
+        </TagVisibilityProvider>
+      </PlanHighlightProvider>
     )
 
     // Check that the polygon path is rendered
@@ -78,19 +75,17 @@ describe('ConstructionPlan', () => {
 
     const views: ViewOption[] = [{ view: TOP_VIEW, label: 'Top' }]
     const { container } = render(
-      <Theme>
-        <PlanHighlightProvider>
-          <TagVisibilityProvider>
-            <ConstructionPlan
-              model={model}
-              views={views}
-              containerSize={{ width: 800, height: 600 }}
-              currentViewIndex={0}
-              setCurrentViewIndex={vi.fn()}
-            />
-          </TagVisibilityProvider>
-        </PlanHighlightProvider>
-      </Theme>
+      <PlanHighlightProvider>
+        <TagVisibilityProvider>
+          <ConstructionPlan
+            model={model}
+            views={views}
+            containerSize={{ width: 800, height: 600 }}
+            currentViewIndex={0}
+            setCurrentViewIndex={vi.fn()}
+          />
+        </TagVisibilityProvider>
+      </PlanHighlightProvider>
     )
 
     // Check that a path element is rendered
@@ -128,19 +123,17 @@ describe('ConstructionPlan', () => {
 
     const views: ViewOption[] = [{ view: TOP_VIEW, label: 'Top' }]
     const { container } = render(
-      <Theme>
-        <PlanHighlightProvider>
-          <TagVisibilityProvider>
-            <ConstructionPlan
-              model={model}
-              views={views}
-              containerSize={{ width: 800, height: 600 }}
-              currentViewIndex={0}
-              setCurrentViewIndex={vi.fn()}
-            />
-          </TagVisibilityProvider>
-        </PlanHighlightProvider>
-      </Theme>
+      <PlanHighlightProvider>
+        <TagVisibilityProvider>
+          <ConstructionPlan
+            model={model}
+            views={views}
+            containerSize={{ width: 800, height: 600 }}
+            currentViewIndex={0}
+            setCurrentViewIndex={vi.fn()}
+          />
+        </TagVisibilityProvider>
+      </PlanHighlightProvider>
     )
 
     // Check that paths are rendered for both areas

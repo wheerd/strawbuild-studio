@@ -1,4 +1,3 @@
-import { Theme } from '@radix-ui/themes'
 import { fireEvent, render, screen } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
@@ -65,11 +64,7 @@ describe('StoreySelector', () => {
   })
 
   it('renders storey selector with floors', () => {
-    render(
-      <Theme>
-        <StoreySelector />
-      </Theme>
-    )
+    render(<StoreySelector />)
 
     expect(screen.getByRole('combobox')).toBeInTheDocument()
     expect(screen.getByText('L0')).toBeInTheDocument()
@@ -80,11 +75,7 @@ describe('StoreySelector', () => {
     // Mock scrollIntoView for Radix UI Select
     Element.prototype.scrollIntoView = vi.fn()
 
-    render(
-      <Theme>
-        <StoreySelector />
-      </Theme>
-    )
+    render(<StoreySelector />)
 
     const select = screen.getByRole('combobox')
     fireEvent.click(select)

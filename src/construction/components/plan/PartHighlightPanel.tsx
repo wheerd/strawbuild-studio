@@ -1,6 +1,8 @@
 import { Cross2Icon } from '@radix-ui/react-icons'
-import { Box, Card, Flex, IconButton, Text } from '@radix-ui/themes'
 import { useTranslation } from 'react-i18next'
+
+import { Button } from '@/components/ui/button'
+import { Card } from '@/components/ui/card'
 
 import { usePlanHighlight } from './PlanHighlightContext'
 
@@ -11,12 +13,12 @@ export function PartHighlightPanel() {
   if (!highlightedPartId) return null
 
   return (
-    <Box position="absolute" bottom="3" left="3" className="z-10">
-      <Card size="1" variant="surface" className="shadow-md">
-        <Flex align="center" gap="2">
-          <Text size="2">{t($ => $.planModal.partHighlight.partHighlighted)}</Text>
-          <IconButton
-            size="1"
+    <div className="absolute bottom-3 left-3 z-10">
+      <Card size="sm" variant="soft" className="shadow-md">
+        <div className="flex items-center gap-2">
+          <span className="text-base">{t($ => $.planModal.partHighlight.partHighlighted)}</span>
+          <Button
+            size="icon"
             variant="ghost"
             onClick={() => {
               setHighlightedPartId(null)
@@ -24,9 +26,9 @@ export function PartHighlightPanel() {
             title={t($ => $.planModal.partHighlight.clearHighlight)}
           >
             <Cross2Icon />
-          </IconButton>
-        </Flex>
+          </Button>
+        </div>
       </Card>
-    </Box>
+    </div>
   )
 }

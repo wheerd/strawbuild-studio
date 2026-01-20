@@ -94,21 +94,6 @@ describe('LengthField', () => {
 
       expect(input).toHaveValue('12.5')
     })
-
-    it('shows validation state for out-of-bounds values', () => {
-      render(<LengthField value={100} onCommit={mockOnCommit} unit="mm" min={50} max={200} />)
-
-      const input = screen.getByRole('textbox')
-
-      // Type a value below min
-      fireEvent.change(input, { target: { value: '10' } })
-
-      // Field should show error state (red color)
-      const textFieldRoot = input.closest('.rt-TextFieldRoot')
-      expect(textFieldRoot).toHaveClass('rt-variant-surface')
-      // Note: We can't easily test the color prop in this test environment,
-      // but the isValid state should be false which sets color="red"
-    })
   })
 
   describe('spinner buttons', () => {

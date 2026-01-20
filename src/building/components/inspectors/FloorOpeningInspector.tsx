@@ -1,10 +1,12 @@
 import { TrashIcon } from '@radix-ui/react-icons'
-import { Box, DataList, Flex, IconButton, Separator, Text } from '@radix-ui/themes'
 import { useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import type { FloorOpeningId } from '@/building/model/ids'
 import { useFloorOpeningById, useModelActions } from '@/building/store'
+import { Button } from '@/components/ui/button'
+import { DataList } from '@/components/ui/data-list'
+import { Separator } from '@/components/ui/separator'
 import { popSelection } from '@/editor/hooks/useSelectionStore'
 import { useViewportActions } from '@/editor/hooks/useViewportStore'
 import { FitToViewIcon } from '@/shared/components/Icons'
@@ -40,18 +42,16 @@ export function FloorOpeningInspector({ floorOpeningId }: FloorOpeningInspectorP
 
   if (!opening) {
     return (
-      <Box p="2">
-        <Text size="1" color="red" weight="bold">
-          {t($ => $.floorOpening.notFound)}
-        </Text>
-      </Box>
+      <div className="p-2">
+        <span className="text-sm font-bold text-red-800">{t($ => $.floorOpening.notFound)}</span>
+      </div>
     )
   }
 
   return (
-    <Box p="2">
-      <Flex direction="column" gap="3">
-        <DataList.Root size="1">
+    <div className="p-2">
+      <div className="flex flex-col gap-3">
+        <DataList.Root>
           <DataList.Item>
             <DataList.Label>{t($ => $.floorOpening.perimeter)}</DataList.Label>
             <DataList.Value>{formatLength(perimeterLength)}</DataList.Value>
@@ -62,14 +62,15 @@ export function FloorOpeningInspector({ floorOpeningId }: FloorOpeningInspectorP
           </DataList.Item>
         </DataList.Root>
 
-        <Separator size="4" />
+        <Separator />
 
-        <Flex gap="2" justify="end">
-          <IconButton size="2" title={t($ => $.floorOpening.fitToView)} onClick={handleFitToView}>
+        <div className="flex justify-end gap-2">
+          <Button size="icon" title={t($ => $.floorOpening.fitToView)} onClick={handleFitToView}>
             <FitToViewIcon />
-          </IconButton>
-          <IconButton
-            color="red"
+          </Button>
+          <Button
+            size="icon"
+            variant="destructive"
             title={t($ => $.floorOpening.removeFloorOpening)}
             onClick={() => {
               removeFloorOpening(opening.id)
@@ -77,9 +78,9 @@ export function FloorOpeningInspector({ floorOpeningId }: FloorOpeningInspectorP
             }}
           >
             <TrashIcon />
-          </IconButton>
-        </Flex>
-      </Flex>
-    </Box>
+          </Button>
+        </div>
+      </div>
+    </div>
   )
 }

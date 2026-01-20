@@ -1,8 +1,8 @@
 import { Pencil1Icon } from '@radix-ui/react-icons'
-import { Flex, IconButton } from '@radix-ui/themes'
 import React from 'react'
 import { useTranslation } from 'react-i18next'
 
+import { Button } from '@/components/ui/button'
 import { useConfigurationModal } from '@/construction/config/context/ConfigurationModalContext'
 
 import { OpeningAssemblySelect, type OpeningAssemblySelectProps } from './OpeningAssemblySelect'
@@ -12,20 +12,20 @@ export function OpeningAssemblySelectWithEdit(props: OpeningAssemblySelectProps)
   const { openConfiguration } = useConfigurationModal()
 
   return (
-    <Flex gap="1" align="center">
-      <Flex direction="column" gap="1" flexGrow="1" mr="1">
+    <div className="flex items-center gap-1">
+      <div className="grow">
         <OpeningAssemblySelect {...props} />
-      </Flex>
-      <IconButton
+      </div>
+      <Button
+        size="icon-xs"
         title={t($ => $.openings.configure)}
         variant="ghost"
-        size={props.size}
         onClick={() => {
           openConfiguration('openings', props.value ?? undefined)
         }}
       >
         <Pencil1Icon />
-      </IconButton>
-    </Flex>
+      </Button>
+    </div>
   )
 }

@@ -1,45 +1,53 @@
 import * as Toolbar from '@radix-ui/react-toolbar'
-import { Flex, Separator, Skeleton } from '@radix-ui/themes'
 import React from 'react'
 
+import { Separator } from '@/components/ui/separator'
+import { Skeleton } from '@/components/ui/skeleton'
 import { Logo } from '@/shared/components/Logo'
 
 export function ToolbarSkeleton(): React.JSX.Element {
   return (
-    <Flex
-      align="center"
-      gap="4"
-      style={{ borderBottom: '1px solid var(--gray-6)' }}
-      data-testid="toolbar-skeleton"
-      p="3"
-    >
+    <div className="border-border flex items-center gap-4 border-b p-3" data-testid="toolbar-skeleton">
       {/* Logo - Real logo loads immediately */}
       <Logo />
 
       {/* Tools skeleton */}
       <Toolbar.Root>
-        <Flex align="center" gap="2">
-          {/* Basic tools group */}
-          <Flex align="center" gap="1">
-            <Skeleton width="32px" height="32px" />
-            <Skeleton width="32px" height="32px" />
-            <Skeleton width="32px" height="32px" />
-          </Flex>
-          <Separator orientation="vertical" size="2" />
-          {/* Perimeter tools group */}
-          <Flex align="center" gap="1">
-            <Skeleton width="32px" height="32px" />
-            <Skeleton width="32px" height="32px" />
-            <Skeleton width="32px" height="32px" />
-          </Flex>
-          <Separator orientation="vertical" size="2" />
-          {/* Test data tools group */}
-          <Flex align="center" gap="1">
-            <Skeleton width="32px" height="32px" />
-            <Skeleton width="32px" height="32px" />
-          </Flex>
-        </Flex>
+        <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1">
+            <Skeleton className="bg-background size-10" />
+            <Skeleton className="bg-background size-10" />
+            <Skeleton className="bg-background size-10" />
+          </div>
+          <Separator orientation="vertical" className="h-6" />
+          <div className="flex items-center gap-1">
+            <Skeleton className="bg-background size-10" />
+            <Skeleton className="bg-background size-10" />
+            <Skeleton className="bg-background size-10" />
+            <Skeleton className="bg-background size-10" />
+            <Skeleton className="bg-background size-10" />
+          </div>
+          <Separator orientation="vertical" className="h-6" />
+          <div className="flex items-center gap-1">
+            <Skeleton className="bg-background size-10" />
+          </div>
+          <Separator orientation="vertical" className="h-6" />
+          <div className="flex items-center gap-1">
+            <Skeleton className="bg-background size-10" />
+          </div>
+          <Separator orientation="vertical" className="h-6" />
+          <div className="flex items-center gap-1">
+            <Skeleton className="bg-background size-10" />
+          </div>
+        </div>
       </Toolbar.Root>
-    </Flex>
+
+      <div className="ml-auto flex items-center gap-2">
+        <Skeleton className="bg-primary/30 size-10" />
+        <Skeleton className="bg-primary/30 size-10" />
+        <Skeleton className="bg-primary/30 size-10" />
+        <Skeleton className="bg-background size-9" />
+      </div>
+    </div>
   )
 }

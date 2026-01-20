@@ -1,5 +1,4 @@
 import { ChevronDownIcon, ChevronUpIcon, CopyIcon, EnterIcon, HeightIcon, TrashIcon } from '@radix-ui/react-icons'
-import { AlertDialog, Button, Card, Code, Flex, IconButton, Text, TextField } from '@radix-ui/themes'
 import React, { useCallback, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -7,18 +6,22 @@ import { useStoreyName } from '@/building/hooks/useStoreyName'
 import type { Storey } from '@/building/model'
 import { useActiveStoreyId, useModelActions } from '@/building/store'
 import { defaultStoreyManagementService } from '@/building/store/services/StoreyManagementService'
+import { AlertDialog } from '@/components/ui/alert-dialog'
+import { Button } from '@/components/ui/button'
+import { Card } from '@/components/ui/card'
+import { TextField } from '@/components/ui/text-field'
 import { FloorAssemblySelectWithEdit } from '@/construction/config/components/FloorAssemblySelectWithEdit'
 import { MeasurementInfo } from '@/editor/components/MeasurementInfo'
 import { LengthField } from '@/shared/components/LengthField'
 import { useFormatters } from '@/shared/i18n/useFormatters'
 
-export function getLevelColor(level: number): 'grass' | 'indigo' | 'brown' {
+export function getLevelColor(level: number): string {
   if (level === 0) {
-    return 'grass'
+    return 'text-green-600'
   } else if (level > 0) {
-    return 'indigo'
+    return 'text-indigo-600'
   } else {
-    return 'brown'
+    return 'text-amber-900'
   }
 }
 
@@ -134,47 +137,41 @@ export function StoreyListItem({
   }, [storeyName, storey.useDefaultName])
 
   return (
-    <Card style={isActive ? { background: 'var(--accent-5)' } : {}}>
-      <Flex align="center" gap="2">
+    <Card className={`p-2 ${isActive ? 'bg-accent' : ''}`}>
+      <div className="flex items-center gap-2">
         {/* Level indicator */}
-        <Flex direction="column" align="center" gap="0" width="4rem">
-          <Code variant="ghost" size="2" color={getLevelColor(storey.level)} weight="bold">
-            L{storey.level}
-          </Code>
-          <Code variant="ghost" size="1" color="gray">
+        <div className="flex w-20 flex-col items-center gap-0 p-2 font-mono">
+          <span className={`font-bold ${getLevelColor(storey.level)}`}>L{storey.level}</span>
+          <span className="font-mono text-xs text-gray-600">
             {storey.level === 0
               ? t($ => $.storeys.ground)
               : storey.level > 0
                 ? t($ => $.storeys.floor, { level: storey.level })
                 : t($ => $.storeys.basement, { level: Math.abs(storey.level) })}
-          </Code>
-        </Flex>
+          </span>
+        </div>
 
         {/* Editable name */}
-        <Flex direction="column" gap="1" flexGrow="1">
-          <Text size="1" weight="medium" color="gray">
-            {t($ => $.storeys.name)}
-          </Text>
+        <div className="flex grow flex-col gap-1">
+          <span className="text-sm font-medium">{t($ => $.storeys.name)}</span>
           <TextField.Root
-            ref={nameFieldRef}
             value={editName}
             onChange={handleNameChange}
             onBlur={handleNameSave}
             onKeyDown={handleKeyDown}
             placeholder={t($ => $.storeys.floorName)}
-            required
-            style={{ minWidth: '150px', flexGrow: 1 }}
-          />
-        </Flex>
+            className="min-w-[150px] flex-grow"
+          >
+            <TextField.Input ref={nameFieldRef} required />
+          </TextField.Root>
+        </div>
 
         {/* Floor height input */}
-        <Flex direction="column" gap="1">
-          <Flex align="center" gap="1">
-            <Text size="1" weight="medium" color="gray">
-              {t($ => $.storeys.floorHeight)}
-            </Text>
+        <div className="flex flex-col gap-1">
+          <div className="flex items-center gap-1">
+            <span className="text-sm font-medium">{t($ => $.storeys.floorHeight)}</span>
             <MeasurementInfo highlightedMeasurement="storeyHeight" />
-          </Flex>
+          </div>
           <LengthField
             min={1000}
             max={10000}
@@ -188,69 +185,67 @@ export function StoreyListItem({
             }}
             title={`Floor height: ${formatLength(storey.floorHeight)}`}
           >
-            <TextField.Slot side="left" className="pl-1 pr-0">
+            <TextField.Slot side="left" className="pr-0 pl-1">
               <HeightIcon />
             </TextField.Slot>
           </LengthField>
-        </Flex>
+        </div>
 
         {/* Floor Assembly Configuration */}
-        <Flex direction="column" gap="1">
-          <Flex align="center" gap="1">
-            <Text size="1" weight="medium" color="gray">
-              {t($ => $.storeys.floorAssembly)}
-            </Text>
+        <div className="flex flex-col gap-1">
+          <div className="flex items-center gap-1">
+            <span className="text-sm font-medium">{t($ => $.storeys.floorAssembly)}</span>
             <MeasurementInfo highlightedAssembly="floorAssembly" />
-          </Flex>
+          </div>
           <FloorAssemblySelectWithEdit
             value={storey.floorAssemblyId}
             onValueChange={value => {
               updateStoreyFloorAssembly(storey.id, value)
             }}
-            size="2"
           />
-        </Flex>
+        </div>
 
         {/* Action buttons */}
-        <Flex gap="1" align="center">
-          <Flex direction="column" gap="1">
-            <IconButton size="1" onClick={handleMoveUp} disabled={!canMoveUp} title={t($ => $.storeys.moveUp)}>
+        <div className="flex items-center gap-1">
+          <div className="flex flex-col gap-1">
+            <Button size="icon-sm" onClick={handleMoveUp} disabled={!canMoveUp} title={t($ => $.storeys.moveUp)}>
               <ChevronUpIcon />
-            </IconButton>
+            </Button>
 
-            <IconButton size="1" onClick={handleMoveDown} disabled={!canMoveDown} title={t($ => $.storeys.moveDown)}>
+            <Button size="icon-sm" onClick={handleMoveDown} disabled={!canMoveDown} title={t($ => $.storeys.moveDown)}>
               <ChevronDownIcon />
-            </IconButton>
-          </Flex>
+            </Button>
+          </div>
 
-          <IconButton onClick={handleDuplicate} title={t($ => $.storeys.duplicateFloor)} variant="soft">
+          <Button size="icon" onClick={handleDuplicate} title={t($ => $.storeys.duplicateFloor)} variant="soft">
             <CopyIcon />
-          </IconButton>
+          </Button>
 
           <AlertDialog.Root>
             <AlertDialog.Trigger>
-              <IconButton disabled={isOnlyStorey} title={t($ => $.storeys.deleteFloor)} color="red">
+              <Button size="icon" variant="destructive" disabled={isOnlyStorey} title={t($ => $.storeys.deleteFloor)}>
                 <TrashIcon />
-              </IconButton>
+              </Button>
             </AlertDialog.Trigger>
             <AlertDialog.Content>
               <AlertDialog.Title>{t($ => $.storeys.deleteFloorTitle)}</AlertDialog.Title>
-              <AlertDialog.Description size="2">{t($ => $.storeys.deleteFloorConfirm)}</AlertDialog.Description>
+              <AlertDialog.Description>{t($ => $.storeys.deleteFloorConfirm)}</AlertDialog.Description>
 
-              <Flex gap="3" justify="end">
-                <AlertDialog.Cancel>
-                  <Button variant="soft" color="gray">
+              <div className="flex justify-end gap-3">
+                <AlertDialog.Cancel asChild>
+                  <Button variant="soft" className="">
                     {t($ => $.actions.cancel)}
                   </Button>
                 </AlertDialog.Cancel>
                 <AlertDialog.Action onClick={handleDelete}>
-                  <Button color="red">{t($ => $.storeys.deleteFloorTitle)}</Button>
+                  <Button variant="destructive">{t($ => $.storeys.deleteFloorTitle)}</Button>
                 </AlertDialog.Action>
-              </Flex>
+              </div>
             </AlertDialog.Content>
           </AlertDialog.Root>
 
-          <IconButton
+          <Button
+            size="icon"
             onClick={() => {
               setActiveStoreyId(storey.id)
             }}
@@ -259,9 +254,9 @@ export function StoreyListItem({
             color="green"
           >
             <EnterIcon />
-          </IconButton>
-        </Flex>
-      </Flex>
+          </Button>
+        </div>
+      </div>
     </Card>
   )
 }

@@ -1,10 +1,12 @@
 import * as Label from '@radix-ui/react-label'
-import { Box, Callout, Flex, IconButton, Separator, Text } from '@radix-ui/themes'
 import { useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import type { RoofOverhangId } from '@/building/model/ids'
 import { useModelActions, useRoofOverhangById } from '@/building/store'
+import { Button } from '@/components/ui/button'
+import { Callout, CalloutText } from '@/components/ui/callout'
+import { Separator } from '@/components/ui/separator'
 import { useViewportActions } from '@/editor/hooks/useViewportStore'
 import { FitToViewIcon } from '@/shared/components/Icons'
 import { LengthField } from '@/shared/components/LengthField'
@@ -24,33 +26,31 @@ export function RoofOverhangInspector({ overhangId }: { overhangId: RoofOverhang
 
   if (!overhang) {
     return (
-      <Box p="2">
-        <Callout.Root color="red">
-          <Callout.Text>
-            <Text weight="bold">{t($ => $.roofOverhang.notFound)}</Text>
-          </Callout.Text>
-        </Callout.Root>
-      </Box>
+      <div className="p-2">
+        <Callout className="text-destructive">
+          <CalloutText>
+            <span className="font-bold">{t($ => $.roofOverhang.notFound)}</span>
+          </CalloutText>
+        </Callout>
+      </div>
     )
   }
 
   return (
-    <Box p="2">
-      <Flex direction="column" gap="3">
-        <Text size="2" weight="bold">
+    <div className="p-2">
+      <div className="flex flex-col gap-3">
+        <span className="text-base font-bold">
           {t($ => $.roofOverhang.title, {
             side: overhang.sideIndex + 1
           })}
-        </Text>
+        </span>
 
-        <Separator size="4" />
+        <Separator />
 
         {/* Overhang Value */}
-        <Flex align="center" gap="2" justify="between">
+        <div className="flex items-center justify-between gap-2">
           <Label.Root>
-            <Text size="1" weight="medium" color="gray">
-              {t($ => $.roofOverhang.overhang)}
-            </Text>
+            <span className="text-sm font-medium">{t($ => $.roofOverhang.overhang)}</span>
           </Label.Root>
           <LengthField
             value={overhang.value}
@@ -58,21 +58,21 @@ export function RoofOverhangInspector({ overhangId }: { overhangId: RoofOverhang
             min={0}
             max={2000}
             step={10}
-            size="1"
+            size="sm"
             unit="cm"
-            style={{ width: '7em' }}
+            className="w-[7em]"
           />
-        </Flex>
+        </div>
 
-        <Separator size="4" />
+        <Separator />
 
         {/* Actions */}
-        <Flex gap="2" justify="end">
-          <IconButton size="2" title={t($ => $.roofOverhang.fitToView)} onClick={handleFitToView}>
+        <div className="flex justify-end gap-2">
+          <Button size="icon" title={t($ => $.roofOverhang.fitToView)} onClick={handleFitToView}>
             <FitToViewIcon />
-          </IconButton>
-        </Flex>
-      </Flex>
-    </Box>
+          </Button>
+        </div>
+      </div>
+    </div>
   )
 }

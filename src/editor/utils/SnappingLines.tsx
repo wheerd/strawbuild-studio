@@ -25,10 +25,10 @@ export function SnappingLines({ snapResult }: SnappingLinesProps): React.JSX.Ele
     <g pointerEvents="none">
       {snapResult.lines.map((line, index) => {
         const color = eqVec2(line.direction, newVec2(0, 1))
-          ? 'var(--red-8)'
+          ? 'var(--color-red-700)'
           : eqVec2(line.direction, newVec2(1, 0))
-            ? 'var(--green-8)'
-            : 'var(--accent-9)'
+            ? 'var(--color-green-700)'
+            : 'var(--color-blue-700)'
         return (
           <line
             key={`snap-line-${index}`}

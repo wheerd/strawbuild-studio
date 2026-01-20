@@ -1,10 +1,13 @@
 import { ExclamationTriangleIcon, PinLeftIcon, PinRightIcon, TrashIcon } from '@radix-ui/react-icons'
-import { Callout, DataList, Flex, Heading, IconButton, Separator, Text } from '@radix-ui/themes'
 import { useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import type { PerimeterCornerId } from '@/building/model/ids'
 import { useModelActions, usePerimeterCornerById, usePerimeterWallById } from '@/building/store'
+import { Button } from '@/components/ui/button'
+import { Callout, CalloutIcon, CalloutText } from '@/components/ui/callout'
+import { DataList } from '@/components/ui/data-list'
+import { Separator } from '@/components/ui/separator'
 import { useConfigActions } from '@/construction/config/store'
 import { popSelection } from '@/editor/hooks/useSelectionStore'
 import { useViewportActions } from '@/editor/hooks/useViewportStore'
@@ -71,53 +74,53 @@ export function PerimeterCornerInspector({ cornerId }: { cornerId: PerimeterCorn
   }, [canRemovePerimeterCorner, cornerId])
 
   return (
-    <Flex direction="column" gap="4">
+    <div className="flex flex-col gap-4">
       {/* Geometry Information */}
-      <Flex direction="column" gap="2">
-        <Heading size="2">{t($ => $.perimeterCorner.geometry)}</Heading>
+      <div className="flex flex-col gap-2">
+        <h2>{t($ => $.perimeterCorner.geometry)}</h2>
         <DataList.Root>
           <DataList.Item>
-            <DataList.Label minWidth="88px">{t($ => $.perimeterCorner.interiorAngle)}</DataList.Label>
+            <DataList.Label>{t($ => $.perimeterCorner.interiorAngle)}</DataList.Label>
             <DataList.Value>{corner.interiorAngle}°</DataList.Value>
           </DataList.Item>
           <DataList.Item>
-            <DataList.Label minWidth="88px">{t($ => $.perimeterCorner.exteriorAngle)}</DataList.Label>
+            <DataList.Label>{t($ => $.perimeterCorner.exteriorAngle)}</DataList.Label>
             <DataList.Value>{corner.exteriorAngle}°</DataList.Value>
           </DataList.Item>
         </DataList.Root>
-      </Flex>
+      </div>
       {/* Non-standard angle warning */}
       {isNonStandardAngle && (
-        <Callout.Root color="amber">
-          <Callout.Icon>
+        <Callout color="orange">
+          <CalloutIcon>
             <ExclamationTriangleIcon />
-          </Callout.Icon>
-          <Callout.Text>
-            <Text weight="bold">{t($ => $.perimeterCorner.nonRightAngleWarning)}</Text>
+          </CalloutIcon>
+          <CalloutText>
+            <span className="font-bold">{t($ => $.perimeterCorner.nonRightAngleWarning)}</span>
             <br />
-            <Text size="1">{t($ => $.perimeterCorner.nonRightAngleDescription)}</Text>
-          </Callout.Text>
-        </Callout.Root>
+            <span className="text-sm">{t($ => $.perimeterCorner.nonRightAngleDescription)}</span>
+          </CalloutText>
+        </Callout>
       )}
       {/* Corner switching locked warning */}
       {!canSwitchWall && (
-        <Callout.Root color="blue">
-          <Callout.Icon>
+        <Callout color="blue">
+          <CalloutIcon>
             <ExclamationTriangleIcon />
-          </Callout.Icon>
-          <Callout.Text>
-            <Text weight="bold">{t($ => $.perimeterCorner.cornerLockedWarning)}</Text>
+          </CalloutIcon>
+          <CalloutText>
+            <span className="font-bold">{t($ => $.perimeterCorner.cornerLockedWarning)}</span>
             <br />
-            <Text size="1">{t($ => $.perimeterCorner.cornerLockedDescription)}</Text>
-          </Callout.Text>
-        </Callout.Root>
+            <span className="text-sm">{t($ => $.perimeterCorner.cornerLockedDescription)}</span>
+          </CalloutText>
+        </Callout>
       )}
-      <Separator size="4" />
+      <Separator />
       {/* Actions */}
-      <Flex direction="column" gap="2">
-        <Flex gap="2" justify="end">
-          <IconButton
-            size="2"
+      <div className="flex flex-col gap-2">
+        <div className="flex justify-end gap-2">
+          <Button
+            size="icon"
             onClick={handleToggleConstructedByWall}
             disabled={!canSwitchWall}
             title={
@@ -125,12 +128,13 @@ export function PerimeterCornerInspector({ cornerId }: { cornerId: PerimeterCorn
             }
           >
             {corner.constructedByWall === 'next' ? <PinLeftIcon /> : <PinRightIcon />}
-          </IconButton>
-          <IconButton size="2" title={t($ => $.perimeterCorner.fitToView)} onClick={handleFitToView}>
+          </Button>
+          <Button size="icon" title={t($ => $.perimeterCorner.fitToView)} onClick={handleFitToView}>
             <FitToViewIcon />
-          </IconButton>
-          <IconButton
-            size="2"
+          </Button>
+          <Button
+            variant="destructive"
+            size="icon"
             color={corner.interiorAngle === 180 ? undefined : 'red'}
             title={
               canDeleteCorner.reason
@@ -143,42 +147,42 @@ export function PerimeterCornerInspector({ cornerId }: { cornerId: PerimeterCorn
             disabled={!canDeleteCorner.canDelete}
           >
             {corner.interiorAngle === 180 ? <SplitWallIcon /> : <TrashIcon />}
-          </IconButton>
-        </Flex>
-      </Flex>
-      <Separator size="4" />
+          </Button>
+        </div>
+      </div>
+      <Separator />
       {/* Construction Notes */}
       {hasConstructionNotes && (
-        <Flex direction="column" gap="2">
-          <Heading size="2">{t($ => $.perimeterCorner.constructionNotes)}</Heading>
+        <div className="flex flex-col gap-2">
+          <h2>{t($ => $.perimeterCorner.constructionNotes)}</h2>
 
           {(() => {
             const prevAssembly = getWallAssemblyById(previousWall.wallAssemblyId)
             const nextAssembly = getWallAssemblyById(nextWall.wallAssemblyId)
             return prevAssembly?.type !== nextAssembly?.type
           })() && (
-            <Callout.Root color="amber">
-              <Callout.Text>
-                <Text weight="bold">{t($ => $.perimeterCorner.mixedAssembliesWarning)}</Text>
+            <Callout color="orange">
+              <CalloutText>
+                <span className="font-bold">{t($ => $.perimeterCorner.mixedAssembliesWarning)}</span>
                 <br />
                 {t($ => $.perimeterCorner.mixedAssembliesDescription)}
-              </Callout.Text>
-            </Callout.Root>
+              </CalloutText>
+            </Callout>
           )}
 
           {Math.abs(previousWall.thickness - nextWall.thickness) > 5 && (
-            <Callout.Root color="amber">
-              <Callout.Text>
-                <Text weight="bold">{t($ => $.perimeterCorner.thicknessDifferenceWarning)}</Text>
+            <Callout color="orange">
+              <CalloutText>
+                <span className="font-bold">{t($ => $.perimeterCorner.thicknessDifferenceWarning)}</span>
                 <br />
                 {t($ => $.perimeterCorner.thicknessDifferenceDescription, {
                   difference: Math.abs(previousWall.thickness - nextWall.thickness)
                 })}
-              </Callout.Text>
-            </Callout.Root>
+              </CalloutText>
+            </Callout>
           )}
-        </Flex>
+        </div>
       )}
-    </Flex>
+    </div>
   )
 }

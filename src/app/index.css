@@ -1,15 +1,5 @@
-@config "../../tailwind.config.js";
+@config '../../tailwind.config.ts';
 @import 'tailwindcss';
 
 @import './fonts.css';
-
-.radix-themes {
-  --default-font-family: 'Inter', system-ui, sans-serif;
-  --heading-font-family: 'Inter', system-ui, sans-serif;
-  --code-font-family: 'JetBrains Mono', monospace;
-  font-synthesis: none;
-}
-
-.rt-TextFieldRoot input:focus {
-  outline: none !important;
-}
+@import './theme.css';

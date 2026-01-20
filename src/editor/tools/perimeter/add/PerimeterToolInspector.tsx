@@ -1,23 +1,15 @@
 import { Cross2Icon, InfoCircledIcon } from '@radix-ui/react-icons'
 import * as Label from '@radix-ui/react-label'
-import {
-  Box,
-  Button,
-  Callout,
-  Code,
-  Flex,
-  Grid,
-  IconButton,
-  Kbd,
-  SegmentedControl,
-  Separator,
-  Text
-} from '@radix-ui/themes'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import type { PerimeterReferenceSide } from '@/building/model'
 import type { RingBeamAssemblyId, WallAssemblyId } from '@/building/model/ids'
+import { Button } from '@/components/ui/button'
+import { Callout, CalloutIcon, CalloutText } from '@/components/ui/callout'
+import { Kbd } from '@/components/ui/kbd'
+import { Separator } from '@/components/ui/separator'
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 import { RingBeamAssemblySelectWithEdit } from '@/construction/config/components/RingBeamAssemblySelectWithEdit'
 import { WallAssemblySelectWithEdit } from '@/construction/config/components/WallAssemblySelectWithEdit'
 import { MeasurementInfo } from '@/editor/components/MeasurementInfo'
@@ -45,51 +37,47 @@ export function PerimeterToolInspector({ tool }: ToolInspectorProps<PerimeterToo
   )
 
   return (
-    <Box p="2">
-      <Flex direction="column" gap="2">
+    <div className="p-2">
+      <div className="flex flex-col gap-2">
         {/* Informational Note */}
-        <Callout.Root color="blue">
-          <Callout.Icon>
+        <Callout color="blue">
+          <CalloutIcon>
             <InfoCircledIcon />
-          </Callout.Icon>
-          <Callout.Text>
-            <Text size="1">
+          </CalloutIcon>
+          <CalloutText>
+            <span className="text-xs">
               {t($ => $.perimeter.infoInside, {
                 edge:
                   state.referenceSide === 'inside' ? t($ => $.perimeter.insideEdge) : t($ => $.perimeter.outsideEdge)
               })}
-            </Text>
-          </Callout.Text>
-        </Callout.Root>
+            </span>
+          </CalloutText>
+        </Callout>
 
         {/* Tool Properties */}
-        <Grid columns="auto 1fr" gap="2">
+        <div className="grid grid-cols-[auto_1fr] gap-2">
           {/* Wall Assembly */}
-          <Flex align="center" gap="1">
+          <div className="flex items-center gap-1">
             <Label.Root>
-              <Text size="1" weight="medium" color="gray">
-                {t($ => $.perimeter.wallAssembly)}
-              </Text>
+              <span className="text-muted-foreground text-xs font-medium">{t($ => $.perimeter.wallAssembly)}</span>
             </Label.Root>
             <MeasurementInfo highlightedAssembly="wallAssembly" />
-          </Flex>
+          </div>
           <WallAssemblySelectWithEdit
             value={state.wallAssemblyId}
             onValueChange={(value: WallAssemblyId) => {
               tool.setAssembly(value)
             }}
-            size="1"
+            size="sm"
           />
 
           {/* Wall Thickness */}
-          <Flex align="center" gap="1">
+          <div className="flex items-center gap-1">
             <Label.Root htmlFor="wall-thickness">
-              <Text size="1" weight="medium" color="gray">
-                {t($ => $.perimeter.wallThickness)}
-              </Text>
+              <span className="text-muted-foreground text-xs font-medium">{t($ => $.perimeter.wallThickness)}</span>
             </Label.Root>
             <MeasurementInfo highlightedMeasurement="totalWallThickness" showFinishedSides />
-          </Flex>
+          </div>
           <LengthField
             id="wall-thickness"
             value={state.wallThickness}
@@ -99,187 +87,169 @@ export function PerimeterToolInspector({ tool }: ToolInspectorProps<PerimeterToo
             min={50}
             max={1000}
             step={10}
-            size="1"
+            size="sm"
             unit="mm"
           />
 
-          <Flex align="center" gap="1">
+          <div className="flex items-center gap-1">
             <Label.Root>
-              <Text size="1" weight="medium" color="gray">
-                {t($ => $.perimeter.referenceSide)}
-              </Text>
+              <span className="text-muted-foreground text-xs font-medium">{t($ => $.perimeter.referenceSide)}</span>
             </Label.Root>
-          </Flex>
-          <SegmentedControl.Root
-            size="1"
+          </div>
+          <ToggleGroup
+            type="single"
+            variant="outline"
+            size="sm"
             value={state.referenceSide}
             onValueChange={value => {
-              tool.setReferenceSide(value as PerimeterReferenceSide)
+              if (value) {
+                tool.setReferenceSide(value as PerimeterReferenceSide)
+              }
             }}
           >
-            <SegmentedControl.Item value="inside">{t($ => $.perimeter.referenceSideInside)}</SegmentedControl.Item>
-            <SegmentedControl.Item value="outside">{t($ => $.perimeter.referenceSideOutside)}</SegmentedControl.Item>
-          </SegmentedControl.Root>
+            <ToggleGroupItem value="inside">{t($ => $.perimeter.referenceSideInside)}</ToggleGroupItem>
+            <ToggleGroupItem value="outside">{t($ => $.perimeter.referenceSideOutside)}</ToggleGroupItem>
+          </ToggleGroup>
 
           {/* Base Ring Beam */}
-          <Flex align="center" gap="1">
+          <div className="flex items-center gap-1">
             <Label.Root>
-              <Text size="1" weight="medium" color="gray">
-                {t($ => $.perimeter.basePlate)}
-              </Text>
+              <span className="text-muted-foreground text-xs font-medium">{t($ => $.perimeter.basePlate)}</span>
             </Label.Root>
             <MeasurementInfo highlightedPart="basePlate" />
-          </Flex>
+          </div>
           <RingBeamAssemblySelectWithEdit
             value={state.baseRingBeamAssemblyId ?? undefined}
             onValueChange={(value: RingBeamAssemblyId | undefined) => {
               tool.setBaseRingBeam(value)
             }}
             placeholder={t($ => $.perimeter.nonePlaceholder)}
-            size="1"
+            size="sm"
             allowNone
           />
 
           {/* Top Ring Beam */}
-          <Flex align="center" gap="1">
+          <div className="flex items-center gap-1">
             <Label.Root>
-              <Text size="1" weight="medium" color="gray">
-                {t($ => $.perimeter.topPlate)}
-              </Text>
+              <span className="text-muted-foreground text-xs font-medium">{t($ => $.perimeter.topPlate)}</span>
             </Label.Root>
             <MeasurementInfo highlightedPart="topPlate" />
-          </Flex>
+          </div>
           <RingBeamAssemblySelectWithEdit
             value={state.topRingBeamAssemblyId ?? undefined}
             onValueChange={(value: RingBeamAssemblyId | undefined) => {
               tool.setTopRingBeam(value)
             }}
             placeholder={t($ => $.perimeter.nonePlaceholder)}
-            size="1"
+            size="sm"
             allowNone
           />
-        </Grid>
+        </div>
 
         {/* Length Override Display */}
         {state.lengthOverride && (
           <>
-            <Separator size="4" />
-            <Flex align="center" justify="between" gap="2">
-              <Text size="1" weight="medium" color="blue">
-                {t($ => $.perimeter.lengthOverride)}
-              </Text>
-              <Flex align="center" gap="2">
-                <Code size="1" color="blue">
-                  {formatLength(state.lengthOverride)}
-                </Code>
-                <IconButton
-                  size="1"
+            <Separator />
+            <div className="flex items-center justify-between gap-2">
+              <span className="text-xs font-medium text-blue-600">{t($ => $.perimeter.lengthOverride)}</span>
+              <div className="flex items-center gap-2">
+                <span className="font-mono text-xs text-blue-600">{formatLength(state.lengthOverride)}</span>
+                <Button
+                  size="icon"
                   variant="ghost"
-                  color="red"
+                  className="text-destructive h-6 w-6"
                   onClick={() => {
                     tool.clearLengthOverride()
                   }}
                   title={t($ => $.perimeter.clearLengthOverride)}
                 >
                   <Cross2Icon />
-                </IconButton>
-              </Flex>
-            </Flex>
+                </Button>
+              </div>
+            </div>
           </>
         )}
 
         {/* Help Text */}
-        <Separator size="4" />
-        <Flex direction="column" gap="2">
-          <Text size="1" weight="medium">
-            {t($ => $.perimeter.controlsHeading)}
-          </Text>
-          <Text size="1" color="gray">
-            • {t($ => $.perimeter.controlPlace)}
-          </Text>
-          <Text size="1" color="gray">
-            • {t($ => $.perimeter.controlSnap)}
-          </Text>
-          <Text size="1" color="gray">
-            • {t($ => $.perimeter.controlNumbers)}
-          </Text>
+        <Separator />
+        <div className="flex flex-col gap-2">
+          <span className="text-xs font-medium">{t($ => $.perimeter.controlsHeading)}</span>
+          <span className="text-muted-foreground text-xs">• {t($ => $.perimeter.controlPlace)}</span>
+          <span className="text-muted-foreground text-xs">• {t($ => $.perimeter.controlSnap)}</span>
+          <span className="text-muted-foreground text-xs">• {t($ => $.perimeter.controlNumbers)}</span>
           {state.lengthOverride ? (
-            <Text size="1" color="gray">
-              • <Kbd>{t($ => $.keyboard.esc)}</Kbd>{' '}
+            <span className="text-muted-foreground text-xs">
+              • <Kbd size="sm">{t($ => $.keyboard.esc)}</Kbd>{' '}
               {t($ => $.perimeter.controlEscOverride, {
                 key: ''
               })
                 .replace('{{key}}', '')
                 .trim()}
-            </Text>
+            </span>
           ) : (
-            <Text size="1" color="gray">
-              • <Kbd>{t($ => $.keyboard.esc)}</Kbd>{' '}
+            <span className="text-muted-foreground text-xs">
+              • <Kbd size="sm">{t($ => $.keyboard.esc)}</Kbd>{' '}
               {t($ => $.perimeter.controlEscAbort, {
                 key: ''
               })
                 .replace('{{key}}', '')
                 .trim()}
-            </Text>
+            </span>
           )}
           {state.points.length >= 3 && (
             <>
-              <Text size="1" color="gray">
-                • <Kbd>{t($ => $.keyboard.enter)}</Kbd>{' '}
+              <span className="text-muted-foreground text-xs">
+                • <Kbd size="sm">{t($ => $.keyboard.enter)}</Kbd>{' '}
                 {t($ => $.perimeter.controlEnter, {
                   key: ''
                 })
                   .replace('{{key}}', '')
                   .trim()}
-              </Text>
-              <Text size="1" color="gray">
-                • {t($ => $.perimeter.controlClickFirst)}
-              </Text>
+              </span>
+              <span className="text-muted-foreground text-xs">• {t($ => $.perimeter.controlClickFirst)}</span>
             </>
           )}
-        </Flex>
+        </div>
 
         {/* Actions */}
         {state.points.length > 0 && (
           <>
-            <Separator size="4" />
-            <Flex direction="column" gap="2">
+            <Separator />
+            <div className="flex flex-col gap-2">
               {state.points.length >= 3 && (
                 <Button
-                  size="2"
-                  color="green"
+                  size="sm"
+                  className="w-full bg-green-600 hover:bg-green-700"
                   onClick={() => {
                     tool.complete()
                   }}
                   disabled={!state.isClosingSegmentValid}
                   title={t($ => $.perimeter.completeTooltip)}
-                  style={{ width: '100%' }}
                 >
-                  <Text size="1">{t($ => $.perimeter.completePerimeter)}</Text>
-                  <Kbd size="1" style={{ marginLeft: 'auto' }}>
+                  <span className="text-xs">{t($ => $.perimeter.completePerimeter)}</span>
+                  <Kbd size="sm" className="ml-auto">
                     {t($ => $.keyboard.enter)}
                   </Kbd>
                 </Button>
               )}
               <Button
-                size="2"
-                color="red"
-                variant="soft"
+                size="sm"
+                variant="secondary"
+                className="text-destructive w-full"
                 onClick={() => {
                   tool.cancel()
                 }}
                 title={t($ => $.perimeter.cancelTooltip)}
-                style={{ width: '100%' }}
               >
-                <Text size="1">{t($ => $.perimeter.cancelPerimeter)}</Text>
-                <Kbd size="1" style={{ marginLeft: 'auto' }}>
+                <span className="text-xs">{t($ => $.perimeter.cancelPerimeter)}</span>
+                <Kbd size="sm" className="ml-auto">
                   {t($ => $.keyboard.esc)}
                 </Kbd>
               </Button>
-            </Flex>
+            </div>
           </>
         )}
-      </Flex>
-    </Box>
+      </div>
+    </div>
   )
 }

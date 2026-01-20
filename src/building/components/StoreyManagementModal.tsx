@@ -1,9 +1,9 @@
 import { PlusIcon } from '@radix-ui/react-icons'
-import { Button, Grid, Text } from '@radix-ui/themes'
 import React, { useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { useModelActions, useStoreysOrderedByLevel } from '@/building/store'
+import { Button } from '@/components/ui/button'
 import { useConfigActions } from '@/construction/config/store'
 import { BaseModal } from '@/shared/components/BaseModal'
 
@@ -36,7 +36,7 @@ export function StoreyManagementModal({ trigger }: StoreyManagementModalProps): 
 
   return (
     <BaseModal title={t($ => $.storeys.manageFloors)} trigger={trigger} width="60vw" maxWidth="90vw">
-      <Grid columns="1fr" gap="2">
+      <div className="grid grid-cols-1 gap-2">
         {storeysDisplayOrder.length > 0 ? (
           storeysDisplayOrder.map(storey => (
             <StoreyListItem
@@ -48,14 +48,14 @@ export function StoreyManagementModal({ trigger }: StoreyManagementModalProps): 
             />
           ))
         ) : (
-          <Text>{t($ => $.storeys.noFloorsYet)}</Text>
+          <span>{t($ => $.storeys.noFloorsYet)}</span>
         )}
 
         <Button onClick={handleAddEmptyStorey}>
           <PlusIcon />
           {t($ => $.storeys.addNewFloor)}
         </Button>
-      </Grid>
+      </div>
     </BaseModal>
   )
 }

@@ -5,14 +5,6 @@ import { LengthInputComponent } from './LengthInputComponent'
 import { lengthInputService } from './LengthInputService'
 import type { LengthInputConfig } from './types'
 
-// Mock Radix UI components
-vi.mock('@radix-ui/themes', () => ({
-  Box: ({ children, ...props }: any) => <div {...props}>{children}</div>,
-  TextField: {
-    Root: ({ _children, ...props }: any) => <input {...props} />
-  }
-}))
-
 describe('LengthInputComponent', () => {
   let mockConfig: LengthInputConfig
 

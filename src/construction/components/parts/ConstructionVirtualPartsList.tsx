@@ -1,8 +1,10 @@
 import { EyeOpenIcon } from '@radix-ui/react-icons'
-import { Card, Flex, Heading, IconButton, Table, Text } from '@radix-ui/themes'
 import React, { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardHeader } from '@/components/ui/card'
+import { Table } from '@/components/ui/table'
 import type { PartId, VirtualPartsList } from '@/construction/parts'
 import { useFormatters } from '@/shared/i18n/useFormatters'
 
@@ -23,34 +25,34 @@ export function ConstructionVirtualPartsList({
 
   if (parts.length === 0) {
     return (
-      <Card variant="surface" size="2">
-        <Flex justify="center">
-          <Text size="3" color="gray">
-            {t($ => $.modulesList.noModules)}
-          </Text>
-        </Flex>
+      <Card variant="surface" className="w-full">
+        <CardContent className="flex justify-center">
+          <span className="text-muted-foreground text-lg">{t($ => $.modulesList.noModules)}</span>
+        </CardContent>
       </Card>
     )
   }
 
   return (
-    <Card variant="surface" size="2">
-      <Flex direction="column" gap="3">
-        <Heading size="4">{t($ => $.modulesList.title)}</Heading>
-        <Table.Root variant="surface" size="2" className="min-w-full">
-          <Table.Header>
+    <Card variant="surface" className="w-full">
+      <CardHeader className="p-3">
+        <h2 className="text-xl font-bold">{t($ => $.modulesList.title)}</h2>
+      </CardHeader>
+      <CardContent className="px-3">
+        <Table.Root variant="surface" className="min-w-full">
+          <Table.Header className="bg-muted">
             <Table.Row>
-              <Table.ColumnHeaderCell width="5em" justify="center">
+              <Table.ColumnHeaderCell width="5em" className="text-center">
                 {t($ => $.modulesList.tableHeaders.label)}
               </Table.ColumnHeaderCell>
               <Table.ColumnHeaderCell>{t($ => $.modulesList.tableHeaders.type)}</Table.ColumnHeaderCell>
               <Table.ColumnHeaderCell width="20em">
                 {t($ => $.modulesList.tableHeaders.dimensions)}
               </Table.ColumnHeaderCell>
-              <Table.ColumnHeaderCell width="6em" justify="center">
+              <Table.ColumnHeaderCell width="6em" className="text-center">
                 {t($ => $.modulesList.tableHeaders.quantity)}
               </Table.ColumnHeaderCell>
-              <Table.ColumnHeaderCell width="3em" justify="center">
+              <Table.ColumnHeaderCell width="3em" className="text-center">
                 {t($ => $.modulesList.tableHeaders.view)}
               </Table.ColumnHeaderCell>
             </Table.Row>
@@ -58,37 +60,38 @@ export function ConstructionVirtualPartsList({
           <Table.Body>
             {parts.map(part => (
               <Table.Row key={part.partId}>
-                <Table.RowHeaderCell justify="center">
-                  <Text weight="medium">{part.label}</Text>
+                <Table.RowHeaderCell className="text-center">
+                  <span className="font-medium">{part.label}</span>
                 </Table.RowHeaderCell>
                 <Table.Cell>
-                  <Text>{part.type}</Text>
+                  <span>{part.type}</span>
                 </Table.Cell>
                 <Table.Cell>
-                  <Text>{formatDimensions3D([part.size[0], part.size[1], part.size[2]])}</Text>
+                  <span>{formatDimensions3D([part.size[0], part.size[1], part.size[2]])}</span>
                 </Table.Cell>
-                <Table.Cell justify="center">
-                  <Text>{part.quantity}</Text>
+                <Table.Cell className="text-center">
+                  <span>{part.quantity}</span>
                 </Table.Cell>
-                <Table.Cell justify="center">
+                <Table.Cell className="text-center">
                   {canHighlightPart(part.partId) && onViewInPlan && (
-                    <IconButton
-                      size="1"
+                    <Button
+                      size="icon-sm"
                       variant="ghost"
                       onClick={() => {
                         onViewInPlan(part.partId)
                       }}
                       title={t($ => $.modulesList.actions.viewInPlan)}
+                      className="-my-2"
                     >
                       <EyeOpenIcon />
-                    </IconButton>
+                    </Button>
                   )}
                 </Table.Cell>
               </Table.Row>
             ))}
           </Table.Body>
         </Table.Root>
-      </Flex>
+      </CardContent>
     </Card>
   )
 }

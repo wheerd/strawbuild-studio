@@ -22,7 +22,7 @@ export function RoofPreview({ slope, type }: { slope: number; type: RoofType }):
 
   const bounds = Bounds2D.fromPoints(roofPoints)
   const center = bounds.center
-  const scale = Math.min(svgWidth / bounds.size[0], svgHeight / bounds.size[1])
+  const scale = Math.min((svgWidth - 2) / bounds.size[0], (svgHeight - 2) / bounds.size[1])
 
   const centerX = svgWidth / 2
   const centerY = svgHeight / 2
@@ -35,7 +35,7 @@ export function RoofPreview({ slope, type }: { slope: number; type: RoofType }):
 
   return (
     <svg width={svgWidth} height={svgHeight} viewBox={`0 0 ${svgWidth} ${svgHeight}`}>
-      <path d={roofPath} fill="var(--gray-5)" stroke="var(--gray-10)" strokeWidth="1" />
+      <path d={roofPath} fill="var(--color-schematic-gray-2)" stroke="var(--color-gray-600)" strokeWidth="1" />
     </svg>
   )
 }

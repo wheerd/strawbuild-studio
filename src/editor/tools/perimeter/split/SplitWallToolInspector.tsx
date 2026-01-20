@@ -1,7 +1,9 @@
 import { InfoCircledIcon } from '@radix-ui/react-icons'
-import { Button, Callout, Flex, Heading, Kbd, Text } from '@radix-ui/themes'
 import { useTranslation } from 'react-i18next'
 
+import { Button } from '@/components/ui/button'
+import { Callout, CalloutIcon, CalloutText } from '@/components/ui/callout'
+import { Kbd } from '@/components/ui/kbd'
 import { useReactiveTool } from '@/editor/tools/system/hooks/useReactiveTool'
 import type { ToolInspectorProps } from '@/editor/tools/system/types'
 
@@ -13,41 +15,39 @@ export function SplitWallToolInspector({ tool }: ToolInspectorProps<SplitWallToo
 
   if (!state.selectedWallId) {
     return (
-      <Flex direction="column" gap="3">
-        <Heading size="2">{t($ => $.splitWall.title)}</Heading>
-        <Callout.Root color="blue">
-          <Callout.Icon>
+      <div className="flex flex-col gap-3">
+        <h2>{t($ => $.splitWall.title)}</h2>
+        <Callout color="blue">
+          <CalloutIcon>
             <InfoCircledIcon />
-          </Callout.Icon>
-          <Callout.Text>
-            <Text size="1">{t($ => $.splitWall.info)}</Text>
-          </Callout.Text>
-        </Callout.Root>
-        <Text size="2" color="gray">
-          {t($ => $.splitWall.selectWall)}
-        </Text>
-      </Flex>
+          </CalloutIcon>
+          <CalloutText>
+            <span className="text-sm">{t($ => $.splitWall.info)}</span>
+          </CalloutText>
+        </Callout>
+        <span className="text-base">{t($ => $.splitWall.selectWall)}</span>
+      </div>
     )
   }
 
   const splitError = state.splitError
 
   return (
-    <Flex direction="column" gap="4">
-      <Heading size="2">{t($ => $.splitWall.title)}</Heading>
+    <div className="flex flex-col gap-4">
+      <h2>{t($ => $.splitWall.title)}</h2>
       {state.isValidSplit && (
-        <Callout.Root color="green">
-          <Callout.Text>{t($ => $.splitWall.readyToSplit)}</Callout.Text>
-        </Callout.Root>
+        <Callout color="green">
+          <CalloutText>{t($ => $.splitWall.readyToSplit)}</CalloutText>
+        </Callout>
       )}
       {!state.isValidSplit && splitError != null && (
-        <Callout.Root color="red">
-          <Callout.Text>{t($ => $.splitWall.errors[splitError])}</Callout.Text>
-        </Callout.Root>
+        <Callout className="text-destructive">
+          <CalloutText>{t($ => $.splitWall.errors[splitError])}</CalloutText>
+        </Callout>
       )}
       {/* Action Buttons */}
-      <Flex direction="column" gap="2">
-        <Button onClick={() => tool.commitSplit()} disabled={!state.isValidSplit} size="2">
+      <div className="flex flex-col gap-2">
+        <Button onClick={() => tool.commitSplit()} disabled={!state.isValidSplit}>
           {t($ => $.splitWall.splitWall)} <Kbd>{t($ => $.keyboard.enter)}</Kbd>
         </Button>
         <Button
@@ -55,26 +55,17 @@ export function SplitWallToolInspector({ tool }: ToolInspectorProps<SplitWallToo
           onClick={() => {
             tool.cancel()
           }}
-          size="2"
         >
           {t($ => $.splitWall.cancel)} <Kbd>{t($ => $.keyboard.esc)}</Kbd>
         </Button>
-      </Flex>
+      </div>
       {/* Instructions */}
-      <Flex direction="column" gap="1">
-        <Text size="1" color="gray">
-          • {t($ => $.splitWall.controlHover)}
-        </Text>
-        <Text size="1" color="gray">
-          • {t($ => $.splitWall.controlClick)}
-        </Text>
-        <Text size="1" color="gray">
-          • {t($ => $.splitWall.controlMeasurements)}
-        </Text>
-        <Text size="1" color="gray">
-          • {t($ => $.splitWall.controlConfirm)}
-        </Text>
-      </Flex>
-    </Flex>
+      <div className="flex flex-col gap-1">
+        <span className="text-sm">• {t($ => $.splitWall.controlHover)}</span>
+        <span className="text-sm">• {t($ => $.splitWall.controlClick)}</span>
+        <span className="text-sm">• {t($ => $.splitWall.controlMeasurements)}</span>
+        <span className="text-sm">• {t($ => $.splitWall.controlConfirm)}</span>
+      </div>
+    </div>
   )
 }

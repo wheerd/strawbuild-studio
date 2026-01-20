@@ -8,13 +8,13 @@ exports[`PolygonToolOverlay > closing polygon behavior > does not render closing
     <polyline
       fill="none"
       points="100,100 200,100 200,200"
-      stroke="var(--gray-9)"
+      stroke="var(--color-gray-700)"
       stroke-linecap="round"
       stroke-linejoin="round"
       stroke-width="2"
     />
     <line
-      stroke="var(--gray-10)"
+      stroke="var(--color-gray-800)"
       stroke-dasharray="10 10"
       stroke-width="2"
       x1="200"
@@ -25,33 +25,33 @@ exports[`PolygonToolOverlay > closing polygon behavior > does not render closing
     <circle
       cx="100"
       cy="100"
-      fill="var(--accent-9)"
+      fill="var(--color-blue-600)"
       r="5"
-      stroke="var(--gray-1)"
+      stroke="var(--color-schematic-gray-1)"
       stroke-width="1"
     />
     <circle
       cx="200"
       cy="100"
-      fill="var(--gray-9)"
+      fill="var(--color-gray-800)"
       r="5"
-      stroke="var(--gray-1)"
+      stroke="var(--color-schematic-gray-1)"
       stroke-width="1"
     />
     <circle
       cx="200"
       cy="200"
-      fill="var(--gray-9)"
+      fill="var(--color-gray-800)"
       r="5"
-      stroke="var(--gray-1)"
+      stroke="var(--color-schematic-gray-1)"
       stroke-width="1"
     />
     <circle
       cx="300"
       cy="300"
-      fill="var(--gray-9)"
+      fill="var(--color-gray-800)"
       r="5"
-      stroke="var(--gray-12)"
+      stroke="var(--color-gray-800)"
       stroke-width="1"
     />
   </g>
@@ -66,13 +66,13 @@ exports[`PolygonToolOverlay > closing polygon behavior > renders closing line wh
     <polyline
       fill="none"
       points="100,100 200,100 200,200"
-      stroke="var(--gray-9)"
+      stroke="var(--color-gray-700)"
       stroke-linecap="round"
       stroke-linejoin="round"
       stroke-width="2"
     />
     <line
-      stroke="var(--red-9)"
+      stroke="var(--color-red-600)"
       stroke-dasharray="10 10"
       stroke-width="2"
       x1="200"
@@ -83,33 +83,33 @@ exports[`PolygonToolOverlay > closing polygon behavior > renders closing line wh
     <circle
       cx="100"
       cy="100"
-      fill="var(--accent-9)"
+      fill="var(--color-blue-600)"
       r="5"
-      stroke="var(--gray-1)"
+      stroke="var(--color-schematic-gray-1)"
       stroke-width="1"
     />
     <circle
       cx="200"
       cy="100"
-      fill="var(--gray-9)"
+      fill="var(--color-gray-800)"
       r="5"
-      stroke="var(--gray-1)"
+      stroke="var(--color-schematic-gray-1)"
       stroke-width="1"
     />
     <circle
       cx="200"
       cy="200"
-      fill="var(--gray-9)"
+      fill="var(--color-gray-800)"
       r="5"
-      stroke="var(--gray-1)"
+      stroke="var(--color-schematic-gray-1)"
       stroke-width="1"
     />
     <circle
       cx="0"
       cy="0"
-      fill="var(--gray-9)"
+      fill="var(--color-gray-800)"
       r="5"
-      stroke="var(--gray-12)"
+      stroke="var(--color-gray-800)"
       stroke-width="1"
     />
   </g>
@@ -124,13 +124,13 @@ exports[`PolygonToolOverlay > closing polygon behavior > renders closing line wh
     <polyline
       fill="none"
       points="100,100 200,100 200,200"
-      stroke="var(--gray-9)"
+      stroke="var(--color-gray-700)"
       stroke-linecap="round"
       stroke-linejoin="round"
       stroke-width="2"
     />
     <line
-      stroke="var(--green-9)"
+      stroke="var(--color-green-600)"
       stroke-dasharray="10 10"
       stroke-width="2"
       x1="200"
@@ -141,33 +141,33 @@ exports[`PolygonToolOverlay > closing polygon behavior > renders closing line wh
     <circle
       cx="100"
       cy="100"
-      fill="var(--accent-9)"
+      fill="var(--color-blue-600)"
       r="5"
-      stroke="var(--gray-1)"
+      stroke="var(--color-schematic-gray-1)"
       stroke-width="1"
     />
     <circle
       cx="200"
       cy="100"
-      fill="var(--gray-9)"
+      fill="var(--color-gray-800)"
       r="5"
-      stroke="var(--gray-1)"
+      stroke="var(--color-schematic-gray-1)"
       stroke-width="1"
     />
     <circle
       cx="200"
       cy="200"
-      fill="var(--gray-9)"
+      fill="var(--color-gray-800)"
       r="5"
-      stroke="var(--gray-1)"
+      stroke="var(--color-schematic-gray-1)"
       stroke-width="1"
     />
     <circle
       cx="0"
       cy="0"
-      fill="var(--gray-9)"
+      fill="var(--color-gray-800)"
       r="5"
-      stroke="var(--gray-12)"
+      stroke="var(--color-gray-800)"
       stroke-width="1"
     />
   </g>
@@ -182,9 +182,9 @@ exports[`PolygonToolOverlay > edge cases > handles empty points array gracefully
     <circle
       cx="0"
       cy="0"
-      fill="var(--gray-9)"
+      fill="var(--color-gray-800)"
       r="5"
-      stroke="var(--gray-12)"
+      stroke="var(--color-gray-800)"
       stroke-width="1"
     />
   </g>
@@ -199,13 +199,13 @@ exports[`PolygonToolOverlay > edge cases > handles exactly two points (minimum f
     <polyline
       fill="none"
       points="0,0 100,100"
-      stroke="var(--gray-9)"
+      stroke="var(--color-gray-700)"
       stroke-linecap="round"
       stroke-linejoin="round"
       stroke-width="2"
     />
     <line
-      stroke="var(--gray-10)"
+      stroke="var(--color-gray-800)"
       stroke-dasharray="10 10"
       stroke-width="2"
       x1="100"
@@ -216,25 +216,25 @@ exports[`PolygonToolOverlay > edge cases > handles exactly two points (minimum f
     <circle
       cx="0"
       cy="0"
-      fill="var(--accent-9)"
+      fill="var(--color-blue-600)"
       r="5"
-      stroke="var(--gray-1)"
+      stroke="var(--color-schematic-gray-1)"
       stroke-width="1"
     />
     <circle
       cx="100"
       cy="100"
-      fill="var(--gray-9)"
+      fill="var(--color-gray-800)"
       r="5"
-      stroke="var(--gray-1)"
+      stroke="var(--color-schematic-gray-1)"
       stroke-width="1"
     />
     <circle
       cx="200"
       cy="0"
-      fill="var(--gray-9)"
+      fill="var(--color-gray-800)"
       r="5"
-      stroke="var(--gray-12)"
+      stroke="var(--color-gray-800)"
       stroke-width="1"
     />
   </g>
@@ -249,13 +249,13 @@ exports[`PolygonToolOverlay > rendering with multiple points > differentiates fi
     <polyline
       fill="none"
       points="0,0 100,0 100,100 0,100"
-      stroke="var(--gray-9)"
+      stroke="var(--color-gray-700)"
       stroke-linecap="round"
       stroke-linejoin="round"
       stroke-width="2"
     />
     <line
-      stroke="var(--gray-10)"
+      stroke="var(--color-gray-800)"
       stroke-dasharray="10 10"
       stroke-width="2"
       x1="0"
@@ -266,41 +266,41 @@ exports[`PolygonToolOverlay > rendering with multiple points > differentiates fi
     <circle
       cx="0"
       cy="0"
-      fill="var(--accent-9)"
+      fill="var(--color-blue-600)"
       r="5"
-      stroke="var(--gray-1)"
+      stroke="var(--color-schematic-gray-1)"
       stroke-width="1"
     />
     <circle
       cx="100"
       cy="0"
-      fill="var(--gray-9)"
+      fill="var(--color-gray-800)"
       r="5"
-      stroke="var(--gray-1)"
+      stroke="var(--color-schematic-gray-1)"
       stroke-width="1"
     />
     <circle
       cx="100"
       cy="100"
-      fill="var(--gray-9)"
+      fill="var(--color-gray-800)"
       r="5"
-      stroke="var(--gray-1)"
+      stroke="var(--color-schematic-gray-1)"
       stroke-width="1"
     />
     <circle
       cx="0"
       cy="100"
-      fill="var(--gray-9)"
+      fill="var(--color-gray-800)"
       r="5"
-      stroke="var(--gray-1)"
+      stroke="var(--color-schematic-gray-1)"
       stroke-width="1"
     />
     <circle
       cx="50"
       cy="50"
-      fill="var(--gray-9)"
+      fill="var(--color-gray-800)"
       r="5"
-      stroke="var(--gray-12)"
+      stroke="var(--color-gray-800)"
       stroke-width="1"
     />
   </g>
@@ -315,13 +315,13 @@ exports[`PolygonToolOverlay > rendering with multiple points > renders polygon w
     <polyline
       fill="none"
       points="100,100 200,100 200,200"
-      stroke="var(--gray-9)"
+      stroke="var(--color-gray-700)"
       stroke-linecap="round"
       stroke-linejoin="round"
       stroke-width="2"
     />
     <line
-      stroke="var(--gray-10)"
+      stroke="var(--color-gray-800)"
       stroke-dasharray="10 10"
       stroke-width="2"
       x1="200"
@@ -332,33 +332,33 @@ exports[`PolygonToolOverlay > rendering with multiple points > renders polygon w
     <circle
       cx="100"
       cy="100"
-      fill="var(--accent-9)"
+      fill="var(--color-blue-600)"
       r="5"
-      stroke="var(--gray-1)"
+      stroke="var(--color-schematic-gray-1)"
       stroke-width="1"
     />
     <circle
       cx="200"
       cy="100"
-      fill="var(--gray-9)"
+      fill="var(--color-gray-800)"
       r="5"
-      stroke="var(--gray-1)"
+      stroke="var(--color-schematic-gray-1)"
       stroke-width="1"
     />
     <circle
       cx="200"
       cy="200"
-      fill="var(--gray-9)"
+      fill="var(--color-gray-800)"
       r="5"
-      stroke="var(--gray-1)"
+      stroke="var(--color-schematic-gray-1)"
       stroke-width="1"
     />
     <circle
       cx="100"
       cy="200"
-      fill="var(--gray-9)"
+      fill="var(--color-gray-800)"
       r="5"
-      stroke="var(--gray-12)"
+      stroke="var(--color-gray-800)"
       stroke-width="1"
     />
   </g>
@@ -373,9 +373,9 @@ exports[`PolygonToolOverlay > rendering with no points > renders only snap point
     <circle
       cx="100"
       cy="200"
-      fill="var(--gray-9)"
+      fill="var(--color-gray-800)"
       r="5"
-      stroke="var(--gray-12)"
+      stroke="var(--color-gray-800)"
       stroke-width="1"
     />
   </g>
@@ -388,7 +388,7 @@ exports[`PolygonToolOverlay > rendering with single point > renders first point 
     pointer-events="none"
   >
     <line
-      stroke="var(--gray-10)"
+      stroke="var(--color-gray-800)"
       stroke-dasharray="10 10"
       stroke-width="2"
       x1="100"
@@ -399,17 +399,17 @@ exports[`PolygonToolOverlay > rendering with single point > renders first point 
     <circle
       cx="100"
       cy="100"
-      fill="var(--accent-9)"
+      fill="var(--color-blue-600)"
       r="5"
-      stroke="var(--gray-1)"
+      stroke="var(--color-schematic-gray-1)"
       stroke-width="1"
     />
     <circle
       cx="200"
       cy="200"
-      fill="var(--gray-9)"
+      fill="var(--color-gray-800)"
       r="5"
-      stroke="var(--gray-12)"
+      stroke="var(--color-gray-800)"
       stroke-width="1"
     />
   </g>
@@ -422,7 +422,7 @@ exports[`PolygonToolOverlay > rendering with single point > renders line to poin
     pointer-events="none"
   >
     <line
-      stroke="var(--red-9)"
+      stroke="var(--color-red-600)"
       stroke-dasharray="10 10"
       stroke-width="2"
       x1="50"
@@ -433,17 +433,17 @@ exports[`PolygonToolOverlay > rendering with single point > renders line to poin
     <circle
       cx="50"
       cy="50"
-      fill="var(--accent-9)"
+      fill="var(--color-blue-600)"
       r="5"
-      stroke="var(--gray-1)"
+      stroke="var(--color-schematic-gray-1)"
       stroke-width="1"
     />
     <circle
       cx="150"
       cy="150"
-      fill="var(--gray-9)"
+      fill="var(--color-gray-800)"
       r="5"
-      stroke="var(--gray-12)"
+      stroke="var(--color-gray-800)"
       stroke-width="1"
     />
   </g>
@@ -456,7 +456,7 @@ exports[`PolygonToolOverlay > rendering with single point > renders line to poin
     pointer-events="none"
   >
     <line
-      stroke="var(--gray-10)"
+      stroke="var(--color-gray-800)"
       stroke-dasharray="10 10"
       stroke-width="2"
       x1="50"
@@ -467,17 +467,17 @@ exports[`PolygonToolOverlay > rendering with single point > renders line to poin
     <circle
       cx="50"
       cy="50"
-      fill="var(--accent-9)"
+      fill="var(--color-blue-600)"
       r="5"
-      stroke="var(--gray-1)"
+      stroke="var(--color-schematic-gray-1)"
       stroke-width="1"
     />
     <circle
       cx="150"
       cy="150"
-      fill="var(--gray-9)"
+      fill="var(--color-gray-800)"
       r="5"
-      stroke="var(--gray-12)"
+      stroke="var(--color-gray-800)"
       stroke-width="1"
     />
   </g>
@@ -494,7 +494,7 @@ exports[`PolygonToolOverlay > snapping behavior > renders snap lines when snap r
     >
       <line
         opacity="0.5"
-        stroke="var(--green-8)"
+        stroke="var(--color-green-700)"
         stroke-width="2"
         x1="-1500"
         x2="1700"
@@ -503,7 +503,7 @@ exports[`PolygonToolOverlay > snapping behavior > renders snap lines when snap r
       />
       <line
         opacity="0.5"
-        stroke="var(--red-8)"
+        stroke="var(--color-red-700)"
         stroke-width="2"
         x1="200"
         x2="200"
@@ -512,7 +512,7 @@ exports[`PolygonToolOverlay > snapping behavior > renders snap lines when snap r
       />
     </g>
     <line
-      stroke="var(--gray-10)"
+      stroke="var(--color-gray-800)"
       stroke-dasharray="10 10"
       stroke-width="2"
       x1="50"
@@ -523,17 +523,17 @@ exports[`PolygonToolOverlay > snapping behavior > renders snap lines when snap r
     <circle
       cx="50"
       cy="50"
-      fill="var(--accent-9)"
+      fill="var(--color-blue-600)"
       r="5"
-      stroke="var(--gray-1)"
+      stroke="var(--color-schematic-gray-1)"
       stroke-width="1"
     />
     <circle
       cx="145"
       cy="145"
-      fill="var(--gray-9)"
+      fill="var(--color-gray-800)"
       r="5"
-      stroke="var(--gray-12)"
+      stroke="var(--color-gray-800)"
       stroke-width="1"
     />
   </g>
@@ -546,7 +546,7 @@ exports[`PolygonToolOverlay > snapping behavior > renders snap position when sna
     pointer-events="none"
   >
     <line
-      stroke="var(--gray-10)"
+      stroke="var(--color-gray-800)"
       stroke-dasharray="10 10"
       stroke-width="2"
       x1="100"
@@ -557,17 +557,17 @@ exports[`PolygonToolOverlay > snapping behavior > renders snap position when sna
     <circle
       cx="100"
       cy="100"
-      fill="var(--accent-9)"
+      fill="var(--color-blue-600)"
       r="5"
-      stroke="var(--gray-1)"
+      stroke="var(--color-schematic-gray-1)"
       stroke-width="1"
     />
     <circle
       cx="120"
       cy="120"
-      fill="var(--gray-9)"
+      fill="var(--color-gray-800)"
       r="5"
-      stroke="var(--gray-12)"
+      stroke="var(--color-gray-800)"
       stroke-width="1"
     />
   </g>
@@ -584,7 +584,7 @@ exports[`PolygonToolOverlay > zoom responsiveness > adjusts line extension based
     >
       <line
         opacity="0.5"
-        stroke="var(--green-8)"
+        stroke="var(--color-green-700)"
         stroke-width="1"
         x1="-1500"
         x2="1700"
@@ -595,9 +595,9 @@ exports[`PolygonToolOverlay > zoom responsiveness > adjusts line extension based
     <circle
       cx="0"
       cy="0"
-      fill="var(--gray-9)"
+      fill="var(--color-gray-800)"
       r="2.5"
-      stroke="var(--gray-12)"
+      stroke="var(--color-gray-800)"
       stroke-width="0.5"
     />
   </g>
@@ -612,13 +612,13 @@ exports[`PolygonToolOverlay > zoom responsiveness > scales elements appropriatel
     <polyline
       fill="none"
       points="100,100 200,100"
-      stroke="var(--gray-9)"
+      stroke="var(--color-gray-700)"
       stroke-linecap="round"
       stroke-linejoin="round"
       stroke-width="1"
     />
     <line
-      stroke="var(--gray-10)"
+      stroke="var(--color-gray-800)"
       stroke-dasharray="2.5 2.5"
       stroke-width="1"
       x1="200"
@@ -629,25 +629,25 @@ exports[`PolygonToolOverlay > zoom responsiveness > scales elements appropriatel
     <circle
       cx="100"
       cy="100"
-      fill="var(--accent-9)"
+      fill="var(--color-blue-600)"
       r="1.25"
-      stroke="var(--gray-1)"
+      stroke="var(--color-schematic-gray-1)"
       stroke-width="0.25"
     />
     <circle
       cx="200"
       cy="100"
-      fill="var(--gray-9)"
+      fill="var(--color-gray-800)"
       r="1.25"
-      stroke="var(--gray-1)"
+      stroke="var(--color-schematic-gray-1)"
       stroke-width="0.25"
     />
     <circle
       cx="200"
       cy="200"
-      fill="var(--gray-9)"
+      fill="var(--color-gray-800)"
       r="1.25"
-      stroke="var(--gray-12)"
+      stroke="var(--color-gray-800)"
       stroke-width="0.25"
     />
   </g>
@@ -662,13 +662,13 @@ exports[`PolygonToolOverlay > zoom responsiveness > scales elements appropriatel
     <polyline
       fill="none"
       points="100,100 200,100"
-      stroke="var(--gray-9)"
+      stroke="var(--color-gray-700)"
       stroke-linecap="round"
       stroke-linejoin="round"
       stroke-width="8"
     />
     <line
-      stroke="var(--gray-10)"
+      stroke="var(--color-gray-800)"
       stroke-dasharray="40 40"
       stroke-width="8"
       x1="200"
@@ -679,25 +679,25 @@ exports[`PolygonToolOverlay > zoom responsiveness > scales elements appropriatel
     <circle
       cx="100"
       cy="100"
-      fill="var(--accent-9)"
+      fill="var(--color-blue-600)"
       r="20"
-      stroke="var(--gray-1)"
+      stroke="var(--color-schematic-gray-1)"
       stroke-width="4"
     />
     <circle
       cx="200"
       cy="100"
-      fill="var(--gray-9)"
+      fill="var(--color-gray-800)"
       r="20"
-      stroke="var(--gray-1)"
+      stroke="var(--color-schematic-gray-1)"
       stroke-width="4"
     />
     <circle
       cx="200"
       cy="200"
-      fill="var(--gray-9)"
+      fill="var(--color-gray-800)"
       r="20"
-      stroke="var(--gray-12)"
+      stroke="var(--color-gray-800)"
       stroke-width="4"
     />
   </g>

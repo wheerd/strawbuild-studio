@@ -1,28 +1,30 @@
 import { ExclamationTriangleIcon, ReloadIcon } from '@radix-ui/react-icons'
-import { Button, Callout, Flex, Text } from '@radix-ui/themes'
 import type { FallbackProps } from 'react-error-boundary'
 import { useTranslation } from 'react-i18next'
+
+import { Button } from '@/components/ui/button'
+import { Callout, CalloutIcon, CalloutText } from '@/components/ui/callout'
 
 export function ModalErrorFallback({ error, resetErrorBoundary }: FallbackProps): React.JSX.Element {
   const { t } = useTranslation('errors')
 
   return (
-    <Flex direction="column" align="center" justify="center" gap="3" p="4" minHeight="150px">
-      <Callout.Root color="red" style={{ width: '100%' }}>
-        <Callout.Icon>
+    <div className="flex min-h-[150px] flex-col items-center justify-center gap-3 p-4">
+      <Callout className="text-destructive w-full">
+        <CalloutIcon>
           <ExclamationTriangleIcon />
-        </Callout.Icon>
-        <Callout.Text>
-          <Text size="2">
+        </CalloutIcon>
+        <CalloutText>
+          <span className="text-sm">
             {t($ => $.modal.errorPrefix)} {error instanceof Error ? error.message : t($ => $.modal.defaultMessage)}
-          </Text>
-        </Callout.Text>
-      </Callout.Root>
+          </span>
+        </CalloutText>
+      </Callout>
 
-      <Button size="2" onClick={resetErrorBoundary}>
+      <Button size="sm" onClick={resetErrorBoundary}>
         <ReloadIcon />
         {t($ => $.modal.retry)}
       </Button>
-    </Flex>
+    </div>
   )
 }

@@ -41,7 +41,7 @@ function RightAngleIndicator({ vertex, prevPoint, nextPoint, scaleFactor }: Angl
   return (
     <path
       d={`M ${p1[0]} ${p1[1]} L ${corner[0]} ${corner[1]} L ${p2[0]} ${p2[1]}`}
-      stroke="var(--gray-11)"
+      stroke="var(--color-gray-900)"
       strokeWidth={Math.max(1, scaleFactor)}
       opacity={0.5}
       fill="none"
@@ -82,12 +82,12 @@ function AngleArcIndicator({ vertex, prevPoint, nextPoint, scaleFactor }: AngleI
 
   return (
     <g>
-      <path d={arcPath} stroke="var(--gray-11)" strokeWidth={strokeWidth} fill="none" />
+      <path d={arcPath} stroke="var(--color-gray-900)" strokeWidth={strokeWidth} fill="none" />
       <text
         x={labelPos[0]}
         y={labelPos[1]}
         fontSize={fontSize}
-        fill="var(--gray-11)"
+        fill="var(--color-gray-900)"
         textAnchor="middle"
         dominantBaseline="central"
       >

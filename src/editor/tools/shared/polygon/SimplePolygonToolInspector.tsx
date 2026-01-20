@@ -1,8 +1,11 @@
 import { Cross2Icon, InfoCircledIcon } from '@radix-ui/react-icons'
-import { Box, Button, Callout, Code, Flex, IconButton, Kbd, Separator, Text } from '@radix-ui/themes'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
+import { Button } from '@/components/ui/button'
+import { Callout, CalloutIcon, CalloutText } from '@/components/ui/callout'
+import { Kbd } from '@/components/ui/kbd'
+import { Separator } from '@/components/ui/separator'
 import { useReactiveTool } from '@/editor/tools/system/hooks/useReactiveTool'
 import type { ToolImplementation, ToolInspectorProps } from '@/editor/tools/system/types'
 import { useFormatters } from '@/shared/i18n/useFormatters'
@@ -43,62 +46,54 @@ export function SimplePolygonToolInspector<TTool extends BasePolygonTool<Polygon
   const canComplete = hasPolygon && state.points.length >= minimumPoints && state.isClosingSegmentValid
 
   return (
-    <Box p="2">
-      <Flex direction="column" gap="2">
-        <Callout.Root color="blue">
-          <Callout.Icon>
+    <div className="p-2">
+      <div className="flex flex-col gap-2">
+        <Callout color="blue">
+          <CalloutIcon>
             <InfoCircledIcon />
-          </Callout.Icon>
-          <Callout.Text>
-            <Text size="1">
-              <Text weight="bold">{title}:</Text> {description}
-            </Text>
-          </Callout.Text>
-        </Callout.Root>
+          </CalloutIcon>
+          <CalloutText>
+            <span className="text-xs">
+              <span className="font-bold">{title}:</span> {description}
+            </span>
+          </CalloutText>
+        </Callout>
 
         {state.lengthOverride && (
           <>
-            <Separator size="4" />
-            <Flex align="center" justify="between" gap="2">
-              <Text size="1" weight="medium" color="blue">
+            <Separator />
+            <div className="flex items-center justify-between gap-2">
+              <span className="text-xs font-medium text-blue-600 dark:text-blue-400">
                 {t($ => $.simplePolygon.lengthOverride)}
-              </Text>
-              <Flex align="center" gap="2">
-                <Code size="1" color="blue">
+              </span>
+              <div className="flex items-center gap-2">
+                <span className="font-mono text-xs text-blue-600 dark:text-blue-400">
                   {formatLength(state.lengthOverride)}
-                </Code>
-                <IconButton
-                  size="1"
+                </span>
+                <Button
                   variant="ghost"
-                  color="red"
+                  size="icon"
+                  className="text-destructive hover:text-destructive h-6 w-6"
                   onClick={() => {
                     tool.clearLengthOverride()
                   }}
                   title={t($ => $.simplePolygon.clearLengthOverride)}
                 >
                   <Cross2Icon />
-                </IconButton>
-              </Flex>
-            </Flex>
+                </Button>
+              </div>
+            </div>
           </>
         )}
 
-        <Separator size="4" />
-        <Flex direction="column" gap="2">
-          <Text size="1" weight="medium">
-            {t($ => $.simplePolygon.controlsHeading)}
-          </Text>
-          <Text size="1" color="gray">
-            • {t($ => $.simplePolygon.controlPlace)}
-          </Text>
-          <Text size="1" color="gray">
-            • {t($ => $.simplePolygon.controlSnap)}
-          </Text>
-          <Text size="1" color="gray">
-            • {t($ => $.simplePolygon.controlNumbers)}
-          </Text>
-          <Text size="1" color="gray">
-            • <Kbd>{t($ => $.keyboard.esc)}</Kbd>{' '}
+        <Separator />
+        <div className="flex flex-col gap-2">
+          <span className="text-xs font-medium">{t($ => $.simplePolygon.controlsHeading)}</span>
+          <span className="text-muted-foreground text-xs">• {t($ => $.simplePolygon.controlPlace)}</span>
+          <span className="text-muted-foreground text-xs">• {t($ => $.simplePolygon.controlSnap)}</span>
+          <span className="text-muted-foreground text-xs">• {t($ => $.simplePolygon.controlNumbers)}</span>
+          <span className="text-muted-foreground text-xs">
+            • <Kbd size="sm">{t($ => $.keyboard.esc)}</Kbd>{' '}
             {state.lengthOverride
               ? t($ => $.simplePolygon.controlEscOverride, {
                   key: ''
@@ -110,59 +105,55 @@ export function SimplePolygonToolInspector<TTool extends BasePolygonTool<Polygon
                 })
                   .replace('{{key}}', '')
                   .trim()}
-          </Text>
+          </span>
           {state.points.length >= minimumPoints && (
-            <Text size="1" color="gray">
-              • <Kbd>{t($ => $.keyboard.enter)}</Kbd>{' '}
+            <span className="text-muted-foreground text-xs">
+              • <Kbd size="sm">{t($ => $.keyboard.enter)}</Kbd>{' '}
               {t($ => $.simplePolygon.controlEnter, {
                 key: ''
               })
                 .replace('{{key}}', '')
                 .trim()}
-            </Text>
+            </span>
           )}
-        </Flex>
+        </div>
 
         {hasPolygon && (
           <>
-            <Separator size="4" />
-            <Flex direction="column" gap="2">
+            <Separator />
+            <div className="flex flex-col gap-2">
               {state.points.length >= minimumPoints && (
                 <Button
-                  size="2"
-                  color="green"
+                  className="w-full bg-green-600 hover:bg-green-700"
                   onClick={() => {
                     tool.complete()
                   }}
                   disabled={!canComplete}
                   title={t($ => $.simplePolygon.completeShape)}
-                  style={{ width: '100%' }}
                 >
-                  <Text size="1">{completeLabel}</Text>
-                  <Kbd size="1" style={{ marginLeft: 'auto' }}>
+                  <span className="text-xs">{completeLabel}</span>
+                  <Kbd size="sm" className="ml-auto">
                     {t($ => $.keyboard.enter)}
                   </Kbd>
                 </Button>
               )}
               <Button
-                size="2"
-                color="red"
-                variant="soft"
+                variant="outline"
+                className="border-destructive/50 text-destructive hover:bg-destructive/10 w-full"
                 onClick={() => {
                   tool.cancel()
                 }}
                 title={t($ => $.simplePolygon.cancelDrawing)}
-                style={{ width: '100%' }}
               >
-                <Text size="1">{cancelLabel}</Text>
-                <Kbd size="1" style={{ marginLeft: 'auto' }}>
+                <span className="text-xs">{cancelLabel}</span>
+                <Kbd size="sm" className="ml-auto">
                   {t($ => $.keyboard.esc)}
                 </Kbd>
               </Button>
-            </Flex>
+            </div>
           </>
         )}
-      </Flex>
-    </Box>
+      </div>
+    </div>
   )
 }

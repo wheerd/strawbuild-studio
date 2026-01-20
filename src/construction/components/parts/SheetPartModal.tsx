@@ -1,7 +1,7 @@
 import React, { useId, useMemo, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 
-import { FullScreenModal } from '@/components/ui/FullScreenModal'
+import { FullScreenModal } from '@/components/ui/full-screen-modal'
 import { SVGViewport, type SVGViewportRef } from '@/shared/components/SVGViewport'
 import {
   Bounds2D,
@@ -61,7 +61,7 @@ export function SheetPartModal({
 
   return (
     <FullScreenModal title={t($ => $.partCutModal.sheetPartDiagram)} trigger={trigger}>
-      <div className="h-full" ref={containerRef}>
+      <div className="h-full w-full" ref={containerRef}>
         <SVGViewport
           ref={viewportRef}
           contentBounds={displayBounds}
@@ -76,9 +76,9 @@ export function SheetPartModal({
           {/* Render the polygon */}
           <use
             href={`#${polygonId}`}
-            stroke="var(--accent-9)"
+            stroke="var(--color-primary)"
             strokeWidth={Math.max(1, scaleFactor)}
-            fill="var(--accent-9)"
+            fill="var(--color-primary)"
             fillOpacity="0.5"
             strokeLinejoin="miter"
           />

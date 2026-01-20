@@ -1,7 +1,7 @@
 import React, { useId, useMemo, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 
-import { FullScreenModal } from '@/components/ui/FullScreenModal'
+import { FullScreenModal } from '@/components/ui/full-screen-modal'
 import { SVGViewport, type SVGViewportRef } from '@/shared/components/SVGViewport'
 import { Bounds2D, type Polygon2D, type PolygonWithHoles2D, newVec2 } from '@/shared/geometry'
 import { elementSizeRef } from '@/shared/hooks/useElementSize'
@@ -143,7 +143,7 @@ export function PartCutModal({
 
   return (
     <FullScreenModal title={t($ => $.partCutModal.partCutDiagram)} trigger={trigger}>
-      <div className="h-full" ref={containerRef}>
+      <div className="h-full w-full" ref={containerRef}>
         <SVGViewport
           ref={viewportRef}
           contentBounds={displayBounds}
@@ -172,9 +172,9 @@ export function PartCutModal({
                 <g transform={`translate(${xOffset}, 0)`}>
                   <use
                     href={`#${polygonId}`}
-                    stroke="var(--accent-9)"
+                    stroke="var(--color-primary)"
                     strokeWidth="1"
-                    fill="var(--accent-9)"
+                    fill="var(--color-primary)"
                     fillOpacity="0.5"
                     strokeLinejoin="miter"
                   />
@@ -187,7 +187,7 @@ export function PartCutModal({
             <path
               key={`zigzag-${i}`}
               d={pointsToSvgPath(z, false)}
-              stroke="var(--gray-7)"
+              stroke="var(--color-gray-700)"
               strokeWidth="5"
               fill="none"
               opacity={0.8}
