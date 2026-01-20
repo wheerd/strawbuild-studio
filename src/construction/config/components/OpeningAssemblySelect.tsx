@@ -19,8 +19,8 @@ export interface OpeningAssemblySelectProps {
 
 const sizeClasses = {
   sm: 'h-7 text-xs',
-  base: 'h-9 <Text text-sm',
-  lg: 'h-10 <Text text-base'
+  base: 'h-9 text-sm',
+  lg: 'h-10 text-base'
 }
 
 export function OpeningAssemblySelect({

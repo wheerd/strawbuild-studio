@@ -584,7 +584,7 @@ function ConfigForm({ assembly }: ConfigFormProps): React.JSX.Element {
       </div>
       <Separator />
       {/* Two Column Layout */}
-      <div className="grid grid-cols-2 gap-4 style={{ gridTemplateColumns: '1fr 1fr' }}">
+      <div className="grid grid-cols-2 gap-4">
         {/* Left Column - Type-specific configuration */}
         <div className="flex flex-col gap-3">
           {assembly.type === 'monolithic' && <MonolithicRoofConfigForm config={assembly} onUpdate={updateConfig} />}
