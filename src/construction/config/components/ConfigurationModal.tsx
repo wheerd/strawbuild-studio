@@ -35,7 +35,7 @@ export function ConfigurationModal({
 
   return (
     <FullScreenModal open={open} onOpenChange={onOpenChange} titleIcon={<GearIcon />} title={t($ => $.modal.title)}>
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="h-full">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="h-full w-full">
         <TabsList>
           <TabsTrigger value="materials">{t($ => $.modal.tabMaterials)}</TabsTrigger>
           <TabsTrigger value="ringbeams">{t($ => $.modal.tabRingBeams)}</TabsTrigger>

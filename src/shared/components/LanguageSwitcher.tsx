@@ -32,7 +32,7 @@ const LANGUAGES: Language[] = [
  * - English (en)
  * - German (de)
  */
-export function LanguageSwitcher(): React.JSX.Element {
+export function LanguageSwitcher({ size }: { size: 'sm' | 'lg' }): React.JSX.Element {
   const { i18n, t } = useTranslation('common')
 
   const currentLanguage = LANGUAGES.find(lang => lang.code === i18n.language) ?? LANGUAGES[0]
@@ -47,14 +47,18 @@ export function LanguageSwitcher(): React.JSX.Element {
         <Button
           variant="secondary"
           size="icon"
-          className="h-7 w-7"
+          className={size === 'sm' ? 'h-7 w-7' : 'h-10 w-10'}
           title={t($ => $.currentLanguageWithLabel, {
             language: currentLanguage.name,
             defaultValue: 'Current language: {{language}}'
           })}
           aria-label={t($ => $.app.changeLanguage)}
         >
-          <GlobeIcon className="h-4 w-4" />
+          <GlobeIcon
+            className={size === 'sm' ? undefined : 'h-9! w-9!'}
+            width={size === 'sm' ? '14' : '30'}
+            height={size === 'sm' ? '14' : '30'}
+          />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent>

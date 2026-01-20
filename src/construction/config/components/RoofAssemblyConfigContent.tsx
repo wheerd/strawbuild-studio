@@ -8,6 +8,7 @@ import { useRoofs } from '@/building/store'
 import { AlertDialog } from '@/components/ui/alert-dialog'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { Card } from '@/components/ui/card'
 import { DropdownMenu } from '@/components/ui/dropdown-menu'
 import { Separator } from '@/components/ui/separator'
 import { TextField } from '@/components/ui/text-field'
@@ -544,10 +545,7 @@ function ConfigForm({ assembly }: ConfigFormProps): React.JSX.Element {
   }, [assembly, formatLength])
 
   return (
-    <div
-      className="flex flex-col gap-3 p-3"
-      style={{ border: '1px solid var(--color-gray-600)', borderRadius: 'var(--radius-2)' }}
-    >
+    <Card className="flex flex-col gap-3 p-3">
       {/* Basic Info - Full Width */}
       <div className="grid grid-cols-2 items-center gap-2 gap-x-3">
         <div className="grid grid-cols-[auto_1fr] items-center gap-x-2">
@@ -598,7 +596,7 @@ function ConfigForm({ assembly }: ConfigFormProps): React.JSX.Element {
           <LayerSections assemblyId={assembly.id} config={assembly} />
         </div>
       </div>
-    </div>
+    </Card>
   )
 }
 

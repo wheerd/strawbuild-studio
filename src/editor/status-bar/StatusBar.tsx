@@ -21,7 +21,7 @@ export function StatusBar(): React.JSX.Element {
           <OfflineStatusIndicator />
           <AutoSaveIndicator />
           <ThemeToggle />
-          <LanguageSwitcher />
+          <LanguageSwitcher size="sm" />
         </div>
 
         <div className="flex items-center justify-center gap-3">

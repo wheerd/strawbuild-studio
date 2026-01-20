@@ -1,10 +1,10 @@
-import { Cross2Icon, ExclamationTriangleIcon, GitHubLogoIcon } from '@radix-ui/react-icons'
+import { ExclamationTriangleIcon, GitHubLogoIcon } from '@radix-ui/react-icons'
 import React from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { Button } from '@/components/ui/button'
 import { Callout, CalloutIcon, CalloutText } from '@/components/ui/callout'
-import { Dialog, DialogClose, DialogContent, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { VERSION_INFO } from '@/shared/utils/version'
 
 import { LanguageSwitcher } from './LanguageSwitcher'
@@ -44,6 +44,7 @@ export function WelcomeModal({ isOpen, mode, onAccept, trigger }: WelcomeModalPr
         onInteractOutside={e => {
           if (isFirstVisit) e.preventDefault()
         }}
+        showCloseButton={!isFirstVisit}
       >
         <div className="flex flex-col gap-4">
           <DialogTitle>
@@ -51,15 +52,8 @@ export function WelcomeModal({ isOpen, mode, onAccept, trigger }: WelcomeModalPr
               <div className="flex items-center gap-2">
                 <Logo />
               </div>
-              <div className="flex items-center gap-2">
-                <LanguageSwitcher />
-                {!isFirstVisit && (
-                  <DialogClose asChild>
-                    <Button variant="ghost">
-                      <Cross2Icon />
-                    </Button>
-                  </DialogClose>
-                )}
+              <div className="flex items-center gap-2 pr-5">
+                <LanguageSwitcher size="lg" />
               </div>
             </div>
           </DialogTitle>

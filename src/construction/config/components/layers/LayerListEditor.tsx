@@ -121,7 +121,7 @@ export function LayerListEditor({
           {layerCopySources && (
             <DropdownMenu>
               <DropdownMenu.Trigger>
-                <Button size="icon" title={t($ => $.layers.copyFrom)} variant="soft">
+                <Button size="icon-sm" title={t($ => $.layers.copyFrom)} variant="soft">
                   <CopyIcon />
                 </Button>
               </DropdownMenu.Trigger>
@@ -147,7 +147,7 @@ export function LayerListEditor({
           {hasPresetMenu && (
             <DropdownMenu>
               <DropdownMenu.Trigger>
-                <Button size="icon" title={t($ => $.layers.presetsLabel)} variant="soft">
+                <Button size="icon-sm" title={t($ => $.layers.presetsLabel)} variant="soft">
                   <MagicWandIcon />
                 </Button>
               </DropdownMenu.Trigger>
@@ -171,7 +171,7 @@ export function LayerListEditor({
 
           <DropdownMenu>
             <DropdownMenu.Trigger>
-              <Button size="icon" title={addLabel} variant="soft">
+              <Button size="icon-sm" title={addLabel} variant="soft">
                 <PlusIcon />
               </Button>
             </DropdownMenu.Trigger>
@@ -327,7 +327,7 @@ function LayerCard({
             }}
             unit="mm"
             size="sm"
-            style={{ width: '8em' }}
+            style={{ width: '10em' }}
           >
             <TextField.Slot title={t($ => $.common.thickness)} side="left" className="pr-0 pl-1">
               <HeightIcon />
@@ -344,8 +344,8 @@ function LayerCard({
 
           <div className="flex gap-1">
             <Button
-              size="icon"
-              variant="soft"
+              size="icon-sm"
+              variant="outline"
               onClick={() => {
                 onMoveLayer(index, index - 1)
               }}
@@ -355,8 +355,8 @@ function LayerCard({
               <ChevronUpIcon />
             </Button>
             <Button
-              size="icon"
-              variant="soft"
+              size="icon-sm"
+              variant="outline"
               onClick={() => {
                 onMoveLayer(index, index + 1)
               }}
@@ -366,8 +366,7 @@ function LayerCard({
               <ChevronDownIcon />
             </Button>
             <Button
-              size="icon"
-              variant="soft"
+              size="icon-sm"
               variant="destructive"
               onClick={() => {
                 onRemoveLayer(index)

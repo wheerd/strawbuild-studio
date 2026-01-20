@@ -8,6 +8,7 @@ import { usePerimeterWalls } from '@/building/store'
 import { AlertDialog } from '@/components/ui/alert-dialog'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { Card } from '@/components/ui/card'
 import { DropdownMenu } from '@/components/ui/dropdown-menu'
 import { Separator } from '@/components/ui/separator'
 import { TextField } from '@/components/ui/text-field'
@@ -157,7 +158,7 @@ export function RingBeamAssemblyContent({ initialSelectionId }: RingBeamAssembly
   return (
     <div className="flex w-full flex-col gap-4">
       {/* Selector + Actions */}
-      <div className="flex flex-col gap-2">
+      <div className="flex w-full flex-col gap-2">
         <div className="flex items-end gap-2">
           <div className="flex grow flex-col gap-1">
             <RingBeamAssemblySelect
@@ -352,10 +353,7 @@ function ConfigForm({ assembly }: { assembly: RingBeamAssemblyConfig }): React.R
   const totalHeight = useMemo(() => formatLength(resolveRingBeamAssembly(assembly).height), [assembly, formatLength])
 
   return (
-    <div
-      className="flex flex-col gap-3 p-3"
-      style={{ border: '1px solid var(--color-gray-600)', borderRadius: 'var(--radius-2)' }}
-    >
+    <Card className="flex flex-col gap-3 p-3">
       <div className="grid grid-cols-2 items-center gap-2 gap-x-3">
         <div className="grid grid-cols-[auto_1fr] items-center gap-x-2">
           <Label.Root>
@@ -397,7 +395,7 @@ function ConfigForm({ assembly }: { assembly: RingBeamAssemblyConfig }): React.R
       {assembly.type === 'full' && <FullRingBeamFields config={assembly} onUpdate={handleUpdateConfig} />}
       {assembly.type === 'double' && <DoubleRingBeamFields config={assembly} onUpdate={handleUpdateConfig} />}
       {assembly.type === 'brick' && <BrickRingBeamFields config={assembly} onUpdate={handleUpdateConfig} />}
-    </div>
+    </Card>
   )
 }
 

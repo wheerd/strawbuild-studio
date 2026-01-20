@@ -426,7 +426,7 @@ export function MaterialsConfigContent({ initialSelectionId }: MaterialsConfigCo
 function UsageBadge({ id }: { id: EntityId }) {
   const label = useEntityLabel(id)
   return (
-    <Badge key={id} variant="soft">
+    <Badge key={id} variant="soft" color="blue">
       {label}
     </Badge>
   )
@@ -449,7 +449,11 @@ function UsageDisplay({ usage }: { usage: MaterialUsage }): React.JSX.Element {
         {usage.assemblyIds.map(id => (
           <UsageBadge key={id} id={id} />
         ))}
-        {usage.usedInWallPosts && <Badge variant="soft">{t($ => $.usage.usedInWallPosts)}</Badge>}
+        {usage.usedInWallPosts && (
+          <Badge variant="soft" color="blue">
+            {t($ => $.usage.usedInWallPosts)}
+          </Badge>
+        )}
       </div>
     </div>
   )
@@ -527,7 +531,13 @@ function DimensionalMaterialFields({
           </span>
           <div className="flex grow flex-wrap gap-2" role="list" aria-labelledby="crossSections">
             {material.crossSections.map(section => (
-              <Badge size="sm" role="listitem" key={`${section.smallerLength}x${section.biggerLength}`} variant="soft">
+              <Badge
+                size="sm"
+                role="listitem"
+                key={`${section.smallerLength}x${section.biggerLength}`}
+                variant="soft"
+                color="blue"
+              >
                 <div className="flex items-center gap-1">
                   {formatDimensions2D([section.smallerLength, section.biggerLength], false)}
                   <Button
@@ -587,7 +597,7 @@ function DimensionalMaterialFields({
           </span>
           <div className="flex flex-wrap gap-2" role="list" aria-labelledby="stock-lengths">
             {material.lengths.map(length => (
-              <Badge role="listitem" key={length} variant="soft" size="sm">
+              <Badge role="listitem" key={length} variant="soft" size="sm" color="blue">
                 <div className="flex items-center gap-1">
                   {formatLength(length)}
                   <Button
@@ -705,7 +715,13 @@ function SheetMaterialFields({
           </span>
           <div className="flex flex-wrap gap-2" role="list" aria-labelledby="sheet-sizes">
             {material.sizes.map(size => (
-              <Badge size="sm" role="listitem" key={`${size.smallerLength}x${size.biggerLength}`} variant="soft">
+              <Badge
+                size="sm"
+                role="listitem"
+                key={`${size.smallerLength}x${size.biggerLength}`}
+                variant="soft"
+                color="blue"
+              >
                 <div className="flex items-center gap-1">
                   {formatDimensions2D([size.smallerLength, size.biggerLength], false)}
                   <Button
@@ -760,7 +776,7 @@ function SheetMaterialFields({
           </span>
           <div className="flex flex-wrap gap-2" role="list" aria-labelledby="sheet-thicknesses">
             {material.thicknesses.map(thickness => (
-              <Badge role="listitem" key={thickness} variant="soft" size="sm">
+              <Badge role="listitem" key={thickness} variant="soft" size="sm" color="blue">
                 <div className="flex items-center gap-1">
                   {formatLength(thickness)}
                   <Button
@@ -867,7 +883,7 @@ function VolumeMaterialFields({
           </span>
           <div className="flex flex-wrap gap-2" role="list" aria-labelledby="available-volumes">
             {material.availableVolumes.map(volume => (
-              <Badge role="listitem" key={volume} variant="soft" size="sm">
+              <Badge role="listitem" key={volume} variant="soft" size="sm" color="blue">
                 <div className="flex items-center gap-1">
                   {volumeUnit === 'liter' ? formatVolumeInLiters(volume) : formatVolume(volume)}
                   <Button
