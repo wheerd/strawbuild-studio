@@ -111,12 +111,12 @@ export class PrefabModulesWallAssembly extends BaseWallAssembly<PrefabModulesWal
 
     if (type === 'sill' && sillMaterial) {
       const sillModule = this.getModuleMaterial(sillMaterial)
-      if (width <= sillModule.maxWidth && height <= sillModule.maxHeight) {
-        if (width < sillModule.minWidth || height < sillModule.minHeight) {
-          yield* this.fallback(area)
-          return
-        }
-
+      if (
+        width <= sillModule.maxWidth &&
+        width >= sillModule.minWidth &&
+        height <= sillModule.maxHeight &&
+        height >= sillModule.minHeight
+      ) {
         yield* this.yieldModule(area, sillModule)
         return
       }
@@ -238,6 +238,11 @@ export class PrefabModulesWallAssembly extends BaseWallAssembly<PrefabModulesWal
   }
 
   private *yieldModule(area: WallConstructionArea, material: PrefabMaterial) {
+    if (material.isFlipped && area.isFlat) {
+      yield* this.yieldFlippedModule(area, material, false)
+      return
+    }
+
     const nameKey = material.nameKey
     const typeTag = createTag(
       'module-type',

@@ -20,9 +20,11 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Callout, CalloutIcon, CalloutText } from '@/components/ui/callout'
 import { Card } from '@/components/ui/card'
+import { Checkbox } from '@/components/ui/checkbox'
 import { DropdownMenu } from '@/components/ui/dropdown-menu'
 import { TextField } from '@/components/ui/text-field'
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
+import { Tooltip } from '@/components/ui/tooltip'
 import { type EntityId, useEntityLabel } from '@/construction/config/components/useEntityLabel'
 import { useConfigActions, useDefaultStrawMaterialId } from '@/construction/config/store'
 import type {
@@ -141,7 +143,8 @@ export function MaterialsConfigContent({ initialSelectionId }: MaterialsConfigCo
             minThickness: 300,
             maxThickness: 400,
             minWidth: 400,
-            maxWidth: 850
+            maxWidth: 850,
+            isFlipped: false
           } satisfies Omit<PrefabMaterial, 'id'>)
           break
         default:
@@ -1167,14 +1170,23 @@ function PrefabMaterialFields({
       </div>
 
       <Label.Root className="flex w-auto shrink items-center gap-2">
-        <input
-          type="checkbox"
-          checked={sloped != null}
-          onChange={e => {
-            handleSlopedToggle(e.target.checked)
+        <Checkbox
+          checked={material.isFlipped}
+          onCheckedChange={value => {
+            onUpdate({ isFlipped: value === true })
           }}
-          className="h-4 w-4 cursor-pointer"
-          aria-label="Enable sloped configuration"
+        />
+        <Tooltip content={<span>{t($ => $.materials.isFlippedTooltip)}</span>}>
+          <span>{t($ => $.materials.isFlippedLabel)}</span>
+        </Tooltip>
+      </Label.Root>
+
+      <Label.Root className="flex w-auto shrink items-center gap-2">
+        <Checkbox
+          checked={sloped != null}
+          onCheckedChange={value => {
+            handleSlopedToggle(value === true)
+          }}
         />
         {t($ => $.materials.enableSloped)}
       </Label.Root>

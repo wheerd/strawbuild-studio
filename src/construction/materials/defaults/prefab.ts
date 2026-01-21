@@ -11,7 +11,8 @@ export const ecococonStandard: PrefabMaterial = {
   minThickness: 300,
   maxThickness: 400,
   minWidth: 400,
-  maxWidth: 850
+  maxWidth: 850,
+  isFlipped: false
 }
 
 export const ecococonBraced: PrefabMaterial = {
@@ -25,7 +26,8 @@ export const ecococonBraced: PrefabMaterial = {
   minThickness: 300,
   maxThickness: 400,
   minWidth: 500,
-  maxWidth: 850
+  maxWidth: 850,
+  isFlipped: false
 }
 
 export const ecococonColumn: PrefabMaterial = {
@@ -39,13 +41,14 @@ export const ecococonColumn: PrefabMaterial = {
   minThickness: 300,
   maxThickness: 400,
   minWidth: 424,
-  maxWidth: 550
+  maxWidth: 550,
+  isFlipped: false
 }
 
 export const ecococonInclined: PrefabMaterial = {
   id: 'material_ecococon_inclined' as MaterialId,
   type: 'prefab',
-  color: '#FFBBBB',
+  color: '#FFFFBB',
   name: 'Ecococon Inclined',
   nameKey: 'ecococon-inclined',
   minHeight: 200,
@@ -57,7 +60,27 @@ export const ecococonInclined: PrefabMaterial = {
   sloped: {
     minAngleDegrees: 1,
     maxAngleDegrees: 50
-  }
+  },
+  isFlipped: false
+}
+
+export const ecococonInclinedBraced: PrefabMaterial = {
+  id: 'material_ecococon_inclined_braced' as MaterialId,
+  type: 'prefab',
+  color: '#FFFF88',
+  name: 'Ecococon Inclined Braced',
+  nameKey: 'ecococon-inclined-braced',
+  minHeight: 200,
+  maxHeight: 3000,
+  minThickness: 300,
+  maxThickness: 400,
+  minWidth: 400,
+  maxWidth: 800,
+  sloped: {
+    minAngleDegrees: 1,
+    maxAngleDegrees: 50
+  },
+  isFlipped: false
 }
 
 export const ecococonLintel: PrefabMaterial = {
@@ -71,7 +94,8 @@ export const ecococonLintel: PrefabMaterial = {
   minThickness: 300,
   maxThickness: 400,
   minWidth: 850,
-  maxWidth: 3000
+  maxWidth: 3000,
+  isFlipped: true
 }
 
 export const ecococonSill: PrefabMaterial = {
@@ -85,7 +109,8 @@ export const ecococonSill: PrefabMaterial = {
   minThickness: 300,
   maxThickness: 400,
   minWidth: 850,
-  maxWidth: 3000
+  maxWidth: 3000,
+  isFlipped: true
 }
 
 export const ecococonBox: PrefabMaterial = {
@@ -99,5 +124,6 @@ export const ecococonBox: PrefabMaterial = {
   minThickness: 300,
   maxThickness: 400,
   minWidth: 400,
-  maxWidth: 6000
+  maxWidth: 6000,
+  isFlipped: true
 }

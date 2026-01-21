@@ -85,6 +85,7 @@ export interface PrefabMaterial extends BaseMaterial {
   maxThickness: Length
   minWidth: Length
   maxWidth: Length
+  isFlipped: boolean
   sloped?: PrefabSloped
 }
 
