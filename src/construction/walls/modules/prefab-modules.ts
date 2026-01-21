@@ -43,7 +43,7 @@ export class PrefabModulesWallAssembly extends BaseWallAssembly<PrefabModulesWal
     return mergeModels(baseModel, layerModel)
   }
 
-  private *moduleWallArea(
+  protected *moduleWallArea(
     area: WallConstructionArea,
     _startsWithStand = false,
     _endsWithStand = false,
@@ -101,7 +101,7 @@ export class PrefabModulesWallAssembly extends BaseWallAssembly<PrefabModulesWal
     }
   }
 
-  private *moduleOpeningSubWallArea(
+  protected *moduleOpeningSubWallArea(
     area: WallConstructionArea,
     type: 'lintel' | 'sill'
   ): Generator<ConstructionResult> {
