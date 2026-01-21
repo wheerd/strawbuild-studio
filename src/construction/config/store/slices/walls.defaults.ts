@@ -20,7 +20,7 @@ import {
   strawbale
 } from '@/construction/materials/material'
 
-import { DEFAULT_EMPTY_ASSEMBLY } from './opening.defaults'
+import { DEFAULT_EMPTY_ASSEMBLY, prefabPlankedAssembly } from './opening.defaults'
 
 const infillAssembly: InfillWallAssemblyConfig = {
   id: 'wa_infill_default' as WallAssemblyId,
@@ -182,7 +182,7 @@ const ecococonAssembly: PrefabModulesWallAssemblyConfig = {
   maxWidth: 850,
   targetWidth: 800,
   preferEqualWidths: true,
-  openingAssemblyId: DEFAULT_EMPTY_ASSEMBLY.id,
+  openingAssemblyId: prefabPlankedAssembly.id,
   layers: {
     insideThickness: 30,
     insideLayers: PRESET_WALL_CLAY_PLASTER.layers,

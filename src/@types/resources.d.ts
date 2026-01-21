@@ -279,6 +279,7 @@ interface Resources {
         "impactSoundInsulation": "Impact Sound Insulation",
         "limePlasterBase": "Lime Plaster (Base)",
         "limePlasterFine": "Lime Plaster (Fine)",
+        "lvl": "LVL (Laminated Veneer Lumber)",
         "osb": "OSB",
         "reed": "Reed Matting",
         "roughWood": "Rough-sawn Timber",
@@ -362,6 +363,9 @@ interface Resources {
       "defaultOpeningAssembly": "Default Opening Assembly",
       "defaults": {
         "emptyOpening": "Empty Opening",
+        "prefabOpening": "Prefab Opening",
+        "prefabOpeningWithPlanking": "Prefab Opening with Planking",
+        "prefabOpeningWithPosts": "Prefab Opening with Posts",
         "standardOpening": "Standard Opening",
         "standardOpeningWithPlanking": "Standard Opening with Planking",
         "standardOpeningWithPosts": "Standard Opening with Posts"

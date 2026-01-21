@@ -158,3 +158,15 @@ export const windBarrier: SheetMaterial = {
   color: '#2a2a28',
   density: 150
 }
+
+export const lvl: SheetMaterial = {
+  id: 'material_lvl' as MaterialId,
+  name: 'LVL (Laminated Veneer Lumber)',
+  nameKey: 'lvl',
+  sizes: [{ smallerLength: 1250, biggerLength: 6000 }],
+  thicknesses: [21, 24, 27, 30, 33, 39, 45, 51, 57, 63, 69, 75],
+  sheetType: 'solid',
+  type: 'sheet',
+  color: '#e9d9c4',
+  density: 480
+}

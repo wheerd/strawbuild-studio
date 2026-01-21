@@ -201,6 +201,7 @@
       "impactSoundInsulation": "Trittschalldämmung",
       "limePlasterBase": "Kalkputz (Grund)",
       "limePlasterFine": "Kalkputz (Fein)",
+      "lvl": "FSH (Funierschichtholz)",
       "osb": "OSB",
       "reed": "Schilfmatte",
       "roughWood": "Bauholz (sägerau)",
@@ -285,6 +286,9 @@
     "defaultOpeningAssembly": "Standard-Öffnungsaufbau",
     "defaults": {
       "emptyOpening": "Leere Öffnung",
+      "prefabOpening": "Fertigbau-Öffnung",
+      "prefabOpeningWithPlanking": "Fertigbau-Öffnung mit Beplankung",
+      "prefabOpeningWithPosts": "Fertigbau-Öffnung mit Ständern",
       "standardOpening": "Standard-Öffnung",
       "standardOpeningWithPlanking": "Standard-Öffnung mit Beplankung",
       "standardOpeningWithPosts": "Standard-Öffnung mit Ständern"

@@ -233,7 +233,7 @@ function isMaterialUsedInRoof(materialId: MaterialId, assembly: RoofAssemblyConf
 }
 
 function isMaterialUsedInOpening(materialId: MaterialId, assembly: OpeningAssemblyConfig): boolean {
-  if (assembly.type === 'simple' || assembly.type === 'post') {
+  if (assembly.type !== 'empty') {
     if (assembly.headerMaterial === materialId) return true
     if (assembly.sillMaterial === materialId) return true
   }
@@ -241,6 +241,10 @@ function isMaterialUsedInOpening(materialId: MaterialId, assembly: OpeningAssemb
   if (assembly.type === 'post') {
     if (assembly.posts.material === materialId) return true
     if (assembly.posts.type === 'double' && assembly.posts.infillMaterial === materialId) return true
+  }
+
+  if (assembly.type === 'planked') {
+    if (assembly.plankMaterial === materialId) return true
   }
 
   return false
