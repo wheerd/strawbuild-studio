@@ -274,8 +274,14 @@ export class PrefabModulesWallAssembly extends BaseWallAssembly<PrefabModulesWal
     if (width < module.minWidth || height < module.minHeight) {
       yield yieldError($ => $.construction.prefabModules.tooSmall, undefined, [element])
     }
+    if (width > module.maxWidth || height > module.maxHeight) {
+      yield yieldError($ => $.construction.prefabModules.tooBig, undefined, [element])
+    }
     if (thickness < module.minThickness) {
       yield yieldError($ => $.construction.prefabModules.tooThin, undefined, [element], 'prefab-too-thin')
+    }
+    if (thickness > module.maxThickness) {
+      yield yieldError($ => $.construction.prefabModules.tooThick, undefined, [element], 'prefab-too-thick')
     }
   }
 

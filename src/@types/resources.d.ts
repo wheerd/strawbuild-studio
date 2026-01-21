@@ -666,7 +666,7 @@ interface Resources {
       },
       "noModules": "No modules",
       "tableHeaders": {
-        "description": "modulesList.tableHeaders.description",
+        "description": "Specific Type",
         "dimensions": "Dimensions",
         "label": "Label",
         "quantity": "Quantity",
@@ -974,7 +974,9 @@ interface Resources {
         "wallTooThin": "Wall thickness ({{wallThickness, length}}) is not wide enough for double posts requiring {{required, length}} minimum"
       },
       "prefabModules": {
+        "tooBig": "The module is bigger than the maximum dimensions.",
         "tooSmall": "The module is smaller than the minimum dimensions.",
+        "tooThick": "The wall is too thick for the prefab module.",
         "tooThin": "The wall is too thin for the prefab module."
       },
       "ringBeam": {
