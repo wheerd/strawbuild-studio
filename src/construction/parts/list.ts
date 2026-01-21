@@ -39,6 +39,7 @@ import {
   copyVec3,
   newVec2
 } from '@/shared/geometry'
+import type { TranslatableString } from '@/shared/i18n/TranslatableString'
 
 import { getPartInfoFromManifold } from './pipeline'
 import type {
@@ -75,14 +76,6 @@ const STRAW_CATEGORY_BY_TAG: Record<string, StrawCategory> = {
   [TAG_PARTIAL_BALE.id as string]: 'partial',
   [TAG_STRAW_FLAKES.id as string]: 'flakes',
   [TAG_STRAW_STUFFED.id as string]: 'stuffed'
-}
-
-// TODO: Translate
-const STRAW_CATEGORY_LABELS: Record<StrawCategory, string> = {
-  full: 'Full bales',
-  partial: 'Partial bales',
-  flakes: 'Flakes',
-  stuffed: 'Stuffed fill'
 }
 
 const getStrawCategoryFromTags = (tags?: Tag[]): StrawCategory => {
@@ -585,9 +578,9 @@ function computePartDescription(
   fullPartInfo: FullPartInfo | null,
   tags: Tag[],
   strawCategory?: StrawCategory
-): string | undefined {
+): TranslatableString | undefined {
   if (strawCategory) {
-    return STRAW_CATEGORY_LABELS[strawCategory]
+    return t => t($ => $.strawCategories[strawCategory], { ns: 'construction' })
   }
   if (fullPartInfo?.description) {
     return fullPartInfo.description
@@ -595,7 +588,7 @@ function computePartDescription(
   return findMappedTag(tags)?.description
 }
 
-function findMappedTag(tags: Tag[]): { tag: Tag; type: string; description?: string } | null {
+function findMappedTag(tags: Tag[]): { tag: Tag; type: string; description?: TranslatableString } | null {
   for (const tag of tags) {
     if (tag.id in TAG_MAPPING) {
       const mapping = TAG_MAPPING[tag.id]

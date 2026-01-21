@@ -1,6 +1,7 @@
 import type { ConstructionElementId } from '@/construction/elements'
 import type { CrossSection, MaterialId } from '@/construction/materials/material'
 import type { Area, Length, PolygonWithHoles2D, Vec3, Volume } from '@/shared/geometry'
+import type { TranslatableString } from '@/shared/i18n/TranslatableString'
 
 export type PartId = string & { readonly brand: unique symbol }
 
@@ -12,7 +13,7 @@ export interface SideFace {
 export interface FullPartInfo {
   id: PartId
   type: string
-  description?: string
+  description?: TranslatableString
   boxSize: Vec3
   sideFaces?: SideFace[]
   requiresSinglePiece?: boolean
@@ -21,7 +22,7 @@ export interface FullPartInfo {
 export interface InitialPartInfo {
   type: string
   subtype?: string
-  description?: string
+  description?: TranslatableString
   requiresSinglePiece?: boolean
 }
 
@@ -40,7 +41,7 @@ export interface MaterialParts {
 export interface PartItem {
   partId: PartId
   type: string
-  description?: string
+  description?: TranslatableString
   label: string // A, B, C, ...
   size: Vec3
   elements: ConstructionElementId[]

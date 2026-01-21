@@ -82,7 +82,12 @@ export function constructWall(wallId: PerimeterWallId, includeColinear = false):
     const wallModel = wallAssembly.construct(currentWall, storeyContext)
 
     if (cumulativeOffset > 0) {
-      const nameTag = createTag('wall-assembly', assembly.name)
+      const nameKey = assembly.nameKey
+      const nameTag = createTag(
+        'wall-assembly',
+        assembly.id,
+        nameKey != null ? t => t(nameKey, { ns: 'config' }) : assembly.name
+      )
       const transformedModel = transformModel(
         wallModel,
         fromTrans(newVec3(cumulativeOffset, 0, 0)),

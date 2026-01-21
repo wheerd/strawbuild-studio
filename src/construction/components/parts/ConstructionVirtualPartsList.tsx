@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Table } from '@/components/ui/table'
 import type { PartId, VirtualPartsList } from '@/construction/parts'
 import { useFormatters } from '@/shared/i18n/useFormatters'
+import { useTranslatableString } from '@/shared/i18n/useTranslatableString'
 
 // Helper to check if part can be highlighted (not auto-generated)
 const canHighlightPart = (partId: PartId): boolean => !partId.startsWith('auto_')
@@ -68,7 +69,7 @@ export function ConstructionVirtualPartsList({
                   <span>{part.type}</span>
                 </Table.Cell>
                 <Table.Cell>
-                  <span>{part.description}</span>
+                  <span>{useTranslatableString(part.description)}</span>
                 </Table.Cell>
                 <Table.Cell>
                   <span>{formatDimensions3D([part.size[0], part.size[1], part.size[2]])}</span>

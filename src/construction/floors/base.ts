@@ -40,7 +40,7 @@ export abstract class BaseFloorAssembly<TConfig extends FloorAssemblyConfigBase>
     const actualLayers = reverse ? [...layers].reverse() : layers
     for (const layer of actualLayers) {
       const nameKey = layer.nameKey
-      const customTag = createTag('floor-layer', layer.name, nameKey ? t => t(nameKey, { ns: 'config' }) : undefined)
+      const customTag = createTag('floor-layer', layer.name, nameKey ? t => t(nameKey, { ns: 'config' }) : layer.name)
       for (const polygon of basePolygons) {
         yield* yieldAsGroup(runLayerConstruction(polygon, offset, 'xy', layer), [layerTag, TAG_LAYERS, customTag])
       }
@@ -75,7 +75,13 @@ export abstract class BaseFloorAssembly<TConfig extends FloorAssemblyConfigBase>
   protected abstract get tag(): Tag
 
   get tags(): Tag[] {
-    const nameTag = createTag('floor-assembly', (this.config as unknown as FloorAssemblyConfig).name)
+    const config = this.config as unknown as FloorAssemblyConfig
+    const nameKey = config.nameKey
+    const nameTag = createTag(
+      'floor-assembly',
+      config.id,
+      nameKey != null ? t => t(nameKey, { ns: 'config' }) : config.name
+    )
     return [nameTag, this.tag]
   }
 }

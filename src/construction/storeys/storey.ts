@@ -100,7 +100,7 @@ export function constructModel(): ConstructionModel | null {
       const storeyNameTag = createTag(
         'storey-name',
         storey.useDefaultName ? `level${storey.level}` : storey.name,
-        storey.useDefaultName ? t => getStoreyName(storey, t) : undefined
+        storey.useDefaultName ? t => getStoreyName(storey, t) : storey.name
       )
       models.push(
         transformModel(

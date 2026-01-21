@@ -235,8 +235,8 @@ export class PrefabModulesWallAssembly extends BaseWallAssembly<PrefabModulesWal
     const nameKey = material.nameKey
     const typeTag = createTag(
       'module-type',
-      material.name,
-      nameKey ? t => t($ => $.materials.defaults[nameKey], { ns: 'config' }) : undefined
+      material.id,
+      nameKey ? t => t($ => $.materials.defaults[nameKey], { ns: 'config' }) : material.name
     )
     const element = createElementFromArea(area, material.id, [TAG_MODULE, typeTag], {
       type: 'module',

@@ -315,7 +315,7 @@ export abstract class BaseRoofAssembly<T extends RoofAssemblyConfigBase> impleme
       const results = this.runLayerConstruction({ outer: preparedPolygon, holes: [] }, zOffset, layer)
 
       const nameKey = layer.nameKey
-      const customTag = createTag('roof-layer', layer.name, nameKey ? t => t(nameKey, { ns: 'config' }) : undefined)
+      const customTag = createTag('roof-layer', layer.name, nameKey ? t => t(nameKey, { ns: 'config' }) : layer.name)
       yield* yieldAsGroup(results, [TAG_ROOF_LAYER_TOP, TAG_LAYERS, customTag])
 
       if (!layer.overlap) {
@@ -361,7 +361,7 @@ export abstract class BaseRoofAssembly<T extends RoofAssemblyConfigBase> impleme
         const results = this.runLayerConstruction({ outer: preparedOuter, holes: [] }, zOffset, layer)
 
         const nameKey = layer.nameKey
-        const customTag = createTag('roof-layer', layer.name, nameKey ? t => t(nameKey, { ns: 'config' }) : undefined)
+        const customTag = createTag('roof-layer', layer.name, nameKey ? t => t(nameKey, { ns: 'config' }) : layer.name)
         yield* yieldAsGroup(results, [TAG_ROOF_LAYER_INSIDE, TAG_LAYERS, customTag])
       }
       zOffset += layer.thickness
@@ -412,7 +412,7 @@ export abstract class BaseRoofAssembly<T extends RoofAssemblyConfigBase> impleme
         const results = this.runLayerConstruction({ outer: preparedOuter, holes: preparedHoles }, zOffset, layer)
 
         const nameKey = layer.nameKey
-        const customTag = createTag('roof-layer', layer.name, nameKey ? t => t(nameKey, { ns: 'config' }) : undefined)
+        const customTag = createTag('roof-layer', layer.name, nameKey ? t => t(nameKey, { ns: 'config' }) : layer.name)
         yield* yieldAsGroup(results, [TAG_ROOF_LAYER_OVERHANG, TAG_LAYERS, customTag])
       }
       zOffset += layer.thickness

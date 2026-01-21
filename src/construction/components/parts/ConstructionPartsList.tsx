@@ -25,6 +25,7 @@ import type { MaterialPartItem, MaterialParts, MaterialPartsList, PartId } from 
 import { SawIcon } from '@/shared/components/Icons'
 import { Bounds2D, type Polygon2D, type Vec3, type Volume, isZeroVec3 } from '@/shared/geometry'
 import { useFormatters } from '@/shared/i18n/useFormatters'
+import { useTranslatableString } from '@/shared/i18n/useTranslatableString'
 
 type BadgeColor = React.ComponentProps<typeof Badge>['color']
 
@@ -573,7 +574,7 @@ function DimensionalPartsTable({
               <Table.Cell>{part.type}</Table.Cell>
               <Table.Cell>
                 <div className="flex items-center gap-2">
-                  <span>{part.description}</span>
+                  <span>{useTranslatableString(part.description)}</span>
                   {part.sideFaces?.length && part.sideFaces[0].polygon.outer.points.length >= 3 && (
                     <>
                       <Tooltip
@@ -702,7 +703,7 @@ function SheetPartsTable({
               <Table.Cell>{part.type}</Table.Cell>
               <Table.Cell>
                 <div className="flex items-center gap-2">
-                  <span>{part.description}</span>
+                  <span>{useTranslatableString(part.description)}</span>
                   {part.sideFaces?.length && part.sideFaces[0].polygon.outer.points.length >= 3 && (
                     <SheetPartModal
                       trigger={
@@ -829,7 +830,7 @@ function VolumePartsTable({
                 <span className="font-medium">{part.label}</span>
               </Table.RowHeaderCell>
               <Table.Cell>{part.type}</Table.Cell>
-              <Table.Cell>{part.description}</Table.Cell>
+              <Table.Cell>{useTranslatableString(part.description)}</Table.Cell>
               <Table.Cell className="text-center">{part.quantity}</Table.Cell>
               <Table.Cell className="text-end">
                 {part.thickness !== undefined ? formatters.formatLength(part.thickness) : '—'}
@@ -894,7 +895,7 @@ function GenericPartsTable({
               <span className="font-medium">{part.label}</span>
             </Table.RowHeaderCell>
             <Table.Cell>{part.type}</Table.Cell>
-            <Table.Cell>{part.description}</Table.Cell>
+            <Table.Cell>{useTranslatableString(part.description)}</Table.Cell>
             <Table.Cell className="text-center">{part.quantity}</Table.Cell>
             <Table.Cell className="text-center">
               {canHighlightPart(part.partId) && onViewInPlan && (

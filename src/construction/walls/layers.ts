@@ -134,7 +134,7 @@ export function constructWallLayers(
         const customTag = createTag(
           'wall-layer',
           layer.name,
-          nameKey != null ? t => t(nameKey, { ns: 'config' }) : undefined
+          nameKey != null ? t => t(nameKey, { ns: 'config' }) : layer.name
         )
         const group = createConstructionGroup(layerElements, IDENTITY, [TAG_WALL_LAYER_INSIDE, TAG_LAYERS, customTag])
         layerResults.push({ type: 'element', element: group })
@@ -196,7 +196,7 @@ export function constructWallLayers(
         const customTag = createTag(
           'wall-layer',
           layer.name,
-          nameKey != null ? t => t(nameKey, { ns: 'config' }) : undefined
+          nameKey != null ? t => t(nameKey, { ns: 'config' }) : layer.name
         )
         const group = createConstructionGroup(layerElements, IDENTITY, [TAG_WALL_LAYER_OUTSIDE, TAG_LAYERS, customTag])
         layerResults.push({ type: 'element', element: group })

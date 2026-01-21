@@ -1,7 +1,7 @@
 import type { Manifold } from 'manifold-3d'
 
 import type { Roof } from '@/building/model'
-import type { MonolithicRoofAssemblyConfig } from '@/construction/config'
+import type { RoofAssemblyConfig } from '@/construction/config'
 import { createConstructionElement } from '@/construction/elements'
 import { transformManifold } from '@/construction/manifold/operations'
 import { type ConstructionModel, mergeModels, transformModel } from '@/construction/model'
@@ -69,7 +69,13 @@ export class MonolithicRoofAssembly extends BaseRoofAssembly<MonolithicRoofConfi
       return transformModel(resultsToModel(results), roofSide.transform, [sideTag])
     })
 
-    const nameTag = createTag('roof-assembly', (this.config as unknown as MonolithicRoofAssemblyConfig).name)
+    const config = this.config as unknown as RoofAssemblyConfig
+    const nameKey = config.nameKey
+    const nameTag = createTag(
+      'roof-assembly',
+      config.id,
+      nameKey != null ? t => t(nameKey, { ns: 'config' }) : config.name
+    )
     return transformModel(mergeModels(...roofModels), IDENTITY, [TAG_ROOF, TAG_MONOLITHIC_ROOF, nameTag])
   }
 

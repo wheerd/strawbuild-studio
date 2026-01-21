@@ -1,12 +1,12 @@
-import type { Resources, TFunction } from 'i18next'
+import type { Resources } from 'i18next'
+
+import type { TranslatableString } from '@/shared/i18n/TranslatableString'
 
 export type PredefinedTagId = keyof Resources['construction']['tags']
 
 export type TagCategoryId = keyof Resources['construction']['tagCategories']
 
 export type CustomTagId = `${TagCategoryId}_${string}`
-
-export type CustomTagTranslation = (t: TFunction) => string
 
 export type TagId = PredefinedTagId | CustomTagId
 
@@ -22,8 +22,7 @@ export interface PredefinedTag {
 export interface CustomTag {
   readonly id: CustomTagId
   readonly category: TagCategoryId
-  readonly label: string
-  readonly translation?: CustomTagTranslation
+  readonly label: TranslatableString
 }
 
 // Union type
@@ -78,11 +77,10 @@ export const createTagId = (category: TagCategoryId, name: string): CustomTagId 
     .toLowerCase()
     .replace(/[\W_]+/g, '-')}`
 
-export const createTag = (category: TagCategoryId, name: string, translation?: CustomTagTranslation): CustomTag => ({
+export const createTag = (category: TagCategoryId, id: string, label: TranslatableString): CustomTag => ({
   category,
-  id: createTagId(category, name),
-  label: name,
-  translation
+  id: createTagId(category, id),
+  label
 })
 
 // Straw tags
