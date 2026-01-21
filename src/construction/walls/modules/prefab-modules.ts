@@ -25,7 +25,7 @@ export class PrefabModulesWallAssembly extends BaseWallAssembly<PrefabModulesWal
         storeyContext,
         this.config.layers,
         this.moduleWallArea.bind(this),
-        this.moduleSubWallArea.bind(this),
+        this.moduleOpeningSubWallArea.bind(this),
         this.config.openingAssemblyId,
         false
       )
@@ -68,7 +68,8 @@ export class PrefabModulesWallAssembly extends BaseWallAssembly<PrefabModulesWal
     }
 
     if (width < module.minWidth || height < module.minHeight) {
-      return yield* this.fallback(area)
+      yield* this.fallback(area)
+      return
     }
 
     if (preferEqualWidths) {
@@ -96,7 +97,10 @@ export class PrefabModulesWallAssembly extends BaseWallAssembly<PrefabModulesWal
     }
   }
 
-  private *moduleSubWallArea(area: WallConstructionArea, type: 'lintel' | 'sill'): Generator<ConstructionResult> {
+  private *moduleOpeningSubWallArea(
+    area: WallConstructionArea,
+    type: 'lintel' | 'sill'
+  ): Generator<ConstructionResult> {
     const { sillMaterial, lintelMaterial } = this.config
     const width = area.size[0]
     const height = area.size[2]
@@ -105,24 +109,89 @@ export class PrefabModulesWallAssembly extends BaseWallAssembly<PrefabModulesWal
       const sillModule = this.getModuleMaterial(sillMaterial)
       if (width <= sillModule.maxWidth && height <= sillModule.maxHeight) {
         if (width < sillModule.minWidth || height < sillModule.minHeight) {
-          return yield* this.fallback(area)
+          yield* this.fallback(area)
+          return
         }
 
-        return yield* this.yieldModule(area, sillModule, 'sill')
+        yield* this.yieldModule(area, sillModule, 'sill')
+        return
       }
     }
 
     if (type === 'lintel' && lintelMaterial) {
       const lintelModule = this.getModuleMaterial(lintelMaterial)
-      if (width <= lintelModule.maxWidth && height <= lintelModule.maxHeight) {
-        if (width < lintelModule.minWidth || height < lintelModule.minHeight) {
-          return yield* this.fallback(area)
-        }
+      const fallbackModule = this.getModuleMaterial(this.config.fallbackMaterial)
 
-        return yield* this.yieldModule(area, lintelModule, 'lintel')
+      if (width < lintelModule.minWidth) {
+        yield* this.moduleWallArea(area)
+        return
       }
 
-      // TODO: Proper fallback for lintel
+      let module = lintelModule
+      let subtype = 'lintel'
+
+      if (width > lintelModule.maxWidth) {
+        module = fallbackModule
+        subtype = 'fallback'
+      }
+
+      // Sloped lintel area -> Single lintel element and delegate for inclined modules
+      if (!area.isFlat) {
+        const inclinedModule = this.getModuleMaterial(this.config.inclinedMaterial)
+        const minHeight = area.minHeight - inclinedModule.minHeight
+
+        if (minHeight < lintelModule.minHeight) {
+          module = fallbackModule
+          subtype = 'fallback'
+        }
+
+        const lintelHeight = Math.min(minHeight, module.maxHeight)
+        const [lintelArea, inclinedArea] = area.splitInZ(lintelHeight)
+        yield* this.yieldModule(lintelArea, module, subtype)
+        yield* this.moduleWallArea(inclinedArea)
+        return
+      }
+
+      if (height < lintelModule.minHeight) {
+        module = fallbackModule
+        subtype = 'fallback'
+      }
+
+      // One module
+      if (height <= module.maxHeight) {
+        yield* this.yieldModule(area, module, subtype)
+        return
+      }
+
+      // Two modules
+      if (height <= 2 * module.maxHeight) {
+        const moduleHeight = height / 2
+        const [bottom, top] = area.splitInZ(moduleHeight)
+        yield* this.yieldModule(bottom, module, subtype)
+        yield* this.yieldModule(top, module, subtype)
+        return
+      }
+
+      // Delegate rest above to fill with standard modules
+      const standardModule = this.getModuleMaterial(this.config.defaultMaterial)
+      const availableHeight = height - standardModule.minHeight
+
+      // Single support lintel module + rest
+      if (availableHeight <= module.maxHeight) {
+        const [moduleArea, rest] = area.splitInZ(availableHeight)
+        yield* this.yieldModule(moduleArea, module, subtype)
+        yield* this.moduleWallArea(rest)
+        return
+      }
+
+      // Two support lintel module + rest
+      const moduleHeight = Math.min(availableHeight / 2, module.maxHeight)
+      const [module1, top] = area.splitInZ(moduleHeight)
+      yield* this.yieldModule(module1, module, subtype)
+      const [module2, rest] = top.splitInZ(moduleHeight)
+      yield* this.yieldModule(module2, module, subtype)
+      yield* this.moduleWallArea(rest)
+      return
     }
 
     yield* this.moduleWallArea(area)
