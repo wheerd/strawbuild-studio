@@ -4,7 +4,7 @@ import path from 'node:path'
 import { describe, it, vi } from 'vitest'
 
 import type { ConstructionElement, ConstructionGroup } from '@/construction/elements'
-import { WallConstructionArea } from '@/construction/geometry'
+import { WallConstructionArea, transformBounds } from '@/construction/geometry'
 import type { MaterialId, PrefabMaterial } from '@/construction/materials/material'
 import { getMaterialsActions } from '@/construction/materials/store'
 import { aggregateResults } from '@/construction/results'
@@ -132,8 +132,9 @@ const fixturesDir = path.resolve(
   'prefab-modules'
 )
 
-const widths = [400, 600, 800, 1000, 1200, 1600, 2000]
-const heights = [400, 600, 800, 2000]
+const widths = [100, 300, 400, 800, 850, 900, 1500, 1700, 1800, 3000, 3100]
+const heights = [100, 300, 400, 800, 850, 900, 2000, 3000, 3500]
+const sillHeights = [100, 300, 400, 800, 850, 900, 1000]
 
 const standardScenarios = widths.flatMap(width => heights.map(height => ({ width, height })))
 
@@ -148,7 +149,7 @@ interface RectangleWithMaterial {
   maxZ: number
   width: number
   height: number
-  material: string | MaterialId
+  material: MaterialId
 }
 
 function renderPrefabLayoutSvg(
@@ -160,22 +161,20 @@ function renderPrefabLayoutSvg(
     return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${size} ${size}" width="${size}" height="${size}" />`
   }
 
-  const padding = options?.padding ?? 0
   const strokeWidth = options?.strokeWidth ?? 5
   const strokeColor = '#333333'
 
   const rawRectangles = elements.map((element): RectangleWithMaterial => {
-    const x = element.transform[12]
-    const z = element.transform[14]
-    const material = 'material' in element ? element.material : 'unknown'
+    const material = 'material' in element ? element.material : ('unknown' as MaterialId)
+    const transformedBounds = transformBounds(element.bounds, element.transform)
 
     return {
-      minX: x,
-      maxX: x + element.bounds.size[0],
-      minZ: z,
-      maxZ: z + element.bounds.size[2],
-      width: element.bounds.size[0],
-      height: element.bounds.size[2],
+      minX: transformedBounds.min[0],
+      maxX: transformedBounds.max[0],
+      minZ: transformedBounds.min[2],
+      maxZ: transformedBounds.max[2],
+      width: transformedBounds.size[0],
+      height: transformedBounds.size[2],
       material
     }
   })
@@ -188,23 +187,29 @@ function renderPrefabLayoutSvg(
   const rectangles = rawRectangles
     .sort((a, b) => a.minX - b.minX || a.minZ - b.minZ)
     .map(rect => {
-      const x = rect.minX - minX + padding
-      const y = rect.minZ - minZ + padding
-      const rectWidth = rect.maxX - rect.minX
-      const rectHeight = rect.maxZ - rect.minZ
+      const x = rect.minX - minX
+      const y = rect.minZ - minZ
 
-      const cx = (rect.minX + rect.maxX) / 2
-      const cy = (rect.minZ + rect.maxZ) / 2
+      const cx = x + rect.width / 2
+      const cy = y + rect.height / 2
 
-      const color = rect.material === 'material_standard' ? '#BBBBBB' : '#CCCCCC'
+      const colorMap: Record<string, string> = {
+        material_standard: '#BBBBBB',
+        material_fallback: '#FF8888',
+        material_lintel: '#BBFFFF',
+        material_inclined: '#FFFFBB',
+        material_sill: '#BBBBFF'
+      }
+      const materialKey = typeof rect.material === 'string' ? rect.material : 'unknown'
+      const color = colorMap[materialKey] || '#CCCCCC'
 
       return [
-        `<rect x="${formatNumber(x)}" y="${formatNumber(-y - rectHeight)}"`,
-        `width="${formatNumber(rectWidth)}" height="${formatNumber(rectHeight)}"`,
+        `<rect x="${formatNumber(x)}" y="${formatNumber(-y - rect.height)}"`,
+        `width="${formatNumber(rect.width)}" height="${formatNumber(rect.height)}"`,
         `fill="${color}" stroke="${strokeColor}" stroke-width="${strokeWidth}" />`,
         `<g transform="translate(${formatNumber(cx)} ${formatNumber(-cy)})">`,
         `<text x="0" y="0" style="text-anchor: middle; dominant-baseline: middle; font-size: 20">`,
-        `${rectWidth}x${rectHeight}`,
+        `${rect.width}x${rect.height}`,
         `</text></g>`
       ].join(' ')
     })
@@ -341,8 +346,8 @@ describe.each(equalWidthsScenarios)(
   }
 )
 
-const lintelWidths = [850, 1000, 1200, 1600, 2000]
-const lintelHeights = [400, 600, 800, 1000, 1200]
+const lintelWidths = [400, 600, 800, 850, 900, 1000, 2000, 3000, 3500]
+const lintelHeights = [100, 300, 400, 800, 850, 1000, 2000]
 const lintelScenarios = lintelWidths.flatMap(width => lintelHeights.map(height => ({ width, height })))
 
 describe.each(lintelScenarios)('Prefab Modules lintel visual regression - $width x $height', ({ width, height }) => {
@@ -405,7 +410,7 @@ describe.each(lintelScenarios)('Prefab Modules lintel visual regression - $width
   })
 })
 
-const sillScenarios = widths.flatMap(width => heights.map(height => ({ width, height })))
+const sillScenarios = widths.flatMap(width => sillHeights.map(height => ({ width, height })))
 
 describe.each(sillScenarios)('Prefab Modules sill visual regression - $width x $height', ({ width, height }) => {
   it('matches the expected SVG snapshot', async () => {

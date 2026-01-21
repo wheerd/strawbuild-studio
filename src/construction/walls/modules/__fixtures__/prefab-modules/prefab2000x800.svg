@@ -1,6 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -800 2000 800" width="2000" height="800">
-<rect x="0" y="-800" width="600" height="800" fill="#BBBBBB" stroke="#333333" stroke-width="5" /> <g transform="translate(300 -400)"> <text x="0" y="0" style="text-anchor: middle; dominant-baseline: middle; font-size: 20"> 600x800 </text></g>
-<rect x="600" y="-800" width="600" height="800" fill="#BBBBBB" stroke="#333333" stroke-width="5" /> <g transform="translate(900 -400)"> <text x="0" y="0" style="text-anchor: middle; dominant-baseline: middle; font-size: 20"> 600x800 </text></g>
-<rect x="1200" y="-800" width="600" height="800" fill="#BBBBBB" stroke="#333333" stroke-width="5" /> <g transform="translate(1500 -400)"> <text x="0" y="0" style="text-anchor: middle; dominant-baseline: middle; font-size: 20"> 600x800 </text></g>
-<rect x="1800" y="-800" width="200" height="800" fill="#BBBBBB" stroke="#333333" stroke-width="5" /> <g transform="translate(1900 -400)"> <text x="0" y="0" style="text-anchor: middle; dominant-baseline: middle; font-size: 20"> 200x800 </text></g>
-</svg>
