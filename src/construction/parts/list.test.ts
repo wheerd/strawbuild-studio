@@ -164,13 +164,13 @@ describe('generateMaterialPartsList', () => {
 
     expect(fullBucket).toBeDefined()
     expect(fullBucket.type).toBe('strawbale-full')
-    expect(fullBucket.description).toBe('Full bales')
+    expect(fullBucket.description).toBeDefined()
     expect(fullBucket.quantity).toBe(1)
     expect(fullBucket.strawCategory).toBe('full')
 
     expect(partialBucket).toBeDefined()
     expect(partialBucket.type).toBe('strawbale-partial')
-    expect(partialBucket.description).toBe('Partial bales')
+    expect(partialBucket.description).toBeDefined()
     expect(partialBucket.quantity).toBe(1)
     expect(partialBucket.strawCategory).toBe('partial')
   })

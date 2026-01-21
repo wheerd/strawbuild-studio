@@ -222,7 +222,13 @@ export class PrefabModulesWallAssembly extends BaseWallAssembly<PrefabModulesWal
     const rot = fromRot(Math.PI / 2, newVec3(0, -1, 0))
     const trans = fromTrans(addVec3(area.position, newVec3(area.size[0], 0, 0)))
     const transform = composeTransform(trans, rot)
-    const element = createConstructionElement(material.id, shape, transform, [TAG_MODULE], {
+    const nameKey = material.nameKey
+    const typeTag = createTag(
+      'module-type',
+      material.id,
+      nameKey ? t => t($ => $.materials.defaults[nameKey], { ns: 'config' }) : material.name
+    )
+    const element = createConstructionElement(material.id, shape, transform, [TAG_MODULE, typeTag], {
       type: 'module',
       subtype: material.id
     })
