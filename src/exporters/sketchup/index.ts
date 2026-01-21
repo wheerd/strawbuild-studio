@@ -51,7 +51,7 @@ export async function exportToSketchUp(model: ConstructionModel): Promise<void> 
       headers: {
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify(request) + 'XD'
+      body: JSON.stringify(request)
     })
   } catch (error) {
     throw new SketchUpExportError(
