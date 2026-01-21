@@ -198,7 +198,7 @@ function ModalContent({
           </div>
         </div>
       </Tabs.Content>
-      <Tabs.Content value="parts" className="flex min-h-0 flex-1 overflow-auto pt-3">
+      <Tabs.Content value="parts" className="flex min-h-0 flex-1 flex-col overflow-auto pt-3">
         {partsDataPromise ? (
           <Suspense fallback={<PartsSkeleton />}>
             <PartsTabContent partsDataPromise={partsDataPromise} onViewInPlan={handleViewInPlan} />
@@ -207,7 +207,7 @@ function ModalContent({
           <PartsSkeleton />
         )}
       </Tabs.Content>
-      <Tabs.Content value="modules" className="flex min-h-0 flex-1 overflow-auto pt-3">
+      <Tabs.Content value="modules" className="flex min-h-0 flex-1 flex-col overflow-auto pt-3">
         {partsDataPromise ? (
           <Suspense fallback={<PartsSkeleton />}>
             <ModulesTabContent partsDataPromise={partsDataPromise} onViewInPlan={handleViewInPlan} />

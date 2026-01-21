@@ -35,7 +35,7 @@ export function ConstructionVirtualPartsList({
   }
 
   return (
-    <Card variant="surface" className="w-full">
+    <Card variant="surface" className="w-full flex-1 grow">
       <CardHeader className="p-3">
         <h2 className="text-xl font-bold">{t($ => $.modulesList.title)}</h2>
       </CardHeader>
