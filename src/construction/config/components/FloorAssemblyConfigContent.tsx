@@ -283,7 +283,7 @@ export function FloorAssemblyConfigContent({ initialSelectionId }: FloorAssembly
           </Button>
 
           <AlertDialog.Root>
-            <AlertDialog.Trigger>
+            <AlertDialog.Trigger asChild>
               <Button
                 size="icon"
                 disabled={!selectedConfig || usage.isUsed || floorAssemblies.length === 1}
@@ -322,7 +322,7 @@ export function FloorAssemblyConfigContent({ initialSelectionId }: FloorAssembly
           </AlertDialog.Root>
 
           <AlertDialog.Root>
-            <AlertDialog.Trigger>
+            <AlertDialog.Trigger asChild>
               <Button size="icon" variant="destructive" title={t($ => $.common.resetToDefaults)}>
                 <ResetIcon />
               </Button>

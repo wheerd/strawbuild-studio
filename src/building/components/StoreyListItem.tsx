@@ -160,7 +160,7 @@ export function StoreyListItem({
             onBlur={handleNameSave}
             onKeyDown={handleKeyDown}
             placeholder={t($ => $.storeys.floorName)}
-            className="min-w-[150px] flex-grow"
+            className="min-w-[150px] grow"
           >
             <TextField.Input ref={nameFieldRef} required />
           </TextField.Root>
@@ -222,7 +222,7 @@ export function StoreyListItem({
           </Button>
 
           <AlertDialog.Root>
-            <AlertDialog.Trigger>
+            <AlertDialog.Trigger asChild>
               <Button size="icon" variant="destructive" disabled={isOnlyStorey} title={t($ => $.storeys.deleteFloor)}>
                 <TrashIcon />
               </Button>
@@ -237,8 +237,10 @@ export function StoreyListItem({
                     {t($ => $.actions.cancel)}
                   </Button>
                 </AlertDialog.Cancel>
-                <AlertDialog.Action onClick={handleDelete}>
-                  <Button variant="destructive">{t($ => $.storeys.deleteFloorTitle)}</Button>
+                <AlertDialog.Action asChild>
+                  <Button onClick={handleDelete} variant="destructive">
+                    {t($ => $.storeys.deleteFloorTitle)}
+                  </Button>
                 </AlertDialog.Action>
               </div>
             </AlertDialog.Content>

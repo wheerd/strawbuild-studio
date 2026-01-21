@@ -236,7 +236,7 @@ export function OpeningAssemblyContent({ initialSelectionId }: OpeningAssemblyCo
           </Button>
 
           <AlertDialog.Root>
-            <AlertDialog.Trigger>
+            <AlertDialog.Trigger asChild>
               <Button
                 size="icon"
                 variant="destructive"
@@ -267,7 +267,7 @@ export function OpeningAssemblyContent({ initialSelectionId }: OpeningAssemblyCo
           </AlertDialog.Root>
 
           <AlertDialog.Root>
-            <AlertDialog.Trigger>
+            <AlertDialog.Trigger asChild>
               <Button
                 size="icon"
                 className="text-destructive"

@@ -784,7 +784,7 @@ export function RoofAssemblyConfigContent({ initialSelectionId }: RoofAssemblyCo
             </Button>
 
             <AlertDialog.Root>
-              <AlertDialog.Trigger>
+              <AlertDialog.Trigger asChild>
                 <Button
                   size="icon"
                   disabled={!selectedAssembly || usage.isUsed}
@@ -815,7 +815,7 @@ export function RoofAssemblyConfigContent({ initialSelectionId }: RoofAssemblyCo
             </AlertDialog.Root>
 
             <AlertDialog.Root>
-              <AlertDialog.Trigger>
+              <AlertDialog.Trigger asChild>
                 <Button
                   size="icon"
                   className="text-destructive"

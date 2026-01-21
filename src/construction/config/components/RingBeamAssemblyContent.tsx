@@ -222,7 +222,7 @@ export function RingBeamAssemblyContent({ initialSelectionId }: RingBeamAssembly
           </Button>
 
           <AlertDialog.Root>
-            <AlertDialog.Trigger>
+            <AlertDialog.Trigger asChild>
               <Button
                 size="icon"
                 disabled={!selectedAssembly || usage.isUsed}
@@ -253,7 +253,7 @@ export function RingBeamAssemblyContent({ initialSelectionId }: RingBeamAssembly
           </AlertDialog.Root>
 
           <AlertDialog.Root>
-            <AlertDialog.Trigger>
+            <AlertDialog.Trigger asChild>
               <Button
                 size="icon"
                 className="text-destructive"

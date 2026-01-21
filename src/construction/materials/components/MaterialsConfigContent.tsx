@@ -290,7 +290,7 @@ export function MaterialsConfigContent({ initialSelectionId }: MaterialsConfigCo
             <CopyIcon />
           </Button>
           <AlertDialog.Root>
-            <AlertDialog.Trigger>
+            <AlertDialog.Trigger asChild>
               <Button
                 variant="destructive"
                 size="icon"
@@ -322,7 +322,7 @@ export function MaterialsConfigContent({ initialSelectionId }: MaterialsConfigCo
             </AlertDialog.Content>
           </AlertDialog.Root>
           <AlertDialog.Root>
-            <AlertDialog.Trigger>
+            <AlertDialog.Trigger asChild>
               <Button
                 size="icon"
                 className="text-destructive"

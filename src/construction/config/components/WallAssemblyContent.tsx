@@ -1312,7 +1312,7 @@ export function WallAssemblyContent({ initialSelectionId }: WallAssemblyContentP
             </Button>
 
             <AlertDialog.Root>
-              <AlertDialog.Trigger>
+              <AlertDialog.Trigger asChild>
                 <Button
                   size="icon"
                   disabled={!selectedAssembly || usage.isUsed}
@@ -1343,7 +1343,7 @@ export function WallAssemblyContent({ initialSelectionId }: WallAssemblyContentP
             </AlertDialog.Root>
 
             <AlertDialog.Root>
-              <AlertDialog.Trigger>
+              <AlertDialog.Trigger asChild>
                 <Button
                   size="icon"
                   className="text-destructive"
