@@ -10,7 +10,13 @@ import type { ConstructionResult } from '@/construction/results'
 import { resultsToModel, yieldElement, yieldError } from '@/construction/results'
 import { createCuboid, createElementFromArea } from '@/construction/shapes'
 import type { StoreyContext } from '@/construction/storeys/context'
-import { TAG_INFILL_CONSTRUCTION, TAG_MODULE, TAG_MODULE_HEIGHT, TAG_MODULE_WIDTH } from '@/construction/tags'
+import {
+  TAG_INFILL_CONSTRUCTION,
+  TAG_MODULE,
+  TAG_MODULE_HEIGHT,
+  TAG_MODULE_WIDTH,
+  createTag
+} from '@/construction/tags'
 import type { PrefabModulesWallConfig } from '@/construction/walls'
 import { BaseWallAssembly } from '@/construction/walls/base'
 import { constructWallLayers } from '@/construction/walls/layers'
@@ -226,7 +232,16 @@ export class PrefabModulesWallAssembly extends BaseWallAssembly<PrefabModulesWal
   }
 
   private *yieldModule(area: WallConstructionArea, material: PrefabMaterial) {
-    const element = createElementFromArea(area, material.id, [TAG_MODULE], { type: 'module', subtype: material.id })
+    const nameKey = material.nameKey
+    const typeTag = createTag(
+      'module-type',
+      material.name,
+      nameKey ? t => t($ => $.materials.defaults[nameKey], { ns: 'config' }) : undefined
+    )
+    const element = createElementFromArea(area, material.id, [TAG_MODULE, typeTag], {
+      type: 'module',
+      subtype: material.id
+    })
 
     if (element) {
       yield* yieldMeasurementFromArea(area, 'width', [TAG_MODULE_WIDTH])

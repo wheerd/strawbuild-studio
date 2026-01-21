@@ -68,6 +68,7 @@
     },
     "noModules": "Keine Module",
     "tableHeaders": {
+      "description": "Spezifischer Typ",
       "dimensions": "Abmessungen",
       "label": "Bezeichnung",
       "quantity": "Menge",
@@ -75,6 +76,10 @@
       "view": "Ansicht"
     },
     "title": "Module"
+  },
+  "moduleTypes": {
+    "double": "Doppelrahmen",
+    "single": "Einzelrahmen"
   },
   "partCutModal": {
     "partCutDiagram": "Teileschnittdiagramm",
@@ -209,6 +214,7 @@
     "floor-measurement": "Bodenmaße",
     "floor-part": "Bodenteil",
     "module-part": "Modulteile",
+    "module-type": "Modultyp",
     "opening": "Öffnung",
     "opening-measurement": "Öffnungsmaße",
     "ring-beam-assembly": "Ringankeraufbau",

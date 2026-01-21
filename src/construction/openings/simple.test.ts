@@ -173,7 +173,8 @@ describe('SimpleOpeningAssembly', () => {
         expect.objectContaining({
           position: newVec3(area.position[0], area.position[1], 2000 + 60),
           size: newVec3(area.size[0], area.size[1], 500 - 60)
-        })
+        }),
+        'lintel'
       )
     })
 
@@ -191,7 +192,8 @@ describe('SimpleOpeningAssembly', () => {
         expect.objectContaining({
           position: area.position,
           size: newVec3(area.size[0], area.size[1], 800 - 60)
-        })
+        }),
+        'sill'
       )
     })
   })

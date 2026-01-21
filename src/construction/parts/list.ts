@@ -414,6 +414,9 @@ export const generateMaterialPartsList = (model: ConstructionModel, excludeTypes
     const { material } = element
     const elementTags = [...tags, ...(element.tags ?? [])]
 
+    const materialDefinition = getMaterialById(material)
+    if (materialDefinition?.type === 'prefab') return
+
     const partType = element.partInfo?.type
     if (partType && excludeTypes?.some(t => t === partType)) return
 
@@ -457,15 +460,20 @@ export const generateVirtualPartsList = (model: ConstructionModel): VirtualParts
   let labelCounter = 0
 
   const processElement = (element: GroupOrElement) => {
-    if (!('children' in element)) return
+    let partInfo: FullPartInfo | null = null
 
-    for (const child of element.children) {
-      processElement(child)
+    if ('children' in element) {
+      for (const child of element.children) {
+        processElement(child)
+      }
+
+      partInfo = getFullPartInfo(element)
+    } else {
+      const materialDefinition = getMaterialById(element.material)
+      if (materialDefinition?.type !== 'prefab') return
+
+      partInfo = getFullPartInfo(element)
     }
-
-    const { id } = element
-
-    const partInfo = getFullPartInfo(element)
 
     if (!partInfo) return
 
@@ -474,9 +482,12 @@ export const generateVirtualPartsList = (model: ConstructionModel): VirtualParts
     if (partId in partsList) {
       const existingPart = partsList[partId]
       existingPart.quantity += 1
-      existingPart.elements.push(id)
+      existingPart.elements.push(element.id)
       return
     }
+
+    const typeTag = element.tags?.find(t => t.category === 'module-type')
+    const description = typeTag && isCustomTag(typeTag) ? typeTag.label : undefined
 
     const label = indexToLabel(labelCounter++)
 
@@ -484,8 +495,9 @@ export const generateVirtualPartsList = (model: ConstructionModel): VirtualParts
       partId,
       type: partInfo.type,
       label,
+      description,
       size: copyVec3(partInfo.boxSize),
-      elements: [id],
+      elements: [element.id],
       quantity: 1
     }
 

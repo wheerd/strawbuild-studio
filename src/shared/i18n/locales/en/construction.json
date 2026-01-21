@@ -68,6 +68,7 @@
     },
     "noModules": "No modules",
     "tableHeaders": {
+      "description": "Specific Type",
       "dimensions": "Dimensions",
       "label": "Label",
       "quantity": "Quantity",
@@ -75,6 +76,10 @@
       "view": "View"
     },
     "title": "Modules"
+  },
+  "moduleTypes": {
+    "double": "Double",
+    "single": "Single"
   },
   "partCutModal": {
     "partCutDiagram": "Part Cut Diagram",
@@ -209,6 +214,7 @@
     "floor-measurement": "Floor Measurement",
     "floor-part": "Floor Part",
     "module-part": "Module Parts",
+    "module-type": "Module Type",
     "opening": "Opening",
     "opening-measurement": "Opening Measurement",
     "ring-beam-assembly": "Ring Beam Assembly",

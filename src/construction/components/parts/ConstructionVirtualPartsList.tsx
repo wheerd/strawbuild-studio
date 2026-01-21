@@ -46,6 +46,7 @@ export function ConstructionVirtualPartsList({
                 {t($ => $.modulesList.tableHeaders.label)}
               </Table.ColumnHeaderCell>
               <Table.ColumnHeaderCell>{t($ => $.modulesList.tableHeaders.type)}</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell>{t($ => $.modulesList.tableHeaders.description)}</Table.ColumnHeaderCell>
               <Table.ColumnHeaderCell width="20em">
                 {t($ => $.modulesList.tableHeaders.dimensions)}
               </Table.ColumnHeaderCell>
@@ -65,6 +66,9 @@ export function ConstructionVirtualPartsList({
                 </Table.RowHeaderCell>
                 <Table.Cell>
                   <span>{part.type}</span>
+                </Table.Cell>
+                <Table.Cell>
+                  <span>{part.description}</span>
                 </Table.Cell>
                 <Table.Cell>
                   <span>{formatDimensions3D([part.size[0], part.size[1], part.size[2]])}</span>

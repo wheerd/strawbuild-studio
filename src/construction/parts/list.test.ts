@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { createConstructionElement } from '@/construction/elements'
-import { DEFAULT_MATERIALS, clt, osb, roughWood, strawbale } from '@/construction/materials/material'
+import { DEFAULT_MATERIALS, clt, ecococonStandard, osb, roughWood, strawbale } from '@/construction/materials/material'
 import type { GenericMaterial, MaterialId } from '@/construction/materials/material'
 import { setMaterialsState } from '@/construction/materials/store'
 import { type ConstructionModel, createConstructionGroup } from '@/construction/model'
@@ -327,5 +327,105 @@ describe('generateVirtualPartsList', () => {
     expect(virtualParts[outerFullPartInfo.id]).toBeDefined()
     expect(virtualParts[innerFullPartInfo.id].elements).toEqual([innerGroup.id])
     expect(virtualParts[outerFullPartInfo.id].elements).toEqual([outerGroup.id])
+  })
+
+  it('aggregates identical prefab elements', () => {
+    setMaterialsState({ materials: DEFAULT_MATERIALS })
+    const partInfo: InitialPartInfo = { type: 'module', subtype: ecococonStandard.id }
+    const elementA = createElement(ecococonStandard.id, partInfo, newVec3(800, 360, 1000))
+    const elementB = createElement(ecococonStandard.id, partInfo, newVec3(800, 360, 1000))
+    const model = createModel([elementA, elementB])
+
+    const virtualParts = generateVirtualPartsList(model)
+    const fullPartInfo = elementA.partInfo as FullPartInfo
+    const part = virtualParts[fullPartInfo.id]
+
+    expect(Object.keys(virtualParts)).toHaveLength(1)
+    expect(part.quantity).toBe(2)
+    expect(part.label).toBe('A')
+    expect(part.elements).toEqual([elementA.id, elementB.id])
+    expect(part.type).toBe('module')
+    expect(part.size[0]).toBe(360)
+    expect(part.size[1]).toBe(800)
+    expect(part.size[2]).toBe(1000)
+  })
+
+  it('groups prefab elements by part ID (size + subtype)', () => {
+    setMaterialsState({ materials: DEFAULT_MATERIALS })
+    const partInfoA: InitialPartInfo = { type: 'module', subtype: ecococonStandard.id }
+    const elementA = createElement(ecococonStandard.id, partInfoA, newVec3(800, 360, 1000))
+    const elementB = createElement(ecococonStandard.id, partInfoA, newVec3(800, 360, 1000))
+
+    const partInfoC: InitialPartInfo = { type: 'module', subtype: ecococonStandard.id, description: 'Different size' }
+    const elementC = createElement(ecococonStandard.id, partInfoC, newVec3(800, 360, 1200))
+
+    const virtualParts = generateVirtualPartsList(createModel([elementA, elementB, elementC]))
+    const fullPartInfoA = elementA.partInfo as FullPartInfo
+    const fullPartInfoC = elementC.partInfo as FullPartInfo
+
+    expect(Object.keys(virtualParts)).toHaveLength(2)
+    expect(virtualParts[fullPartInfoA.id].quantity).toBe(2)
+    expect(virtualParts[fullPartInfoC.id].quantity).toBe(1)
+    expect(virtualParts[fullPartInfoA.id].label).toBe('A')
+    expect(virtualParts[fullPartInfoC.id].label).toBe('B')
+  })
+
+  it('ignores elements with non-prefab materials in virtual list', () => {
+    setMaterialsState({ materials: DEFAULT_MATERIALS })
+    const partInfo: InitialPartInfo = { type: 'module' }
+    const prefabElement = createElement(ecococonStandard.id, partInfo, newVec3(800, 360, 1000))
+    const dimensionalElement = createElement(roughWood.id, { type: 'post' }, newVec3(5000, 360, 60))
+    const sheetElement = createElement(osb.id, { type: 'sheet' }, newVec3(1200, 18, 2400))
+
+    const virtualParts = generateVirtualPartsList(createModel([prefabElement, dimensionalElement, sheetElement]))
+    const fullPartInfo = prefabElement.partInfo as FullPartInfo
+
+    expect(Object.keys(virtualParts)).toHaveLength(1)
+    expect(virtualParts[fullPartInfo.id]).toBeDefined()
+    expect(virtualParts[fullPartInfo.id].quantity).toBe(1)
+  })
+
+  it('ignores prefab elements without part info', () => {
+    setMaterialsState({ materials: DEFAULT_MATERIALS })
+    const element = createConstructionElement(ecococonStandard.id, createCuboid(newVec3(800, 360, 1000)))
+    const model = createModel([element])
+
+    const virtualParts = generateVirtualPartsList(model)
+    expect(virtualParts).toEqual({})
+  })
+})
+
+describe('generateMaterialPartsList excludes prefab elements', () => {
+  beforeEach(() => {
+    setMaterialsState({ materials: DEFAULT_MATERIALS })
+  })
+
+  it('excludes prefab material elements from material parts list', () => {
+    const partInfo: InitialPartInfo = { type: 'module', subtype: ecococonStandard.id }
+    const prefabElement = createElement(ecococonStandard.id, partInfo, newVec3(800, 360, 1000))
+    const dimensionalElement = createElement(roughWood.id, { type: 'post' }, newVec3(5000, 360, 60))
+
+    const partsList = generateMaterialPartsList(createModel([prefabElement, dimensionalElement]))
+
+    expect(Object.keys(partsList)).toHaveLength(1)
+    expect(partsList[roughWood.id]).toBeDefined()
+    expect(partsList[ecococonStandard.id]).toBeUndefined()
+  })
+
+  it('includes only dimensional and sheet elements, excludes prefab', () => {
+    const prefabElement = createElement(ecococonStandard.id, { type: 'module' }, newVec3(800, 360, 1000))
+    const dimensionalElement = createElement(roughWood.id, { type: 'post' }, newVec3(5000, 360, 60))
+    const sheetElement = createElement(osb.id, { type: 'sheet' }, newVec3(1200, 18, 2400))
+    const genericElement = createElement(genericMaterial.id, { type: 'generic' }, newVec3(1000, 1000, 1000))
+
+    const partsList = generateMaterialPartsList(
+      createModel([prefabElement, dimensionalElement, sheetElement, genericElement])
+    )
+
+    expect(Object.keys(partsList)).toHaveLength(3)
+    expect(partsList[roughWood.id]).toBeDefined()
+    expect(partsList[osb.id]).toBeDefined()
+    expect(partsList[genericMaterial.id]).toBeDefined()
+    expect(partsList[ecococonStandard.id]).toBeUndefined()
   })
 })

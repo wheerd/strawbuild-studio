@@ -656,12 +656,17 @@ interface Resources {
       "wallConstruction": "Wall Construction",
       "wallConstructionHeight": "Wall Construction Height"
     },
+    "moduleTypes": {
+      "double": "Double",
+      "single": "Single"
+    },
     "modulesList": {
       "actions": {
         "viewInPlan": "View in plan"
       },
       "noModules": "No modules",
       "tableHeaders": {
+        "description": "modulesList.tableHeaders.description",
         "dimensions": "Dimensions",
         "label": "Label",
         "quantity": "Quantity",
@@ -803,6 +808,7 @@ interface Resources {
       "floor-measurement": "Floor Measurement",
       "floor-part": "Floor Part",
       "module-part": "Module Parts",
+      "module-type": "Module Type",
       "opening": "Opening",
       "opening-measurement": "Opening Measurement",
       "ring-beam-assembly": "Ring Beam Assembly",
