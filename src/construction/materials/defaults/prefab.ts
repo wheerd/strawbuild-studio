@@ -41,7 +41,7 @@ export const ecococonColumn: PrefabMaterial = {
   minThickness: 300,
   maxThickness: 400,
   minWidth: 424,
-  maxWidth: 550,
+  maxWidth: 850,
   isFlipped: false
 }
 
@@ -56,7 +56,7 @@ export const ecococonInclined: PrefabMaterial = {
   minThickness: 300,
   maxThickness: 400,
   minWidth: 400,
-  maxWidth: 800,
+  maxWidth: 850,
   sloped: {
     minAngleDegrees: 1,
     maxAngleDegrees: 50
@@ -75,7 +75,7 @@ export const ecococonInclinedBraced: PrefabMaterial = {
   minThickness: 300,
   maxThickness: 400,
   minWidth: 400,
-  maxWidth: 800,
+  maxWidth: 850,
   sloped: {
     minAngleDegrees: 1,
     maxAngleDegrees: 50
@@ -89,11 +89,11 @@ export const ecococonLintel: PrefabMaterial = {
   color: '#BBFFFF',
   name: 'Ecococon Lintel',
   nameKey: 'ecococon-lintel',
-  minHeight: 400,
+  minHeight: 424,
   maxHeight: 850,
   minThickness: 300,
   maxThickness: 400,
-  minWidth: 850,
+  minWidth: 400,
   maxWidth: 3000,
   isFlipped: true
 }
@@ -104,11 +104,11 @@ export const ecococonSill: PrefabMaterial = {
   color: '#BBBBFF',
   name: 'Ecococon Sill',
   nameKey: 'ecococon-sill',
-  minHeight: 400,
+  minHeight: 424,
   maxHeight: 850,
   minThickness: 300,
   maxThickness: 400,
-  minWidth: 850,
+  minWidth: 600,
   maxWidth: 3000,
   isFlipped: true
 }
@@ -119,11 +119,11 @@ export const ecococonBox: PrefabMaterial = {
   color: '#FF8888',
   name: 'Ecococon Box Element',
   nameKey: 'ecococon-box',
-  minHeight: 119,
-  maxHeight: 532,
+  minHeight: 100,
+  maxHeight: 600,
   minThickness: 300,
   maxThickness: 400,
   minWidth: 400,
-  maxWidth: 6000,
+  maxWidth: 9000,
   isFlipped: true
 }
