@@ -1,4 +1,4 @@
-import type { Opening } from '@/building/model'
+import type { Opening, OpeningAssemblyId } from '@/building/model'
 import type { WallConstructionArea } from '@/construction/geometry'
 import type { MaterialId } from '@/construction/materials/material'
 import { type PostConfig, validatePosts } from '@/construction/materials/posts'
@@ -18,7 +18,7 @@ export interface OpeningAssembly {
   needsWallStands(openings: Opening[]): boolean
 }
 
-export type OpeningAssemblyType = 'simple' | 'post' | 'empty' | 'planked'
+export type OpeningAssemblyType = 'simple' | 'post' | 'empty' | 'planked' | 'threshold'
 
 export interface OpeningAssemblyConfigBase {
   type: OpeningAssemblyType
@@ -55,7 +55,23 @@ export interface EmptyOpeningConfig extends OpeningAssemblyConfigBase {
   // Only padding, no sill/header materials or thicknesses
 }
 
-export type OpeningConfig = SimpleOpeningConfig | EmptyOpeningConfig | PostOpeningConfig | PlankedOpeningConfig
+export interface ThresholdConfig {
+  assemblyId: OpeningAssemblyId
+  widthThreshold: Length
+}
+
+export interface ThresholdAssemblyConfig extends OpeningAssemblyConfigBase {
+  type: 'threshold'
+  defaultId: OpeningAssemblyId
+  thresholds: ThresholdConfig[]
+}
+
+export type OpeningConfig =
+  | SimpleOpeningConfig
+  | EmptyOpeningConfig
+  | PostOpeningConfig
+  | PlankedOpeningConfig
+  | ThresholdAssemblyConfig
 
 // Validation
 
@@ -64,7 +80,7 @@ export const validateOpeningConfig = (config: OpeningConfig): void => {
     throw new Error('Padding cannot be negative')
   }
 
-  if (config.type !== 'empty') {
+  if (config.type === 'simple' || config.type === 'post' || config.type === 'planked') {
     if (config.sillThickness < 0) {
       throw new Error('Sill thickness must not be negative')
     }
@@ -75,5 +91,11 @@ export const validateOpeningConfig = (config: OpeningConfig): void => {
 
   if (config.type === 'post') {
     validatePosts(config.posts)
+  }
+
+  if (config.type === 'threshold') {
+    if (config.thresholds.some(t => t.widthThreshold < 0)) {
+      throw new Error('Width threshold cannot be negative')
+    }
   }
 }

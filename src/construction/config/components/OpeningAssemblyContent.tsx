@@ -32,12 +32,15 @@ import type {
   OpeningConfig,
   PlankedOpeningConfig,
   PostOpeningConfig,
-  SimpleOpeningConfig
+  SimpleOpeningConfig,
+  ThresholdAssemblyConfig,
+  ThresholdConfig
 } from '@/construction/openings/types'
 import { LengthField } from '@/shared/components/LengthField/LengthField'
 import { useDebouncedInput } from '@/shared/hooks/useDebouncedInput'
 
 import { OpeningAssemblySelect } from './OpeningAssemblySelect'
+import { OpeningAssemblySelectWithEdit } from './OpeningAssemblySelectWithEdit'
 
 export interface OpeningAssemblyContentProps {
   initialSelectionId?: string
@@ -119,6 +122,13 @@ export function OpeningAssemblyContent({ initialSelectionId }: OpeningAssemblyCo
           sillMaterial: defaultMaterial,
           plankMaterial: defaultMaterial,
           plankThickness: 16
+        }
+      } else if (type === 'threshold') {
+        config = {
+          type: 'threshold',
+          padding: 15,
+          defaultId: '' as OpeningAssemblyId,
+          thresholds: []
         }
       } else {
         config = {
@@ -227,6 +237,13 @@ export function OpeningAssemblyContent({ initialSelectionId }: OpeningAssemblyCo
                 }}
               >
                 {t($ => $.openings.types.empty)}
+              </DropdownMenu.Item>
+              <DropdownMenu.Item
+                onClick={() => {
+                  handleAddNew('threshold')
+                }}
+              >
+                {t($ => $.openings.types.threshold)}
               </DropdownMenu.Item>
             </DropdownMenu.Content>
           </DropdownMenu>
@@ -408,6 +425,8 @@ function ConfigForm({ assembly }: { assembly: OpeningAssemblyConfig }): React.JS
         <PostOpeningContent config={assembly} update={handleUpdateConfig} />
       ) : assembly.type === 'planked' ? (
         <PlankedOpeningContent config={assembly} update={handleUpdateConfig} />
+      ) : assembly.type === 'threshold' ? (
+        <ThresholdOpeningContent config={assembly} update={handleUpdateConfig} />
       ) : (
         <>
           <h2 className="text-lg font-semibold">{t($ => $.openings.types.empty)}</h2>
@@ -803,6 +822,131 @@ const PlankedOpeningContent = ({
           }}
           preferredTypes={['dimensional']}
         />
+      </div>
+    </div>
+  )
+}
+
+const ThresholdOpeningContent = ({
+  config,
+  update
+}: {
+  config: ThresholdAssemblyConfig
+  update: (updates: Partial<ThresholdAssemblyConfig>) => void
+}) => {
+  const { t } = useTranslation('config')
+
+  const handleAddThreshold = useCallback(() => {
+    const newThresholds = [...config.thresholds, { assemblyId: '' as OpeningAssemblyId, widthThreshold: 1000 }]
+    update({ thresholds: newThresholds })
+  }, [config.thresholds, update])
+
+  const handleRemoveThreshold = useCallback(
+    (index: number) => {
+      const newThresholds = config.thresholds.filter((_, i) => i !== index)
+      update({ thresholds: newThresholds })
+    },
+    [config.thresholds, update]
+  )
+
+  const handleUpdateThreshold = useCallback(
+    (index: number, field: keyof ThresholdConfig, value: OpeningAssemblyId | number) => {
+      const newThresholds = [...config.thresholds]
+      newThresholds[index] = { ...newThresholds[index], [field]: value }
+      update({ thresholds: newThresholds })
+    },
+    [config.thresholds, update]
+  )
+
+  const sortedThresholds = useMemo(() => {
+    return [...config.thresholds].sort((a, b) => a.widthThreshold - b.widthThreshold)
+  }, [config.thresholds])
+
+  const currentAssemblyId = (config as unknown as { id: OpeningAssemblyId }).id
+  const excludeIds = [currentAssemblyId]
+
+  return (
+    <div className="flex flex-col gap-3">
+      <div className="grid grid-cols-[auto_1fr] items-center gap-2 gap-x-3">
+        <Label.Root>
+          <span className="text-base font-medium">{t($ => $.openings.labels.padding)}</span>
+        </Label.Root>
+        <LengthField
+          value={config.padding}
+          onChange={padding => {
+            update({ padding })
+          }}
+          unit="mm"
+        />
+
+        <Label.Root>
+          <span className="text-base font-medium">{t($ => $.openings.labels.defaultAssembly)}</span>
+        </Label.Root>
+        <OpeningAssemblySelectWithEdit
+          value={config.defaultId}
+          onValueChange={value => {
+            if (value) {
+              update({ defaultId: value })
+            }
+          }}
+          exclude={excludeIds}
+        />
+      </div>
+
+      <div className="flex flex-col gap-2">
+        <div className="flex items-center justify-between">
+          <h2 className="text-lg font-semibold">{t($ => $.openings.labels.thresholds)}</h2>
+          <Button size="sm" variant="soft" onClick={handleAddThreshold}>
+            {t($ => $.openings.labels.addThreshold)}
+          </Button>
+        </div>
+
+        {sortedThresholds.length === 0 && (
+          <p className="text-muted-foreground">{t($ => $.openings.labels.noThresholds)}</p>
+        )}
+
+        {sortedThresholds.map((threshold, sortedIndex) => {
+          const originalIndex = config.thresholds.findIndex(t => t.widthThreshold === threshold.widthThreshold)
+          return (
+            <div key={sortedIndex} className="grid grid-cols-[1fr_1fr_auto] items-center gap-2">
+              <div>
+                <Label.Root>
+                  <span className="text-sm font-medium">{t($ => $.openings.labels.widthThreshold)}</span>
+                </Label.Root>
+                <LengthField
+                  value={threshold.widthThreshold}
+                  onChange={widthThreshold => {
+                    handleUpdateThreshold(originalIndex, 'widthThreshold', widthThreshold)
+                  }}
+                  unit="mm"
+                />
+              </div>
+              <div>
+                <Label.Root>
+                  <span className="text-sm font-medium">{t($ => $.openings.labels.thresholdAssembly)}</span>
+                </Label.Root>
+                <OpeningAssemblySelectWithEdit
+                  value={threshold.assemblyId}
+                  onValueChange={value => {
+                    if (value) {
+                      handleUpdateThreshold(originalIndex, 'assemblyId', value)
+                    }
+                  }}
+                  exclude={excludeIds}
+                />
+              </div>
+              <Button
+                size="icon"
+                variant="destructive"
+                onClick={() => {
+                  handleRemoveThreshold(originalIndex)
+                }}
+              >
+                <TrashIcon />
+              </Button>
+            </div>
+          )
+        })}
       </div>
     </div>
   )

@@ -9,6 +9,7 @@ import type {
 } from '@/building/model/ids'
 import { useWallPosts } from '@/building/store'
 import {
+  getConfigActions,
   useDefaultStrawMaterialId,
   useFloorAssemblies,
   useOpeningAssemblies,
@@ -233,6 +234,18 @@ function isMaterialUsedInRoof(materialId: MaterialId, assembly: RoofAssemblyConf
 }
 
 function isMaterialUsedInOpening(materialId: MaterialId, assembly: OpeningAssemblyConfig): boolean {
+  if (assembly.type === 'threshold') {
+    const configActions = getConfigActions()
+    const assemblyIds = [...new Set([assembly.defaultId, ...assembly.thresholds.map(t => t.assemblyId)])]
+    for (const id of assemblyIds) {
+      const referencedAssembly = configActions.getOpeningAssemblyById(id)
+      if (referencedAssembly && isMaterialUsedInOpening(materialId, referencedAssembly)) {
+        return true
+      }
+    }
+    return false
+  }
+
   if (assembly.type !== 'empty') {
     if (assembly.headerMaterial === materialId) return true
     if (assembly.sillMaterial === materialId) return true

@@ -297,8 +297,11 @@
     "deleteTitle": "Öffnungsaufbau löschen",
     "emptyList": "Keine Öffnungsaufbauten verfügbar",
     "labels": {
+      "addThreshold": "Schwellenwert hinzufügen",
+      "defaultAssembly": "Standard-Aufbau",
       "headerMaterial": "Sturzmaterial",
       "headerThickness": "Sturzdicke",
+      "noThresholds": "Keine Schwellenwerte konfiguriert. Klicke auf \"Schwellenwert hinzufügen\", um einen zu erstellen.",
       "padding": "Baufuge",
       "plankMaterial": "Beplankungsmaterial",
       "plankThickness": "Beplankungsdicke",
@@ -306,7 +309,10 @@
       "postsSupportHeader": "Ständer stützen Sturz",
       "replacesWallPosts": "Ersetzt Wandständer",
       "sillMaterial": "Schwellenmaterial",
-      "sillThickness": "Schwellendicke"
+      "sillThickness": "Schwellendicke",
+      "thresholdAssembly": "Aufbau",
+      "thresholds": "Breitenschwellenwerte",
+      "widthThreshold": "Breitenschwellenwert"
     },
     "placeholders": {
       "name": "Name der Öffnungsaufbau"
@@ -325,7 +331,8 @@
       "empty": "Leere Öffnung",
       "planked": "Öffnung mit Seitenbeplankung",
       "post": "Öffnung mit Ständern",
-      "simple": "Standard-Öffnung"
+      "simple": "Standard-Öffnung",
+      "threshold": "Breitenbasierter Schwellenwert-Aufbau"
     },
     "useGlobalDefault": "Standard verwenden"
   },

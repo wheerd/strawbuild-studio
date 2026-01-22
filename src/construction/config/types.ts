@@ -17,7 +17,8 @@ import type {
   EmptyOpeningConfig,
   PlankedOpeningConfig,
   PostOpeningConfig,
-  SimpleOpeningConfig
+  SimpleOpeningConfig,
+  ThresholdAssemblyConfig
 } from '@/construction/openings/types'
 import type { BrickRingBeamConfig, DoubleRingBeamConfig, FullRingBeamConfig } from '@/construction/ringBeams'
 import type { MonolithicRoofConfig, PurlinRoofConfig } from '@/construction/roofs'
@@ -156,9 +157,11 @@ export type SimpleOpeningAssemblyConfig = SimpleOpeningConfig & OpeningAssemblyI
 export type EmptyOpeningAssemblyConfig = EmptyOpeningConfig & OpeningAssemblyIdPart
 export type PostOpeningAssemblyConfig = PostOpeningConfig & OpeningAssemblyIdPart
 export type PlankedOpeningAssemblyConfig = PlankedOpeningConfig & OpeningAssemblyIdPart
+export type ThresholdOpeningAssemblyConfig = ThresholdAssemblyConfig & OpeningAssemblyIdPart
 
 export type OpeningAssemblyConfig =
   | SimpleOpeningAssemblyConfig
   | EmptyOpeningAssemblyConfig
   | PostOpeningAssemblyConfig
   | PlankedOpeningAssemblyConfig
+  | ThresholdOpeningAssemblyConfig

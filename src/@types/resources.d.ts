@@ -374,8 +374,11 @@ interface Resources {
       "deleteTitle": "Delete Opening Assembly",
       "emptyList": "No opening assemblies available",
       "labels": {
+        "addThreshold": "Add Threshold",
+        "defaultAssembly": "Default Assembly",
         "headerMaterial": "Header Material",
         "headerThickness": "Header Thickness",
+        "noThresholds": "No thresholds configured. Click \"Add Threshold\" to create one.",
         "padding": "Padding",
         "plankMaterial": "Planking Material",
         "plankThickness": "Planking Thickness",
@@ -383,7 +386,10 @@ interface Resources {
         "postsSupportHeader": "Posts support header",
         "replacesWallPosts": "Replaces Wall Posts",
         "sillMaterial": "Sill Material",
-        "sillThickness": "Sill Thickness"
+        "sillThickness": "Sill Thickness",
+        "thresholdAssembly": "Assembly",
+        "thresholds": "Width Thresholds",
+        "widthThreshold": "Width Threshold"
       },
       "placeholders": {
         "name": "Opening assembly name"
@@ -402,7 +408,8 @@ interface Resources {
         "empty": "Empty Opening",
         "planked": "Opening with Side Planking",
         "post": "Opening With Posts",
-        "simple": "Standard Opening"
+        "simple": "Standard Opening",
+        "threshold": "Width-Based Threshold Assembly"
       },
       "useGlobalDefault": "Use global default"
     },
