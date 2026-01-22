@@ -87,7 +87,6 @@ export class PrefabModulesWallAssembly extends BaseWallAssembly<PrefabModulesWal
       const availableWidth = width - reinforceThickness * (moduleCount - 1)
       const moduleWidth = availableWidth / moduleCount
       const offset = moduleWidth + reinforceThickness
-      console.log('count', moduleCount)
       for (let i = 0; i < moduleCount; i++) {
         const moduleArea = area.withXAdjustment(i * offset, moduleWidth)
         yield* this.yieldModuleColumn(moduleArea, module, i)
