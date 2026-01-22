@@ -89,7 +89,7 @@ export class PrefabModulesWallAssembly extends BaseWallAssembly<PrefabModulesWal
       const offset = moduleWidth + reinforceThickness
       for (let i = 0; i < moduleCount; i++) {
         const moduleArea = area.withXAdjustment(i * offset, moduleWidth)
-        yield* this.yieldModule(moduleArea, module)
+        yield* this.yieldModuleColumn(moduleArea, module, i)
         if (reinforceThickness > 0) {
           const reinforceArea = area.withXAdjustment(i * offset + moduleWidth, reinforceThickness)
           yield* yieldElement(
@@ -104,11 +104,12 @@ export class PrefabModulesWallAssembly extends BaseWallAssembly<PrefabModulesWal
       const isTallWall = height > this.config.tallReinforceThreshold
       const reinforceThickness = isTallWall ? this.config.tallReinforceThickness : 0
       const needed = targetWidth + reinforceThickness + module.minWidth
+      let i = 0
       while (remainingArea.size[0] >= needed) {
         const [a, b] = remainingArea.splitInX(startAtEnd ? remainingArea.size[0] - targetWidth : targetWidth)
         remainingArea = startAtEnd ? a : b
         const moduleArea = startAtEnd ? b : a
-        yield* this.yieldModule(moduleArea, module)
+        yield* this.yieldModuleColumn(moduleArea, module, i++)
         if (reinforceThickness > 0) {
           const [a, b] = remainingArea.splitInX(
             startAtEnd ? remainingArea.size[0] - reinforceThickness : reinforceThickness
@@ -126,9 +127,9 @@ export class PrefabModulesWallAssembly extends BaseWallAssembly<PrefabModulesWal
       if (remainingArea.size[0] > module.maxWidth) {
         const moduleWidth = (remainingArea.size[0] - reinforceThickness) / 2
         const module1 = remainingArea.withXAdjustment(0, moduleWidth)
-        yield* this.yieldModule(module1, module)
+        yield* this.yieldModuleColumn(module1, module, i++)
         const module2 = remainingArea.withXAdjustment(moduleWidth + reinforceThickness)
-        yield* this.yieldModule(module2, module)
+        yield* this.yieldModuleColumn(module2, module, i++)
         if (reinforceThickness > 0) {
           const reinforceArea = remainingArea.withXAdjustment(moduleWidth, reinforceThickness)
           yield* yieldElement(
@@ -138,7 +139,7 @@ export class PrefabModulesWallAssembly extends BaseWallAssembly<PrefabModulesWal
           )
         }
       } else if (remainingArea.size[0] >= module.minWidth) {
-        yield* this.yieldModule(remainingArea, module)
+        yield* this.yieldModuleColumn(remainingArea, module, i++)
       } else if (remainingArea.size[0] > 0) {
         yield* this.fallback(remainingArea)
       }
@@ -247,9 +248,11 @@ export class PrefabModulesWallAssembly extends BaseWallAssembly<PrefabModulesWal
     const shouldFlip = this.shouldFlip(area.size[0], area.size[2], fallbackModule)
     if (shouldFlip && area.minHeight === area.size[2]) {
       yield* this.yieldFlippedModule(area, fallbackModule)
+    } else if (fallbackModule.isFlipped) {
+      yield* this.yieldFlippedModule(area, fallbackModule, false)
+    } else {
+      yield* this.yieldModule(area, fallbackModule)
     }
-
-    yield* this.yieldModule(area, fallbackModule)
   }
 
   private getModuleMaterial(materialId: MaterialId) {
@@ -281,6 +284,34 @@ export class PrefabModulesWallAssembly extends BaseWallAssembly<PrefabModulesWal
     yield* this.yieldWithValidation(element, material, validateFlipped ? flippedSize : area.size)
   }
 
+  private *yieldModuleColumn(area: WallConstructionArea, material: PrefabMaterial, index: number) {
+    const { tallReinforceStagger, tallReinforceThreshold, defaultMaterial } = this.config
+    if (area.size[2] <= tallReinforceThreshold) {
+      yield* this.yieldModule(area, material)
+      return
+    }
+
+    const defaultModule = this.getModuleMaterial(defaultMaterial)
+
+    let remainingArea = area
+    const shouldStagger = index % 2 === 1
+    if (shouldStagger) {
+      const [bottom, top] = area.splitInZ(tallReinforceStagger)
+      remainingArea = top
+      yield* this.yieldModule(bottom, defaultModule)
+    }
+
+    while (remainingArea.size[2] > material.maxHeight) {
+      const maxSplitHeight = remainingArea.isFlat ? remainingArea.size[2] : remainingArea.minHeight - material.minHeight
+      const splitHeight = Math.min(maxSplitHeight, defaultModule.maxHeight)
+      const [bottom, top] = remainingArea.splitInZ(splitHeight)
+      remainingArea = top
+      yield* this.yieldModule(bottom, defaultModule)
+    }
+
+    yield* this.yieldModule(remainingArea, material)
+  }
+
   private *yieldModule(area: WallConstructionArea, material: PrefabMaterial) {
     if (material.isFlipped && area.isFlat) {
       yield* this.yieldFlippedModule(area, material, false)
@@ -306,13 +337,11 @@ export class PrefabModulesWallAssembly extends BaseWallAssembly<PrefabModulesWal
   }
 
   private shouldFlip(width: Length, height: Length, module: PrefabMaterial) {
-    return (
-      (width < module.minWidth &&
-        width >= module.minHeight &&
-        height >= module.minWidth &&
-        height <= module.maxWidth) ||
-      (height < module.minHeight && height >= module.minWidth && width >= module.minHeight && width <= module.maxHeight)
-    )
+    const widthValid = width >= module.minWidth && width <= module.maxWidth
+    const heightValid = height >= module.minHeight && height <= module.maxHeight
+    const flippedWidthValid = width >= module.minHeight && width <= module.maxHeight
+    const flippedHeightValid = height >= module.minWidth && height <= module.maxWidth
+    return (widthValid ? 1 : 0) + (heightValid ? 1 : 0) < (flippedWidthValid ? 1 : 0) + (flippedHeightValid ? 1 : 0)
   }
 
   private *yieldWithValidation(element: ConstructionElement, module: PrefabMaterial, size: Vec3) {

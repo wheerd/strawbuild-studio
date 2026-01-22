@@ -186,7 +186,7 @@ const ecococonAssembly: PrefabModulesWallAssemblyConfig = {
   openingAssemblyId: prefabPlankedAssembly.id,
   tallReinforceThreshold: 3000,
   tallReinforceThickness: 15,
-  tallReinforceStagger: 400,
+  tallReinforceStagger: 800,
   tallReinforceMaterial: lvl.id,
   layers: {
     insideThickness: 30,

@@ -118,8 +118,7 @@ export function WallPostInspector({ postId }: { postId: WallPostId }): React.JSX
               updatePost(postId, { width: value })
             }}
             unit="cm"
-            min={10}
-            max={500}
+            min={1}
             step={10}
             size="sm"
             className="w-20"
@@ -137,8 +136,7 @@ export function WallPostInspector({ postId }: { postId: WallPostId }): React.JSX
               updatePost(postId, { thickness: value })
             }}
             unit="cm"
-            min={50}
-            max={1000}
+            min={1}
             step={10}
             size="sm"
             className="w-20"

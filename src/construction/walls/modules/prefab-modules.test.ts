@@ -243,10 +243,10 @@ describe('Prefab Modules Wall Assembly', () => {
     })
 
     it('should generate validation errors for too small module', () => {
-      const area = new WallConstructionArea(newVec3(0, 0, 0), newVec3(300, 360, 2000))
+      const area = new WallConstructionArea(newVec3(0, 0, 0), newVec3(100, 360, 2000))
       const results = Array.from(assembly.moduleWallArea(area))
 
-      const hasErrors = results.some(r => typeof r === 'object' && 'error' in r)
+      const hasErrors = results.some(r => 'error' in r)
       expect(hasErrors).toBe(true)
     })
   })
