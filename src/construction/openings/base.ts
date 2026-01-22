@@ -1,3 +1,4 @@
+import type { Opening } from '@/building/model'
 import type { WallConstructionArea } from '@/construction/geometry'
 import type { ConstructionResult } from '@/construction/results'
 import type { SegmentInfillMethod } from '@/construction/walls'
@@ -19,6 +20,6 @@ export abstract class BaseOpeningAssembly<T extends OpeningAssemblyConfigBase> i
     infill: SegmentInfillMethod
   ): Generator<ConstructionResult>
 
-  abstract get segmentationPadding(): Length
-  abstract get needsWallStands(): boolean
+  abstract getSegmentationPadding(openings: Opening[]): Length
+  abstract needsWallStands(openings: Opening[]): boolean
 }

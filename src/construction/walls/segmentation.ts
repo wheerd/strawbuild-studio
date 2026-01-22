@@ -436,13 +436,13 @@ function createSortedWallItems(
 
   for (const group of openingGroups) {
     const assembly = resolveOpeningAssembly(group[0].openingAssemblyId ?? wallOpeningAssemblyId)
-    const start =
-      extensionStart + group[0].centerOffsetFromWallStart - group[0].width / 2 - assembly.segmentationPadding
+    const segmentationPadding = assembly.getSegmentationPadding(group)
+    const start = extensionStart + group[0].centerOffsetFromWallStart - group[0].width / 2 - segmentationPadding
     const end =
       extensionStart +
       group[group.length - 1].centerOffsetFromWallStart +
       group[group.length - 1].width / 2 +
-      assembly.segmentationPadding
+      segmentationPadding
 
     items.push({
       type: 'opening-group',
@@ -450,7 +450,7 @@ function createSortedWallItems(
       assembly,
       start,
       end,
-      needsWallStands: assembly.needsWallStands
+      needsWallStands: assembly.needsWallStands(group)
     })
   }
 

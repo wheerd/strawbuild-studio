@@ -106,11 +106,11 @@ export class PostOpeningAssembly extends BaseOpeningAssembly<PostOpeningConfig> 
     }
   }
 
-  get segmentationPadding(): Length {
+  getSegmentationPadding() {
     return this.config.posts.width
   }
 
-  get needsWallStands(): boolean {
+  needsWallStands(): boolean {
     return !this.config.replacePosts
   }
 }

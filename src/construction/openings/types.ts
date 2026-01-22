@@ -1,3 +1,4 @@
+import type { Opening } from '@/building/model'
 import type { WallConstructionArea } from '@/construction/geometry'
 import type { MaterialId } from '@/construction/materials/material'
 import { type PostConfig, validatePosts } from '@/construction/materials/posts'
@@ -13,8 +14,8 @@ export interface OpeningAssembly {
     infill: SegmentInfillMethod
   ) => Generator<ConstructionResult>
 
-  get segmentationPadding(): Length
-  get needsWallStands(): boolean
+  getSegmentationPadding(openings: Opening[]): Length
+  needsWallStands(openings: Opening[]): boolean
 }
 
 export type OpeningAssemblyType = 'simple' | 'post' | 'empty' | 'planked'

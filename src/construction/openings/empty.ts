@@ -15,6 +15,11 @@ export class EmptyOpeningAssembly extends BaseOpeningAssembly<EmptyOpeningConfig
     // Intentionally empty
   }
 
-  readonly segmentationPadding = 0 as Length
-  readonly needsWallStands = true
+  getSegmentationPadding() {
+    return 0
+  }
+
+  needsWallStands(): boolean {
+    return true
+  }
 }

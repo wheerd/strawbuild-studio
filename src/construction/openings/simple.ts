@@ -90,6 +90,11 @@ export class SimpleOpeningAssembly extends BaseOpeningAssembly<SimpleOpeningConf
     }
   }
 
-  readonly segmentationPadding = 0 as Length
-  readonly needsWallStands = true
+  getSegmentationPadding() {
+    return 0
+  }
+
+  needsWallStands(): boolean {
+    return true
+  }
 }

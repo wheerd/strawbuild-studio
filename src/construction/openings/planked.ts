@@ -107,9 +107,11 @@ export class PlankedOpeningAssembly extends BaseOpeningAssembly<PlankedOpeningCo
     }
   }
 
-  get segmentationPadding(): Length {
+  getSegmentationPadding() {
     return this.config.plankThickness
   }
 
-  readonly needsWallStands = true
+  needsWallStands(): boolean {
+    return true
+  }
 }
