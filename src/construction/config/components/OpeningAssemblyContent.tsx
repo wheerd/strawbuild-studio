@@ -867,39 +867,37 @@ const ThresholdOpeningContent = ({
 
   return (
     <div className="flex flex-col gap-3">
-      <div className="grid grid-cols-[auto_1fr] items-center gap-2 gap-x-3">
-        <Label.Root>
+      <div className="grid grid-cols-2 items-center gap-2 gap-x-3">
+        <Label.Root className="flex flex-row items-center gap-2">
           <span className="text-base font-medium">{t($ => $.openings.labels.padding)}</span>
+          <LengthField
+            value={config.padding}
+            onChange={padding => {
+              update({ padding })
+            }}
+            unit="mm"
+            className="grow"
+          />
         </Label.Root>
-        <LengthField
-          value={config.padding}
-          onChange={padding => {
-            update({ padding })
-          }}
-          unit="mm"
-        />
 
-        <Label.Root>
+        <Label.Root className="flex flex-row items-center gap-2">
           <span className="text-base font-medium">{t($ => $.openings.labels.defaultAssembly)}</span>
+          <div className="grow">
+            <OpeningAssemblySelectWithEdit
+              value={config.defaultId}
+              onValueChange={value => {
+                if (value) {
+                  update({ defaultId: value })
+                }
+              }}
+              exclude={excludeIds}
+            />
+          </div>
         </Label.Root>
-        <OpeningAssemblySelectWithEdit
-          value={config.defaultId}
-          onValueChange={value => {
-            if (value) {
-              update({ defaultId: value })
-            }
-          }}
-          exclude={excludeIds}
-        />
       </div>
 
       <div className="flex flex-col gap-2">
-        <div className="flex items-center justify-between">
-          <h2 className="text-lg font-semibold">{t($ => $.openings.labels.thresholds)}</h2>
-          <Button size="sm" variant="soft" onClick={handleAddThreshold}>
-            {t($ => $.openings.labels.addThreshold)}
-          </Button>
-        </div>
+        <h2 className="text-lg font-semibold">{t($ => $.openings.labels.thresholds)}</h2>
 
         {sortedThresholds.length === 0 && (
           <p className="text-muted-foreground">{t($ => $.openings.labels.noThresholds)}</p>
@@ -909,22 +907,20 @@ const ThresholdOpeningContent = ({
           const originalIndex = config.thresholds.findIndex(t => t.widthThreshold === threshold.widthThreshold)
           return (
             <div key={sortedIndex} className="grid grid-cols-[1fr_1fr_auto] items-center gap-2">
-              <div>
-                <Label.Root>
-                  <span className="text-sm font-medium">{t($ => $.openings.labels.widthThreshold)}</span>
-                </Label.Root>
+              <Label.Root>
+                <span className="text-sm font-medium">{t($ => $.openings.labels.widthThreshold)}</span>
                 <LengthField
                   value={threshold.widthThreshold}
                   onChange={widthThreshold => {
                     handleUpdateThreshold(originalIndex, 'widthThreshold', widthThreshold)
                   }}
-                  unit="mm"
+                  min={1}
+                  unit="cm"
                 />
-              </div>
-              <div>
-                <Label.Root>
-                  <span className="text-sm font-medium">{t($ => $.openings.labels.thresholdAssembly)}</span>
-                </Label.Root>
+              </Label.Root>
+
+              <Label.Root>
+                <span className="text-sm font-medium">{t($ => $.openings.labels.thresholdAssembly)}</span>
                 <OpeningAssemblySelectWithEdit
                   value={threshold.assemblyId}
                   onValueChange={value => {
@@ -934,19 +930,28 @@ const ThresholdOpeningContent = ({
                   }}
                   exclude={excludeIds}
                 />
+              </Label.Root>
+
+              <div>
+                <br />
+                <Button
+                  size="icon-sm"
+                  variant="destructive"
+                  onClick={() => {
+                    handleRemoveThreshold(originalIndex)
+                  }}
+                >
+                  <TrashIcon />
+                </Button>
               </div>
-              <Button
-                size="icon"
-                variant="destructive"
-                onClick={() => {
-                  handleRemoveThreshold(originalIndex)
-                }}
-              >
-                <TrashIcon />
-              </Button>
             </div>
           )
         })}
+
+        <Button size="default" onClick={handleAddThreshold}>
+          <PlusIcon />
+          {t($ => $.openings.labels.addThreshold)}
+        </Button>
       </div>
     </div>
   )

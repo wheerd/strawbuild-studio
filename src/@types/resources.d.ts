@@ -363,9 +363,10 @@ interface Resources {
       "defaultOpeningAssembly": "Default Opening Assembly",
       "defaults": {
         "emptyOpening": "Empty Opening",
-        "prefabOpening": "Prefab Opening",
+        "prefabDefaultOpening": "Default Prefab Opening",
         "prefabOpeningWithPlanking": "Prefab Opening with Planking",
         "prefabOpeningWithPosts": "Prefab Opening with Posts",
+        "prefabSimpleOpening": "Prefab Opening without Planking",
         "standardOpening": "Standard Opening",
         "standardOpeningWithPlanking": "Standard Opening with Planking",
         "standardOpeningWithPosts": "Standard Opening with Posts"

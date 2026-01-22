@@ -21,7 +21,7 @@ import {
   strawbale
 } from '@/construction/materials/material'
 
-import { DEFAULT_EMPTY_ASSEMBLY, prefabPlankedAssembly } from './opening.defaults'
+import { DEFAULT_EMPTY_ASSEMBLY, prefabThresholdAssembly } from './opening.defaults'
 
 const infillAssembly: InfillWallAssemblyConfig = {
   id: 'wa_infill_default' as WallAssemblyId,
@@ -183,7 +183,7 @@ const ecococonAssembly: PrefabModulesWallAssemblyConfig = {
   maxWidth: 850,
   targetWidth: 800,
   preferEqualWidths: true,
-  openingAssemblyId: prefabPlankedAssembly.id,
+  openingAssemblyId: prefabThresholdAssembly.id,
   tallReinforceThreshold: 3000,
   tallReinforceThickness: 15,
   tallReinforceStagger: 800,

@@ -286,9 +286,10 @@
     "defaultOpeningAssembly": "Standard-Öffnungsaufbau",
     "defaults": {
       "emptyOpening": "Leere Öffnung",
-      "prefabOpening": "Fertigbau-Öffnung",
+      "prefabDefaultOpening": "Standard Fertigbau-Öffnung",
       "prefabOpeningWithPlanking": "Fertigbau-Öffnung mit Beplankung",
       "prefabOpeningWithPosts": "Fertigbau-Öffnung mit Ständern",
+      "prefabSimpleOpening": "Fertigbau-Öffnung ohne Beplankung",
       "standardOpening": "Standard-Öffnung",
       "standardOpeningWithPlanking": "Standard-Öffnung mit Beplankung",
       "standardOpeningWithPosts": "Standard-Öffnung mit Ständern"

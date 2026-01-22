@@ -18,7 +18,7 @@ export class ThresholdOpeningAssembly extends BaseOpeningAssembly<ThresholdAssem
     yield* this.selectAssemblyByWidth(openings).construct(area, adjustedHeader, adjustedSill, infill, openings)
   }
 
-  private selectAssemblyByWidth(openings: Opening[]): OpeningAssembly {
+  protected selectAssemblyByWidth(openings: Opening[]): OpeningAssembly {
     const width = openings.map(o => o.width).reduce((a, b) => a + b, 0)
     const sorted = [...this.config.thresholds].sort((a, b) => a.widthThreshold - b.widthThreshold)
     const matchingThresholds = sorted.filter(t => width >= t.widthThreshold)

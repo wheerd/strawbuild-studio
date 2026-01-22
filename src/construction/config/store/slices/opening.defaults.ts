@@ -2,7 +2,8 @@ import type {
   EmptyOpeningAssemblyConfig,
   PlankedOpeningAssemblyConfig,
   PostOpeningAssemblyConfig,
-  SimpleOpeningAssemblyConfig
+  SimpleOpeningAssemblyConfig,
+  ThresholdOpeningAssemblyConfig
 } from '@/construction/config/types'
 import { type MaterialId, dhf, lvl, roughWood, woodwool } from '@/construction/materials/material'
 
@@ -20,10 +21,10 @@ export const DEFAULT_SIMPLE_ASSEMBLY: SimpleOpeningAssemblyConfig = {
 
 const emptyMaterial = '' as MaterialId
 
-export const prefabAssembly: SimpleOpeningAssemblyConfig = {
+export const prefabSimpleAssembly: SimpleOpeningAssemblyConfig = {
   id: 'oa_simple_prefab_default',
-  name: 'Prefab Opening',
-  nameKey: $ => $.openings.defaults.prefabOpening,
+  name: 'Prefab Opening without Planking',
+  nameKey: $ => $.openings.defaults.prefabSimpleOpening,
   type: 'simple',
   padding: 15,
   sillThickness: 0,
@@ -99,6 +100,16 @@ export const prefabPlankedAssembly: PlankedOpeningAssemblyConfig = {
   plankThickness: 21
 }
 
+export const prefabThresholdAssembly: ThresholdOpeningAssemblyConfig = {
+  id: 'oa_prefab_threshold_default',
+  name: 'Standard Prefab Opening',
+  nameKey: $ => $.openings.defaults.prefabDefaultOpening,
+  type: 'threshold',
+  padding: 15,
+  defaultId: prefabPlankedAssembly.id,
+  thresholds: [{ widthThreshold: 2000, assemblyId: prefabPostAssembly.id }]
+}
+
 export const DEFAULT_EMPTY_ASSEMBLY: EmptyOpeningAssemblyConfig = {
   id: 'oa_empty_default',
   name: 'Empty Opening',
@@ -112,9 +123,10 @@ export const DEFAULT_OPENING_ASSEMBLIES = [
   postAssembly,
   plankedAssembly,
   DEFAULT_EMPTY_ASSEMBLY,
-  prefabAssembly,
+  prefabSimpleAssembly,
   prefabPostAssembly,
-  prefabPlankedAssembly
+  prefabPlankedAssembly,
+  prefabThresholdAssembly
 ]
 
 export const DEFAULT_OPENING_ASSEMBLY_ID = DEFAULT_SIMPLE_ASSEMBLY.id

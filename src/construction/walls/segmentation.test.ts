@@ -1,11 +1,11 @@
 import { type Mock, type Mocked, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import type {
-  OpeningWithGeometry,
-  PerimeterWallWithGeometry,
-  RingBeamAssemblyId,
-  WallEntity,
-  WallPostWithGeometry
+import {
+  type OpeningWithGeometry,
+  type PerimeterWallWithGeometry,
+  type RingBeamAssemblyId,
+  type WallEntity,
+  type WallPostWithGeometry
 } from '@/building/model'
 import { type StoreyId, createOpeningId, createWallAssemblyId, createWallPostId } from '@/building/model/ids'
 import { type StoreActions, getModelActions } from '@/building/store'
@@ -519,7 +519,8 @@ describe('segmentedWallConstruction', () => {
         expectArea(newVec3(1000, 30, 60), newVec3(800, 220, 2380)),
         2060,
         860,
-        mockInfillMethod
+        mockInfillMethod,
+        expect.arrayContaining([opening])
       )
 
       // Should generate segment measurements for both wall segments
@@ -559,7 +560,8 @@ describe('segmentedWallConstruction', () => {
         expectArea(newVec3(0, 30, 60), newVec3(800, 220, 2380)),
         2060,
         860,
-        mockInfillMethod
+        mockInfillMethod,
+        expect.arrayContaining([opening])
       )
     })
 
@@ -595,7 +597,8 @@ describe('segmentedWallConstruction', () => {
         expectArea(newVec3(2200, 30, 60), newVec3(800, 220, 2380)),
         2060,
         860,
-        mockInfillMethod
+        mockInfillMethod,
+        expect.arrayContaining([opening])
       )
     })
 
@@ -627,7 +630,8 @@ describe('segmentedWallConstruction', () => {
         ),
         2060,
         860,
-        mockInfillMethod
+        mockInfillMethod,
+        expect.arrayContaining([opening1, opening2])
       )
     })
 
@@ -703,14 +707,16 @@ describe('segmentedWallConstruction', () => {
         expectArea(newVec3(500, 30, 60), newVec3(800, 220, 2380)),
         2060,
         860,
-        mockInfillMethod
+        mockInfillMethod,
+        expect.arrayContaining([opening2])
       )
       expect(mockOpeningConstruction).toHaveBeenNthCalledWith(
         2,
         expectArea(newVec3(2000, 30, 60), newVec3(600, 220, 2380)),
         2060,
         860,
-        mockInfillMethod
+        mockInfillMethod,
+        expect.arrayContaining([opening1])
       )
     })
   })
