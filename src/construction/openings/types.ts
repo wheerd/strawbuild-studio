@@ -11,7 +11,8 @@ export interface OpeningAssembly {
     area: WallConstructionArea,
     adjustedHeader: Length,
     adjustedSill: Length,
-    infill: SegmentInfillMethod
+    infill: SegmentInfillMethod,
+    openings: Opening[]
   ) => Generator<ConstructionResult>
 
   getSegmentationPadding(openings: Opening[]): Length

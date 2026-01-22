@@ -280,7 +280,7 @@ function* constructOpeningGroup(
   const sillHeight = Math.max(group[0].sillHeight ?? 0)
   const adjustedSill = sillHeight + zAdjustment
   const adjustedHeader = adjustedSill + group[0].height
-  yield* item.assembly.construct(openingArea, adjustedHeader, adjustedSill, infillMethod)
+  yield* item.assembly.construct(openingArea, adjustedHeader, adjustedSill, infillMethod, group)
 
   // Create opening areas (doors/windows/passages)
   for (const opening of group) {

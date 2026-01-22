@@ -17,7 +17,8 @@ export abstract class BaseOpeningAssembly<T extends OpeningAssemblyConfigBase> i
     area: WallConstructionArea,
     adjustedHeader: Length,
     adjustedSill: Length,
-    infill: SegmentInfillMethod
+    infill: SegmentInfillMethod,
+    openings: Opening[]
   ): Generator<ConstructionResult>
 
   abstract getSegmentationPadding(openings: Opening[]): Length
