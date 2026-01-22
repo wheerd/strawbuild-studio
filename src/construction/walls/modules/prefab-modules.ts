@@ -83,10 +83,11 @@ export class PrefabModulesWallAssembly extends BaseWallAssembly<PrefabModulesWal
       const minCount = Math.ceil(width / (Math.min(module.maxWidth, maxWidth) + reinforceThickness))
       const maxCount = Math.floor(width / (module.minWidth + reinforceThickness))
       const desiredCount = Math.round(width / (targetWidth + reinforceThickness))
-      const moduleCount = Math.min(Math.max(desiredCount, minCount), maxCount)
+      const moduleCount = Math.max(Math.min(Math.max(desiredCount, minCount), maxCount), 1)
       const availableWidth = width - reinforceThickness * (moduleCount - 1)
       const moduleWidth = availableWidth / moduleCount
       const offset = moduleWidth + reinforceThickness
+      console.log('count', moduleCount)
       for (let i = 0; i < moduleCount; i++) {
         const moduleArea = area.withXAdjustment(i * offset, moduleWidth)
         yield* this.yieldModuleColumn(moduleArea, module, i)

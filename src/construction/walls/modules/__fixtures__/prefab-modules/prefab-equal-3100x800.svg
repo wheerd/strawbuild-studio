@@ -1,8 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -800 3100 800" width="3100" height="800">
-<rect x="0" y="-800" width="516.67" height="800" fill="#BBBBBB" stroke="#333333" stroke-width="5" /> <g transform="translate(258.33 -400)"> <text x="0" y="0" style="text-anchor: middle; dominant-baseline: middle; font-size: 20"> 516.6666870117188x800 </text></g>
-<rect x="516.67" y="-800" width="516.67" height="800" fill="#BBBBBB" stroke="#333333" stroke-width="5" /> <g transform="translate(775 -400)"> <text x="0" y="0" style="text-anchor: middle; dominant-baseline: middle; font-size: 20"> 516.6666870117188x800 </text></g>
-<rect x="1033.33" y="-800" width="516.67" height="800" fill="#BBBBBB" stroke="#333333" stroke-width="5" /> <g transform="translate(1291.67 -400)"> <text x="0" y="0" style="text-anchor: middle; dominant-baseline: middle; font-size: 20"> 516.6666259765625x800 </text></g>
-<rect x="1550" y="-800" width="516.67" height="800" fill="#BBBBBB" stroke="#333333" stroke-width="5" /> <g transform="translate(1808.33 -400)"> <text x="0" y="0" style="text-anchor: middle; dominant-baseline: middle; font-size: 20"> 516.666748046875x800 </text></g>
-<rect x="2066.67" y="-800" width="516.67" height="800" fill="#BBBBBB" stroke="#333333" stroke-width="5" /> <g transform="translate(2325 -400)"> <text x="0" y="0" style="text-anchor: middle; dominant-baseline: middle; font-size: 20"> 516.666748046875x800 </text></g>
-<rect x="2583.33" y="-800" width="516.67" height="800" fill="#BBBBBB" stroke="#333333" stroke-width="5" /> <g transform="translate(2841.67 -400)"> <text x="0" y="0" style="text-anchor: middle; dominant-baseline: middle; font-size: 20"> 516.666748046875x800 </text></g>
-</svg>

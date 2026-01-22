@@ -1,4 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -2000 850 2000" width="850" height="2000">
-<rect x="0" y="-2000" width="600" height="2000" fill="#BBBBBB" stroke="#333333" stroke-width="5" /> <g transform="translate(300 -1000)"> <text x="0" y="0" style="text-anchor: middle; dominant-baseline: middle; font-size: 20"> 600x2000 </text></g>
-<rect x="600" y="-2000" width="250" height="2000" fill="#BBBBBB" stroke="#333333" stroke-width="5" /> <g transform="translate(725 -1000)"> <text x="0" y="0" style="text-anchor: middle; dominant-baseline: middle; font-size: 20"> 250x2000 </text></g>
-</svg>

@@ -1,5 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -2000 1700 2000" width="1700" height="2000">
-<rect x="0" y="-2000" width="566.67" height="2000" fill="#BBBBBB" stroke="#333333" stroke-width="5" /> <g transform="translate(283.33 -1000)"> <text x="0" y="0" style="text-anchor: middle; dominant-baseline: middle; font-size: 20"> 566.6666870117188x2000 </text></g>
-<rect x="566.67" y="-2000" width="566.67" height="2000" fill="#BBBBBB" stroke="#333333" stroke-width="5" /> <g transform="translate(850 -1000)"> <text x="0" y="0" style="text-anchor: middle; dominant-baseline: middle; font-size: 20"> 566.6666870117188x2000 </text></g>
-<rect x="1133.33" y="-2000" width="566.67" height="2000" fill="#BBBBBB" stroke="#333333" stroke-width="5" /> <g transform="translate(1416.67 -1000)"> <text x="0" y="0" style="text-anchor: middle; dominant-baseline: middle; font-size: 20"> 566.6666259765625x2000 </text></g>
-</svg>

@@ -1,9 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -2000 3000 2000" width="3000" height="2000">
-<rect x="0" y="-800" width="3000" height="800" fill="#BBFFFF" stroke="#333333" stroke-width="5" /> <g transform="translate(1500 -400)"> <text x="0" y="0" style="text-anchor: middle; dominant-baseline: middle; font-size: 20"> 3000x800 </text></g>
-<rect x="0" y="-1600" width="3000" height="800" fill="#BBFFFF" stroke="#333333" stroke-width="5" /> <g transform="translate(1500 -1200)"> <text x="0" y="0" style="text-anchor: middle; dominant-baseline: middle; font-size: 20"> 3000x800 </text></g>
-<rect x="0" y="-2000" width="600" height="400" fill="#BBBBBB" stroke="#333333" stroke-width="5" /> <g transform="translate(300 -1800)"> <text x="0" y="0" style="text-anchor: middle; dominant-baseline: middle; font-size: 20"> 600x400 </text></g>
-<rect x="600" y="-2000" width="600" height="400" fill="#BBBBBB" stroke="#333333" stroke-width="5" /> <g transform="translate(900 -1800)"> <text x="0" y="0" style="text-anchor: middle; dominant-baseline: middle; font-size: 20"> 600x400 </text></g>
-<rect x="1200" y="-2000" width="600" height="400" fill="#BBBBBB" stroke="#333333" stroke-width="5" /> <g transform="translate(1500 -1800)"> <text x="0" y="0" style="text-anchor: middle; dominant-baseline: middle; font-size: 20"> 600x400 </text></g>
-<rect x="1800" y="-2000" width="600" height="400" fill="#BBBBBB" stroke="#333333" stroke-width="5" /> <g transform="translate(2100 -1800)"> <text x="0" y="0" style="text-anchor: middle; dominant-baseline: middle; font-size: 20"> 600x400 </text></g>
-<rect x="2400" y="-2000" width="600" height="400" fill="#BBBBBB" stroke="#333333" stroke-width="5" /> <g transform="translate(2700 -1800)"> <text x="0" y="0" style="text-anchor: middle; dominant-baseline: middle; font-size: 20"> 600x400 </text></g>
-</svg>
