@@ -933,6 +933,7 @@ interface Resources {
       "wall-part_infill": "Infill",
       "wall-part_opening-side-plank": "Opening Side Plank",
       "wall-part_post": "Post",
+      "wall-part_reinforcement": "Reinforcement Plating",
       "wall-part_sill": "Sill",
       "wall-part_triangular-batten": "Triangular Batten"
     },

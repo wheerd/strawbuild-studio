@@ -140,6 +140,11 @@ export const TAG_OPENING_SIDE_PLANK: PredefinedTag = {
   category: 'wall-part'
 }
 
+export const TAG_WALL_REINFORCEMENT: PredefinedTag = {
+  id: 'wall-part_reinforcement',
+  category: 'wall-part'
+}
+
 // Wall assembly type tags
 export const TAG_INFILL_CONSTRUCTION: PredefinedTag = {
   id: 'wall-assembly_infill',

@@ -15,6 +15,7 @@ import {
   TAG_MODULE,
   TAG_MODULE_HEIGHT,
   TAG_MODULE_WIDTH,
+  TAG_WALL_REINFORCEMENT,
   createTag
 } from '@/construction/tags'
 import type { PrefabModulesWallConfig } from '@/construction/walls'
@@ -77,26 +78,69 @@ export class PrefabModulesWallAssembly extends BaseWallAssembly<PrefabModulesWal
     }
 
     if (preferEqualWidths) {
-      const minCount = Math.ceil(width / Math.min(module.maxWidth, maxWidth))
-      const maxCount = Math.floor(width / module.minWidth)
-      const desiredCount = Math.round(width / targetWidth)
+      const isTallWall = height > this.config.tallReinforceThreshold
+      const reinforceThickness = isTallWall ? this.config.tallReinforceThickness : 0
+      const minCount = Math.ceil(width / (Math.min(module.maxWidth, maxWidth) + reinforceThickness))
+      const maxCount = Math.floor(width / (module.minWidth + reinforceThickness))
+      const desiredCount = Math.round(width / (targetWidth + reinforceThickness))
       const moduleCount = Math.min(Math.max(desiredCount, minCount), maxCount)
-      const moduleWidth = width / moduleCount
+      const availableWidth = width - reinforceThickness * (moduleCount - 1)
+      const moduleWidth = availableWidth / moduleCount
+      const offset = moduleWidth + reinforceThickness
       for (let i = 0; i < moduleCount; i++) {
-        const moduleArea = area.withXAdjustment(i * moduleWidth, moduleWidth)
+        const moduleArea = area.withXAdjustment(i * offset, moduleWidth)
         yield* this.yieldModule(moduleArea, module)
+        if (reinforceThickness > 0) {
+          const reinforceArea = area.withXAdjustment(i * offset + moduleWidth, reinforceThickness)
+          yield* yieldElement(
+            createElementFromArea(reinforceArea, this.config.tallReinforceMaterial, [TAG_WALL_REINFORCEMENT], {
+              type: 'reinforcement'
+            })
+          )
+        }
       }
     } else {
       let remainingArea = area
-      while (remainingArea.size[0] >= targetWidth) {
+      const isTallWall = height > this.config.tallReinforceThreshold
+      const reinforceThickness = isTallWall ? this.config.tallReinforceThickness : 0
+      const needed = targetWidth + reinforceThickness + module.minWidth
+      while (remainingArea.size[0] >= needed) {
         const [a, b] = remainingArea.splitInX(startAtEnd ? remainingArea.size[0] - targetWidth : targetWidth)
         remainingArea = startAtEnd ? a : b
         const moduleArea = startAtEnd ? b : a
         yield* this.yieldModule(moduleArea, module)
+        if (reinforceThickness > 0) {
+          const [a, b] = remainingArea.splitInX(
+            startAtEnd ? remainingArea.size[0] - reinforceThickness : reinforceThickness
+          )
+          remainingArea = startAtEnd ? a : b
+          const reinforceArea = startAtEnd ? b : a
+          yield* yieldElement(
+            createElementFromArea(reinforceArea, this.config.tallReinforceMaterial, [TAG_WALL_REINFORCEMENT], {
+              type: 'reinforcement'
+            })
+          )
+        }
       }
-      if (remainingArea.size[0] > 0) {
-        // TODO: Proper handling with fallback
+
+      if (remainingArea.size[0] > module.maxWidth) {
+        const moduleWidth = (remainingArea.size[0] - reinforceThickness) / 2
+        const module1 = remainingArea.withXAdjustment(0, moduleWidth)
+        yield* this.yieldModule(module1, module)
+        const module2 = remainingArea.withXAdjustment(moduleWidth + reinforceThickness)
+        yield* this.yieldModule(module2, module)
+        if (reinforceThickness > 0) {
+          const reinforceArea = remainingArea.withXAdjustment(moduleWidth, reinforceThickness)
+          yield* yieldElement(
+            createElementFromArea(reinforceArea, this.config.tallReinforceMaterial, [TAG_WALL_REINFORCEMENT], {
+              type: 'reinforcement'
+            })
+          )
+        }
+      } else if (remainingArea.size[0] >= module.minWidth) {
         yield* this.yieldModule(remainingArea, module)
+      } else if (remainingArea.size[0] > 0) {
+        yield* this.fallback(remainingArea)
       }
     }
   }

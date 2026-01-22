@@ -31,14 +31,7 @@ exports[`Prefab Modules Wall Assembly > Snapshot Tests - Various Dimensions > sh
     "material": "material_standard",
     "position_x": 0,
     "position_z": 0,
-    "width": 600,
-  },
-  {
-    "height": 800,
-    "material": "material_standard",
-    "position_x": 600,
-    "position_z": 0,
-    "width": 200,
+    "width": 800,
   },
 ]
 `;
