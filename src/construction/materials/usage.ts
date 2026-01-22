@@ -9,7 +9,6 @@ import type {
 } from '@/building/model/ids'
 import { useWallPosts } from '@/building/store'
 import {
-  getConfigActions,
   useDefaultStrawMaterialId,
   useFloorAssemblies,
   useOpeningAssemblies,
@@ -165,6 +164,15 @@ function isMaterialUsedInWall(materialId: MaterialId, assembly: WallAssemblyConf
       if (assembly.infill.triangularBattens.material === materialId) return true
       break
 
+    case 'prefab-modules':
+      if (assembly.defaultMaterial === materialId) return true
+      if (assembly.fallbackMaterial === materialId) return true
+      if (assembly.inclinedMaterial === materialId) return true
+      if (assembly.lintelMaterial === materialId) return true
+      if (assembly.sillMaterial === materialId) return true
+      if (assembly.tallReinforceMaterial === materialId) return true
+      break
+
     case 'non-strawbale':
       if (assembly.material === materialId) return true
       break
@@ -234,19 +242,7 @@ function isMaterialUsedInRoof(materialId: MaterialId, assembly: RoofAssemblyConf
 }
 
 function isMaterialUsedInOpening(materialId: MaterialId, assembly: OpeningAssemblyConfig): boolean {
-  if (assembly.type === 'threshold') {
-    const configActions = getConfigActions()
-    const assemblyIds = [...new Set([assembly.defaultId, ...assembly.thresholds.map(t => t.assemblyId)])]
-    for (const id of assemblyIds) {
-      const referencedAssembly = configActions.getOpeningAssemblyById(id)
-      if (referencedAssembly && isMaterialUsedInOpening(materialId, referencedAssembly)) {
-        return true
-      }
-    }
-    return false
-  }
-
-  if (assembly.type !== 'empty') {
+  if ('sillMaterial' in assembly) {
     if (assembly.headerMaterial === materialId) return true
     if (assembly.sillMaterial === materialId) return true
   }

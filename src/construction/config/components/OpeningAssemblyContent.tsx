@@ -76,7 +76,7 @@ export function OpeningAssemblyContent({ initialSelectionId }: OpeningAssemblyCo
     () =>
       selectedAssembly
         ? getOpeningAssemblyUsage(selectedAssembly.id)
-        : { isUsed: false, isDefault: false, wallAssemblyIds: [], storeyIds: [] },
+        : { isUsed: false, isDefault: false, wallAssemblyIds: [], openingAssemblyIds: [], storeyIds: [] },
     [selectedAssembly, wallAssemblyArray, defaultId]
   )
 
@@ -356,6 +356,9 @@ function UsageDisplay({ usage }: { usage: OpeningAssemblyUsage }): React.JSX.Ele
             {t($ => $.usage.globalDefault_opening)}
           </Badge>
         )}
+        {usage.openingAssemblyIds.map(id => (
+          <UsageBadge key={id} id={id} />
+        ))}
         {usage.wallAssemblyIds.map(id => (
           <UsageBadge key={id} id={id} />
         ))}

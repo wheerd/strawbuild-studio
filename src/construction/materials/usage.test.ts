@@ -397,5 +397,64 @@ describe('Material Usage Detection', () => {
       expect(result.current.assemblyIds).toContain(wallAssembly.id)
       expect(result.current.usedInWallPosts).toBe(false) // No actual posts in building model
     })
+
+    it('detects prefab-modules wall assembly materials', () => {
+      const defaultMaterial = createMaterialId()
+      const fallbackMaterial = createMaterialId()
+      const inclinedMaterial = createMaterialId()
+      const lintelMaterial = createMaterialId()
+      const sillMaterial = createMaterialId()
+      const tallReinforceMaterial = createMaterialId()
+
+      const wallAssembly: WallAssemblyConfig = {
+        id: createWallAssemblyId(),
+        name: 'Prefab Modules Wall',
+        type: 'prefab-modules',
+        defaultMaterial,
+        fallbackMaterial,
+        inclinedMaterial,
+        lintelMaterial,
+        sillMaterial,
+        maxWidth: 1000,
+        targetWidth: 900,
+        preferEqualWidths: false,
+        tallReinforceThreshold: 3000,
+        tallReinforceThickness: 60,
+        tallReinforceStagger: 150,
+        tallReinforceMaterial,
+        layers: {
+          insideThickness: 30,
+          insideLayers: [],
+          outsideThickness: 50,
+          outsideLayers: []
+        }
+      }
+
+      mockUseWallAssemblies.mockReturnValue([wallAssembly])
+
+      const { result: defaultResult } = renderHook(() => useMaterialUsage(defaultMaterial))
+      expect(defaultResult.current.isUsed).toBe(true)
+      expect(defaultResult.current.assemblyIds).toEqual([wallAssembly.id])
+
+      const { result: fallbackResult } = renderHook(() => useMaterialUsage(fallbackMaterial))
+      expect(fallbackResult.current.isUsed).toBe(true)
+      expect(fallbackResult.current.assemblyIds).toEqual([wallAssembly.id])
+
+      const { result: inclinedResult } = renderHook(() => useMaterialUsage(inclinedMaterial))
+      expect(inclinedResult.current.isUsed).toBe(true)
+      expect(inclinedResult.current.assemblyIds).toEqual([wallAssembly.id])
+
+      const { result: lintelResult } = renderHook(() => useMaterialUsage(lintelMaterial))
+      expect(lintelResult.current.isUsed).toBe(true)
+      expect(lintelResult.current.assemblyIds).toEqual([wallAssembly.id])
+
+      const { result: sillResult } = renderHook(() => useMaterialUsage(sillMaterial))
+      expect(sillResult.current.isUsed).toBe(true)
+      expect(sillResult.current.assemblyIds).toEqual([wallAssembly.id])
+
+      const { result: reinforceResult } = renderHook(() => useMaterialUsage(tallReinforceMaterial))
+      expect(reinforceResult.current.isUsed).toBe(true)
+      expect(reinforceResult.current.assemblyIds).toEqual([wallAssembly.id])
+    })
   })
 })

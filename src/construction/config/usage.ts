@@ -39,6 +39,7 @@ export interface OpeningAssemblyUsage {
   isUsed: boolean
   isDefault: boolean
   wallAssemblyIds: WallAssemblyId[]
+  openingAssemblyIds: OpeningAssemblyId[]
   storeyIds: StoreyId[]
 }
 
@@ -154,13 +155,15 @@ export function getRoofAssemblyUsage(
  * - By individual openings that override to use this assembly
  */
 export function getOpeningAssemblyUsage(assemblyId: OpeningAssemblyId): OpeningAssemblyUsage {
-  const { getDefaultOpeningAssemblyId, getAllWallAssemblies } = getConfigActions()
+  const { getDefaultOpeningAssemblyId, getAllWallAssemblies, getAllOpeningAssemblies } = getConfigActions()
   const { getPerimeterById, getAllWallOpenings } = getModelActions()
   const wallAssemblies = getAllWallAssemblies()
+  const openingAssemblies = getAllOpeningAssemblies()
   const openings = getAllWallOpenings()
 
   const isDefault = assemblyId === getDefaultOpeningAssemblyId()
   const wallAssemblyIdSet = new Set<WallAssemblyId>()
+  const openingAssemblyIdSet = new Set<OpeningAssemblyId>()
   const storeyIdSet = new Set<StoreyId>()
 
   // Check wall assemblies that reference this opening assembly
@@ -177,10 +180,22 @@ export function getOpeningAssemblyUsage(assemblyId: OpeningAssemblyId): OpeningA
     }
   })
 
+  // Check threshold assemblies that reference this opening assembly
+  openingAssemblies.forEach(openingAssembly => {
+    if (openingAssembly.type === 'threshold') {
+      if (openingAssembly.defaultId === assemblyId) {
+        openingAssemblyIdSet.add(openingAssembly.id)
+      } else if (openingAssembly.thresholds.some(threshold => threshold.assemblyId === assemblyId)) {
+        openingAssemblyIdSet.add(openingAssembly.id)
+      }
+    }
+  })
+
   return {
-    isUsed: isDefault || wallAssemblyIdSet.size > 0 || storeyIdSet.size > 0,
+    isUsed: isDefault || wallAssemblyIdSet.size > 0 || storeyIdSet.size > 0 || openingAssemblyIdSet.size > 0,
     isDefault,
     wallAssemblyIds: Array.from(wallAssemblyIdSet),
+    openingAssemblyIds: Array.from(openingAssemblyIdSet),
     storeyIds: Array.from(storeyIdSet)
   }
 }
