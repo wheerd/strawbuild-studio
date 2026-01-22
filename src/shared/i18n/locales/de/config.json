@@ -499,6 +499,11 @@
       "lintelMaterial": "Sturzmaterial",
       "preferEqualWidth": "Bevorzuge gleiche Modulbreite",
       "sillMaterial": "Schwellenmaterial",
+      "tallReinforceMaterial": "Material",
+      "tallReinforceStagger": "Versatz",
+      "tallReinforceThickness": "Dicke",
+      "tallReinforceThreshold": "Grenzwert",
+      "tallWallReinforcement": "Verstärkung für hohe Wände",
       "useDefaultMaterial": "Standardmaterial verwenden"
     },
     "prefabModulesConfiguration": "Fertigteilkonfiguration",

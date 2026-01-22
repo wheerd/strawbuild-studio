@@ -75,6 +75,10 @@ export interface PrefabModulesWallConfig extends WallBaseConfig {
   maxWidth: Length
   targetWidth: Length
   preferEqualWidths: boolean
+  tallReinforceThreshold: Length
+  tallReinforceThickness: Length
+  tallReinforceStagger: Length
+  tallReinforceMaterial: MaterialId
 }
 
 export type WallConfig =

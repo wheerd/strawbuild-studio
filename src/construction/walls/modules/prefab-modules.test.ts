@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import type { ConstructionElement } from '@/construction/elements'
 import { WallConstructionArea } from '@/construction/geometry'
-import type { PrefabMaterial } from '@/construction/materials/material'
+import type { MaterialId, PrefabMaterial } from '@/construction/materials/material'
 import { getMaterialsActions } from '@/construction/materials/store'
 import { aggregateResults } from '@/construction/results'
 import type { PrefabModulesWallConfig } from '@/construction/walls'
@@ -96,14 +96,18 @@ const sillMaterial: PrefabMaterial = {
 
 const createTestConfig = (): PrefabModulesWallConfig => ({
   type: 'prefab-modules',
-  defaultMaterial: 'material_standard' as any,
-  fallbackMaterial: 'material_fallback' as any,
-  inclinedMaterial: 'material_inclined' as any,
-  lintelMaterial: 'material_lintel' as any,
-  sillMaterial: 'material_sill' as any,
+  defaultMaterial: 'material_standard' as MaterialId,
+  fallbackMaterial: 'material_fallback' as MaterialId,
+  inclinedMaterial: 'material_inclined' as MaterialId,
+  lintelMaterial: 'material_lintel' as MaterialId,
+  sillMaterial: 'material_sill' as MaterialId,
   maxWidth: 850,
   targetWidth: 600,
   preferEqualWidths: false,
+  tallReinforceThreshold: 3000,
+  tallReinforceThickness: 15,
+  tallReinforceStagger: 400,
+  tallReinforceMaterial: 'material_reinforce' as MaterialId,
   layers: {
     insideThickness: 0,
     insideLayers: [],

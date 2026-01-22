@@ -39,6 +39,7 @@ import {
   ecococonLintel,
   ecococonSill,
   ecococonStandard,
+  lvl,
   roughWood,
   woodwool
 } from '@/construction/materials/material'
@@ -776,6 +777,57 @@ function PrefabModulesConfigForm({ config, onUpdate }: PrefabModulesConfigFormPr
           />
         </div>
       </div>
+
+      <h2>{t($ => $.walls.prefab.tallWallReinforcement)}</h2>
+      <div className="grid grid-cols-2 gap-2 gap-x-3">
+        <Label.Root className="flex flex-col gap-1">
+          <span className="text-sm font-medium">{t($ => $.walls.prefab.tallReinforceThreshold)}</span>
+          <LengthField
+            value={config.tallReinforceThreshold}
+            onChange={tallReinforceThreshold => {
+              onUpdate({ tallReinforceThreshold })
+            }}
+            unit="mm"
+            size="sm"
+          />
+        </Label.Root>
+
+        <Label.Root className="flex flex-col gap-1">
+          <span className="text-sm font-medium">{t($ => $.walls.prefab.tallReinforceThickness)}</span>
+          <LengthField
+            value={config.tallReinforceThickness}
+            onChange={tallReinforceThickness => {
+              onUpdate({ tallReinforceThickness })
+            }}
+            unit="mm"
+            size="sm"
+          />
+        </Label.Root>
+
+        <Label.Root className="flex flex-col gap-1">
+          <span className="text-sm font-medium">{t($ => $.walls.prefab.tallReinforceStagger)}</span>
+          <LengthField
+            value={config.tallReinforceStagger}
+            onChange={tallReinforceStagger => {
+              onUpdate({ tallReinforceStagger })
+            }}
+            unit="mm"
+            size="sm"
+          />
+        </Label.Root>
+
+        <Label.Root className="flex flex-col gap-1">
+          <span className="text-sm font-medium">{t($ => $.walls.prefab.tallReinforceMaterial)}</span>
+          <MaterialSelectWithEdit
+            value={config.tallReinforceMaterial}
+            onValueChange={tallReinforceMaterial => {
+              onUpdate({ tallReinforceMaterial: tallReinforceMaterial ?? undefined })
+            }}
+            size="sm"
+            preferredTypes={['sheet', 'dimensional']}
+          />
+        </Label.Root>
+      </div>
     </div>
   )
 }
@@ -1180,6 +1232,10 @@ export function WallAssemblyContent({ initialSelectionId }: WallAssemblyContentP
             maxWidth: 850,
             targetWidth: 800,
             preferEqualWidths: true,
+            tallReinforceThreshold: 3000,
+            tallReinforceThickness: 15,
+            tallReinforceStagger: 400,
+            tallReinforceMaterial: lvl.id,
             openingAssemblyId: 'oa_empty_default' as OpeningAssemblyId,
             layers
           }

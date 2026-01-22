@@ -16,6 +16,7 @@ import {
   ecococonLintel,
   ecococonSill,
   ecococonStandard,
+  lvl,
   roughWood,
   strawbale
 } from '@/construction/materials/material'
@@ -183,6 +184,10 @@ const ecococonAssembly: PrefabModulesWallAssemblyConfig = {
   targetWidth: 800,
   preferEqualWidths: true,
   openingAssemblyId: prefabPlankedAssembly.id,
+  tallReinforceThreshold: 3000,
+  tallReinforceThickness: 15,
+  tallReinforceStagger: 400,
+  tallReinforceMaterial: lvl.id,
   layers: {
     insideThickness: 30,
     insideLayers: PRESET_WALL_CLAY_PLASTER.layers,

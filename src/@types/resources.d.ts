@@ -576,6 +576,11 @@ interface Resources {
         "lintelMaterial": "Lintel Material",
         "preferEqualWidth": "Prefer equal module widths",
         "sillMaterial": "Sill Material",
+        "tallReinforceMaterial": "Material",
+        "tallReinforceStagger": "Stagger Offset",
+        "tallReinforceThickness": "Thickness",
+        "tallReinforceThreshold": "Threshold",
+        "tallWallReinforcement": "Tall Wall Reinforcement",
         "useDefaultMaterial": "Use default material"
       },
       "prefabModulesConfiguration": "Prefab Modules Configuration",
