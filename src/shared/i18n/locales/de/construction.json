@@ -73,6 +73,8 @@
       "label": "Bezeichnung",
       "quantity": "Menge",
       "type": "Typ",
+      "area": "Fläche",
+      "totalArea": "Gesamtfläche",
       "view": "Ansicht"
     },
     "title": "Module"

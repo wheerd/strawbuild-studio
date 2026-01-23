@@ -20,7 +20,7 @@ export function ConstructionVirtualPartsList({
   onViewInPlan?: (partId: PartId) => void
 }): React.JSX.Element {
   const { t } = useTranslation('construction')
-  const { formatDimensions3D } = useFormatters()
+  const { formatDimensions3D, formatArea } = useFormatters()
 
   const parts = useMemo(() => Object.values(partsList).sort((a, b) => a.label.localeCompare(b.label)), [partsList])
 
@@ -51,6 +51,12 @@ export function ConstructionVirtualPartsList({
               <Table.ColumnHeaderCell width="20em">
                 {t($ => $.modulesList.tableHeaders.dimensions)}
               </Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell width="5em" className="text-end">
+                {t($ => $.modulesList.tableHeaders.area)}
+              </Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell width="8em" className="text-end">
+                {t($ => $.modulesList.tableHeaders.totalArea)}
+              </Table.ColumnHeaderCell>
               <Table.ColumnHeaderCell width="6em" className="text-center">
                 {t($ => $.modulesList.tableHeaders.quantity)}
               </Table.ColumnHeaderCell>
@@ -73,6 +79,12 @@ export function ConstructionVirtualPartsList({
                 </Table.Cell>
                 <Table.Cell>
                   <span>{formatDimensions3D([part.size[0], part.size[1], part.size[2]])}</span>
+                </Table.Cell>
+                <Table.Cell className="text-end">
+                  <span>{part.area !== undefined ? formatArea(part.area) : '—'}</span>
+                </Table.Cell>
+                <Table.Cell className="text-end">
+                  <span>{part.totalArea !== undefined ? formatArea(part.totalArea) : '—'}</span>
                 </Table.Cell>
                 <Table.Cell className="text-center">
                   <span>{part.quantity}</span>

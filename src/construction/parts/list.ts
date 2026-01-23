@@ -71,6 +71,13 @@ const indexToLabel = (index: number): string => {
 
 const computeVolume = (size: Vec3): Volume => size[0] * size[1] * size[2]
 
+const calculateModuleArea = (element: GroupOrElement, partInfo: FullPartInfo | null): Area => {
+  if (partInfo?.sideFaces?.[0]) {
+    return calculatePolygonWithHolesArea(partInfo.sideFaces[0].polygon)
+  }
+  return element.bounds.size[0] * element.bounds.size[2]
+}
+
 const STRAW_CATEGORY_BY_TAG: Record<string, StrawCategory> = {
   [TAG_FULL_BALE.id as string]: 'full',
   [TAG_PARTIAL_BALE.id as string]: 'partial',
@@ -476,6 +483,9 @@ export const generateVirtualPartsList = (model: ConstructionModel): VirtualParts
       const existingPart = partsList[partId]
       existingPart.quantity += 1
       existingPart.elements.push(element.id)
+      if (existingPart.area !== undefined) {
+        existingPart.totalArea = existingPart.area * existingPart.quantity
+      }
       return
     }
 
@@ -483,6 +493,7 @@ export const generateVirtualPartsList = (model: ConstructionModel): VirtualParts
     const description = typeTag && isCustomTag(typeTag) ? typeTag.label : undefined
 
     const label = indexToLabel(labelCounter++)
+    const area = calculateModuleArea(element, partInfo)
 
     const partItem: PartItem = {
       partId,
@@ -491,7 +502,9 @@ export const generateVirtualPartsList = (model: ConstructionModel): VirtualParts
       description,
       size: copyVec3(partInfo.boxSize),
       elements: [element.id],
-      quantity: 1
+      quantity: 1,
+      area,
+      totalArea: area
     }
 
     partsList[partId] = partItem

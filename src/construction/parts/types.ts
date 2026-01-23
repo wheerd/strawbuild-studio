@@ -46,6 +46,8 @@ export interface PartItem {
   size: Vec3
   elements: ConstructionElementId[]
   quantity: number
+  area?: Area
+  totalArea?: Area
 }
 
 export type PartIssue = 'CrossSectionMismatch' | 'LengthExceedsAvailable' | 'ThicknessMismatch' | 'SheetSizeExceeded'

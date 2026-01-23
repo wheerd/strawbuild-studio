@@ -686,10 +686,12 @@ interface Resources {
       },
       "noModules": "No modules",
       "tableHeaders": {
+        "area": "Area",
         "description": "Specific Type",
         "dimensions": "Dimensions",
         "label": "Label",
         "quantity": "Quantity",
+        "totalArea": "Total Area",
         "type": "Type",
         "view": "View"
       },
