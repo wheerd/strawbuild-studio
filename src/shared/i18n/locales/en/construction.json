@@ -64,7 +64,9 @@
   },
   "modulesList": {
     "actions": {
-      "viewInPlan": "View in plan"
+      "viewInPlan": "View in plan",
+      "backToSummary": "Back to summary",
+      "jumpToDetails": "Jump to details"
     },
     "noModules": "No modules",
     "tableHeaders": {
@@ -75,8 +77,12 @@
       "type": "Type",
       "area": "Area",
       "totalArea": "Total Area",
+      "specificType": "Specific Type",
+      "totalQuantity": "Total Quantity",
+      "differentParts": "Different Parts",
       "view": "View"
     },
+    "summary": "Summary",
     "title": "Modules"
   },
   "moduleTypes": {

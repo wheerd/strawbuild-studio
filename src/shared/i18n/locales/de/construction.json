@@ -64,7 +64,9 @@
   },
   "modulesList": {
     "actions": {
-      "viewInPlan": "In Plan anzeigen"
+      "viewInPlan": "In Plan anzeigen",
+      "backToSummary": "Zurück zur Übersicht",
+      "jumpToDetails": "Zu Details springen"
     },
     "noModules": "Keine Module",
     "tableHeaders": {
@@ -75,8 +77,12 @@
       "type": "Typ",
       "area": "Fläche",
       "totalArea": "Gesamtfläche",
+      "specificType": "Spezifischer Typ",
+      "totalQuantity": "Gesamtanzahl",
+      "differentParts": "Verschiedene Teile",
       "view": "Ansicht"
     },
+    "summary": "Zusammenfassung",
     "title": "Module"
   },
   "moduleTypes": {

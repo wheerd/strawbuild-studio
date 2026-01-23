@@ -13,6 +13,7 @@ export interface SideFace {
 export interface FullPartInfo {
   id: PartId
   type: string
+  subtype?: string
   description?: TranslatableString
   boxSize: Vec3
   sideFaces?: SideFace[]
@@ -41,6 +42,7 @@ export interface MaterialParts {
 export interface PartItem {
   partId: PartId
   type: string
+  subtype?: string
   description?: TranslatableString
   label: string // A, B, C, ...
   size: Vec3

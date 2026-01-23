@@ -1,6 +1,9 @@
 import * as DialogPrimitive from '@radix-ui/react-dialog'
 import { Cross2Icon } from '@radix-ui/react-icons'
 import * as React from 'react'
+import { ErrorBoundary } from 'react-error-boundary'
+
+import { FeatureErrorFallback } from '@/shared/components/ErrorBoundary'
 
 interface FullScreenModalProps {
   open?: boolean
@@ -11,6 +14,7 @@ interface FullScreenModalProps {
   trigger?: React.ReactNode
   onEscapeKeyDown?: (e: Event) => void
   'aria-describedby'?: string
+  resetKeys?: unknown[]
 }
 
 export function FullScreenModal({
@@ -21,6 +25,7 @@ export function FullScreenModal({
   children,
   trigger,
   onEscapeKeyDown,
+  resetKeys = [],
   'aria-describedby': ariaDescribedBy
 }: FullScreenModalProps): React.JSX.Element {
   return (
@@ -68,7 +73,11 @@ export function FullScreenModal({
           </div>
 
           {/* Content - fills remaining space */}
-          <div className="flex min-h-0 flex-1 overflow-hidden px-2 py-2">{children}</div>
+          <div className="flex min-h-0 flex-1 overflow-hidden px-2 py-2">
+            <ErrorBoundary FallbackComponent={FeatureErrorFallback} resetKeys={[open, ...resetKeys]}>
+              {children}
+            </ErrorBoundary>
+          </div>
         </DialogPrimitive.Content>
       </DialogPrimitive.Portal>
     </DialogPrimitive.Root>

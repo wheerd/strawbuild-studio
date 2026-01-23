@@ -444,6 +444,7 @@ function getFullPartInfo(element: GroupOrElement): FullPartInfo | null {
     fullInfo.boxSize = mpi.boxSize
     fullInfo.sideFaces = mpi.sideFaces
     fullInfo.id = id
+    fullInfo.subtype = element.partInfo.subtype
     return fullInfo
   }
 
@@ -452,6 +453,7 @@ function getFullPartInfo(element: GroupOrElement): FullPartInfo | null {
   const fullInfo = element.partInfo as FullPartInfo
   fullInfo.boxSize = arrayToVec3(dims)
   fullInfo.id = id
+  fullInfo.subtype = element.partInfo.subtype
   return fullInfo
 }
 
@@ -498,6 +500,7 @@ export const generateVirtualPartsList = (model: ConstructionModel): VirtualParts
     const partItem: PartItem = {
       partId,
       type: partInfo.type,
+      subtype: partInfo.subtype,
       label,
       description,
       size: copyVec3(partInfo.boxSize),

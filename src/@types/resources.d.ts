@@ -682,16 +682,22 @@ interface Resources {
     },
     "modulesList": {
       "actions": {
+        "backToSummary": "Back to summary",
+        "jumpToDetails": "Jump to details",
         "viewInPlan": "View in plan"
       },
       "noModules": "No modules",
+      "summary": "Summary",
       "tableHeaders": {
         "area": "Area",
         "description": "Specific Type",
+        "differentParts": "Different Parts",
         "dimensions": "Dimensions",
         "label": "Label",
         "quantity": "Quantity",
+        "specificType": "Specific Type",
         "totalArea": "Total Area",
+        "totalQuantity": "Total Quantity",
         "type": "Type",
         "view": "View"
       },
