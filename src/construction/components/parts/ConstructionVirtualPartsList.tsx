@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Table } from '@/components/ui/table'
 import type { PartId, VirtualPartsList } from '@/construction/parts'
 import { useFormatters } from '@/shared/i18n/useFormatters'
+import { useTranslatableString } from '@/shared/i18n/useTranslatableString'
 
 // Helper to check if part can be highlighted (not auto-generated)
 const canHighlightPart = (partId: PartId): boolean => !partId.startsWith('auto_')
@@ -34,7 +35,7 @@ export function ConstructionVirtualPartsList({
   }
 
   return (
-    <Card variant="surface" className="w-full">
+    <Card variant="surface" className="w-full flex-1 grow">
       <CardHeader className="p-3">
         <h2 className="text-xl font-bold">{t($ => $.modulesList.title)}</h2>
       </CardHeader>
@@ -46,6 +47,7 @@ export function ConstructionVirtualPartsList({
                 {t($ => $.modulesList.tableHeaders.label)}
               </Table.ColumnHeaderCell>
               <Table.ColumnHeaderCell>{t($ => $.modulesList.tableHeaders.type)}</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell>{t($ => $.modulesList.tableHeaders.description)}</Table.ColumnHeaderCell>
               <Table.ColumnHeaderCell width="20em">
                 {t($ => $.modulesList.tableHeaders.dimensions)}
               </Table.ColumnHeaderCell>
@@ -65,6 +67,9 @@ export function ConstructionVirtualPartsList({
                 </Table.RowHeaderCell>
                 <Table.Cell>
                   <span>{part.type}</span>
+                </Table.Cell>
+                <Table.Cell>
+                  <span>{useTranslatableString(part.description)}</span>
                 </Table.Cell>
                 <Table.Cell>
                   <span>{formatDimensions3D([part.size[0], part.size[1], part.size[2]])}</span>

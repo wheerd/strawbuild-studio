@@ -77,8 +77,9 @@ function AddPostToolInspectorImpl({ tool }: AddPostToolInspectorImplProps): Reac
         case 'modules':
           postConfig = assembly.infill.posts
           break
+        case 'prefab-modules':
         case 'non-strawbale':
-          // No post config for non-strawbale walls
+          // No post config for these wall types
           break
         default:
           assertUnreachable(assembly, 'Invalid wall assembly type')
@@ -196,8 +197,7 @@ function AddPostToolInspectorImpl({ tool }: AddPostToolInspectorImplProps): Reac
             tool.setWidth(value)
           }}
           unit="cm"
-          min={10}
-          max={500}
+          min={1}
           step={10}
           size="sm"
           className="w-20"
@@ -215,8 +215,7 @@ function AddPostToolInspectorImpl({ tool }: AddPostToolInspectorImplProps): Reac
             tool.setThickness(value)
           }}
           unit="cm"
-          min={50}
-          max={1000}
+          min={1}
           step={10}
           size="sm"
           className="w-20"

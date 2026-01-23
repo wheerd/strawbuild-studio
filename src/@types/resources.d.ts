@@ -265,12 +265,21 @@ interface Resources {
         "concrete": "Concrete",
         "cork": "Cork",
         "dhf": "DHF (Wood Fiber Board)",
+        "ecococon-box": "Ecococon Box Element",
+        "ecococon-braced": "Ecococon Braced",
+        "ecococon-column": "Ecococon Column",
+        "ecococon-inclined": "Ecococon Inclined",
+        "ecococon-inclined-braced": "Ecococon Inclined Braced",
+        "ecococon-lintel": "Ecococon Lintel",
+        "ecococon-sill": "Ecococon Sill",
+        "ecococon-standard": "Ecococon Standard",
         "fireProtectionBoarding": "Fire Protection Boarding",
         "glt": "Glulam (GLT)",
         "gypsum": "Gypsum Board",
         "impactSoundInsulation": "Impact Sound Insulation",
         "limePlasterBase": "Lime Plaster (Base)",
         "limePlasterFine": "Lime Plaster (Fine)",
+        "lvl": "LVL (Laminated Veneer Lumber)",
         "osb": "OSB",
         "reed": "Reed Matting",
         "roughWood": "Rough-sawn Timber",
@@ -282,12 +291,24 @@ interface Resources {
       "deleteConfirm": "Are you sure you want to delete \"{{name}}\"? This action cannot be undone.",
       "deleteTitle": "Delete Material",
       "duplicateNamePattern": "{{name}} (Copy)",
+      "enableSloped": "Enable sloped configuration",
       "flakeSize": "Flake Size",
+      "isFlippedLabel": "Flipped construction",
+      "isFlippedTooltip": "When activated, instances of this material will represented with flipped width/height and turned by 90°. The result is the same, but the underlying (exported) geometry is different.",
       "materialName": "Material name",
+      "maxAngleDegrees": "Max Angle",
       "maxBaleLength": "Max Bale Length",
+      "maxHeight": "Max Height",
+      "maxThickness": "Max Thickness",
+      "maxWidth": "Max Width",
+      "minAngleDegrees": "Min Angle",
       "minBaleLength": "Min Bale Length",
+      "minHeight": "Min Height",
+      "minThickness": "Min Thickness",
+      "minWidth": "Min Width",
       "newName_dimensional": "New dimensional material",
       "newName_generic": "New generic material",
+      "newName_prefab": "New prefab material",
       "newName_sheet": "New sheet material",
       "newName_strawbale": "New strawbale material",
       "newName_volume": "New volume material",
@@ -320,6 +341,7 @@ interface Resources {
       "topCutoffLimit": "Top Cutoff Limit",
       "typeDimensional": "Dimensional",
       "typeGeneric": "Generic",
+      "typePrefab": "Prefab",
       "typeSheet": "Sheet",
       "typeStrawbale": "Strawbale",
       "typeVolume": "Volume",
@@ -341,6 +363,10 @@ interface Resources {
       "defaultOpeningAssembly": "Default Opening Assembly",
       "defaults": {
         "emptyOpening": "Empty Opening",
+        "prefabDefaultOpening": "Default Prefab Opening",
+        "prefabOpeningWithPlanking": "Prefab Opening with Planking",
+        "prefabOpeningWithPosts": "Prefab Opening with Posts",
+        "prefabSimpleOpening": "Prefab Opening without Planking",
         "standardOpening": "Standard Opening",
         "standardOpeningWithPlanking": "Standard Opening with Planking",
         "standardOpeningWithPosts": "Standard Opening with Posts"
@@ -349,8 +375,11 @@ interface Resources {
       "deleteTitle": "Delete Opening Assembly",
       "emptyList": "No opening assemblies available",
       "labels": {
+        "addThreshold": "Add Threshold",
+        "defaultAssembly": "Default Assembly",
         "headerMaterial": "Header Material",
         "headerThickness": "Header Thickness",
+        "noThresholds": "No thresholds configured. Click \"Add Threshold\" to create one.",
         "padding": "Padding",
         "plankMaterial": "Planking Material",
         "plankThickness": "Planking Thickness",
@@ -358,7 +387,10 @@ interface Resources {
         "postsSupportHeader": "Posts support header",
         "replacesWallPosts": "Replaces Wall Posts",
         "sillMaterial": "Sill Material",
-        "sillThickness": "Sill Thickness"
+        "sillThickness": "Sill Thickness",
+        "thresholdAssembly": "Assembly",
+        "thresholds": "Width Thresholds",
+        "widthThreshold": "Width Threshold"
       },
       "placeholders": {
         "name": "Opening assembly name"
@@ -377,7 +409,8 @@ interface Resources {
         "empty": "Empty Opening",
         "planked": "Opening with Side Planking",
         "post": "Opening With Posts",
-        "simple": "Standard Opening"
+        "simple": "Standard Opening",
+        "threshold": "Width-Based Threshold Assembly"
       },
       "useGlobalDefault": "Use global default"
     },
@@ -503,6 +536,7 @@ interface Resources {
       "defaults": {
         "concreteWall": "Concrete Wall",
         "defaultModule": "Default Module",
+        "ecococonModules": "Ecococon Modules",
         "standardInfill": "Standard Infill",
         "strawhengeModule": "Strawhenge Module"
       },
@@ -529,6 +563,7 @@ interface Resources {
       "newName_infill": "New Infill Assembly",
       "newName_modules": "New Modules Assembly",
       "newName_nonStrawbale": "New Non-Strawbale Assembly",
+      "newName_prefab": "New Prefab Modules Assembly",
       "newName_strawhenge": "New Strawhenge Assembly",
       "noInfillMaterial": "No infill material",
       "noInsideLayers": "No inside layers defined",
@@ -542,18 +577,35 @@ interface Resources {
       "postTypeDouble": "Double",
       "postTypeFull": "Full",
       "postsConfiguration": "Posts Configuration",
+      "prefab": {
+        "defaultMaterial": "Default Material",
+        "fallbackMaterial": "Fallback Material",
+        "inclinedMaterial": "Inclined Material",
+        "lintelMaterial": "Lintel Material",
+        "preferEqualWidth": "Prefer equal module widths",
+        "sillMaterial": "Sill Material",
+        "tallReinforceMaterial": "Material",
+        "tallReinforceStagger": "Stagger Offset",
+        "tallReinforceThickness": "Thickness",
+        "tallReinforceThreshold": "Threshold",
+        "tallWallReinforcement": "Tall Wall Reinforcement",
+        "useDefaultMaterial": "Use default material"
+      },
+      "prefabModulesConfiguration": "Prefab Modules Configuration",
       "resetConfirm": "Are you sure you want to reset default wall assemblies? This will restore the original default assemblies but keep any custom assemblies you've created. This action cannot be undone.",
       "resetTitle": "Reset Wall Assemblies",
       "selectDefault": "Select default...",
       "spacerCount": "Spacer Count",
       "spacerMaterial": "Spacer Material",
       "spacerSize": "Spacer Size",
+      "targetWidth": "Target Width",
       "triangularBattensConfiguration": "Triangular Battens",
       "triangularBattensTooltip": "Triangular battens are placed in the corners between posts and strawbales to prevent them from slipping out. Not needed when there is planking to hold the bales.",
       "types": {
         "infill": "Infill",
         "modules": "Modules",
         "non-strawbale": "Non-Strawbale",
+        "prefab-modules": "Prefab Modules",
         "strawhenge": "Strawhenge"
       },
       "unclearTotalThickness": "? + {{layerThickness, length}} (Layers)",
@@ -580,6 +632,7 @@ interface Resources {
     "materialTypes": {
       "dimensional": "Dimensional",
       "generic": "Generic",
+      "prefab": "Prefab",
       "sheet": "Sheet",
       "strawbale": "Strawbale",
       "volume": "Volume"
@@ -623,12 +676,17 @@ interface Resources {
       "wallConstruction": "Wall Construction",
       "wallConstructionHeight": "Wall Construction Height"
     },
+    "moduleTypes": {
+      "double": "Double",
+      "single": "Single"
+    },
     "modulesList": {
       "actions": {
         "viewInPlan": "View in plan"
       },
       "noModules": "No modules",
       "tableHeaders": {
+        "description": "Specific Type",
         "dimensions": "Dimensions",
         "label": "Label",
         "quantity": "Quantity",
@@ -770,6 +828,7 @@ interface Resources {
       "floor-measurement": "Floor Measurement",
       "floor-part": "Floor Part",
       "module-part": "Module Parts",
+      "module-type": "Module Type",
       "opening": "Opening",
       "opening-measurement": "Opening Measurement",
       "ring-beam-assembly": "Ring Beam Assembly",
@@ -863,10 +922,13 @@ interface Resources {
       "straw_partial-bale": "Partial Strawbale",
       "straw_stuffed": "Stuffed Straw",
       "wall-assembly_infill": "Type: Infill",
+      "wall-assembly_modules": "Type: Modules",
       "wall-assembly_non-strawbale": "Type: Non-Strawbale",
+      "wall-assembly_prefab-modules": "Type: Prefab-Modules",
       "wall-assembly_strawhenge": "Type: Strawhenge",
       "wall-layer_inside": "Inside Wall Layers",
       "wall-layer_outside": "Outside Wall Layers",
+      "wall-measurement_module-height": "Module Height",
       "wall-measurement_module-width": "Module Width",
       "wall-measurement_opening-spacing": "Opening Spacing",
       "wall-measurement_post-spacing": "Post Spacing",
@@ -879,6 +941,7 @@ interface Resources {
       "wall-part_infill": "Infill",
       "wall-part_opening-side-plank": "Opening Side Plank",
       "wall-part_post": "Post",
+      "wall-part_reinforcement": "Reinforcement Plating",
       "wall-part_sill": "Sill",
       "wall-part_triangular-batten": "Triangular Batten"
     },
@@ -930,6 +993,12 @@ interface Resources {
         "crossSectionMismatch": "Cross section does not match available options for this material",
         "dimensionsMismatch": "Post dimensions ({{width, length}}×{{thickness, length}}) don't match available cross sections",
         "wallTooThin": "Wall thickness ({{wallThickness, length}}) is not wide enough for double posts requiring {{required, length}} minimum"
+      },
+      "prefabModules": {
+        "tooBig": "The module is bigger than the maximum dimensions.",
+        "tooSmall": "The module is smaller than the minimum dimensions.",
+        "tooThick": "The wall is too thick for the prefab module.",
+        "tooThin": "The wall is too thin for the prefab module."
       },
       "ringBeam": {
         "doubleNotSupported": "Double ring beam construction is not yet supported."

@@ -1,4 +1,4 @@
-import { CircleIcon, CubeIcon, LayersIcon, OpacityIcon } from '@radix-ui/react-icons'
+import { BoxModelIcon, CircleIcon, CubeIcon, LayersIcon, OpacityIcon } from '@radix-ui/react-icons'
 import React from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -18,6 +18,7 @@ export interface MaterialSelectProps {
   allowEmpty?: boolean
   emptyLabel?: string
   preferredTypes?: MaterialType[]
+  onlyTypes?: MaterialType[]
 }
 
 interface IconProps extends React.SVGAttributes<SVGElement> {
@@ -60,6 +61,10 @@ export function getMaterialTypeIcon(type: Material['type']): IconComponent {
       return CircleIcon
     case 'strawbale':
       return StrawbaleIcon
+    case 'prefab':
+      return BoxModelIcon
+    default:
+      return CircleIcon
   }
 }
 
@@ -80,6 +85,8 @@ export function useGetMaterialTypeName() {
         return t($ => $.materialTypes.generic)
       case 'strawbale':
         return t($ => $.materialTypes.strawbale)
+      case 'prefab':
+        return t($ => $.materialTypes.prefab)
     }
   }
 }
@@ -92,7 +99,8 @@ export function MaterialSelect({
   materials: materialsProp,
   allowEmpty = false,
   emptyLabel,
-  preferredTypes
+  preferredTypes,
+  onlyTypes
 }: MaterialSelectProps): React.JSX.Element {
   const { t: tConstruction } = useTranslation('construction')
   const { t } = useTranslation('config')
@@ -105,7 +113,14 @@ export function MaterialSelect({
     return nameKey ? t($ => $.materials.defaults[nameKey]) : material.name
   }
 
-  const sortedMaterials = [...materials].sort((a, b) => {
+  const filteredMaterials = [...materials].filter(material => {
+    if (onlyTypes && onlyTypes.length > 0) {
+      return onlyTypes.includes(material.type)
+    }
+    return true
+  })
+
+  const sortedMaterials = [...filteredMaterials].sort((a, b) => {
     if (a.type !== b.type) {
       if (preferredTypes) {
         const aIndex = preferredTypes.indexOf(a.type)
@@ -139,7 +154,7 @@ export function MaterialSelect({
             <span className="text-muted-foreground">{translatedEmptyLabel}</span>
           </Select.Item>
         )}
-        {materials.length === 0 ? (
+        {filteredMaterials.length === 0 ? (
           <Select.Item value="-" disabled>
             <span className="text-muted-foreground">{tConstruction($ => $.materialSelect.noMaterialsAvailable)}</span>
           </Select.Item>

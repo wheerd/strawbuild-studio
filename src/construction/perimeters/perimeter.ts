@@ -126,7 +126,12 @@ export function constructPerimeter(
 
       const segmentAngle = dirAngle(wall.insideLine.start, wall.insideLine.end)
 
-      const nameTag = createTag('wall-assembly', assembly.name)
+      const nameKey = assembly.nameKey
+      const nameTag = createTag(
+        'wall-assembly',
+        assembly.id,
+        nameKey != null ? t => t(nameKey, { ns: 'config' }) : assembly.name
+      )
       const transformedModel = transformModel(
         wallModel,
         rotateZ(

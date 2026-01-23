@@ -15,6 +15,7 @@ export interface OpeningAssemblySelectProps {
   disabled?: boolean
   allowDefault?: boolean
   showDefaultIndicator?: boolean
+  exclude?: OpeningAssemblyId[]
 }
 
 const sizeClasses = {
@@ -30,7 +31,8 @@ export function OpeningAssemblySelect({
   size = 'base',
   disabled = false,
   allowDefault = false,
-  showDefaultIndicator = false
+  showDefaultIndicator = false,
+  exclude = []
 }: OpeningAssemblySelectProps): React.JSX.Element {
   const openingAssemblies = useOpeningAssemblies()
   const { t } = useTranslation('config')
@@ -40,7 +42,7 @@ export function OpeningAssemblySelect({
     return assembly.nameKey ? t(assembly.nameKey) : assembly.name
   }
 
-  const assemblies = Object.values(openingAssemblies)
+  const assemblies = Object.values(openingAssemblies).filter(assembly => !exclude.includes(assembly.id))
 
   return (
     <Select

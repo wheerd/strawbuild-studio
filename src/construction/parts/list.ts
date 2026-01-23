@@ -39,6 +39,7 @@ import {
   copyVec3,
   newVec2
 } from '@/shared/geometry'
+import type { TranslatableString } from '@/shared/i18n/TranslatableString'
 
 import { getPartInfoFromManifold } from './pipeline'
 import type {
@@ -75,14 +76,6 @@ const STRAW_CATEGORY_BY_TAG: Record<string, StrawCategory> = {
   [TAG_PARTIAL_BALE.id as string]: 'partial',
   [TAG_STRAW_FLAKES.id as string]: 'flakes',
   [TAG_STRAW_STUFFED.id as string]: 'stuffed'
-}
-
-// TODO: Translate
-const STRAW_CATEGORY_LABELS: Record<StrawCategory, string> = {
-  full: 'Full bales',
-  partial: 'Partial bales',
-  flakes: 'Flakes',
-  stuffed: 'Stuffed fill'
 }
 
 const getStrawCategoryFromTags = (tags?: Tag[]): StrawCategory => {
@@ -414,6 +407,9 @@ export const generateMaterialPartsList = (model: ConstructionModel, excludeTypes
     const { material } = element
     const elementTags = [...tags, ...(element.tags ?? [])]
 
+    const materialDefinition = getMaterialById(material)
+    if (materialDefinition?.type === 'prefab') return
+
     const partType = element.partInfo?.type
     if (partType && excludeTypes?.some(t => t === partType)) return
 
@@ -457,15 +453,20 @@ export const generateVirtualPartsList = (model: ConstructionModel): VirtualParts
   let labelCounter = 0
 
   const processElement = (element: GroupOrElement) => {
-    if (!('children' in element)) return
+    let partInfo: FullPartInfo | null = null
 
-    for (const child of element.children) {
-      processElement(child)
+    if ('children' in element) {
+      for (const child of element.children) {
+        processElement(child)
+      }
+
+      partInfo = getFullPartInfo(element)
+    } else {
+      const materialDefinition = getMaterialById(element.material)
+      if (materialDefinition?.type !== 'prefab') return
+
+      partInfo = getFullPartInfo(element)
     }
-
-    const { id } = element
-
-    const partInfo = getFullPartInfo(element)
 
     if (!partInfo) return
 
@@ -474,9 +475,12 @@ export const generateVirtualPartsList = (model: ConstructionModel): VirtualParts
     if (partId in partsList) {
       const existingPart = partsList[partId]
       existingPart.quantity += 1
-      existingPart.elements.push(id)
+      existingPart.elements.push(element.id)
       return
     }
+
+    const typeTag = element.tags?.find(t => t.category === 'module-type')
+    const description = typeTag && isCustomTag(typeTag) ? typeTag.label : undefined
 
     const label = indexToLabel(labelCounter++)
 
@@ -484,8 +488,9 @@ export const generateVirtualPartsList = (model: ConstructionModel): VirtualParts
       partId,
       type: partInfo.type,
       label,
+      description,
       size: copyVec3(partInfo.boxSize),
-      elements: [id],
+      elements: [element.id],
       quantity: 1
     }
 
@@ -573,9 +578,9 @@ function computePartDescription(
   fullPartInfo: FullPartInfo | null,
   tags: Tag[],
   strawCategory?: StrawCategory
-): string | undefined {
+): TranslatableString | undefined {
   if (strawCategory) {
-    return STRAW_CATEGORY_LABELS[strawCategory]
+    return t => t($ => $.strawCategories[strawCategory], { ns: 'construction' })
   }
   if (fullPartInfo?.description) {
     return fullPartInfo.description
@@ -583,7 +588,7 @@ function computePartDescription(
   return findMappedTag(tags)?.description
 }
 
-function findMappedTag(tags: Tag[]): { tag: Tag; type: string; description?: string } | null {
+function findMappedTag(tags: Tag[]): { tag: Tag; type: string; description?: TranslatableString } | null {
   for (const tag of tags) {
     if (tag.id in TAG_MAPPING) {
       const mapping = TAG_MAPPING[tag.id]

@@ -4,6 +4,7 @@ import { EmptyOpeningAssembly } from '@/construction/openings/empty'
 import { PlankedOpeningAssembly } from '@/construction/openings/planked'
 import { PostOpeningAssembly } from '@/construction/openings/post'
 import { SimpleOpeningAssembly } from '@/construction/openings/simple'
+import { ThresholdOpeningAssembly } from '@/construction/openings/threshold'
 
 import type { OpeningAssembly, OpeningConfig } from './types'
 
@@ -59,6 +60,8 @@ export function resolveOpeningAssembly(openingAssemblyId?: OpeningAssemblyId): O
       return new PostOpeningAssembly(config)
     case 'planked':
       return new PlankedOpeningAssembly(config)
+    case 'threshold':
+      return new ThresholdOpeningAssembly(config)
     default:
       throw new Error(`Unknown opening assembly type: ${(config as OpeningConfig).type}`)
   }

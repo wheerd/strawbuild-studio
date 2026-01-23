@@ -1,21 +1,15 @@
-import type { Resources, TFunction } from 'i18next'
+import type { Resources } from 'i18next'
 
-// Predefined tag IDs must match translation keys
+import type { TranslatableString } from '@/shared/i18n/TranslatableString'
+
 export type PredefinedTagId = keyof Resources['construction']['tags']
 
-// Tag category IDs from translations
 export type TagCategoryId = keyof Resources['construction']['tagCategories']
 
-// Custom tag IDs follow the template pattern
 export type CustomTagId = `${TagCategoryId}_${string}`
 
-// Type for layer name keys (layers are in config namespace)
-export type CustomTagTranslation = (t: TFunction) => string
-
-// TagId is a union of predefined and custom IDs
 export type TagId = PredefinedTagId | CustomTagId
 
-// TagOrCategory type
 export type TagOrCategory = TagId | TagCategoryId
 
 // Predefined tags (built-in, uses translations)
@@ -28,8 +22,7 @@ export interface PredefinedTag {
 export interface CustomTag {
   readonly id: CustomTagId
   readonly category: TagCategoryId
-  readonly label: string
-  readonly translation?: CustomTagTranslation
+  readonly label: TranslatableString
 }
 
 // Union type
@@ -53,6 +46,7 @@ export const ALL_CATEGORIES = {
   opening: { id: 'opening' as const },
   'opening-measurement': { id: 'opening-measurement' as const },
   'module-part': { id: 'module-part' as const },
+  'module-type': { id: 'module-type' as const },
   'floor-layer': { id: 'floor-layer' as const },
   'floor-part': { id: 'floor-part' as const },
   'floor-assembly': { id: 'floor-assembly' as const },
@@ -83,11 +77,10 @@ export const createTagId = (category: TagCategoryId, name: string): CustomTagId 
     .toLowerCase()
     .replace(/[\W_]+/g, '-')}`
 
-export const createTag = (category: TagCategoryId, name: string, translation?: CustomTagTranslation): CustomTag => ({
+export const createTag = (category: TagCategoryId, id: string, label: TranslatableString): CustomTag => ({
   category,
-  id: createTagId(category, name),
-  label: name,
-  translation
+  id: createTagId(category, id),
+  label
 })
 
 // Straw tags
@@ -147,6 +140,11 @@ export const TAG_OPENING_SIDE_PLANK: PredefinedTag = {
   category: 'wall-part'
 }
 
+export const TAG_WALL_REINFORCEMENT: PredefinedTag = {
+  id: 'wall-part_reinforcement',
+  category: 'wall-part'
+}
+
 // Wall assembly type tags
 export const TAG_INFILL_CONSTRUCTION: PredefinedTag = {
   id: 'wall-assembly_infill',
@@ -159,12 +157,17 @@ export const TAG_MODULE_CONSTRUCTION: PredefinedTag = {
 }
 
 export const TAG_STRAWHENGE_CONSTRUCTION: PredefinedTag = {
-  id: 'wall-assembly_strawhenge',
+  id: 'wall-assembly_modules',
   category: 'wall-assembly'
 }
 
 export const TAG_NON_STRAWBALE_CONSTRUCTION: PredefinedTag = {
   id: 'wall-assembly_non-strawbale',
+  category: 'wall-assembly'
+}
+
+export const TAG_PREFAB_MODULE_CONSTRUCTION: PredefinedTag = {
+  id: 'wall-assembly_prefab-modules',
   category: 'wall-assembly'
 }
 
@@ -327,6 +330,11 @@ export const TAG_RING_BEAM_HEIGHT: PredefinedTag = {
 
 export const TAG_MODULE_WIDTH: PredefinedTag = {
   id: 'wall-measurement_module-width',
+  category: 'wall-measurement'
+}
+
+export const TAG_MODULE_HEIGHT: PredefinedTag = {
+  id: 'wall-measurement_module-height',
   category: 'wall-measurement'
 }
 

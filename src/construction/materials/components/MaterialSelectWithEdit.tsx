@@ -7,7 +7,9 @@ import { useConfigurationModal } from '@/construction/config/context/Configurati
 
 import { MaterialSelect, type MaterialSelectProps } from './MaterialSelect'
 
-export function MaterialSelectWithEdit(props: MaterialSelectProps): React.JSX.Element {
+export type MaterialSelectWithEditProps = MaterialSelectProps
+
+export function MaterialSelectWithEdit(props: MaterialSelectWithEditProps): React.JSX.Element {
   const { t } = useTranslation('config')
   const { openConfiguration } = useConfigurationModal()
 

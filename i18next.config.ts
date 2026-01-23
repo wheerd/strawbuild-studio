@@ -22,6 +22,7 @@ export default defineConfig({
       'construction:tags.*',
       'construction:tagCategories.*',
       'construction:areaTypes.*',
+      'construction:moduleTypes.*',
       'construction:strawCategories.*',
       'viewer:export.exportError.*'
     ],

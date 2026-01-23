@@ -1,4 +1,5 @@
 import {
+  BoxModelIcon,
   CircleIcon,
   CopyIcon,
   Cross2Icon,
@@ -19,9 +20,11 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Callout, CalloutIcon, CalloutText } from '@/components/ui/callout'
 import { Card } from '@/components/ui/card'
+import { Checkbox } from '@/components/ui/checkbox'
 import { DropdownMenu } from '@/components/ui/dropdown-menu'
 import { TextField } from '@/components/ui/text-field'
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
+import { Tooltip } from '@/components/ui/tooltip'
 import { type EntityId, useEntityLabel } from '@/construction/config/components/useEntityLabel'
 import { useConfigActions, useDefaultStrawMaterialId } from '@/construction/config/store'
 import type {
@@ -29,6 +32,7 @@ import type {
   GenericMaterial,
   Material,
   MaterialId,
+  PrefabMaterial,
   SheetMaterial,
   SheetType,
   StrawbaleMaterial,
@@ -128,6 +132,20 @@ export function MaterialsConfigContent({ initialSelectionId }: MaterialsConfigCo
             flakeSize: strawbale.flakeSize,
             density: strawbale.density
           } as Omit<StrawbaleMaterial, 'id'>)
+          break
+        case 'prefab':
+          newMaterial = addMaterial({
+            name: t($ => $.materials.newName_prefab),
+            type: 'prefab',
+            color: '#555555',
+            minHeight: 400,
+            maxHeight: 3000,
+            minThickness: 300,
+            maxThickness: 400,
+            minWidth: 400,
+            maxWidth: 850,
+            isFlipped: false
+          } satisfies Omit<PrefabMaterial, 'id'>)
           break
         default:
           return
@@ -253,6 +271,16 @@ export function MaterialsConfigContent({ initialSelectionId }: MaterialsConfigCo
                   {t($ => $.materials.typeGeneric)}
                 </div>
               </DropdownMenu.Item>
+              <DropdownMenu.Item
+                onSelect={() => {
+                  handleAddNew('prefab')
+                }}
+              >
+                <div className="flex items-center gap-1">
+                  <BoxModelIcon />
+                  {t($ => $.materials.typePrefab)}
+                </div>
+              </DropdownMenu.Item>
             </DropdownMenu.Content>
           </DropdownMenu>
           <Button
@@ -265,7 +293,7 @@ export function MaterialsConfigContent({ initialSelectionId }: MaterialsConfigCo
             <CopyIcon />
           </Button>
           <AlertDialog.Root>
-            <AlertDialog.Trigger>
+            <AlertDialog.Trigger asChild>
               <Button
                 variant="destructive"
                 size="icon"
@@ -297,7 +325,7 @@ export function MaterialsConfigContent({ initialSelectionId }: MaterialsConfigCo
             </AlertDialog.Content>
           </AlertDialog.Root>
           <AlertDialog.Root>
-            <AlertDialog.Trigger>
+            <AlertDialog.Trigger asChild>
               <Button
                 size="icon"
                 className="text-destructive"
@@ -410,6 +438,10 @@ export function MaterialsConfigContent({ initialSelectionId }: MaterialsConfigCo
 
           {selectedMaterial.type === 'strawbale' && (
             <StrawbaleMaterialFields material={selectedMaterial} onUpdate={handleUpdate} />
+          )}
+
+          {selectedMaterial.type === 'prefab' && (
+            <PrefabMaterialFields material={selectedMaterial} onUpdate={handleUpdate} />
           )}
         </Card>
       )}
@@ -1035,6 +1067,177 @@ function StrawbaleMaterialFields({
           unit="cm"
         />
       </div>
+    </div>
+  )
+}
+
+function PrefabMaterialFields({
+  material,
+  onUpdate
+}: {
+  material: PrefabMaterial
+  onUpdate: (updates: Partial<PrefabMaterial>) => void
+}) {
+  const { t } = useTranslation('config')
+
+  const handleSlopedToggle = useCallback(
+    (checked: boolean) => {
+      if (checked) {
+        onUpdate({
+          sloped: {
+            minAngleDegrees: 0,
+            maxAngleDegrees: 90
+          }
+        })
+      } else {
+        onUpdate({ sloped: undefined })
+      }
+    },
+    [material.sloped, onUpdate]
+  )
+
+  const sloped = material.sloped
+  return (
+    <div className="flex flex-col gap-3">
+      <div className="grid grid-cols-[8em_1fr_8em_1fr] gap-3 gap-x-4">
+        <Label.Root>
+          <span className="text-sm font-medium">{t($ => $.materials.minHeight)}</span>
+        </Label.Root>
+        <LengthField
+          value={material.minHeight}
+          onChange={minHeight => {
+            onUpdate({ minHeight })
+          }}
+          unit="mm"
+        />
+
+        <Label.Root>
+          <span className="text-sm font-medium">{t($ => $.materials.maxHeight)}</span>
+        </Label.Root>
+        <LengthField
+          value={material.maxHeight}
+          onChange={maxHeight => {
+            onUpdate({ maxHeight })
+          }}
+          unit="mm"
+        />
+
+        <Label.Root>
+          <span className="text-sm font-medium">{t($ => $.materials.minThickness)}</span>
+        </Label.Root>
+        <LengthField
+          value={material.minThickness}
+          onChange={minThickness => {
+            onUpdate({ minThickness })
+          }}
+          unit="mm"
+        />
+
+        <Label.Root>
+          <span className="text-sm font-medium">{t($ => $.materials.maxThickness)}</span>
+        </Label.Root>
+        <LengthField
+          value={material.maxThickness}
+          onChange={maxThickness => {
+            onUpdate({ maxThickness })
+          }}
+          unit="mm"
+        />
+      </div>
+
+      <div className="grid grid-cols-[8em_1fr_8em_1fr] gap-3 gap-x-4">
+        <Label.Root>
+          <span className="text-sm font-medium">{t($ => $.materials.minWidth)}</span>
+        </Label.Root>
+        <LengthField
+          value={material.minWidth}
+          onChange={minWidth => {
+            onUpdate({ minWidth })
+          }}
+          unit="mm"
+        />
+
+        <Label.Root>
+          <span className="text-sm font-medium">{t($ => $.materials.maxWidth)}</span>
+        </Label.Root>
+        <LengthField
+          value={material.maxWidth}
+          onChange={maxWidth => {
+            onUpdate({ maxWidth })
+          }}
+          unit="mm"
+        />
+      </div>
+
+      <Label.Root className="flex w-auto shrink items-center gap-2">
+        <Checkbox
+          checked={material.isFlipped}
+          onCheckedChange={value => {
+            onUpdate({ isFlipped: value === true })
+          }}
+        />
+        <Tooltip content={<span>{t($ => $.materials.isFlippedTooltip)}</span>}>
+          <span>{t($ => $.materials.isFlippedLabel)}</span>
+        </Tooltip>
+      </Label.Root>
+
+      <Label.Root className="flex w-auto shrink items-center gap-2">
+        <Checkbox
+          checked={sloped != null}
+          onCheckedChange={value => {
+            handleSlopedToggle(value === true)
+          }}
+        />
+        {t($ => $.materials.enableSloped)}
+      </Label.Root>
+
+      {sloped && (
+        <div className="grid grid-cols-[8em_1fr_8em_1fr] gap-3 gap-x-4">
+          <Label.Root>
+            <span className="text-sm font-medium">{t($ => $.materials.minAngleDegrees)}</span>
+          </Label.Root>
+          <NumberField.Root
+            value={sloped.minAngleDegrees}
+            onChange={value => {
+              if (value != null) {
+                onUpdate({
+                  sloped: {
+                    minAngleDegrees: value,
+                    maxAngleDegrees: sloped.maxAngleDegrees
+                  }
+                })
+              }
+            }}
+          >
+            <NumberField.Input min="0" max="90" className="w-20" />
+            <NumberField.Slot side="right" className="ml--4 pointer-events-none px-1">
+              <span className="text-muted-foreground pointer-events-none text-sm">°</span>
+            </NumberField.Slot>
+          </NumberField.Root>
+
+          <Label.Root>
+            <span className="text-sm font-medium">{t($ => $.materials.maxAngleDegrees)}</span>
+          </Label.Root>
+          <NumberField.Root
+            value={sloped.maxAngleDegrees}
+            onChange={value => {
+              if (value != null) {
+                onUpdate({
+                  sloped: {
+                    minAngleDegrees: sloped.minAngleDegrees,
+                    maxAngleDegrees: value
+                  }
+                })
+              }
+            }}
+          >
+            <NumberField.Input min="0" max="90" className="w-20" />
+            <NumberField.Slot side="right" className="ml--4 pointer-events-none px-1">
+              <span className="text-muted-foreground pointer-events-none text-sm">°</span>
+            </NumberField.Slot>
+          </NumberField.Root>
+        </div>
+      )}
     </div>
   )
 }

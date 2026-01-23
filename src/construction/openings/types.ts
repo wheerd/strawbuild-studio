@@ -1,8 +1,9 @@
+import type { Opening, OpeningAssemblyId } from '@/building/model'
 import type { WallConstructionArea } from '@/construction/geometry'
 import type { MaterialId } from '@/construction/materials/material'
 import { type PostConfig, validatePosts } from '@/construction/materials/posts'
 import type { ConstructionResult } from '@/construction/results'
-import { type InfillMethod } from '@/construction/walls/types'
+import { type SegmentInfillMethod } from '@/construction/walls/types'
 import type { Length } from '@/shared/geometry'
 
 export interface OpeningAssembly {
@@ -10,14 +11,15 @@ export interface OpeningAssembly {
     area: WallConstructionArea,
     adjustedHeader: Length,
     adjustedSill: Length,
-    infill: InfillMethod
+    infill: SegmentInfillMethod,
+    openings: Opening[]
   ) => Generator<ConstructionResult>
 
-  get segmentationPadding(): Length
-  get needsWallStands(): boolean
+  getSegmentationPadding(openings: Opening[]): Length
+  needsWallStands(openings: Opening[]): boolean
 }
 
-export type OpeningAssemblyType = 'simple' | 'post' | 'empty' | 'planked'
+export type OpeningAssemblyType = 'simple' | 'post' | 'empty' | 'planked' | 'threshold'
 
 export interface OpeningAssemblyConfigBase {
   type: OpeningAssemblyType
@@ -54,7 +56,23 @@ export interface EmptyOpeningConfig extends OpeningAssemblyConfigBase {
   // Only padding, no sill/header materials or thicknesses
 }
 
-export type OpeningConfig = SimpleOpeningConfig | EmptyOpeningConfig | PostOpeningConfig | PlankedOpeningConfig
+export interface ThresholdConfig {
+  assemblyId: OpeningAssemblyId
+  widthThreshold: Length
+}
+
+export interface ThresholdAssemblyConfig extends OpeningAssemblyConfigBase {
+  type: 'threshold'
+  defaultId: OpeningAssemblyId
+  thresholds: ThresholdConfig[]
+}
+
+export type OpeningConfig =
+  | SimpleOpeningConfig
+  | EmptyOpeningConfig
+  | PostOpeningConfig
+  | PlankedOpeningConfig
+  | ThresholdAssemblyConfig
 
 // Validation
 
@@ -63,16 +81,22 @@ export const validateOpeningConfig = (config: OpeningConfig): void => {
     throw new Error('Padding cannot be negative')
   }
 
-  if (config.type !== 'empty') {
+  if (config.type === 'simple' || config.type === 'post' || config.type === 'planked') {
     if (config.sillThickness < 0) {
       throw new Error('Sill thickness must not be negative')
     }
-    if (config.headerThickness <= 0) {
-      throw new Error('Header thickness must be positive')
+    if (config.headerThickness < 0) {
+      throw new Error('Header thickness must not be negative')
     }
   }
 
   if (config.type === 'post') {
     validatePosts(config.posts)
+  }
+
+  if (config.type === 'threshold') {
+    if (config.thresholds.some(t => t.widthThreshold < 0)) {
+      throw new Error('Width threshold cannot be negative')
+    }
   }
 }

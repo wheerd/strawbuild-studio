@@ -13,7 +13,7 @@ import {
   TAG_SILL,
   TAG_SILL_HEIGHT
 } from '@/construction/tags'
-import type { InfillMethod } from '@/construction/walls'
+import type { SegmentInfillMethod } from '@/construction/walls'
 import { type Length } from '@/shared/geometry'
 
 export class SimpleOpeningAssembly extends BaseOpeningAssembly<SimpleOpeningConfig> {
@@ -21,7 +21,7 @@ export class SimpleOpeningAssembly extends BaseOpeningAssembly<SimpleOpeningConf
     area: WallConstructionArea,
     adjustedHeader: Length,
     adjustedSill: Length,
-    infill: InfillMethod
+    infill: SegmentInfillMethod
   ): Generator<ConstructionResult> {
     const wallTop = area.size[2]
 
@@ -81,15 +81,20 @@ export class SimpleOpeningAssembly extends BaseOpeningAssembly<SimpleOpeningConf
 
     // Create wall above header/opening (if space remains)
     if (!aboveHeader.isEmpty) {
-      yield* infill(aboveHeader)
+      yield* infill(aboveHeader, 'lintel')
     }
 
     // Create wall below sill/opening (if space remains)
     if (!belowSill.isEmpty) {
-      yield* infill(belowSill)
+      yield* infill(belowSill, 'sill')
     }
   }
 
-  readonly segmentationPadding = 0 as Length
-  readonly needsWallStands = true
+  getSegmentationPadding() {
+    return 0
+  }
+
+  needsWallStands(): boolean {
+    return true
+  }
 }

@@ -1,0 +1,101 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`Prefab Modules Wall Assembly > Snapshot Tests - Various Dimensions > should produce consistent layout for 400x400 > layout-400x400 1`] = `
+[
+  {
+    "height": 400,
+    "material": "material_standard",
+    "position_x": 0,
+    "position_z": 0,
+    "width": 400,
+  },
+]
+`;
+
+exports[`Prefab Modules Wall Assembly > Snapshot Tests - Various Dimensions > should produce consistent layout for 600x600 > layout-600x600 1`] = `
+[
+  {
+    "height": 600,
+    "material": "material_standard",
+    "position_x": 0,
+    "position_z": 0,
+    "width": 600,
+  },
+]
+`;
+
+exports[`Prefab Modules Wall Assembly > Snapshot Tests - Various Dimensions > should produce consistent layout for 800x800 > layout-800x800 1`] = `
+[
+  {
+    "height": 800,
+    "material": "material_standard",
+    "position_x": 0,
+    "position_z": 0,
+    "width": 800,
+  },
+]
+`;
+
+exports[`Prefab Modules Wall Assembly > Snapshot Tests - Various Dimensions > should produce consistent layout for 1000x2000 > layout-1000x2000 1`] = `
+[
+  {
+    "height": 2000,
+    "material": "material_standard",
+    "position_x": 0,
+    "position_z": 0,
+    "width": 600,
+  },
+  {
+    "height": 2000,
+    "material": "material_standard",
+    "position_x": 600,
+    "position_z": 0,
+    "width": 400,
+  },
+]
+`;
+
+exports[`Prefab Modules Wall Assembly > Snapshot Tests - Various Dimensions > should produce consistent layout for 1200x2500 > layout-1200x2500 1`] = `
+[
+  {
+    "height": 2500,
+    "material": "material_standard",
+    "position_x": 0,
+    "position_z": 0,
+    "width": 600,
+  },
+  {
+    "height": 2500,
+    "material": "material_standard",
+    "position_x": 600,
+    "position_z": 0,
+    "width": 600,
+  },
+]
+`;
+
+exports[`Prefab Modules Wall Assembly > Snapshot Tests - Various Dimensions > should produce consistent layout for 1600x3000 > layout-1600x3000 1`] = `
+[
+  {
+    "height": 3000,
+    "material": "material_standard",
+    "position_x": 0,
+    "position_z": 0,
+    "width": 600,
+  },
+  {
+    "height": 3000,
+    "material": "material_standard",
+    "position_x": 600,
+    "position_z": 0,
+    "width": 600,
+  },
+  {
+    "height": 3000,
+    "material": "material_standard",
+    "position_x": 1200,
+    "position_z": 0,
+    "width": 400,
+  },
+]
+`;

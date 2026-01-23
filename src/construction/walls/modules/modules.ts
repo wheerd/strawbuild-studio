@@ -12,7 +12,8 @@ import {
   TAG_MODULE_FRAME,
   TAG_MODULE_INFILL,
   TAG_MODULE_SPACER,
-  TAG_MODULE_WIDTH
+  TAG_MODULE_WIDTH,
+  createTag
 } from '@/construction/tags'
 import { type Length, type Vec3, newVec3 } from '@/shared/geometry'
 import { assertUnreachable } from '@/shared/utils'
@@ -301,12 +302,26 @@ export function* constructModule(
   }
 
   switch (config.type) {
-    case 'single':
-      yield* yieldAsGroup(constructSingleFrameModule(area.position, size, config), [TAG_MODULE], undefined, partInfo)
+    case 'single': {
+      const typeTag = createTag('module-type', 'Single', t => t($ => $.moduleTypes.single, { ns: 'construction' }))
+      yield* yieldAsGroup(
+        constructSingleFrameModule(area.position, size, config),
+        [TAG_MODULE, typeTag],
+        undefined,
+        partInfo
+      )
       break
-    case 'double':
-      yield* yieldAsGroup(constructDoubleFrameModule(area.position, size, config), [TAG_MODULE], undefined, partInfo)
+    }
+    case 'double': {
+      const typeTag = createTag('module-type', 'Double', t => t($ => $.moduleTypes.double, { ns: 'construction' }))
+      yield* yieldAsGroup(
+        constructDoubleFrameModule(area.position, size, config),
+        [TAG_MODULE, typeTag],
+        undefined,
+        partInfo
+      )
       break
+    }
     default:
       assertUnreachable(config, 'Invalid module type')
   }

@@ -161,7 +161,13 @@ export class PurlinRoofAssembly extends BaseRoofAssembly<PurlinRoofConfig> {
 
     roofModels.push(resultsToModel(purlins))
 
-    const nameTag = createTag('roof-assembly', (this.config as unknown as PurlinRoofAssemblyConfig).name)
+    const config = this.config as unknown as PurlinRoofAssemblyConfig
+    const nameKey = config.nameKey
+    const nameTag = createTag(
+      'roof-assembly',
+      config.id,
+      nameKey != null ? t => t(nameKey, { ns: 'config' }) : config.name
+    )
     return transformModel(mergeModels(...roofModels), IDENTITY, [TAG_ROOF, TAG_PURLIN_ROOF, nameTag])
   }
 

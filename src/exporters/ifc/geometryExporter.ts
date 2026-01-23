@@ -50,6 +50,7 @@ import {
   TAG_WATERPROOFING
 } from '@/construction/tags'
 import { type Transform, composeTransform, getPosition, getXAxis, getZAxis } from '@/shared/geometry'
+import { transString } from '@/shared/i18n/TranslatableString'
 import { downloadFile } from '@/shared/utils/downloadFile'
 import { getVersionString } from '@/shared/utils/version'
 
@@ -681,8 +682,7 @@ export class GeometryIfcExporter {
   private extractStoreyName(group: ConstructionGroup): string {
     const storeyTag = group.tags?.find(t => t.category === 'storey-name')
     if (!storeyTag) return 'Unknown Storey'
-    // For custom tags, use label; for predefined tags, use ID (IFC export doesn't need translation)
-    return 'label' in storeyTag ? storeyTag.label : storeyTag.id
+    return 'label' in storeyTag ? transString(storeyTag.label) : storeyTag.id
   }
 
   private createIfcElementByType(

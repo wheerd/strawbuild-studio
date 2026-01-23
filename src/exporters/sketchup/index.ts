@@ -7,6 +7,7 @@ import type { MaterialId } from '@/construction/materials/material'
 import { getMaterialById } from '@/construction/materials/store'
 import type { ConstructionModel } from '@/construction/model'
 import { IDENTITY, type Transform } from '@/shared/geometry'
+import { transString } from '@/shared/i18n/TranslatableString'
 import { downloadFile } from '@/shared/utils/downloadFile'
 
 import type {
@@ -50,7 +51,7 @@ export async function exportToSketchUp(model: ConstructionModel): Promise<void> 
       headers: {
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify(request) + 'XD'
+      body: JSON.stringify(request)
     })
   } catch (error) {
     throw new SketchUpExportError(
@@ -267,7 +268,7 @@ function getGroupName(group: ConstructionGroup): string {
   if (group.tags && group.tags.length > 0) {
     const nameTag = group.tags.find(t => 'label' in t)
     if (nameTag && 'label' in nameTag) {
-      return nameTag.label
+      return transString(nameTag.label)
     }
     // Fall back to first tag ID
     return group.tags[0].id

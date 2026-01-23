@@ -23,7 +23,7 @@ import {
   TAG_WALL_HEIGHT,
   TAG_WALL_LENGTH
 } from '@/construction/tags'
-import type { InfillMethod, WallLayersConfig } from '@/construction/walls'
+import type { SegmentInfillMethod, WallLayersConfig } from '@/construction/walls'
 import {
   type WallTopOffsets,
   convertHeightLineToWallOffsets,
@@ -40,7 +40,7 @@ export function* segmentedWallConstruction(
   storeyContext: StoreyContext,
   layers: WallLayersConfig,
   wallConstruction: WallSegmentConstruction,
-  infillMethod: InfillMethod,
+  infillMethod: SegmentInfillMethod,
   wallOpeningAssemblyId?: OpeningAssemblyId,
   splitAtHeightJumps = true
 ): Generator<ConstructionResult> {
@@ -269,7 +269,7 @@ function* constructOpeningGroup(
   end: Length,
   cornerInfo: WallCornerInfo,
   dimensions: WallDimensions,
-  infillMethod: InfillMethod,
+  infillMethod: SegmentInfillMethod,
   wallOpeningAssemblyId?: OpeningAssemblyId
 ): Generator<ConstructionResult> {
   const group = item.openings
@@ -280,7 +280,7 @@ function* constructOpeningGroup(
   const sillHeight = Math.max(group[0].sillHeight ?? 0)
   const adjustedSill = sillHeight + zAdjustment
   const adjustedHeader = adjustedSill + group[0].height
-  yield* item.assembly.construct(openingArea, adjustedHeader, adjustedSill, infillMethod)
+  yield* item.assembly.construct(openingArea, adjustedHeader, adjustedSill, infillMethod, group)
 
   // Create opening areas (doors/windows/passages)
   for (const opening of group) {
@@ -319,7 +319,7 @@ function* constructWallSegments(
   cornerInfo: WallCornerInfo,
   dimensions: WallDimensions,
   wallConstruction: WallSegmentConstruction,
-  infillMethod: InfillMethod,
+  infillMethod: SegmentInfillMethod,
   wallOpeningAssemblyId: OpeningAssemblyId | undefined,
   splitAtHeightJumps: boolean
 ): Generator<ConstructionResult> {
@@ -436,13 +436,13 @@ function createSortedWallItems(
 
   for (const group of openingGroups) {
     const assembly = resolveOpeningAssembly(group[0].openingAssemblyId ?? wallOpeningAssemblyId)
-    const start =
-      extensionStart + group[0].centerOffsetFromWallStart - group[0].width / 2 - assembly.segmentationPadding
+    const segmentationPadding = assembly.getSegmentationPadding(group)
+    const start = extensionStart + group[0].centerOffsetFromWallStart - group[0].width / 2 - segmentationPadding
     const end =
       extensionStart +
       group[group.length - 1].centerOffsetFromWallStart +
       group[group.length - 1].width / 2 +
-      assembly.segmentationPadding
+      segmentationPadding
 
     items.push({
       type: 'opening-group',
@@ -450,7 +450,7 @@ function createSortedWallItems(
       assembly,
       start,
       end,
-      needsWallStands: assembly.needsWallStands
+      needsWallStands: assembly.needsWallStands(group)
     })
   }
 

@@ -18,6 +18,7 @@
   "materialTypes": {
     "dimensional": "Dimensional",
     "generic": "Generic",
+    "prefab": "Prefab",
     "sheet": "Sheet",
     "strawbale": "Strawbale",
     "volume": "Volume"
@@ -67,6 +68,7 @@
     },
     "noModules": "No modules",
     "tableHeaders": {
+      "description": "Specific Type",
       "dimensions": "Dimensions",
       "label": "Label",
       "quantity": "Quantity",
@@ -74,6 +76,10 @@
       "view": "View"
     },
     "title": "Modules"
+  },
+  "moduleTypes": {
+    "double": "Double",
+    "single": "Single"
   },
   "partCutModal": {
     "partCutDiagram": "Part Cut Diagram",
@@ -208,6 +214,7 @@
     "floor-measurement": "Floor Measurement",
     "floor-part": "Floor Part",
     "module-part": "Module Parts",
+    "module-type": "Module Type",
     "opening": "Opening",
     "opening-measurement": "Opening Measurement",
     "ring-beam-assembly": "Ring Beam Assembly",
@@ -295,10 +302,13 @@
     "straw_partial-bale": "Partial Strawbale",
     "straw_stuffed": "Stuffed Straw",
     "wall-assembly_infill": "Type: Infill",
+    "wall-assembly_modules": "Type: Modules",
     "wall-assembly_non-strawbale": "Type: Non-Strawbale",
+    "wall-assembly_prefab-modules": "Type: Prefab-Modules",
     "wall-assembly_strawhenge": "Type: Strawhenge",
     "wall-layer_inside": "Inside Wall Layers",
     "wall-layer_outside": "Outside Wall Layers",
+    "wall-measurement_module-height": "Module Height",
     "wall-measurement_module-width": "Module Width",
     "wall-measurement_opening-spacing": "Opening Spacing",
     "wall-measurement_post-spacing": "Post Spacing",
@@ -311,6 +321,7 @@
     "wall-part_infill": "Infill",
     "wall-part_opening-side-plank": "Opening Side Plank",
     "wall-part_post": "Post",
+    "wall-part_reinforcement": "Reinforcement Plating",
     "wall-part_sill": "Sill",
     "wall-part_triangular-batten": "Triangular Batten"
   },

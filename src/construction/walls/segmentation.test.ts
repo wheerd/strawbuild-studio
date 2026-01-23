@@ -1,11 +1,11 @@
 import { type Mock, type Mocked, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import type {
-  OpeningWithGeometry,
-  PerimeterWallWithGeometry,
-  RingBeamAssemblyId,
-  WallEntity,
-  WallPostWithGeometry
+import {
+  type OpeningWithGeometry,
+  type PerimeterWallWithGeometry,
+  type RingBeamAssemblyId,
+  type WallEntity,
+  type WallPostWithGeometry
 } from '@/building/model'
 import { type StoreyId, createOpeningId, createWallAssemblyId, createWallPostId } from '@/building/model/ids'
 import { type StoreActions, getModelActions } from '@/building/store'
@@ -26,7 +26,7 @@ import {
   TAG_WALL_HEIGHT,
   TAG_WALL_LENGTH
 } from '@/construction/tags'
-import type { InfillMethod, WallLayersConfig } from '@/construction/walls'
+import type { SegmentInfillMethod, WallLayersConfig } from '@/construction/walls'
 import { Bounds3D, IDENTITY, type Length, type Vec3, ZERO_VEC2, newVec2, newVec3 } from '@/shared/geometry'
 import { partial } from '@/test/helpers'
 
@@ -222,7 +222,7 @@ function createMockStoreyContext(storeyHeight: Length = 2500, wallHeight: Length
 
 describe('segmentedWallConstruction', () => {
   let mockWallConstruction: Mocked<WallSegmentConstruction>
-  let mockInfillMethod: Mock<InfillMethod>
+  let mockInfillMethod: Mock<SegmentInfillMethod>
   let mockOpeningConstruction: Mock<OpeningAssembly['construct']>
   let mockGetRingBeamAssemblyById: ReturnType<typeof vi.fn>
   let mockGetOpeningAssemblyById: Mock<() => OpeningAssemblyConfig>
@@ -322,7 +322,7 @@ describe('segmentedWallConstruction', () => {
       _area: WallConstructionArea,
       _adjustedHeader: Length,
       _adjustedSill: Length,
-      _infill: InfillMethod
+      _infill: SegmentInfillMethod
     ) {
       yield* yieldElement({
         id: 'opening-element' as any,
@@ -337,8 +337,8 @@ describe('segmentedWallConstruction', () => {
 
     mockResolveOpeningAssembly.mockReturnValue({
       construct: mockOpeningConstruction as any,
-      segmentationPadding: 0,
-      needsWallStands: true
+      getSegmentationPadding: () => 0,
+      needsWallStands: () => true
     })
 
     mockResolveOpeningConfig.mockReturnValue({
@@ -519,7 +519,8 @@ describe('segmentedWallConstruction', () => {
         expectArea(newVec3(1000, 30, 60), newVec3(800, 220, 2380)),
         2060,
         860,
-        mockInfillMethod
+        mockInfillMethod,
+        expect.arrayContaining([opening])
       )
 
       // Should generate segment measurements for both wall segments
@@ -559,7 +560,8 @@ describe('segmentedWallConstruction', () => {
         expectArea(newVec3(0, 30, 60), newVec3(800, 220, 2380)),
         2060,
         860,
-        mockInfillMethod
+        mockInfillMethod,
+        expect.arrayContaining([opening])
       )
     })
 
@@ -595,7 +597,8 @@ describe('segmentedWallConstruction', () => {
         expectArea(newVec3(2200, 30, 60), newVec3(800, 220, 2380)),
         2060,
         860,
-        mockInfillMethod
+        mockInfillMethod,
+        expect.arrayContaining([opening])
       )
     })
 
@@ -627,7 +630,8 @@ describe('segmentedWallConstruction', () => {
         ),
         2060,
         860,
-        mockInfillMethod
+        mockInfillMethod,
+        expect.arrayContaining([opening1, opening2])
       )
     })
 
@@ -703,14 +707,16 @@ describe('segmentedWallConstruction', () => {
         expectArea(newVec3(500, 30, 60), newVec3(800, 220, 2380)),
         2060,
         860,
-        mockInfillMethod
+        mockInfillMethod,
+        expect.arrayContaining([opening2])
       )
       expect(mockOpeningConstruction).toHaveBeenNthCalledWith(
         2,
         expectArea(newVec3(2000, 30, 60), newVec3(600, 220, 2380)),
         2060,
         860,
-        mockInfillMethod
+        mockInfillMethod,
+        expect.arrayContaining([opening1])
       )
     })
   })

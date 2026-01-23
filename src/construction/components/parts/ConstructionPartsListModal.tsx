@@ -82,7 +82,7 @@ export function ConstructionPartsListModal({
             <Tabs.Trigger value="modules">{t($ => $.partsListModal.tabs.modules)}</Tabs.Trigger>
           </Tabs.List>
         </div>
-        <Tabs.Content value="materials" className="flex min-h-0 w-full flex-1 overflow-auto pt-3">
+        <Tabs.Content value="materials" className="flex min-h-0 w-full flex-1 flex-col overflow-auto pt-3">
           {partsDataPromise ? (
             <Suspense fallback={<PartsSkeleton />}>
               <MaterialPartsContent partsDataPromise={partsDataPromise} />
@@ -92,7 +92,7 @@ export function ConstructionPartsListModal({
           )}
         </Tabs.Content>
 
-        <Tabs.Content value="modules" className="flex min-h-0 flex-1 overflow-auto pt-3">
+        <Tabs.Content value="modules" className="flex min-h-0 flex-1 flex-col overflow-auto pt-3">
           {partsDataPromise ? (
             <Suspense fallback={<PartsSkeleton />}>
               <ModulePartsContent partsDataPromise={partsDataPromise} />

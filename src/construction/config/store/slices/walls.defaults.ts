@@ -3,13 +3,25 @@ import type {
   InfillWallAssemblyConfig,
   ModulesWallAssemblyConfig,
   NonStrawbaleWallAssemblyConfig,
+  PrefabModulesWallAssemblyConfig,
   StrawhengeWallAssemblyConfig
 } from '@/construction/config/types'
 import { PRESET_WALL_CLAY_PLASTER, PRESET_WALL_LIME_PLASTER } from '@/construction/layers/defaults'
 import type { MaterialId } from '@/construction/materials/material'
-import { battens, concrete, roughWood, strawbale } from '@/construction/materials/material'
+import {
+  battens,
+  concrete,
+  ecococonBox,
+  ecococonInclined,
+  ecococonLintel,
+  ecococonSill,
+  ecococonStandard,
+  lvl,
+  roughWood,
+  strawbale
+} from '@/construction/materials/material'
 
-import { DEFAULT_EMPTY_ASSEMBLY } from './opening.defaults'
+import { DEFAULT_EMPTY_ASSEMBLY, prefabThresholdAssembly } from './opening.defaults'
 
 const infillAssembly: InfillWallAssemblyConfig = {
   id: 'wa_infill_default' as WallAssemblyId,
@@ -158,6 +170,38 @@ const nonStrawbaleAssembly: NonStrawbaleWallAssemblyConfig = {
   }
 }
 
-export const DEFAULT_WALL_ASSEMBLIES = [infillAssembly, strawhengeAssembly, modulesAssembly, nonStrawbaleAssembly]
+const ecococonAssembly: PrefabModulesWallAssemblyConfig = {
+  id: 'wa_ecococon_default' as WallAssemblyId,
+  name: 'Ecococon Modules',
+  nameKey: $ => $.walls.defaults.ecococonModules,
+  type: 'prefab-modules',
+  defaultMaterial: ecococonStandard.id,
+  fallbackMaterial: ecococonBox.id,
+  inclinedMaterial: ecococonInclined.id,
+  lintelMaterial: ecococonLintel.id,
+  sillMaterial: ecococonSill.id,
+  maxWidth: 850,
+  targetWidth: 800,
+  preferEqualWidths: true,
+  openingAssemblyId: prefabThresholdAssembly.id,
+  tallReinforceThreshold: 3000,
+  tallReinforceThickness: 15,
+  tallReinforceStagger: 800,
+  tallReinforceMaterial: lvl.id,
+  layers: {
+    insideThickness: 30,
+    insideLayers: PRESET_WALL_CLAY_PLASTER.layers,
+    outsideThickness: 30,
+    outsideLayers: PRESET_WALL_LIME_PLASTER.layers
+  }
+}
+
+export const DEFAULT_WALL_ASSEMBLIES = [
+  infillAssembly,
+  strawhengeAssembly,
+  modulesAssembly,
+  nonStrawbaleAssembly,
+  ecococonAssembly
+]
 
 export const DEFAULT_WALL_ASSEMBLY_ID = infillAssembly.id

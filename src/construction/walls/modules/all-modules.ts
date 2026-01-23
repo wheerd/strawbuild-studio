@@ -5,7 +5,7 @@ import { mergeModels } from '@/construction/model'
 import type { ConstructionResult } from '@/construction/results'
 import { resultsToModel } from '@/construction/results'
 import type { StoreyContext } from '@/construction/storeys/context'
-import { TAG_INFILL_CONSTRUCTION } from '@/construction/tags'
+import { TAG_MODULE_CONSTRUCTION } from '@/construction/tags'
 import type { ModulesWallConfig } from '@/construction/walls'
 import { BaseWallAssembly } from '@/construction/walls/base'
 import { infillWallArea } from '@/construction/walls/infill/infill'
@@ -55,5 +55,5 @@ export class ModulesWallAssembly extends BaseWallAssembly<ModulesWallConfig> {
     }
   }
 
-  readonly tag = TAG_INFILL_CONSTRUCTION
+  readonly tag = TAG_MODULE_CONSTRUCTION
 }

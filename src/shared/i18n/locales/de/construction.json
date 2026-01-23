@@ -18,6 +18,7 @@
   "materialTypes": {
     "dimensional": "Dimensioniert",
     "generic": "Generisch",
+    "prefab": "Fertigteil",
     "sheet": "Platte",
     "strawbale": "Strohballen",
     "volume": "Volumen"
@@ -67,6 +68,7 @@
     },
     "noModules": "Keine Module",
     "tableHeaders": {
+      "description": "Spezifischer Typ",
       "dimensions": "Abmessungen",
       "label": "Bezeichnung",
       "quantity": "Menge",
@@ -74,6 +76,10 @@
       "view": "Ansicht"
     },
     "title": "Module"
+  },
+  "moduleTypes": {
+    "double": "Doppelrahmen",
+    "single": "Einzelrahmen"
   },
   "partCutModal": {
     "partCutDiagram": "Teileschnittdiagramm",
@@ -208,6 +214,7 @@
     "floor-measurement": "Bodenmaße",
     "floor-part": "Bodenteil",
     "module-part": "Modulteile",
+    "module-type": "Modultyp",
     "opening": "Öffnung",
     "opening-measurement": "Öffnungsmaße",
     "ring-beam-assembly": "Ringankeraufbau",
@@ -295,10 +302,13 @@
     "straw_partial-bale": "Teil-Strohballen",
     "straw_stuffed": "Gestopftes Stroh",
     "wall-assembly_infill": "Typ: Ausfachung",
+    "wall-assembly_modules": "Typ: Module",
     "wall-assembly_non-strawbale": "Typ: Massiv",
+    "wall-assembly_prefab-modules": "Typ: Prefab-Module",
     "wall-assembly_strawhenge": "Typ: Strawhenge",
     "wall-layer_inside": "Innere Wandschichten",
     "wall-layer_outside": "Äußere Wandschichten",
+    "wall-measurement_module-height": "Modulehöhe",
     "wall-measurement_module-width": "Modulbreite",
     "wall-measurement_opening-spacing": "Öffnungsabstand",
     "wall-measurement_post-spacing": "Ständerabstand",
@@ -311,6 +321,7 @@
     "wall-part_infill": "Füllung",
     "wall-part_opening-side-plank": "Seitenbeplankung",
     "wall-part_post": "Ständer",
+    "wall-part_reinforcement": "Verstärkende Beplankung",
     "wall-part_sill": "Schwelle",
     "wall-part_triangular-batten": "Dreiecksleiste"
   },

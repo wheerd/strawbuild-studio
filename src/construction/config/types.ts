@@ -17,7 +17,8 @@ import type {
   EmptyOpeningConfig,
   PlankedOpeningConfig,
   PostOpeningConfig,
-  SimpleOpeningConfig
+  SimpleOpeningConfig,
+  ThresholdAssemblyConfig
 } from '@/construction/openings/types'
 import type { BrickRingBeamConfig, DoubleRingBeamConfig, FullRingBeamConfig } from '@/construction/ringBeams'
 import type { MonolithicRoofConfig, PurlinRoofConfig } from '@/construction/roofs'
@@ -25,6 +26,7 @@ import type {
   InfillWallConfig,
   ModulesWallConfig,
   NonStrawbaleWallConfig,
+  PrefabModulesWallConfig,
   StrawhengeWallConfig
 } from '@/construction/walls'
 
@@ -93,12 +95,14 @@ export type InfillWallAssemblyConfig = InfillWallConfig & WallAssemblyIdPart
 export type ModulesWallAssemblyConfig = ModulesWallConfig & WallAssemblyIdPart
 export type StrawhengeWallAssemblyConfig = StrawhengeWallConfig & WallAssemblyIdPart
 export type NonStrawbaleWallAssemblyConfig = NonStrawbaleWallConfig & WallAssemblyIdPart
+export type PrefabModulesWallAssemblyConfig = PrefabModulesWallConfig & WallAssemblyIdPart
 
 export type WallAssemblyConfig =
   | InfillWallAssemblyConfig
   | ModulesWallAssemblyConfig
   | StrawhengeWallAssemblyConfig
   | NonStrawbaleWallAssemblyConfig
+  | PrefabModulesWallAssemblyConfig
 
 // Ring beams
 
@@ -153,9 +157,11 @@ export type SimpleOpeningAssemblyConfig = SimpleOpeningConfig & OpeningAssemblyI
 export type EmptyOpeningAssemblyConfig = EmptyOpeningConfig & OpeningAssemblyIdPart
 export type PostOpeningAssemblyConfig = PostOpeningConfig & OpeningAssemblyIdPart
 export type PlankedOpeningAssemblyConfig = PlankedOpeningConfig & OpeningAssemblyIdPart
+export type ThresholdOpeningAssemblyConfig = ThresholdAssemblyConfig & OpeningAssemblyIdPart
 
 export type OpeningAssemblyConfig =
   | SimpleOpeningAssemblyConfig
   | EmptyOpeningAssemblyConfig
   | PostOpeningAssemblyConfig
   | PlankedOpeningAssemblyConfig
+  | ThresholdOpeningAssemblyConfig
