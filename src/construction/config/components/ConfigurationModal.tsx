@@ -7,11 +7,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import type { ConfigTab } from '@/construction/config/context/ConfigurationModalContext'
 import { MaterialsConfigContent } from '@/construction/materials/components/MaterialsConfigContent'
 
-import { FloorAssemblyConfigContent } from './FloorAssemblyConfigContent'
-import { OpeningAssemblyContent } from './OpeningAssemblyContent'
-import { RingBeamAssemblyContent } from './RingBeamAssemblyContent'
-import { RoofAssemblyConfigContent } from './RoofAssemblyConfigContent'
-import { WallAssemblyContent } from './WallAssemblyContent'
+import { FloorAssemblyConfigContent } from './floor-assembly/FloorAssemblyConfigContent'
+import { OpeningAssemblyContent } from './opening-assembly/OpeningAssemblyContent'
+import { RingBeamAssemblyContent } from './ring-beam-assembly/RingBeamAssemblyContent'
+import { RoofAssemblyConfigContent } from './roof-assembly/RoofAssemblyConfigContent'
+import { WallAssemblyContent } from './wall-assembly/WallAssemblyContent'
 
 export interface ConfigurationModalProps {
   open: boolean
