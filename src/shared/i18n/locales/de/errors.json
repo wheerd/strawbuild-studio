@@ -45,7 +45,7 @@
     },
     "prefabModules": {
       "tooBig": "Das Modul is größer als die verfügbare Maximalgröße.",
-      "tooSmall": "Das Modul is kleiner als die verfügbare Minimalgröße.",
+      "tooSmall": "Das Modul ist kleiner als die verfügbare Minimalgröße.",
       "tooThick": "Die Wand ist zu dick für das Fertigmodul.",
       "tooThin": "Die Wand ist zu dünn für das Fertigmodul."
     },
