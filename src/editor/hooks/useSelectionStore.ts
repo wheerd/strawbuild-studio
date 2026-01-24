@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 import { devtools } from 'zustand/middleware'
 
-import type { EntityId, SelectableId } from '@/building/model/ids'
+import type { SelectableId } from '@/building/model/ids'
 
 interface SelectionState {
   // Simple stack of IDs - parent is always previous item in array
@@ -26,9 +26,6 @@ interface SelectionActions {
   isSelected: (id: SelectableId) => boolean // Check if ID is anywhere in stack
   isCurrentSelection: (id: SelectableId) => boolean // Check if ID is top of stack
   hasSelection: () => boolean // Stack not empty
-
-  // Backward compatibility helper
-  getSelectedEntityId: () => EntityId | null // Root entity for existing tools
 }
 
 type SelectionStore = SelectionState & SelectionActions
@@ -109,14 +106,12 @@ export const useSelectionStore = create<SelectionStore>()(
 
 // Convenience hooks for common selection queries
 export const useCurrentSelection = () => useSelectionStore(state => state.getCurrentSelection())
-export const useSelectedEntityId = () => useSelectionStore(state => state.getSelectedEntityId())
 export const useSelectionPath = () => useSelectionStore(state => state.getSelectionPath())
 export const useHasSelection = () => useSelectionStore(state => state.hasSelection())
 
 // Non-reactive access functions for external usage (tools, services)
 export const getSelectionActions = (): SelectionActions => useSelectionStore.getState()
 export const getCurrentSelection = () => useSelectionStore.getState().getCurrentSelection()
-export const getSelectedEntityId = () => useSelectionStore.getState().getSelectedEntityId()
 export const getSelectionPath = () => useSelectionStore.getState().getSelectionPath()
 export const hasSelection = () => useSelectionStore.getState().hasSelection()
 

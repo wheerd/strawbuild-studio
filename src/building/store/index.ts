@@ -48,6 +48,7 @@ import { createFloorsSlice } from './slices/floorsSlice'
 import { createPerimetersSlice } from './slices/perimeterSlice'
 import { createRoofsSlice } from './slices/roofsSlice'
 import { createStoreysSlice } from './slices/storeysSlice'
+import { createTimestampsSlice } from './slices/timestampsSlice'
 import type { Store, StoreActions, StoreState } from './types'
 
 export { InvalidOperationError, NotFoundError } from './errors'
@@ -77,7 +78,7 @@ const createDebouncedSave = () => {
   }
 }
 
-// Create the main store with persistence, undo/redo, and slices
+// Create main store with persistence, undo/redo, and slices
 const useModelStore = create<Store>()(
   persist(
     temporal(
@@ -86,17 +87,20 @@ const useModelStore = create<Store>()(
         const perimetersSlice = immer(createPerimetersSlice)(set, get, store)
         const floorsSlice = immer(createFloorsSlice)(set, get, store)
         const roofsSlice = immer(createRoofsSlice)(set, get, store)
+        const timestampsSlice = immer(createTimestampsSlice)(set, get, store)
 
         return {
           ...storeysSlice,
           ...perimetersSlice,
           ...floorsSlice,
           ...roofsSlice,
+          ...timestampsSlice,
           actions: {
             ...storeysSlice.actions,
             ...perimetersSlice.actions,
             ...floorsSlice.actions,
             ...roofsSlice.actions,
+            ...timestampsSlice.actions,
             reset: () => {
               set(store.getInitialState())
             }
@@ -184,7 +188,6 @@ export const useModelEntityById = (
       if (isFloorOpeningId(id)) return state.floorOpenings[id]
       if (isRoofId(id)) return state.roofs[id]
       if (isRoofOverhangId(id)) return state.roofOverhangs[id]
-      if (isOpeningId(id)) return state.openings[id]
       assertUnreachable(id, `Unsupported entity: ${id}`)
     },
     [id]

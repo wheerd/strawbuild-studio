@@ -36,7 +36,19 @@ export type RoomId = `${typeof ROOM_ID_PREFIX}${string}`
 export type WallNodeId = `${typeof WALL_NODE_ID_PREFIX}${string}`
 export type IntermediateWallId = `${typeof INTERMEDIATE_WALL_ID_PREFIX}${string}`
 
-export type EntityId = PerimeterId | FloorAreaId | FloorOpeningId | RoofId
+export type EntityId =
+  | StoreyId
+  | PerimeterId
+  | PerimeterWallId
+  | PerimeterCornerId
+  | IntermediateWallId
+  | OpeningId
+  | WallPostId
+  | FloorAreaId
+  | FloorOpeningId
+  | RoofId
+  | RoofOverhangId
+
 export type SelectableId =
   | PerimeterId
   | FloorAreaId

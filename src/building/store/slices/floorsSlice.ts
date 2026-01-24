@@ -3,6 +3,7 @@ import type { StateCreator } from 'zustand'
 import type { FloorArea, FloorOpening } from '@/building/model'
 import type { FloorAreaId, FloorOpeningId, StoreyId } from '@/building/model/ids'
 import { createFloorAreaId, createFloorOpeningId } from '@/building/model/ids'
+import type { TimestampsActions } from '@/building/store/slices/timestampsSlice'
 import {
   type Polygon2D,
   ensurePolygonIsClockwise,
@@ -51,27 +52,27 @@ const ensureFloorOpeningPolygon = (polygon: Polygon2D): Polygon2D => {
   return ensurePolygonIsCounterClockwise(polygon)
 }
 
-export const createFloorsSlice: StateCreator<FloorsSlice, [['zustand/immer', never]], [], FloorsSlice> = (
-  set,
-  get
-) => ({
+export const createFloorsSlice: StateCreator<
+  FloorsState & { actions: FloorsActions & TimestampsActions },
+  [['zustand/immer', never]],
+  [],
+  FloorsSlice
+> = (set, get) => ({
   floorAreas: {},
   floorOpenings: {},
 
   actions: {
     addFloorArea: (storeyId: StoreyId, polygon: Polygon2D) => {
       const validatedPolygon = ensureFloorAreaPolygon(polygon)
-
       let floorArea: FloorArea | undefined
-
       set(state => {
         floorArea = {
           id: createFloorAreaId(),
           storeyId,
           area: validatedPolygon
         }
-
         state.floorAreas[floorArea.id] = floorArea
+        state.actions.updateTimestamp(floorArea.id)
       })
 
       if (!floorArea) {
@@ -84,17 +85,18 @@ export const createFloorsSlice: StateCreator<FloorsSlice, [['zustand/immer', nev
       set(state => {
         const { [floorAreaId]: _removed, ...remainingFloorAreas } = state.floorAreas
         state.floorAreas = remainingFloorAreas
+        state.actions.removeTimestamp(floorAreaId)
       })
     },
 
     updateFloorArea: (floorAreaId: FloorAreaId, newPolygon: Polygon2D): boolean => {
       const validatedPolygon = ensureFloorAreaPolygon(newPolygon)
-
       let success = false
       set(state => {
         if (floorAreaId in state.floorAreas) {
           const floorArea = state.floorAreas[floorAreaId]
           floorArea.area = validatedPolygon
+          state.actions.updateTimestamp(floorArea.id)
           success = true
         }
       })
@@ -111,17 +113,15 @@ export const createFloorsSlice: StateCreator<FloorsSlice, [['zustand/immer', nev
 
     addFloorOpening: (storeyId: StoreyId, polygon: Polygon2D) => {
       const validatedPolygon = ensureFloorOpeningPolygon(polygon)
-
       let floorOpening: FloorOpening | undefined
-
       set(state => {
         floorOpening = {
           id: createFloorOpeningId(),
           storeyId,
           area: validatedPolygon
         }
-
         state.floorOpenings[floorOpening.id] = floorOpening
+        state.actions.updateTimestamp(floorOpening.id)
       })
 
       if (!floorOpening) {
@@ -134,17 +134,18 @@ export const createFloorsSlice: StateCreator<FloorsSlice, [['zustand/immer', nev
       set(state => {
         const { [floorOpeningId]: _removed, ...remainingFloorOpenings } = state.floorOpenings
         state.floorOpenings = remainingFloorOpenings
+        state.actions.removeTimestamp(floorOpeningId)
       })
     },
 
     updateFloorOpening: (floorOpeningId: FloorOpeningId, newPolygon: Polygon2D): boolean => {
       const validatedPolygon = ensureFloorOpeningPolygon(newPolygon)
-
       let success = false
       set(state => {
         if (floorOpeningId in state.floorOpenings) {
           const floorOpening = state.floorOpenings[floorOpeningId]
           floorOpening.area = validatedPolygon
+          state.actions.updateTimestamp(floorOpening.id)
           success = true
         }
       })

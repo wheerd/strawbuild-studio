@@ -54,16 +54,18 @@ export function setupPerimeterSlice() {
   let slice: PerimetersSlice
   const mockSet = vi.fn()
   const mockGet = vi.fn()
-  const testStoreyId = createStoreyId()
+  const mockUpdateTimestamp = vi.fn()
+  const mockRemoveTimestamp = vi.fn()
 
   const mockStore = {} as any
+  const testStoreyId = createStoreyId()
 
   slice = createPerimetersSlice(mockSet, mockGet, mockStore)
+  ;(slice as any).actions.updateTimestamp = mockUpdateTimestamp
+  ;(slice as any).actions.removeTimestamp = mockRemoveTimestamp
 
-  // Mock the get function to return current state
   mockGet.mockImplementation(() => slice)
 
-  // Mock the set function to actually update the slice
   mockSet.mockImplementation((updater: any) => {
     if (typeof updater === 'function') {
       const newState = updater(slice)
@@ -75,7 +77,7 @@ export function setupPerimeterSlice() {
     }
   })
 
-  return { slice, mockSet, mockGet, testStoreyId }
+  return { slice, mockSet, mockGet, mockUpdateTimestamp, mockRemoveTimestamp, testStoreyId }
 }
 
 /**

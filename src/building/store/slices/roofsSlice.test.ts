@@ -1,7 +1,8 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { type Mock, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import type { RoofAssemblyId, StoreyId } from '@/building/model/ids'
 import { createStoreyId } from '@/building/model/ids'
+import type { TimestampsActions } from '@/building/store/slices/timestampsSlice'
 import { type Polygon2D, ensurePolygonIsClockwise, newVec2, wouldClosingPolygonSelfIntersect } from '@/shared/geometry'
 
 import type { RoofsSlice } from './roofsSlice'
@@ -24,6 +25,8 @@ describe('roofsSlice', () => {
   let store: RoofsSlice
   let mockSet: any
   let mockGet: any
+  let mockUpdateTimestamp: Mock<TimestampsActions['updateTimestamp']>
+  let mockRemoveTimestamp: Mock<TimestampsActions['removeTimestamp']>
   let testStoreyId: StoreyId
   let testAssemblyId: RoofAssemblyId
 
@@ -35,11 +38,15 @@ describe('roofsSlice', () => {
 
     mockSet = vi.fn()
     mockGet = vi.fn()
+    mockUpdateTimestamp = vi.fn()
+    mockRemoveTimestamp = vi.fn()
     const mockStore = {} as any
     testStoreyId = createStoreyId()
     testAssemblyId = 'ra_test' as RoofAssemblyId
 
     store = createRoofsSlice(mockSet, mockGet, mockStore)
+    ;(store as any).actions.updateTimestamp = mockUpdateTimestamp
+    ;(store as any).actions.removeTimestamp = mockRemoveTimestamp
 
     mockGet.mockImplementation(() => store)
 

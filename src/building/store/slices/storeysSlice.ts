@@ -4,6 +4,7 @@ import type { Storey } from '@/building/model'
 import { createStoreyLevel } from '@/building/model'
 import type { FloorAssemblyId, StoreyId } from '@/building/model/ids'
 import { DEFAULT_FLOOR_ASSEMBLY_ID, createStoreyId } from '@/building/model/ids'
+import type { TimestampsActions } from '@/building/store/slices/timestampsSlice'
 import type { Length } from '@/shared/geometry'
 
 export interface StoreysState {
@@ -61,10 +62,12 @@ const groundFloor: Storey = {
   floorAssemblyId: DEFAULT_FLOOR_ASSEMBLY_ID
 }
 
-export const createStoreysSlice: StateCreator<StoreysSlice, [['zustand/immer', never]], [], StoreysSlice> = (
-  set,
-  get
-) => ({
+export const createStoreysSlice: StateCreator<
+  StoreysSlice & { actions: StoreysActions & TimestampsActions },
+  [['zustand/immer', never]],
+  [],
+  StoreysSlice
+> = (set, get) => ({
   activeStoreyId: groundFloor.id,
   defaultFloorHeight: 3000,
   storeys: { [groundFloor.id]: groundFloor } as Record<StoreyId, Storey>,
@@ -102,6 +105,7 @@ export const createStoreysSlice: StateCreator<StoreysSlice, [['zustand/immer', n
           floorAssemblyId: floorAssemblyId ?? DEFAULT_FLOOR_ASSEMBLY_ID
         }
         state.storeys[storey.id] = storey
+        state.actions.updateTimestamp(storey.id)
       })
 
       if (!storey) {
@@ -137,41 +141,47 @@ export const createStoreysSlice: StateCreator<StoreysSlice, [['zustand/immer', n
               otherStorey.level = createStoreyLevel(otherStorey.level + 1)
             }
           }
+
+          state.actions.removeTimestamp(storeyId)
         }
       })
     },
 
     // Storey modifications
     updateStoreyName: (storeyId: StoreyId, name: string | null) => {
-      set(({ storeys }) => {
+      set(state => {
         if (name != null) {
           validateStoreyName(name)
-          if (storeyId in storeys) {
-            storeys[storeyId].name = name.trim()
-            storeys[storeyId].useDefaultName = false
+          if (storeyId in state.storeys) {
+            state.storeys[storeyId].name = name.trim()
+            state.storeys[storeyId].useDefaultName = false
+            state.actions.updateTimestamp(storeyId)
           }
         } else {
-          if (storeyId in storeys) {
-            storeys[storeyId].name = 'default'
-            storeys[storeyId].useDefaultName = true
+          if (storeyId in state.storeys) {
+            state.storeys[storeyId].name = 'default'
+            state.storeys[storeyId].useDefaultName = true
+            state.actions.updateTimestamp(storeyId)
           }
         }
       })
     },
 
     updateStoreyFloorHeight: (storeyId: StoreyId, floorHeight: Length) => {
-      set(({ storeys }) => {
+      set(state => {
         validateStoreyFloorHeight(floorHeight)
-        if (storeyId in storeys) {
-          storeys[storeyId].floorHeight = floorHeight
+        if (storeyId in state.storeys) {
+          state.storeys[storeyId].floorHeight = floorHeight
+          state.actions.updateTimestamp(storeyId)
         }
       })
     },
 
     updateStoreyFloorAssembly: (storeyId: StoreyId, floorAssemblyId: FloorAssemblyId) => {
-      set(({ storeys }) => {
-        if (storeyId in storeys) {
-          storeys[storeyId].floorAssemblyId = floorAssemblyId
+      set(state => {
+        if (storeyId in state.storeys) {
+          state.storeys[storeyId].floorAssemblyId = floorAssemblyId
+          state.actions.updateTimestamp(storeyId)
         }
       })
     },
@@ -184,6 +194,7 @@ export const createStoreysSlice: StateCreator<StoreysSlice, [['zustand/immer', n
           const storey2 = state.storeys[storeyId2]
 
           ;[storey1.level, storey2.level] = [storey2.level, storey1.level]
+          state.actions.updateTimestamp(storeyId1, storeyId2)
         }
       })
     },
@@ -201,6 +212,8 @@ export const createStoreysSlice: StateCreator<StoreysSlice, [['zustand/immer', n
         if (minLevel > 0 || maxLevel < 0) {
           throw new Error('Adjustment would remove floor 0, which is not allowed')
         }
+
+        state.actions.updateTimestamp(...(Object.keys(state.storeys) as StoreyId[]))
       })
     },
 
