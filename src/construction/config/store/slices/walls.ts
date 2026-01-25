@@ -9,6 +9,7 @@ import {
   sumLayerThickness,
   updateLayerAt
 } from '@/construction/config/store/layerUtils'
+import type { TimestampsActions } from '@/construction/config/store/slices/timestampsSlice'
 import type { WallAssemblyConfig } from '@/construction/config/types'
 import type { LayerConfig } from '@/construction/layers/types'
 import { type WallConfig, validateWallConfig } from '@/construction/walls/types'
@@ -68,7 +69,7 @@ const validateWallAssemblyName = (name: string): void => {
 }
 
 export const createWallAssembliesSlice: StateCreator<
-  WallAssembliesSlice,
+  WallAssembliesSlice & { actions: WallAssembliesActions & TimestampsActions },
   [['zustand/immer', never]],
   [],
   WallAssembliesSlice
@@ -90,10 +91,10 @@ export const createWallAssembliesSlice: StateCreator<
           name
         } as WallAssemblyConfig
 
-        set(state => ({
-          ...state,
-          wallAssemblyConfigs: { ...state.wallAssemblyConfigs, [id]: assembly }
-        }))
+        set(state => {
+          state.wallAssemblyConfigs[id] = assembly
+          state.actions.updateTimestamp(id)
+        })
 
         return assembly
       },
@@ -115,64 +116,48 @@ export const createWallAssembliesSlice: StateCreator<
           nameKey: undefined
         } as WallAssemblyConfig
 
-        set(state => ({
-          ...state,
-          wallAssemblyConfigs: { ...state.wallAssemblyConfigs, [newId]: duplicated }
-        }))
+        set(state => {
+          state.wallAssemblyConfigs[newId] = duplicated
+          state.actions.updateTimestamp(newId)
+        })
 
         return duplicated
       },
 
       removeWallAssembly: (id: WallAssemblyId) => {
         set(state => {
-          const { [id]: _removed, ...remainingAssemblies } = state.wallAssemblyConfigs
-          return {
-            ...state,
-            wallAssemblyConfigs: remainingAssemblies,
-            defaultWallAssemblyId: state.defaultWallAssemblyId === id ? undefined : state.defaultWallAssemblyId
+          if (state.defaultWallAssemblyId === id) {
+            return
           }
+
+          const { [id]: _removed, ...remainingAssemblies } = state.wallAssemblyConfigs
+          state.wallAssemblyConfigs = remainingAssemblies
+          state.actions.removeTimestamp(id)
         })
       },
 
       updateWallAssemblyName: (id: WallAssemblyId, name: string) => {
         set(state => {
-          if (!(id in state.wallAssemblyConfigs)) return state
+          if (!(id in state.wallAssemblyConfigs)) return
           const assembly = state.wallAssemblyConfigs[id]
 
           validateWallAssemblyName(name)
 
-          const updatedAssembly: WallAssemblyConfig = {
-            ...assembly,
-            name: name.trim(),
-            // Clear nameKey when user edits the name (indicates custom name)
-            nameKey: undefined
-          }
-
-          return {
-            ...state,
-            wallAssemblyConfigs: { ...state.wallAssemblyConfigs, [id]: updatedAssembly }
-          }
+          assembly.name = name.trim()
+          assembly.nameKey = undefined
+          state.actions.updateTimestamp(id)
         })
       },
 
       updateWallAssemblyConfig: (id: WallAssemblyId, config: Partial<Omit<WallConfig, 'type'>>) => {
         set(state => {
-          if (!(id in state.wallAssemblyConfigs)) return state
+          if (!(id in state.wallAssemblyConfigs)) return
           const assembly = state.wallAssemblyConfigs[id]
 
-          const updatedAssembly: WallAssemblyConfig = {
-            ...assembly,
-            ...config,
-            id: assembly.id
-          }
-
-          const { id: _id, name: _name, ...wallConfig } = updatedAssembly
+          Object.assign(assembly, config, { id })
+          const { id: _id, name: _name, ...wallConfig } = assembly
           validateWallConfig(wallConfig as WallConfig)
-
-          return {
-            ...state,
-            wallAssemblyConfigs: { ...state.wallAssemblyConfigs, [id]: updatedAssembly }
-          }
+          state.actions.updateTimestamp(id)
         })
       },
 
@@ -189,10 +174,9 @@ export const createWallAssembliesSlice: StateCreator<
 
       // Default management
       setDefaultWallAssembly: (assemblyId: WallAssemblyId | undefined) => {
-        set(state => ({
-          ...state,
-          defaultWallAssemblyId: assemblyId
-        }))
+        set(state => {
+          state.defaultWallAssemblyId = assemblyId ?? DEFAULT_WALL_ASSEMBLY_ID
+        })
       },
 
       getDefaultWallAssemblyId: () => {
@@ -202,45 +186,31 @@ export const createWallAssembliesSlice: StateCreator<
 
       addWallAssemblyInsideLayer: (id: WallAssemblyId, layer: LayerConfig) => {
         set(state => {
-          if (!(id in state.wallAssemblyConfigs)) return state
+          if (!(id in state.wallAssemblyConfigs)) return
           const assembly = state.wallAssemblyConfigs[id]
 
           const insideLayers = appendLayer(assembly.layers.insideLayers, layer)
           const insideThickness = sumLayerThickness(insideLayers)
-          const updatedAssembly: WallAssemblyConfig = {
-            ...assembly,
-            layers: { ...assembly.layers, insideLayers, insideThickness }
-          }
+          assembly.layers = { ...assembly.layers, insideLayers, insideThickness }
 
-          const { id: _id, name: _name, ...wallConfig } = updatedAssembly
+          const { id: _id, name: _name, ...wallConfig } = assembly
           validateWallConfig(wallConfig as WallConfig)
-
-          return {
-            ...state,
-            wallAssemblyConfigs: { ...state.wallAssemblyConfigs, [id]: updatedAssembly }
-          }
+          state.actions.updateTimestamp(id)
         })
       },
 
       setWallAssemblyInsideLayers: (id: WallAssemblyId, layers: LayerConfig[]) => {
         set(state => {
-          if (!(id in state.wallAssemblyConfigs)) return state
+          if (!(id in state.wallAssemblyConfigs)) return
           const assembly = state.wallAssemblyConfigs[id]
 
           const insideLayers = sanitizeLayerArray(layers)
           const insideThickness = sumLayerThickness(insideLayers)
-          const updatedAssembly: WallAssemblyConfig = {
-            ...assembly,
-            layers: { ...assembly.layers, insideLayers, insideThickness }
-          }
+          assembly.layers = { ...assembly.layers, insideLayers, insideThickness }
 
-          const { id: _id, name: _name, ...wallConfig } = updatedAssembly
+          const { id: _id, name: _name, ...wallConfig } = assembly
           validateWallConfig(wallConfig as WallConfig)
-
-          return {
-            ...state,
-            wallAssemblyConfigs: { ...state.wallAssemblyConfigs, [id]: updatedAssembly }
-          }
+          state.actions.updateTimestamp(id)
         })
       },
 
@@ -250,111 +220,76 @@ export const createWallAssembliesSlice: StateCreator<
         updates: Partial<Omit<LayerConfig, 'type'>>
       ) => {
         set(state => {
-          if (!(id in state.wallAssemblyConfigs)) return state
+          if (!(id in state.wallAssemblyConfigs)) return
           const assembly = state.wallAssemblyConfigs[id]
 
           const insideLayers = updateLayerAt(assembly.layers.insideLayers, index, updates)
           const insideThickness = sumLayerThickness(insideLayers)
-          const updatedAssembly: WallAssemblyConfig = {
-            ...assembly,
-            layers: { ...assembly.layers, insideLayers, insideThickness }
-          }
+          assembly.layers = { ...assembly.layers, insideLayers, insideThickness }
 
-          const { id: _id, name: _name, ...wallConfig } = updatedAssembly
+          const { id: _id, name: _name, ...wallConfig } = assembly
           validateWallConfig(wallConfig as WallConfig)
-
-          return {
-            ...state,
-            wallAssemblyConfigs: { ...state.wallAssemblyConfigs, [id]: updatedAssembly }
-          }
+          state.actions.updateTimestamp(id)
         })
       },
 
       removeWallAssemblyInsideLayer: (id: WallAssemblyId, index: number) => {
         set(state => {
-          if (!(id in state.wallAssemblyConfigs)) return state
+          if (!(id in state.wallAssemblyConfigs)) return
           const assembly = state.wallAssemblyConfigs[id]
 
           const insideLayers = removeLayerAt(assembly.layers.insideLayers, index)
           const insideThickness = sumLayerThickness(insideLayers)
-          const updatedAssembly: WallAssemblyConfig = {
-            ...assembly,
-            layers: { ...assembly.layers, insideLayers, insideThickness }
-          }
+          assembly.layers = { ...assembly.layers, insideLayers, insideThickness }
 
-          const { id: _id, name: _name, ...wallConfig } = updatedAssembly
+          const { id: _id, name: _name, ...wallConfig } = assembly
           validateWallConfig(wallConfig as WallConfig)
-
-          return {
-            ...state,
-            wallAssemblyConfigs: { ...state.wallAssemblyConfigs, [id]: updatedAssembly }
-          }
+          state.actions.updateTimestamp(id)
         })
       },
 
       moveWallAssemblyInsideLayer: (id: WallAssemblyId, fromIndex: number, toIndex: number) => {
         set(state => {
-          if (!(id in state.wallAssemblyConfigs)) return state
+          if (!(id in state.wallAssemblyConfigs)) return
           const assembly = state.wallAssemblyConfigs[id]
 
           const insideLayers = moveLayer(assembly.layers.insideLayers, fromIndex, toIndex)
           const insideThickness = sumLayerThickness(insideLayers)
-          const updatedAssembly: WallAssemblyConfig = {
-            ...assembly,
-            layers: { ...assembly.layers, insideLayers, insideThickness }
-          }
+          assembly.layers = { ...assembly.layers, insideLayers, insideThickness }
 
-          const { id: _id, name: _name, ...wallConfig } = updatedAssembly
+          const { id: _id, name: _name, ...wallConfig } = assembly
           validateWallConfig(wallConfig as WallConfig)
-
-          return {
-            ...state,
-            wallAssemblyConfigs: { ...state.wallAssemblyConfigs, [id]: updatedAssembly }
-          }
+          state.actions.updateTimestamp(id)
         })
       },
 
       addWallAssemblyOutsideLayer: (id: WallAssemblyId, layer: LayerConfig) => {
         set(state => {
-          if (!(id in state.wallAssemblyConfigs)) return state
+          if (!(id in state.wallAssemblyConfigs)) return
           const assembly = state.wallAssemblyConfigs[id]
 
           const outsideLayers = appendLayer(assembly.layers.outsideLayers, layer)
           const outsideThickness = sumLayerThickness(outsideLayers)
-          const updatedAssembly: WallAssemblyConfig = {
-            ...assembly,
-            layers: { ...assembly.layers, outsideLayers, outsideThickness }
-          }
+          assembly.layers = { ...assembly.layers, outsideLayers, outsideThickness }
 
-          const { id: _id, name: _name, ...wallConfig } = updatedAssembly
+          const { id: _id, name: _name, ...wallConfig } = assembly
           validateWallConfig(wallConfig as WallConfig)
-
-          return {
-            ...state,
-            wallAssemblyConfigs: { ...state.wallAssemblyConfigs, [id]: updatedAssembly }
-          }
+          state.actions.updateTimestamp(id)
         })
       },
 
       setWallAssemblyOutsideLayers: (id: WallAssemblyId, layers: LayerConfig[]) => {
         set(state => {
-          if (!(id in state.wallAssemblyConfigs)) return state
+          if (!(id in state.wallAssemblyConfigs)) return
           const assembly = state.wallAssemblyConfigs[id]
 
           const outsideLayers = sanitizeLayerArray(layers)
           const outsideThickness = sumLayerThickness(outsideLayers)
-          const updatedAssembly: WallAssemblyConfig = {
-            ...assembly,
-            layers: { ...assembly.layers, outsideLayers, outsideThickness }
-          }
+          assembly.layers = { ...assembly.layers, outsideLayers, outsideThickness }
 
-          const { id: _id, name: _name, ...wallConfig } = updatedAssembly
+          const { id: _id, name: _name, ...wallConfig } = assembly
           validateWallConfig(wallConfig as WallConfig)
-
-          return {
-            ...state,
-            wallAssemblyConfigs: { ...state.wallAssemblyConfigs, [id]: updatedAssembly }
-          }
+          state.actions.updateTimestamp(id)
         })
       },
 
@@ -364,93 +299,81 @@ export const createWallAssembliesSlice: StateCreator<
         updates: Partial<Omit<LayerConfig, 'type'>>
       ) => {
         set(state => {
-          if (!(id in state.wallAssemblyConfigs)) return state
+          if (!(id in state.wallAssemblyConfigs)) return
           const assembly = state.wallAssemblyConfigs[id]
 
           const outsideLayers = updateLayerAt(assembly.layers.outsideLayers, index, updates)
           const outsideThickness = sumLayerThickness(outsideLayers)
-          const updatedAssembly: WallAssemblyConfig = {
-            ...assembly,
-            layers: { ...assembly.layers, outsideLayers, outsideThickness }
-          }
+          assembly.layers = { ...assembly.layers, outsideLayers, outsideThickness }
 
-          const { id: _id, name: _name, ...wallConfig } = updatedAssembly
+          const { id: _id, name: _name, ...wallConfig } = assembly
           validateWallConfig(wallConfig as WallConfig)
-
-          return {
-            ...state,
-            wallAssemblyConfigs: { ...state.wallAssemblyConfigs, [id]: updatedAssembly }
-          }
+          state.actions.updateTimestamp(id)
         })
       },
 
       removeWallAssemblyOutsideLayer: (id: WallAssemblyId, index: number) => {
         set(state => {
-          if (!(id in state.wallAssemblyConfigs)) return state
+          if (!(id in state.wallAssemblyConfigs)) return
           const assembly = state.wallAssemblyConfigs[id]
 
           const outsideLayers = removeLayerAt(assembly.layers.outsideLayers, index)
           const outsideThickness = sumLayerThickness(outsideLayers)
-          const updatedAssembly: WallAssemblyConfig = {
-            ...assembly,
-            layers: { ...assembly.layers, outsideLayers, outsideThickness }
-          }
+          assembly.layers = { ...assembly.layers, outsideLayers, outsideThickness }
 
-          const { id: _id, name: _name, ...wallConfig } = updatedAssembly
+          const { id: _id, name: _name, ...wallConfig } = assembly
           validateWallConfig(wallConfig as WallConfig)
-
-          return {
-            ...state,
-            wallAssemblyConfigs: { ...state.wallAssemblyConfigs, [id]: updatedAssembly }
-          }
+          state.actions.updateTimestamp(id)
         })
       },
 
       moveWallAssemblyOutsideLayer: (id: WallAssemblyId, fromIndex: number, toIndex: number) => {
         set(state => {
-          if (!(id in state.wallAssemblyConfigs)) return state
+          if (!(id in state.wallAssemblyConfigs)) return
           const assembly = state.wallAssemblyConfigs[id]
 
           const outsideLayers = moveLayer(assembly.layers.outsideLayers, fromIndex, toIndex)
           const outsideThickness = sumLayerThickness(outsideLayers)
-          const updatedAssembly: WallAssemblyConfig = {
-            ...assembly,
-            layers: { ...assembly.layers, outsideLayers, outsideThickness }
-          }
+          assembly.layers = { ...assembly.layers, outsideLayers, outsideThickness }
 
-          const { id: _id, name: _name, ...wallConfig } = updatedAssembly
+          const { id: _id, name: _name, ...wallConfig } = assembly
           validateWallConfig(wallConfig as WallConfig)
-
-          return {
-            ...state,
-            wallAssemblyConfigs: { ...state.wallAssemblyConfigs, [id]: updatedAssembly }
-          }
+          state.actions.updateTimestamp(id)
         })
       },
 
       resetWallAssembliesToDefaults: () => {
         set(state => {
-          // Get default assembly IDs
           const defaultIds = DEFAULT_WALL_ASSEMBLIES.map(a => a.id)
+          const currentIds = Object.keys(state.wallAssemblyConfigs) as WallAssemblyId[]
 
-          // Keep only custom assemblies (non-default)
           const customAssemblies = Object.fromEntries(
             Object.entries(state.wallAssemblyConfigs).filter(([id]) => !defaultIds.includes(id as WallAssemblyId))
           )
 
-          // Add fresh default assemblies
           const resetAssemblies = Object.fromEntries(DEFAULT_WALL_ASSEMBLIES.map(assembly => [assembly.id, assembly]))
 
-          // Preserve user's default assembly choice if it's a custom assembly, otherwise reset to default
           const newDefaultId = defaultIds.includes(state.defaultWallAssemblyId)
             ? DEFAULT_WALL_ASSEMBLY_ID
             : state.defaultWallAssemblyId
 
-          return {
-            ...state,
-            wallAssemblyConfigs: { ...resetAssemblies, ...customAssemblies },
-            defaultWallAssemblyId: newDefaultId
+          for (const id of currentIds) {
+            if (!defaultIds.includes(id) && id in customAssemblies) {
+              continue
+            }
+            if (defaultIds.includes(id) && !(id in customAssemblies)) {
+              state.actions.removeTimestamp(id)
+            }
           }
+
+          for (const assembly of DEFAULT_WALL_ASSEMBLIES) {
+            if (!currentIds.includes(assembly.id)) {
+              state.actions.updateTimestamp(assembly.id)
+            }
+          }
+
+          state.wallAssemblyConfigs = { ...resetAssemblies, ...customAssemblies }
+          state.defaultWallAssemblyId = newDefaultId
         })
       }
     } satisfies WallAssembliesActions

@@ -3,6 +3,7 @@ import type { OpeningAssembliesActions, OpeningAssembliesState } from './slices/
 import type { RingBeamAssembliesActions, RingBeamAssembliesState } from './slices/ringBeams'
 import type { RoofAssembliesActions, RoofAssembliesState } from './slices/roofs'
 import type { StrawActions, StrawState } from './slices/straw'
+import type { TimestampsActions, TimestampsState } from './slices/timestampsSlice'
 import type { WallAssembliesActions, WallAssembliesState } from './slices/walls'
 
 export interface ConfigState
@@ -12,7 +13,8 @@ export interface ConfigState
     WallAssembliesState,
     FloorAssembliesState,
     RoofAssembliesState,
-    OpeningAssembliesState {}
+    OpeningAssembliesState,
+    TimestampsState {}
 
 export interface ConfigActions
   extends
@@ -21,7 +23,8 @@ export interface ConfigActions
     WallAssembliesActions,
     FloorAssembliesActions,
     RoofAssembliesActions,
-    OpeningAssembliesActions {
+    OpeningAssembliesActions,
+    TimestampsActions {
   reset: () => void
 }
 

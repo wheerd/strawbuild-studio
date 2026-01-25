@@ -49,6 +49,8 @@ export type EntityId =
   | RoofId
   | RoofOverhangId
 
+export type AssemblyId = RingBeamAssemblyId | WallAssemblyId | FloorAssemblyId | RoofAssemblyId | OpeningAssemblyId
+
 export type SelectableId =
   | PerimeterId
   | FloorAreaId

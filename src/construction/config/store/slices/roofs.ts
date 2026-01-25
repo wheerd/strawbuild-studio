@@ -1,6 +1,6 @@
 import { type StateCreator } from 'zustand'
 
-import { type RoofAssemblyId, createRoofAssemblyId } from '@/building/model'
+import { type RoofAssemblyId, createRoofAssemblyId } from '@/building/model/ids'
 import {
   appendLayer,
   moveLayer,
@@ -9,6 +9,7 @@ import {
   sumLayerThickness,
   updateLayerAt
 } from '@/construction/config/store/layerUtils'
+import type { TimestampsActions } from '@/construction/config/store/slices/timestampsSlice'
 import type { RoofAssemblyConfig } from '@/construction/config/types'
 import type { LayerConfig } from '@/construction/layers/types'
 import { type RoofConfig, validateRoofConfig } from '@/construction/roofs/types'
@@ -78,7 +79,7 @@ const validateRoofAssemblyName = (name: string): void => {
 }
 
 export const createRoofAssembliesSlice: StateCreator<
-  RoofAssembliesSlice,
+  RoofAssembliesSlice & { actions: RoofAssembliesActions & TimestampsActions },
   [['zustand/immer', never]],
   [],
   RoofAssembliesSlice
@@ -102,10 +103,10 @@ export const createRoofAssembliesSlice: StateCreator<
           name
         } as RoofAssemblyConfig
 
-        set(state => ({
-          ...state,
-          roofAssemblyConfigs: { ...state.roofAssemblyConfigs, [assembly.id]: assembly }
-        }))
+        set(state => {
+          state.roofAssemblyConfigs[assembly.id] = assembly
+          state.actions.updateTimestamp(assembly.id)
+        })
 
         return assembly
       },
@@ -120,6 +121,7 @@ export const createRoofAssembliesSlice: StateCreator<
           }
 
           const { [id]: _removed, ...remainingConfigs } = roofAssemblyConfigs
+          state.actions.removeTimestamp(id)
 
           // If removing the default, set first remaining config as default
           let newDefaultId = state.defaultRoofAssemblyId
@@ -137,36 +139,25 @@ export const createRoofAssembliesSlice: StateCreator<
 
       updateRoofAssemblyName: (id: RoofAssemblyId, name: string) => {
         set(state => {
-          if (!(id in state.roofAssemblyConfigs)) return state
+          if (!(id in state.roofAssemblyConfigs)) return
           const assembly = state.roofAssemblyConfigs[id]
 
           validateRoofAssemblyName(name)
 
-          const updatedAssembly: RoofAssemblyConfig = {
-            ...assembly,
-            name: name.trim(),
-            // Clear nameKey when user edits the name (indicates custom name)
-            nameKey: undefined
-          }
-          return {
-            ...state,
-            roofAssemblyConfigs: { ...state.roofAssemblyConfigs, [id]: updatedAssembly }
-          }
+          assembly.name = name.trim()
+          assembly.nameKey = undefined
+          state.actions.updateTimestamp(id)
         })
       },
 
       updateRoofAssemblyConfig: (id: RoofAssemblyId, updates: Partial<UnionOmit<RoofConfig, 'type'>>) => {
         set(state => {
-          if (!(id in state.roofAssemblyConfigs)) return state
+          if (!(id in state.roofAssemblyConfigs)) return
           const config = state.roofAssemblyConfigs[id]
 
-          const updatedConfig: RoofAssemblyConfig = { ...config, ...updates, id }
-          validateRoofConfig(updatedConfig)
-
-          return {
-            ...state,
-            roofAssemblyConfigs: { ...state.roofAssemblyConfigs, [id]: updatedConfig }
-          }
+          Object.assign(config, updates, { id })
+          validateRoofConfig(config)
+          state.actions.updateTimestamp(id)
         })
       },
 
@@ -182,10 +173,10 @@ export const createRoofAssembliesSlice: StateCreator<
         const newId = createRoofAssemblyId()
         const duplicated = { ...original, id: newId, name: name.trim(), nameKey: undefined } as RoofAssemblyConfig
 
-        set(state => ({
-          ...state,
-          roofAssemblyConfigs: { ...state.roofAssemblyConfigs, [newId]: duplicated }
-        }))
+        set(state => {
+          state.roofAssemblyConfigs[newId] = duplicated
+          state.actions.updateTimestamp(newId)
+        })
 
         return duplicated
       },
@@ -204,15 +195,10 @@ export const createRoofAssembliesSlice: StateCreator<
       // Default roof config management
       setDefaultRoofAssembly: (configId: RoofAssemblyId) => {
         set(state => {
-          // Validate that the config exists
           if (!(configId in state.roofAssemblyConfigs)) {
             throw new Error(`Roof assembly with id ${configId} not found`)
           }
-
-          return {
-            ...state,
-            defaultRoofAssemblyId: configId
-          }
+          state.defaultRoofAssemblyId = configId
         })
       },
 
@@ -224,41 +210,27 @@ export const createRoofAssembliesSlice: StateCreator<
       // Inside layer operations
       addRoofAssemblyInsideLayer: (id: RoofAssemblyId, layer: LayerConfig) => {
         set(state => {
-          if (!(id in state.roofAssemblyConfigs)) return state
+          if (!(id in state.roofAssemblyConfigs)) return
           const config = state.roofAssemblyConfigs[id]
 
           const insideLayers = appendLayer(config.layers.insideLayers, layer)
           const insideThickness = sumLayerThickness(insideLayers)
-          const updatedConfig: RoofAssemblyConfig = {
-            ...config,
-            layers: { ...config.layers, insideLayers, insideThickness }
-          }
-          validateRoofConfig(updatedConfig)
-
-          return {
-            ...state,
-            roofAssemblyConfigs: { ...state.roofAssemblyConfigs, [id]: updatedConfig }
-          }
+          config.layers = { ...config.layers, insideLayers, insideThickness }
+          validateRoofConfig(config)
+          state.actions.updateTimestamp(id)
         })
       },
 
       setRoofAssemblyInsideLayers: (id: RoofAssemblyId, layers: LayerConfig[]) => {
         set(state => {
-          if (!(id in state.roofAssemblyConfigs)) return state
+          if (!(id in state.roofAssemblyConfigs)) return
           const config = state.roofAssemblyConfigs[id]
 
           const insideLayers = sanitizeLayerArray(layers)
           const insideThickness = sumLayerThickness(insideLayers)
-          const updatedConfig: RoofAssemblyConfig = {
-            ...config,
-            layers: { ...config.layers, insideLayers, insideThickness }
-          }
-          validateRoofConfig(updatedConfig)
-
-          return {
-            ...state,
-            roofAssemblyConfigs: { ...state.roofAssemblyConfigs, [id]: updatedConfig }
-          }
+          config.layers = { ...config.layers, insideLayers, insideThickness }
+          validateRoofConfig(config)
+          state.actions.updateTimestamp(id)
         })
       },
 
@@ -268,203 +240,133 @@ export const createRoofAssembliesSlice: StateCreator<
         updates: Partial<Omit<LayerConfig, 'type'>>
       ) => {
         set(state => {
-          if (!(id in state.roofAssemblyConfigs)) return state
+          if (!(id in state.roofAssemblyConfigs)) return
           const config = state.roofAssemblyConfigs[id]
 
           const insideLayers = updateLayerAt(config.layers.insideLayers, index, updates)
           const insideThickness = sumLayerThickness(insideLayers)
-          const updatedConfig: RoofAssemblyConfig = {
-            ...config,
-            layers: { ...config.layers, insideLayers, insideThickness }
-          }
-          validateRoofConfig(updatedConfig)
-
-          return {
-            ...state,
-            roofAssemblyConfigs: { ...state.roofAssemblyConfigs, [id]: updatedConfig }
-          }
+          config.layers = { ...config.layers, insideLayers, insideThickness }
+          validateRoofConfig(config)
+          state.actions.updateTimestamp(id)
         })
       },
 
       removeRoofAssemblyInsideLayer: (id: RoofAssemblyId, index: number) => {
         set(state => {
-          if (!(id in state.roofAssemblyConfigs)) return state
+          if (!(id in state.roofAssemblyConfigs)) return
           const config = state.roofAssemblyConfigs[id]
 
           const insideLayers = removeLayerAt(config.layers.insideLayers, index)
           const insideThickness = sumLayerThickness(insideLayers)
-          const updatedConfig: RoofAssemblyConfig = {
-            ...config,
-            layers: { ...config.layers, insideLayers, insideThickness }
-          }
-          validateRoofConfig(updatedConfig)
-
-          return {
-            ...state,
-            roofAssemblyConfigs: { ...state.roofAssemblyConfigs, [id]: updatedConfig }
-          }
+          config.layers = { ...config.layers, insideLayers, insideThickness }
+          validateRoofConfig(config)
+          state.actions.updateTimestamp(id)
         })
       },
 
       moveRoofAssemblyInsideLayer: (id: RoofAssemblyId, fromIndex: number, toIndex: number) => {
         set(state => {
-          if (!(id in state.roofAssemblyConfigs)) return state
+          if (!(id in state.roofAssemblyConfigs)) return
           const config = state.roofAssemblyConfigs[id]
 
           const insideLayers = moveLayer(config.layers.insideLayers, fromIndex, toIndex)
           const insideThickness = sumLayerThickness(insideLayers)
-          const updatedConfig: RoofAssemblyConfig = {
-            ...config,
-            layers: { ...config.layers, insideLayers, insideThickness }
-          }
-          validateRoofConfig(updatedConfig)
-
-          return {
-            ...state,
-            roofAssemblyConfigs: { ...state.roofAssemblyConfigs, [id]: updatedConfig }
-          }
+          config.layers = { ...config.layers, insideLayers, insideThickness }
+          validateRoofConfig(config)
+          state.actions.updateTimestamp(id)
         })
       },
 
       // Top layer operations
       addRoofAssemblyTopLayer: (id: RoofAssemblyId, layer: LayerConfig) => {
         set(state => {
-          if (!(id in state.roofAssemblyConfigs)) return state
+          if (!(id in state.roofAssemblyConfigs)) return
           const config = state.roofAssemblyConfigs[id]
 
           const topLayers = appendLayer(config.layers.topLayers, layer)
           const topThickness = sumLayerThickness(topLayers)
-          const updatedConfig: RoofAssemblyConfig = {
-            ...config,
-            layers: { ...config.layers, topLayers, topThickness }
-          }
-          validateRoofConfig(updatedConfig)
-
-          return {
-            ...state,
-            roofAssemblyConfigs: { ...state.roofAssemblyConfigs, [id]: updatedConfig }
-          }
+          config.layers = { ...config.layers, topLayers, topThickness }
+          validateRoofConfig(config)
+          state.actions.updateTimestamp(id)
         })
       },
 
       setRoofAssemblyTopLayers: (id: RoofAssemblyId, layers: LayerConfig[]) => {
         set(state => {
-          if (!(id in state.roofAssemblyConfigs)) return state
+          if (!(id in state.roofAssemblyConfigs)) return
           const config = state.roofAssemblyConfigs[id]
 
           const topLayers = sanitizeLayerArray(layers)
           const topThickness = sumLayerThickness(topLayers)
-          const updatedConfig: RoofAssemblyConfig = {
-            ...config,
-            layers: { ...config.layers, topLayers, topThickness }
-          }
-          validateRoofConfig(updatedConfig)
-
-          return {
-            ...state,
-            roofAssemblyConfigs: { ...state.roofAssemblyConfigs, [id]: updatedConfig }
-          }
+          config.layers = { ...config.layers, topLayers, topThickness }
+          validateRoofConfig(config)
+          state.actions.updateTimestamp(id)
         })
       },
 
       updateRoofAssemblyTopLayer: (id: RoofAssemblyId, index: number, updates: Partial<Omit<LayerConfig, 'type'>>) => {
         set(state => {
-          if (!(id in state.roofAssemblyConfigs)) return state
+          if (!(id in state.roofAssemblyConfigs)) return
           const config = state.roofAssemblyConfigs[id]
 
           const topLayers = updateLayerAt(config.layers.topLayers, index, updates)
           const topThickness = sumLayerThickness(topLayers)
-          const updatedConfig: RoofAssemblyConfig = {
-            ...config,
-            layers: { ...config.layers, topLayers, topThickness }
-          }
-          validateRoofConfig(updatedConfig)
-
-          return {
-            ...state,
-            roofAssemblyConfigs: { ...state.roofAssemblyConfigs, [id]: updatedConfig }
-          }
+          config.layers = { ...config.layers, topLayers, topThickness }
+          validateRoofConfig(config)
+          state.actions.updateTimestamp(id)
         })
       },
 
       removeRoofAssemblyTopLayer: (id: RoofAssemblyId, index: number) => {
         set(state => {
-          if (!(id in state.roofAssemblyConfigs)) return state
+          if (!(id in state.roofAssemblyConfigs)) return
           const config = state.roofAssemblyConfigs[id]
 
           const topLayers = removeLayerAt(config.layers.topLayers, index)
           const topThickness = sumLayerThickness(topLayers)
-          const updatedConfig: RoofAssemblyConfig = {
-            ...config,
-            layers: { ...config.layers, topLayers, topThickness }
-          }
-          validateRoofConfig(updatedConfig)
-
-          return {
-            ...state,
-            roofAssemblyConfigs: { ...state.roofAssemblyConfigs, [id]: updatedConfig }
-          }
+          config.layers = { ...config.layers, topLayers, topThickness }
+          validateRoofConfig(config)
+          state.actions.updateTimestamp(id)
         })
       },
 
       moveRoofAssemblyTopLayer: (id: RoofAssemblyId, fromIndex: number, toIndex: number) => {
         set(state => {
-          if (!(id in state.roofAssemblyConfigs)) return state
+          if (!(id in state.roofAssemblyConfigs)) return
           const config = state.roofAssemblyConfigs[id]
 
           const topLayers = moveLayer(config.layers.topLayers, fromIndex, toIndex)
           const topThickness = sumLayerThickness(topLayers)
-          const updatedConfig: RoofAssemblyConfig = {
-            ...config,
-            layers: { ...config.layers, topLayers, topThickness }
-          }
-          validateRoofConfig(updatedConfig)
-
-          return {
-            ...state,
-            roofAssemblyConfigs: { ...state.roofAssemblyConfigs, [id]: updatedConfig }
-          }
+          config.layers = { ...config.layers, topLayers, topThickness }
+          validateRoofConfig(config)
+          state.actions.updateTimestamp(id)
         })
       },
 
       // Overhang layer operations
       addRoofAssemblyOverhangLayer: (id: RoofAssemblyId, layer: LayerConfig) => {
         set(state => {
-          if (!(id in state.roofAssemblyConfigs)) return state
+          if (!(id in state.roofAssemblyConfigs)) return
           const config = state.roofAssemblyConfigs[id]
 
           const overhangLayers = appendLayer(config.layers.overhangLayers, layer)
           const overhangThickness = sumLayerThickness(overhangLayers)
-          const updatedConfig: RoofAssemblyConfig = {
-            ...config,
-            layers: { ...config.layers, overhangLayers, overhangThickness }
-          }
-          validateRoofConfig(updatedConfig)
-
-          return {
-            ...state,
-            roofAssemblyConfigs: { ...state.roofAssemblyConfigs, [id]: updatedConfig }
-          }
+          config.layers = { ...config.layers, overhangLayers, overhangThickness }
+          validateRoofConfig(config)
+          state.actions.updateTimestamp(id)
         })
       },
 
       setRoofAssemblyOverhangLayers: (id: RoofAssemblyId, layers: LayerConfig[]) => {
         set(state => {
-          if (!(id in state.roofAssemblyConfigs)) return state
+          if (!(id in state.roofAssemblyConfigs)) return
           const config = state.roofAssemblyConfigs[id]
 
           const overhangLayers = sanitizeLayerArray(layers)
           const overhangThickness = sumLayerThickness(overhangLayers)
-          const updatedConfig: RoofAssemblyConfig = {
-            ...config,
-            layers: { ...config.layers, overhangLayers, overhangThickness }
-          }
-          validateRoofConfig(updatedConfig)
-
-          return {
-            ...state,
-            roofAssemblyConfigs: { ...state.roofAssemblyConfigs, [id]: updatedConfig }
-          }
+          config.layers = { ...config.layers, overhangLayers, overhangThickness }
+          validateRoofConfig(config)
+          state.actions.updateTimestamp(id)
         })
       },
 
@@ -474,87 +376,75 @@ export const createRoofAssembliesSlice: StateCreator<
         updates: Partial<Omit<LayerConfig, 'type'>>
       ) => {
         set(state => {
-          if (!(id in state.roofAssemblyConfigs)) return state
+          if (!(id in state.roofAssemblyConfigs)) return
           const config = state.roofAssemblyConfigs[id]
 
           const overhangLayers = updateLayerAt(config.layers.overhangLayers, index, updates)
           const overhangThickness = sumLayerThickness(overhangLayers)
-          const updatedConfig: RoofAssemblyConfig = {
-            ...config,
-            layers: { ...config.layers, overhangLayers, overhangThickness }
-          }
-          validateRoofConfig(updatedConfig)
-
-          return {
-            ...state,
-            roofAssemblyConfigs: { ...state.roofAssemblyConfigs, [id]: updatedConfig }
-          }
+          config.layers = { ...config.layers, overhangLayers, overhangThickness }
+          validateRoofConfig(config)
+          state.actions.updateTimestamp(id)
         })
       },
 
       removeRoofAssemblyOverhangLayer: (id: RoofAssemblyId, index: number) => {
         set(state => {
-          if (!(id in state.roofAssemblyConfigs)) return state
+          if (!(id in state.roofAssemblyConfigs)) return
           const config = state.roofAssemblyConfigs[id]
 
           const overhangLayers = removeLayerAt(config.layers.overhangLayers, index)
           const overhangThickness = sumLayerThickness(overhangLayers)
-          const updatedConfig: RoofAssemblyConfig = {
-            ...config,
-            layers: { ...config.layers, overhangLayers, overhangThickness }
-          }
-          validateRoofConfig(updatedConfig)
-
-          return {
-            ...state,
-            roofAssemblyConfigs: { ...state.roofAssemblyConfigs, [id]: updatedConfig }
-          }
+          config.layers = { ...config.layers, overhangLayers, overhangThickness }
+          validateRoofConfig(config)
+          state.actions.updateTimestamp(id)
         })
       },
 
       moveRoofAssemblyOverhangLayer: (id: RoofAssemblyId, fromIndex: number, toIndex: number) => {
         set(state => {
-          if (!(id in state.roofAssemblyConfigs)) return state
+          if (!(id in state.roofAssemblyConfigs)) return
           const config = state.roofAssemblyConfigs[id]
 
           const overhangLayers = moveLayer(config.layers.overhangLayers, fromIndex, toIndex)
           const overhangThickness = sumLayerThickness(overhangLayers)
-          const updatedConfig: RoofAssemblyConfig = {
-            ...config,
-            layers: { ...config.layers, overhangLayers, overhangThickness }
-          }
-          validateRoofConfig(updatedConfig)
-
-          return {
-            ...state,
-            roofAssemblyConfigs: { ...state.roofAssemblyConfigs, [id]: updatedConfig }
-          }
+          config.layers = { ...config.layers, overhangLayers, overhangThickness }
+          validateRoofConfig(config)
+          state.actions.updateTimestamp(id)
         })
       },
 
       resetRoofAssembliesToDefaults: () => {
         set(state => {
-          // Get default assembly IDs
           const defaultIds = DEFAULT_ROOF_ASSEMBLIES.map(a => a.id)
+          const currentIds = Object.keys(state.roofAssemblyConfigs) as RoofAssemblyId[]
 
-          // Keep only custom assemblies (non-default)
           const customAssemblies = Object.fromEntries(
             Object.entries(state.roofAssemblyConfigs).filter(([id]) => !defaultIds.includes(id as RoofAssemblyId))
           )
 
-          // Add fresh default assemblies
           const resetAssemblies = Object.fromEntries(DEFAULT_ROOF_ASSEMBLIES.map(assembly => [assembly.id, assembly]))
 
-          // Preserve user's default assembly choice if it's a custom assembly, otherwise reset to default
           const newDefaultId = defaultIds.includes(state.defaultRoofAssemblyId)
             ? DEFAULT_ROOF_ASSEMBLY_ID
             : state.defaultRoofAssemblyId
 
-          return {
-            ...state,
-            roofAssemblyConfigs: { ...resetAssemblies, ...customAssemblies },
-            defaultRoofAssemblyId: newDefaultId
+          for (const id of currentIds) {
+            if (!defaultIds.includes(id) && id in customAssemblies) {
+              continue
+            }
+            if (defaultIds.includes(id) && !(id in customAssemblies)) {
+              state.actions.removeTimestamp(id)
+            }
           }
+
+          for (const assembly of DEFAULT_ROOF_ASSEMBLIES) {
+            if (!currentIds.includes(assembly.id)) {
+              state.actions.updateTimestamp(assembly.id)
+            }
+          }
+
+          state.roofAssemblyConfigs = { ...resetAssemblies, ...customAssemblies }
+          state.defaultRoofAssemblyId = newDefaultId
         })
       }
     } satisfies RoofAssembliesActions

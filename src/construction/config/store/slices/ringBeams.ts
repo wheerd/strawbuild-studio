@@ -2,6 +2,7 @@ import { type StateCreator } from 'zustand'
 
 import type { RingBeamAssemblyId } from '@/building/model/ids'
 import { createRingBeamAssemblyId } from '@/building/model/ids'
+import type { TimestampsActions } from '@/construction/config/store/slices/timestampsSlice'
 import type { RingBeamAssemblyConfig } from '@/construction/config/types'
 import { type RingBeamConfig, validateRingBeamConfig } from '@/construction/ringBeams/types'
 
@@ -46,7 +47,7 @@ const validateRingBeamName = (name: string): void => {
 }
 
 export const createRingBeamAssembliesSlice: StateCreator<
-  RingBeamAssembliesSlice,
+  RingBeamAssembliesSlice & { actions: RingBeamAssembliesActions & TimestampsActions },
   [['zustand/immer', never]],
   [],
   RingBeamAssembliesSlice
@@ -69,10 +70,10 @@ export const createRingBeamAssembliesSlice: StateCreator<
           id
         }
 
-        set(state => ({
-          ...state,
-          ringBeamAssemblyConfigs: { ...state.ringBeamAssemblyConfigs, [id]: assembly }
-        }))
+        set(state => {
+          state.ringBeamAssemblyConfigs[id] = assembly
+          state.actions.updateTimestamp(id)
+        })
 
         return assembly
       },
@@ -80,51 +81,37 @@ export const createRingBeamAssembliesSlice: StateCreator<
       removeRingBeamAssembly: (id: RingBeamAssemblyId) => {
         set(state => {
           const { [id]: _removed, ...remainingAssemblies } = state.ringBeamAssemblyConfigs
-          return {
-            ...state,
-            ringBeamAssemblyConfigs: remainingAssemblies,
-            // Clear defaults if removing the default assembly
-            defaultBaseRingBeamAssemblyId:
-              state.defaultBaseRingBeamAssemblyId === id ? undefined : state.defaultBaseRingBeamAssemblyId,
-            defaultTopRingBeamAssemblyId:
-              state.defaultTopRingBeamAssemblyId === id ? undefined : state.defaultTopRingBeamAssemblyId
-          }
+          state.ringBeamAssemblyConfigs = remainingAssemblies
+          state.actions.removeTimestamp(id)
+
+          state.defaultBaseRingBeamAssemblyId =
+            state.defaultBaseRingBeamAssemblyId === id ? undefined : state.defaultBaseRingBeamAssemblyId
+          state.defaultTopRingBeamAssemblyId =
+            state.defaultTopRingBeamAssemblyId === id ? undefined : state.defaultTopRingBeamAssemblyId
         })
       },
 
       updateRingBeamAssemblyName: (id: RingBeamAssemblyId, name: string) => {
         set(state => {
-          if (!(id in state.ringBeamAssemblyConfigs)) return state
+          if (!(id in state.ringBeamAssemblyConfigs)) return
           const assembly = state.ringBeamAssemblyConfigs[id]
 
           validateRingBeamName(name)
 
-          const updatedAssembly: RingBeamAssemblyConfig = {
-            ...assembly,
-            name: name.trim(),
-            // Clear nameKey when user edits the name (indicates custom name)
-            nameKey: undefined
-          }
-
-          return {
-            ...state,
-            ringBeamAssemblyConfigs: { ...state.ringBeamAssemblyConfigs, [id]: updatedAssembly }
-          }
+          assembly.name = name.trim()
+          assembly.nameKey = undefined
+          state.actions.updateTimestamp(id)
         })
       },
 
       updateRingBeamAssemblyConfig: (id: RingBeamAssemblyId, config: Partial<Omit<RingBeamConfig, 'type'>>) => {
         set(state => {
-          if (!(id in state.ringBeamAssemblyConfigs)) return state
+          if (!(id in state.ringBeamAssemblyConfigs)) return
           const assembly = state.ringBeamAssemblyConfigs[id]
 
-          const updatedAssembly: RingBeamAssemblyConfig = { ...assembly, ...config, id }
-          validateRingBeamConfig(updatedAssembly)
-
-          return {
-            ...state,
-            ringBeamAssemblyConfigs: { ...state.ringBeamAssemblyConfigs, [id]: updatedAssembly }
-          }
+          Object.assign(assembly, config, { id })
+          validateRingBeamConfig(assembly as RingBeamConfig)
+          state.actions.updateTimestamp(id)
         })
       },
 
@@ -141,17 +128,15 @@ export const createRingBeamAssembliesSlice: StateCreator<
 
       // Default ring beam management
       setDefaultBaseRingBeamAssembly: (assemblyId: RingBeamAssemblyId | undefined) => {
-        set(state => ({
-          ...state,
-          defaultBaseRingBeamAssemblyId: assemblyId
-        }))
+        set(state => {
+          state.defaultBaseRingBeamAssemblyId = assemblyId
+        })
       },
 
       setDefaultTopRingBeamAssembly: (assemblyId: RingBeamAssemblyId | undefined) => {
-        set(state => ({
-          ...state,
-          defaultTopRingBeamAssemblyId: assemblyId
-        }))
+        set(state => {
+          state.defaultTopRingBeamAssemblyId = assemblyId
+        })
       },
 
       getDefaultBaseRingBeamAssemblyId: () => {
@@ -166,38 +151,47 @@ export const createRingBeamAssembliesSlice: StateCreator<
 
       resetRingBeamAssembliesToDefaults: () => {
         set(state => {
-          // Get default assembly IDs
           const defaultIds = DEFAULT_RING_BEAM_ASSEMBLIES.map(a => a.id)
+          const currentIds = Object.keys(state.ringBeamAssemblyConfigs) as RingBeamAssemblyId[]
 
-          // Keep only custom assemblies (non-default)
           const customAssemblies = Object.fromEntries(
             Object.entries(state.ringBeamAssemblyConfigs).filter(
               ([id]) => !defaultIds.includes(id as RingBeamAssemblyId)
             )
           )
 
-          // Add fresh default assemblies
           const resetAssemblies = Object.fromEntries(
             DEFAULT_RING_BEAM_ASSEMBLIES.map(assembly => [assembly.id, assembly])
           )
 
-          // Preserve user's default assembly choices if they're custom assemblies, otherwise reset to defaults
           const newDefaultBaseId =
             state.defaultBaseRingBeamAssemblyId && defaultIds.includes(state.defaultBaseRingBeamAssemblyId)
               ? DEFAULT_RING_BEAM_BASE_ASSEMBLY_ID
-              : state.defaultBaseRingBeamAssemblyId
+              : (state.defaultBaseRingBeamAssemblyId ?? DEFAULT_RING_BEAM_BASE_ASSEMBLY_ID)
 
           const newDefaultTopId =
             state.defaultTopRingBeamAssemblyId && defaultIds.includes(state.defaultTopRingBeamAssemblyId)
               ? DEFAULT_RING_BEAM_TOP_ASSEMBLY_ID
-              : state.defaultTopRingBeamAssemblyId
+              : (state.defaultTopRingBeamAssemblyId ?? DEFAULT_RING_BEAM_TOP_ASSEMBLY_ID)
 
-          return {
-            ...state,
-            ringBeamAssemblyConfigs: { ...resetAssemblies, ...customAssemblies },
-            defaultBaseRingBeamAssemblyId: newDefaultBaseId,
-            defaultTopRingBeamAssemblyId: newDefaultTopId
+          for (const id of currentIds) {
+            if (!defaultIds.includes(id) && id in customAssemblies) {
+              continue
+            }
+            if (defaultIds.includes(id) && !(id in customAssemblies)) {
+              state.actions.removeTimestamp(id)
+            }
           }
+
+          for (const assembly of DEFAULT_RING_BEAM_ASSEMBLIES) {
+            if (!currentIds.includes(assembly.id)) {
+              state.actions.updateTimestamp(assembly.id)
+            }
+          }
+
+          state.ringBeamAssemblyConfigs = { ...resetAssemblies, ...customAssemblies }
+          state.defaultBaseRingBeamAssemblyId = newDefaultBaseId
+          state.defaultTopRingBeamAssemblyId = newDefaultTopId
         })
       }
     } satisfies RingBeamAssembliesActions

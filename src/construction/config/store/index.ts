@@ -4,6 +4,7 @@ import { persist } from 'zustand/middleware'
 import { immer } from 'zustand/middleware/immer'
 
 import type {
+  AssemblyId,
   FloorAssemblyId,
   OpeningAssemblyId,
   RingBeamAssemblyId,
@@ -15,6 +16,7 @@ import { createOpeningAssembliesSlice } from '@/construction/config/store/slices
 import { createRingBeamAssembliesSlice } from '@/construction/config/store/slices/ringBeams'
 import { createRoofAssembliesSlice } from '@/construction/config/store/slices/roofs'
 import { createStrawSlice } from '@/construction/config/store/slices/straw'
+import { createTimestampsSlice } from '@/construction/config/store/slices/timestampsSlice'
 import { createWallAssembliesSlice } from '@/construction/config/store/slices/walls'
 import type { ConfigActions, ConfigState, ConfigStore } from '@/construction/config/store/types'
 import type {
@@ -39,6 +41,7 @@ const useConfigStore = create<ConfigStore>()(
       const floorSlice = immer(createFloorAssembliesSlice)(set, get, store)
       const roofSlice = immer(createRoofAssembliesSlice)(set, get, store)
       const openingSlice = immer(createOpeningAssembliesSlice)(set, get, store)
+      const timestampsSlice = immer(createTimestampsSlice)(set, get, store)
 
       return {
         ...strawSlice,
@@ -47,6 +50,7 @@ const useConfigStore = create<ConfigStore>()(
         ...floorSlice,
         ...roofSlice,
         ...openingSlice,
+        ...timestampsSlice,
         actions: {
           ...strawSlice.actions,
           ...ringBeamSlice.actions,
@@ -54,6 +58,7 @@ const useConfigStore = create<ConfigStore>()(
           ...floorSlice.actions,
           ...roofSlice.actions,
           ...openingSlice.actions,
+          ...timestampsSlice.actions,
           reset: () => {
             set(store.getInitialState())
           }
@@ -75,7 +80,8 @@ const useConfigStore = create<ConfigStore>()(
         defaultWallAssemblyId: state.defaultWallAssemblyId,
         defaultFloorAssemblyId: state.defaultFloorAssemblyId,
         defaultRoofAssemblyId: state.defaultRoofAssemblyId,
-        defaultOpeningAssemblyId: state.defaultOpeningAssemblyId
+        defaultOpeningAssemblyId: state.defaultOpeningAssemblyId,
+        timestamps: state.timestamps
       }),
       migrate: (persistedState: unknown, version: number) => {
         if (version === CURRENT_VERSION) {
@@ -182,7 +188,8 @@ export const getConfigState = () => {
     defaultWallAssemblyId: state.defaultWallAssemblyId,
     defaultFloorAssemblyId: state.defaultFloorAssemblyId,
     defaultRoofAssemblyId: state.defaultRoofAssemblyId,
-    defaultOpeningAssemblyId: state.defaultOpeningAssemblyId
+    defaultOpeningAssemblyId: state.defaultOpeningAssemblyId,
+    timestamps: state.timestamps
   }
 }
 
@@ -200,6 +207,7 @@ export const setConfigState = (data: {
   defaultFloorAssemblyId?: FloorAssemblyId
   defaultRoofAssemblyId?: RoofAssemblyId
   defaultOpeningAssemblyId?: OpeningAssemblyId
+  timestamps?: Record<AssemblyId, number>
 }) => {
   const state = useConfigStore.getState()
 
@@ -215,7 +223,8 @@ export const setConfigState = (data: {
     defaultWallAssemblyId: data.defaultWallAssemblyId,
     defaultFloorAssemblyId: data.defaultFloorAssemblyId ?? state.defaultFloorAssemblyId,
     defaultRoofAssemblyId: data.defaultRoofAssemblyId ?? state.defaultRoofAssemblyId,
-    defaultOpeningAssemblyId: data.defaultOpeningAssemblyId ?? state.defaultOpeningAssemblyId
+    defaultOpeningAssemblyId: data.defaultOpeningAssemblyId ?? state.defaultOpeningAssemblyId,
+    timestamps: data.timestamps ?? {}
   })
 }
 

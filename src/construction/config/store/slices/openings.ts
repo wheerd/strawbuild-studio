@@ -1,10 +1,12 @@
 import { type StateCreator } from 'zustand'
 
-import { type OpeningAssemblyId, createOpeningAssemblyId } from '@/building/model/ids'
+import type { OpeningAssemblyId } from '@/building/model/ids'
+import { createOpeningAssemblyId } from '@/building/model/ids'
 import {
   DEFAULT_OPENING_ASSEMBLIES,
   DEFAULT_OPENING_ASSEMBLY_ID
 } from '@/construction/config/store/slices/opening.defaults'
+import type { TimestampsActions } from '@/construction/config/store/slices/timestampsSlice'
 import type { OpeningAssemblyConfig } from '@/construction/config/types'
 import type { OpeningConfig } from '@/construction/openings/types'
 import { validateOpeningConfig } from '@/construction/openings/types'
@@ -42,7 +44,7 @@ const validateOpeningAssemblyName = (name: string): void => {
 }
 
 export const createOpeningAssembliesSlice: StateCreator<
-  OpeningAssembliesSlice,
+  OpeningAssembliesSlice & { actions: OpeningAssembliesActions & TimestampsActions },
   [['zustand/immer', never]],
   [],
   OpeningAssembliesSlice
@@ -64,10 +66,10 @@ export const createOpeningAssembliesSlice: StateCreator<
           name
         } as OpeningAssemblyConfig
 
-        set(state => ({
-          ...state,
-          openingAssemblyConfigs: { ...state.openingAssemblyConfigs, [id]: assembly }
-        }))
+        set(state => {
+          state.openingAssemblyConfigs[id] = assembly
+          state.actions.updateTimestamp(id)
+        })
 
         return assembly
       },
@@ -89,64 +91,48 @@ export const createOpeningAssembliesSlice: StateCreator<
           nameKey: undefined
         } as OpeningAssemblyConfig
 
-        set(state => ({
-          ...state,
-          openingAssemblyConfigs: { ...state.openingAssemblyConfigs, [newId]: duplicated }
-        }))
+        set(state => {
+          state.openingAssemblyConfigs[newId] = duplicated
+          state.actions.updateTimestamp(newId)
+        })
 
         return duplicated
       },
 
       removeOpeningAssembly: (id: OpeningAssemblyId) => {
         set(state => {
-          const { [id]: _removed, ...remainingAssemblies } = state.openingAssemblyConfigs
-          return {
-            ...state,
-            openingAssemblyConfigs: remainingAssemblies,
-            defaultOpeningAssemblyId: state.defaultOpeningAssemblyId === id ? undefined : state.defaultOpeningAssemblyId
+          if (state.defaultOpeningAssemblyId === id) {
+            return
           }
+
+          const { [id]: _removed, ...remainingAssemblies } = state.openingAssemblyConfigs
+          state.openingAssemblyConfigs = remainingAssemblies
+          state.actions.removeTimestamp(id)
         })
       },
 
       updateOpeningAssemblyName: (id: OpeningAssemblyId, name: string) => {
         set(state => {
-          if (!(id in state.openingAssemblyConfigs)) return state
+          if (!(id in state.openingAssemblyConfigs)) return
           const assembly = state.openingAssemblyConfigs[id]
 
           validateOpeningAssemblyName(name)
 
-          const updatedAssembly: OpeningAssemblyConfig = {
-            ...assembly,
-            name: name.trim(),
-            // Clear nameKey when user edits the name (indicates custom name)
-            nameKey: undefined
-          }
-
-          return {
-            ...state,
-            openingAssemblyConfigs: { ...state.openingAssemblyConfigs, [id]: updatedAssembly }
-          }
+          assembly.name = name.trim()
+          assembly.nameKey = undefined
+          state.actions.updateTimestamp(id)
         })
       },
 
       updateOpeningAssemblyConfig: (id: OpeningAssemblyId, config: Partial<Omit<OpeningConfig, 'type'>>) => {
         set(state => {
-          if (!(id in state.openingAssemblyConfigs)) return state
+          if (!(id in state.openingAssemblyConfigs)) return
           const assembly = state.openingAssemblyConfigs[id]
 
-          const updatedAssembly: OpeningAssemblyConfig = {
-            ...assembly,
-            ...config,
-            id: assembly.id
-          }
-
-          const { id: _id, name: _name, ...openingConfig } = updatedAssembly
+          Object.assign(assembly, config, { id: assembly.id })
+          const { id: _id, name: _name, ...openingConfig } = assembly
           validateOpeningConfig(openingConfig as OpeningConfig)
-
-          return {
-            ...state,
-            openingAssemblyConfigs: { ...state.openingAssemblyConfigs, [id]: updatedAssembly }
-          }
+          state.actions.updateTimestamp(id)
         })
       },
 
@@ -162,11 +148,10 @@ export const createOpeningAssembliesSlice: StateCreator<
       },
 
       // Default management
-      setDefaultOpeningAssembly: (assemblyId: OpeningAssemblyId | undefined) => {
-        set(state => ({
-          ...state,
-          defaultOpeningAssemblyId: assemblyId
-        }))
+      setDefaultOpeningAssembly: (assemblyId: OpeningAssemblyId) => {
+        set(state => {
+          state.defaultOpeningAssemblyId = assemblyId
+        })
       },
 
       getDefaultOpeningAssemblyId: () => {
@@ -176,29 +161,38 @@ export const createOpeningAssembliesSlice: StateCreator<
 
       resetOpeningAssembliesToDefaults: () => {
         set(state => {
-          // Get default assembly IDs
           const defaultIds = DEFAULT_OPENING_ASSEMBLIES.map(a => a.id)
+          const currentIds = Object.keys(state.openingAssemblyConfigs) as OpeningAssemblyId[]
 
-          // Keep only custom assemblies (non-default)
           const customAssemblies = Object.fromEntries(
             Object.entries(state.openingAssemblyConfigs).filter(([id]) => !defaultIds.includes(id as OpeningAssemblyId))
           )
 
-          // Add fresh default assemblies
           const resetAssemblies = Object.fromEntries(
             DEFAULT_OPENING_ASSEMBLIES.map(assembly => [assembly.id, assembly])
           )
 
-          // Preserve user's default assembly choice if it's a custom assembly, otherwise reset to default
           const newDefaultId = defaultIds.includes(state.defaultOpeningAssemblyId)
             ? DEFAULT_OPENING_ASSEMBLY_ID
             : state.defaultOpeningAssemblyId
 
-          return {
-            ...state,
-            openingAssemblyConfigs: { ...resetAssemblies, ...customAssemblies },
-            defaultOpeningAssemblyId: newDefaultId
+          for (const id of currentIds) {
+            if (!defaultIds.includes(id) && id in customAssemblies) {
+              continue
+            }
+            if (defaultIds.includes(id) && !(id in customAssemblies)) {
+              state.actions.removeTimestamp(id)
+            }
           }
+
+          for (const assembly of DEFAULT_OPENING_ASSEMBLIES) {
+            if (!currentIds.includes(assembly.id)) {
+              state.actions.updateTimestamp(assembly.id)
+            }
+          }
+
+          state.openingAssemblyConfigs = { ...resetAssemblies, ...customAssemblies }
+          state.defaultOpeningAssemblyId = newDefaultId
         })
       }
     } satisfies OpeningAssembliesActions
