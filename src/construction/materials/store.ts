@@ -15,6 +15,7 @@ import { MATERIALS_STORE_VERSION, migrateMaterialsState } from './store/migratio
 
 export interface MaterialsState {
   materials: Record<MaterialId, Material>
+  timestamps: Record<MaterialId, number>
 }
 
 type UnionOmit<T, K extends string | number | symbol> = T extends unknown ? Omit<T, K> : never
@@ -30,6 +31,10 @@ export interface MaterialsActions {
   getMaterialById: (id: MaterialId) => Material | null
   getAllMaterials: () => Material[]
   getMaterialsByType: (type: Material['type']) => Material[]
+
+  // Timestamps
+  getTimestamp: (id: MaterialId) => number | null
+  clearAllTimestamps: () => void
 
   reset(this: void): void
 }
@@ -150,9 +155,10 @@ const useMaterialsStore = create<MaterialsStore>()(
       (set, get, store) => ({
         // Initialize with default materials
         materials: { ...DEFAULT_MATERIALS },
+        timestamps: Object.fromEntries(Object.entries(DEFAULT_MATERIALS).map(([id]) => [id, Date.now()])),
 
         actions: {
-          addMaterial: (materialData: UnionOmit<Material, 'id'>) => {
+          addMaterial: (materialData: UnionOmit<Material, 'id' | 'updatedAt'>) => {
             validateMaterialName(materialData.name)
             validateMaterialUpdates(materialData, materialData.type)
 
@@ -164,7 +170,8 @@ const useMaterialsStore = create<MaterialsStore>()(
 
             set(state => ({
               ...state,
-              materials: { ...state.materials, [id]: material }
+              materials: { ...state.materials, [id]: material },
+              timestamps: { ...state.timestamps, [id]: Date.now() }
             }))
 
             return material
@@ -173,14 +180,16 @@ const useMaterialsStore = create<MaterialsStore>()(
           removeMaterial: (id: MaterialId) => {
             set(state => {
               const { [id]: _removed, ...remainingMaterials } = state.materials
+              const { [id]: _timestampRemoved, ...remainingTimestamps } = state.timestamps
               return {
                 ...state,
-                materials: remainingMaterials
+                materials: remainingMaterials,
+                timestamps: remainingTimestamps
               }
             })
           },
 
-          updateMaterial: (id: MaterialId, updates: Partial<UnionOmit<Material, 'id' | 'type'>>) => {
+          updateMaterial: (id: MaterialId, updates: Partial<UnionOmit<Material, 'id' | 'type' | 'updatedAt'>>) => {
             set(state => {
               if (!(id in state.materials)) return state
               const material = state.materials[id]
@@ -207,7 +216,8 @@ const useMaterialsStore = create<MaterialsStore>()(
 
               return {
                 ...state,
-                materials: { ...state.materials, [id]: updatedMaterial }
+                materials: { ...state.materials, [id]: updatedMaterial },
+                timestamps: { ...state.timestamps, [id]: Date.now() }
               }
             })
           },
@@ -236,7 +246,8 @@ const useMaterialsStore = create<MaterialsStore>()(
 
             set(state => ({
               ...state,
-              materials: { ...state.materials, [newId]: duplicatedMaterial }
+              materials: { ...state.materials, [newId]: duplicatedMaterial },
+              timestamps: { ...state.timestamps, [newId]: Date.now() }
             }))
 
             return duplicatedMaterial
@@ -260,6 +271,19 @@ const useMaterialsStore = create<MaterialsStore>()(
 
           reset: () => {
             set(store.getInitialState())
+          },
+
+          // Timestamps
+          getTimestamp: (id: MaterialId) => {
+            const state = get()
+            return state.timestamps[id] ?? null
+          },
+
+          clearAllTimestamps: () => {
+            set(state => ({
+              ...state,
+              timestamps: {}
+            }))
           }
         }
       }),
@@ -269,7 +293,8 @@ const useMaterialsStore = create<MaterialsStore>()(
       name: 'strawbaler-materials',
       version: MATERIALS_STORE_VERSION,
       partialize: state => ({
-        materials: state.materials
+        materials: state.materials,
+        timestamps: state.timestamps
       }),
       migrate: migrateMaterialsState
     }
@@ -304,14 +329,19 @@ export const getMaterialsActions = (): MaterialsActions => useMaterialsStore.get
 export const getMaterialsState = () => {
   const state = useMaterialsStore.getState()
   return {
-    materials: state.materials
+    materials: state.materials,
+    timestamps: state.timestamps
   }
 }
 
 // Import materials state from persistence
-export const setMaterialsState = (data: { materials: Record<MaterialId, Material> }) => {
+export const setMaterialsState = (data: {
+  materials: Record<MaterialId, Material>
+  timestamps?: Record<MaterialId, number>
+}) => {
   useMaterialsStore.setState({
-    materials: data.materials
+    materials: data.materials,
+    timestamps: data.timestamps ?? {}
   })
 }
 // For non-reactive material resolution in construction functions
