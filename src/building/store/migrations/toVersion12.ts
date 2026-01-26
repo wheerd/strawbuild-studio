@@ -51,6 +51,7 @@ import { isRecord, toVec2 } from './shared'
  */
 export const migrateToVersion12: Migration = state => {
   if (!isRecord(state)) return
+  if ('_perimeterGeometry' in state) return
 
   // Initialize new normalized state structures
   if (isRecord(state.perimeters)) {
