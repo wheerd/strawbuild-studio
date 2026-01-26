@@ -5,11 +5,13 @@ import type {
   PerimeterId,
   PerimeterWallId,
   RoofId,
-  StoreyId
+  StoreyId,
+  WallPostId
 } from '@/building/model/ids'
-import { isOpeningId } from '@/building/model/ids'
+import { isOpeningId, isWallPostId } from '@/building/model/ids'
 import { getModelActions } from '@/building/store'
 import { getConfigActions } from '@/construction/config/store'
+import { getMaterialsActions } from '@/construction/materials/store'
 
 export class BuildingTimestampDependencyService {
   getEffectiveStoreyTimestamp(storeyId: StoreyId): number | null {
@@ -82,6 +84,8 @@ export class BuildingTimestampDependencyService {
       for (const entityId of wall.entityIds) {
         if (isOpeningId(entityId)) {
           timestamps.push(this.getEffectiveOpeningTimestamp(entityId))
+        } else if (isWallPostId(entityId)) {
+          timestamps.push(this.getEffectiveWallPostTimestamp(entityId))
         } else {
           timestamps.push(modelActions.getTimestamp(entityId))
         }
@@ -94,6 +98,23 @@ export class BuildingTimestampDependencyService {
       if (wall.topRingBeamAssemblyId) {
         timestamps.push(configActions.getTimestamp(wall.topRingBeamAssemblyId))
       }
+    } catch {}
+
+    return this.getMaxTimestamp(timestamps)
+  }
+
+  getEffectiveWallPostTimestamp(postId: WallPostId): number | null {
+    const timestamps: (number | null)[] = []
+
+    const modelActions = getModelActions()
+    const materialsActions = getMaterialsActions()
+
+    timestamps.push(modelActions.getTimestamp(postId))
+
+    try {
+      const post = modelActions.getWallPostById(postId)
+      timestamps.push(materialsActions.getTimestamp(post.material))
+      timestamps.push(materialsActions.getTimestamp(post.infillMaterial))
     } catch {}
 
     return this.getMaxTimestamp(timestamps)
