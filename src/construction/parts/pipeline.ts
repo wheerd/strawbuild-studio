@@ -15,6 +15,7 @@ import {
   dotVec3,
   ensurePolygonIsClockwise,
   ensurePolygonIsCounterClockwise,
+  eqVec2,
   minimumAreaBoundingBox,
   newVec2,
   newVec3,
@@ -42,6 +43,7 @@ export function getPartInfoFromManifold(manifold: Manifold): ManifoldPartInfo {
   }
   const extruded = isExtruded(manifold)
   if (extruded != null) {
+    console.log(extruded)
     const polygonKeys = [
       canonicalPolygonKey(extruded.polygon.outer.points),
       ...extruded.polygon.holes.map(h => canonicalPolygonKey(h.points))
@@ -150,6 +152,8 @@ function isExtruded(manifold: Manifold): { dims: number[]; polygon: PolygonWithH
     const simplifiedPolygon = simplifyPolygonWithHoles(polygon2D)
     if (!simplifiedPolygon) continue
 
+    console.log('simp', simplifiedPolygon)
+
     const { size, polygon } = normalizedPolygon(simplifiedPolygon)
 
     return {
@@ -213,8 +217,13 @@ function normalizedPolygon(polygon: PolygonWithHoles2D) {
   const bounds = Bounds2D.fromPoints(rotatedPolygon.outer.points)
 
   const normalizePolygon = (polygon: Polygon2D) => {
+    const roundedPoints = polygon.points.map(p =>
+      newVec2(Math.round(p[0] - bounds.min[0]), Math.round(p[1] - bounds.min[1]))
+    )
+    const n = roundedPoints.length
+    const filtered = roundedPoints.filter((v, i) => !eqVec2(v, roundedPoints[(i + 1) % n]))
     return {
-      points: polygon.points.map(p => newVec2(Math.round(p[0] - bounds.min[0]), Math.round(p[1] - bounds.min[1])))
+      points: filtered
     }
   }
   const normalizedPolygon: PolygonWithHoles2D = {

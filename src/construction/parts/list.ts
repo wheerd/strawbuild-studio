@@ -460,6 +460,7 @@ function getFullPartInfo(element: GroupOrElement): FullPartInfo | null {
 export const generateVirtualPartsList = (model: ConstructionModel): VirtualPartsList => {
   const partsList: VirtualPartsList = {}
   let labelCounter = 0
+  const labelCounters = new Map<MaterialId, number>()
 
   const processElement = (element: GroupOrElement) => {
     let partInfo: FullPartInfo | null = null
@@ -494,7 +495,15 @@ export const generateVirtualPartsList = (model: ConstructionModel): VirtualParts
     const typeTag = element.tags?.find(t => t.category === 'module-type')
     const description = typeTag && isCustomTag(typeTag) ? typeTag.label : undefined
 
-    const label = indexToLabel(labelCounter++)
+    let labelIndex
+    if ('material' in element) {
+      labelIndex = labelCounters.get(element.material) ?? 0
+      labelCounters.set(element.material, labelIndex + 1)
+    } else {
+      labelIndex = labelCounter++
+    }
+
+    const label = indexToLabel(labelIndex)
     const area = calculateModuleArea(element, partInfo)
 
     const partItem: PartItem = {
