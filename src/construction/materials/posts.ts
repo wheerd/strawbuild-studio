@@ -9,7 +9,7 @@ import {
   yieldWarning
 } from '@/construction/results'
 import { createElementFromArea } from '@/construction/shapes'
-import { TAG_INFILL, TAG_POST } from '@/construction/tags'
+import { TAG_INFILL, TAG_MODULE, TAG_POST, createTag } from '@/construction/tags'
 import { type Length } from '@/shared/geometry'
 import { assertUnreachable } from '@/shared/utils'
 
@@ -173,24 +173,36 @@ export const validatePosts = (posts: PostConfig): void => {
 export function* constructWallPost(area: WallConstructionArea, post: WallPost): Generator<ConstructionResult> {
   const wallThickness = area.size[1]
   const postElements: GroupOrElement[] = []
+  const material = getMaterialById(post.material)
+  let tags, partInfo
+  if (material?.type === 'prefab') {
+    const nameKey = material.nameKey
+    const typeTag = createTag(
+      'module-type',
+      material.id,
+      nameKey ? t => t($ => $.materials.defaults[nameKey], { ns: 'config' }) : material.name
+    )
+    tags = [TAG_MODULE, typeTag]
+    partInfo = { type: 'module', subtype: material.id }
+  } else {
+    tags = [TAG_POST]
+    partInfo = { type: 'post', requiresSinglePiece: true }
+  }
+
   switch (post.postType) {
     case 'double':
       {
         const infillThickness = wallThickness - 2 * post.thickness
         const insideArea = area.withYAdjustment(0, post.thickness)
         yield* yieldAndCollectElements(
-          yieldElement(
-            createElementFromArea(insideArea, post.material, [TAG_POST], { type: 'post', requiresSinglePiece: true })
-          ),
+          yieldElement(createElementFromArea(insideArea, post.material, tags, partInfo)),
           postElements
         )
         const infillArea = area.withYAdjustment(post.thickness, infillThickness)
         yield* yieldElement(createElementFromArea(infillArea, post.infillMaterial, [TAG_INFILL]))
         const outsideArea = area.withYAdjustment(wallThickness - post.thickness)
         yield* yieldAndCollectElements(
-          yieldElement(
-            createElementFromArea(outsideArea, post.material, [TAG_POST], { type: 'post', requiresSinglePiece: true })
-          ),
+          yieldElement(createElementFromArea(outsideArea, post.material, tags, partInfo)),
           postElements
         )
       }
@@ -203,9 +215,7 @@ export function* constructWallPost(area: WallConstructionArea, post: WallPost): 
         yield* yieldElement(createElementFromArea(infillInside, post.infillMaterial, [TAG_INFILL]))
         const centerArea = area.withYAdjustment(infillThickness, post.thickness)
         yield* yieldAndCollectElements(
-          yieldElement(
-            createElementFromArea(centerArea, post.material, [TAG_POST], { type: 'post', requiresSinglePiece: true })
-          ),
+          yieldElement(createElementFromArea(centerArea, post.material, tags, partInfo)),
           postElements
         )
         const infillOutside = area.withYAdjustment(wallThickness - infillThickness)
@@ -216,9 +226,7 @@ export function* constructWallPost(area: WallConstructionArea, post: WallPost): 
       {
         const insideArea = area.withYAdjustment(0, post.thickness)
         yield* yieldAndCollectElements(
-          yieldElement(
-            createElementFromArea(insideArea, post.material, [TAG_POST], { type: 'post', requiresSinglePiece: true })
-          ),
+          yieldElement(createElementFromArea(insideArea, post.material, tags, partInfo)),
           postElements
         )
         const infillArea = area.withYAdjustment(post.thickness)
@@ -232,9 +240,7 @@ export function* constructWallPost(area: WallConstructionArea, post: WallPost): 
         yield* yieldElement(createElementFromArea(infillArea, post.infillMaterial, [TAG_INFILL]))
         const outsideArea = area.withYAdjustment(infillThickness)
         yield* yieldAndCollectElements(
-          yieldElement(
-            createElementFromArea(outsideArea, post.material, [TAG_POST], { type: 'post', requiresSinglePiece: true })
-          ),
+          yieldElement(createElementFromArea(outsideArea, post.material, tags, partInfo)),
           postElements
         )
       }
@@ -242,7 +248,6 @@ export function* constructWallPost(area: WallConstructionArea, post: WallPost): 
   }
 
   // Check if material is dimensional and dimensions match
-  const material = getMaterialById(post.material)
   if (material?.type === 'dimensional') {
     const dimensionalMaterial = material
     const postDimensions = { width: post.width, thickness: post.thickness }
