@@ -252,9 +252,8 @@ function* constructWallSegment(
 
   const parts = splitAtHeightJumps(wallSegmentArea)
   for (let i = 0; i < parts.length; i++) {
-    const standAtStart = i === 0 ? startWithStand : parts[i - 1].getHeightAtEnd() < parts[i].getHeightAtStart()
-    const standAtEnd =
-      i === parts.length - 1 ? endWithStand : parts[i + 1].getHeightAtStart() < parts[i].getHeightAtEnd()
+    const standAtStart = i === 0 ? startWithStand : parts[i - 1].getTopAtEnd() < parts[i].getTopAtStart()
+    const standAtEnd = i === parts.length - 1 ? endWithStand : parts[i + 1].getTopAtStart() < parts[i].getTopAtEnd()
     yield* wallConstruction(parts[i], standAtStart, standAtEnd, start > 0)
   }
 }
@@ -580,8 +579,8 @@ function* generateAreasAndMeasurements(
   const sizeZ = overallWallArea.size[2]
   const { constructionLength, extensionStart } = cornerInfo
 
-  const wallHeightStart = overallWallArea.getHeightAtStart()
-  const wallHeightEnd = overallWallArea.getHeightAtEnd()
+  const wallHeightStart = overallWallArea.getTopAtStart()
+  const wallHeightEnd = overallWallArea.getTopAtEnd()
 
   const constructionHeightStart = basePlateHeight + wallHeightStart + topPlateHeight
   const constructionHeightEnd = basePlateHeight + wallHeightEnd + topPlateHeight

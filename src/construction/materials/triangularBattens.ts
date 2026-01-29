@@ -19,9 +19,9 @@ export function* constructTriangularBattens(
   area: WallConstructionArea,
   config: TriangularBattenConfig
 ): Generator<ConstructionResult> {
-  const startHeight = area.getHeightAtStart()
+  const startHeight = area.getTopAtStart()
   const startBattenHeight = startHeight - 2 * config.size
-  const endHeight = area.getHeightAtEnd()
+  const endHeight = area.getTopAtEnd()
   const endBattenHeight = endHeight - 2 * config.size
   const horizontalBattenLength = area.size[0] - 2 * config.size
   const isBattenRelevant = (l: Length) => l >= config.minLength
