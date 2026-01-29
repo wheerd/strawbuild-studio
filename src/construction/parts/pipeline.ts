@@ -43,7 +43,6 @@ export function getPartInfoFromManifold(manifold: Manifold): ManifoldPartInfo {
   }
   const extruded = isExtruded(manifold)
   if (extruded != null) {
-    console.log(extruded)
     const polygonKeys = [
       canonicalPolygonKey(extruded.polygon.outer.points),
       ...extruded.polygon.holes.map(h => canonicalPolygonKey(h.points))
@@ -151,8 +150,6 @@ function isExtruded(manifold: Manifold): { dims: number[]; polygon: PolygonWithH
     }
     const simplifiedPolygon = simplifyPolygonWithHoles(polygon2D)
     if (!simplifiedPolygon) continue
-
-    console.log('simp', simplifiedPolygon)
 
     const { size, polygon } = normalizedPolygon(simplifiedPolygon)
 

@@ -988,8 +988,8 @@ export function intersectLineSegmentWithPolygon(
   // Find all intersection points with polygon edges
   interface Intersection {
     t: number
-    crossing: boolean // true if actually crossing (not tangent)
   }
+  const epsilon = 1e-9
 
   const intersections: Intersection[] = []
 
@@ -1020,36 +1020,27 @@ export function intersectLineSegmentWithPolygon(
       const s = dotVec2(toIntersectionFromEdge, edgeDir) / edgeLength
 
       // Only count if intersection is on both segments (with small epsilon for endpoints)
-      const epsilon = 1e-9
       if (t >= -epsilon && t <= 1 + epsilon && s >= -epsilon && s <= 1 + epsilon) {
         // Clamp t to valid range
         const clampedT = Math.max(0, Math.min(1, t))
 
         // Check if this is a real crossing (not just tangent)
-        // We determine this by checking if the line crosses from one side to the other
-        const crossing = true // Simplified for now - could improve by checking side change
+        const crossing = Math.abs(dotVec2(lineDir, edgeDir)) < 1 - epsilon
 
-        intersections.push({ t: clampedT, crossing })
+        if (crossing) {
+          intersections.push({ t: clampedT })
+        }
       }
     }
   }
 
-  // Remove duplicate intersections (can happen at vertices)
-  const uniqueIntersections: Intersection[] = []
-  for (const int of intersections) {
-    const isDuplicate = uniqueIntersections.some(existing => Math.abs(existing.t - int.t) < 1e-9)
-    if (!isDuplicate) {
-      uniqueIntersections.push(int)
-    }
-  }
-
   // Sort by t value
-  uniqueIntersections.sort((a, b) => a.t - b.t)
+  intersections.sort((a, b) => a.t - b.t)
 
   // Build segments based on start/end inside status and crossings
   const segments: { tStart: number; tEnd: number }[] = []
 
-  if (uniqueIntersections.length === 0) {
+  if (intersections.length === 0) {
     // No edge crossings
     if (isPointInPolygon(line.start, polygon) && isPointInPolygon(line.end, polygon)) {
       // Entire line is inside
@@ -1060,10 +1051,11 @@ export function intersectLineSegmentWithPolygon(
   }
 
   // Build segments by tracking inside/outside status
-  let inside = isPointStrictlyInPolygon(line.start, polygon)
+  const epsStart = scaleAddVec2(line.start, lineDir, -1e-3)
+  let inside = isPointStrictlyInPolygon(epsStart, polygon)
   let segmentStart: number | null = inside ? 0 : null
 
-  for (const intersection of uniqueIntersections) {
+  for (const intersection of intersections) {
     if (inside) {
       // We're inside, this intersection is an exit
       if (segmentStart !== null) {

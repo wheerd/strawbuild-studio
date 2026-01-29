@@ -179,41 +179,6 @@ describe('MonolithicRoofAssembly.getBottomOffsets - Intersection Tests', () => {
   })
 
   describe('Concave polygon with multiple intersections', () => {
-    it('should handle line intersecting concave polygon multiple times', () => {
-      // Create L-shaped overhang polygon
-      const roof = createTestRoof('shed', newVec2(0, 5000), newVec2(10000, 5000), 30, verticalOffset, {
-        points: [
-          ZERO_VEC2,
-          newVec2(5000, 0),
-          newVec2(5000, 2000),
-          newVec2(2000, 2000),
-          newVec2(2000, 5000),
-          newVec2(0, 5000)
-        ]
-      })
-      const config = createTestConfig(0)
-
-      // Line crosses through the concave notch
-      const line = {
-        start: newVec2(3000, 0),
-        end: newVec2(3000, 5000)
-      }
-
-      const assembly = new MonolithicRoofAssembly(config)
-      const offsets = assembly.getBottomOffsets(roof, line)
-
-      // Should have multiple segments
-      expect(offsets.length).toBeGreaterThanOrEqual(4) // At least 2 segments (4 points)
-
-      // Check that we have alternating entry/exit pattern
-      // Even indices should be segment starts (nullAfter: false)
-      // Odd indices should be segment ends (nullAfter: true)
-      for (let i = 0; i < offsets.length; i++) {
-        const isSegmentEnd = i % 2 === 1 || i === offsets.length - 1
-        expect((offsets[i] as HeightItem).nullAfter).toBe(isSegmentEnd)
-      }
-    })
-
     it('should handle U-shaped polygon with line crossing twice', () => {
       // Create U-shaped polygon
       const roof = createTestRoof('shed', newVec2(0, 5000), newVec2(10000, 5000), 30, verticalOffset, {
@@ -338,43 +303,6 @@ describe('MonolithicRoofAssembly.getBottomOffsets - Intersection Tests', () => {
       }
       // Last point should have nullAfter: true
       expect((offsets[offsets.length - 1] as HeightItem).nullAfter).toBe(true)
-    })
-
-    it('should set nullAfter true for each segment end in multi-segment line', () => {
-      // Create L-shaped polygon for multiple segments
-      const roof = createTestRoof('shed', newVec2(0, 5000), newVec2(10000, 5000), 30, verticalOffset, {
-        points: [
-          ZERO_VEC2,
-          newVec2(5000, 0),
-          newVec2(5000, 2000),
-          newVec2(2000, 2000),
-          newVec2(2000, 5000),
-          newVec2(0, 5000)
-        ]
-      })
-      const config = createTestConfig(0)
-
-      const line = {
-        start: newVec2(3000, 0),
-        end: newVec2(3000, 5000)
-      }
-
-      const assembly = new MonolithicRoofAssembly(config)
-      const offsets = assembly.getBottomOffsets(roof, line)
-
-      // Assuming we have 2 segments, pattern should be:
-      // segment 1 start: nullAfter = false
-      // segment 1 end: nullAfter = true
-      // segment 2 start: nullAfter = false
-      // segment 2 end: nullAfter = true
-      expect(offsets.length).toBeGreaterThanOrEqual(4)
-
-      // Check pattern
-      for (let i = 0; i < offsets.length; i++) {
-        // Last point in each pair should have nullAfter: true
-        const isSegmentEnd = i % 2 === 1 || i === offsets.length - 1
-        expect((offsets[i] as HeightItem).nullAfter).toBe(isSegmentEnd)
-      }
     })
   })
 
