@@ -29,17 +29,25 @@ const OFFSET_EPSILON = 1e-2
 
 export class VerticalOffsetMap {
   private readonly fallbackOffset: Length
+  private readonly invert: boolean
 
-  constructor(fallbackOffset: Length) {
-    this.fallbackOffset = fallbackOffset
+  constructor(fallbackOffset: Length, invert = false) {
+    this.invert = invert
+    this.fallbackOffset = this.applySignInversion(fallbackOffset)
   }
 
   addSlopedArea(polygon: Polygon2D, base: Vec2, downSlopeDir: Vec2, angleRad: number, baseOffset: Length) {
-    this.slopedAreas.push({ polygon, base, downSlopeDir, angleRad, baseOffset })
+    this.slopedAreas.push({
+      polygon,
+      base,
+      downSlopeDir,
+      angleRad,
+      baseOffset: this.applySignInversion(baseOffset)
+    })
   }
 
   addConstantArea(polygon: Polygon2D, offset: Length) {
-    this.constantAreas.push({ polygon, offset })
+    this.constantAreas.push({ polygon, offset: this.applySignInversion(offset) })
   }
 
   getOffsets(line: LineSegment2D): HeightLine {
@@ -67,11 +75,11 @@ export class VerticalOffsetMap {
     for (const t of uniquePoints) {
       if (t <= T_EPSILON) {
         const offsetAt = this.calculateMaxOffsetAt(line, T_EPSILON, intersectionsWithArea)
-        const offset = Math.round(offsetAt.offset / OFFSET_EPSILON) * OFFSET_EPSILON
+        const offset = this.applySignInversion(Math.round(offsetAt.offset / OFFSET_EPSILON) * OFFSET_EPSILON)
         result.push({ position: 0, offset, nullAfter: false })
       } else if (t >= 1 - T_EPSILON) {
         const offsetAt = this.calculateMaxOffsetAt(line, 1 - T_EPSILON, intersectionsWithArea)
-        const offset = Math.round(offsetAt.offset / OFFSET_EPSILON) * OFFSET_EPSILON
+        const offset = this.applySignInversion(Math.round(offsetAt.offset / OFFSET_EPSILON) * OFFSET_EPSILON)
         result.push({ position: 1, offset, nullAfter: true })
       } else {
         const before = this.calculateMaxOffsetAt(line, t - T_EPSILON, intersectionsWithArea)
@@ -82,11 +90,11 @@ export class VerticalOffsetMap {
 
         if (beforeAreasStr !== afterAreasStr) {
           if (Math.abs(before.offset - after.offset) < OFFSET_EPSILON) {
-            const offset = Math.round(before.offset / OFFSET_EPSILON) * OFFSET_EPSILON
+            const offset = this.applySignInversion(Math.round(before.offset / OFFSET_EPSILON) * OFFSET_EPSILON)
             result.push({ position: t, offset, nullAfter: false })
           } else {
-            const offsetBefore = Math.round(before.offset / OFFSET_EPSILON) * OFFSET_EPSILON
-            const offsetAfter = Math.round(after.offset / OFFSET_EPSILON) * OFFSET_EPSILON
+            const offsetBefore = this.applySignInversion(Math.round(before.offset / OFFSET_EPSILON) * OFFSET_EPSILON)
+            const offsetAfter = this.applySignInversion(Math.round(after.offset / OFFSET_EPSILON) * OFFSET_EPSILON)
             result.push({ position: t, offsetBefore, offsetAfter })
           }
         }
@@ -94,6 +102,10 @@ export class VerticalOffsetMap {
     }
 
     return result
+  }
+
+  private applySignInversion(offset: Length): Length {
+    return this.invert ? -offset : offset
   }
 
   private calculateMaxOffsetAt(

@@ -9,6 +9,7 @@ import { type ConstructionModel } from '@/construction/model'
 import type { PerimeterConstructionContext } from '@/construction/perimeters/context'
 import { type ConstructionResult, yieldAsGroup } from '@/construction/results'
 import { createExtrudedPolygon } from '@/construction/shapes'
+import { VerticalOffsetMap } from '@/construction/storeys/offsets'
 import {
   TAG_LAYERS,
   TAG_ROOF_LAYER_INSIDE,
@@ -47,7 +48,7 @@ import {
 } from '@/shared/geometry'
 import { assertUnreachable } from '@/shared/utils'
 
-import type { HeightLine, RoofAssembly, RoofAssemblyConfigBase } from './types'
+import type { RoofAssembly, RoofAssemblyConfigBase } from './types'
 
 export interface RoofSide {
   polygon: Polygon2D
@@ -64,7 +65,7 @@ export abstract class BaseRoofAssembly<T extends RoofAssemblyConfigBase> impleme
   }
 
   abstract get topOffset(): Length
-  abstract getBottomOffsets(roof: Roof, line: LineSegment2D, contexts: PerimeterConstructionContext[]): HeightLine
+  abstract getBottomOffsets(roof: Roof, map: VerticalOffsetMap, contexts: PerimeterConstructionContext[]): void
 
   abstract get constructionThickness(): Length
   abstract construct(roof: Roof, contexts: PerimeterConstructionContext[]): ConstructionModel

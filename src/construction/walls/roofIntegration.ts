@@ -2,9 +2,10 @@ import type { StoreyId } from '@/building/model/ids'
 import { getModelActions } from '@/building/store'
 import { getConfigActions } from '@/construction/config'
 import { WallConstructionArea } from '@/construction/geometry'
-import type { PerimeterConstructionContext } from '@/construction/perimeters/context'
+import { type PerimeterConstructionContext } from '@/construction/perimeters/context'
 import { resolveRoofAssembly } from '@/construction/roofs'
 import type { HeightItem, HeightJumpItem, HeightLine } from '@/construction/roofs/types'
+import { VerticalOffsetMap } from '@/construction/storeys/offsets'
 import { type Length, type LineSegment2D, type Vec2, newVec2 } from '@/shared/geometry'
 
 // Use smaller epsilon for position comparisons
@@ -24,31 +25,18 @@ export function getRoofHeightLineForLines(
   const { getRoofsByStorey } = getModelActions()
   const { getRoofAssemblyById } = getConfigActions()
 
-  const heightLines: HeightLine[] = []
+  const offsetMap = new VerticalOffsetMap(ceilingBottomOffset, true)
   const roofs = getRoofsByStorey(storeyId)
-  for (const line of lines) {
-    const heightLine: HeightLine = []
 
-    // Query each roof
-    for (const roof of roofs) {
-      const roofAssembly = getRoofAssemblyById(roof.assemblyId)
-      if (!roofAssembly) continue
+  for (const roof of roofs) {
+    const roofAssembly = getRoofAssemblyById(roof.assemblyId)
+    if (!roofAssembly) continue
 
-      const roofImpl = resolveRoofAssembly(roofAssembly)
-      const roofLine = roofImpl.getBottomOffsets(roof, line, perimeterContexts)
-      heightLine.push(
-        ...roofLine.map(r => ({ ...r, position: Math.round(r.position / POSITION_EPSILON) * POSITION_EPSILON }))
-      )
-    }
-
-    heightLine.sort((a, b) => a.position - b.position)
-
-    const filled = fillNullRegions(heightLine, ceilingBottomOffset)
-
-    heightLines.push(filled)
+    const roofImpl = resolveRoofAssembly(roofAssembly)
+    roofImpl.getBottomOffsets(roof, offsetMap, perimeterContexts)
   }
 
-  return mergeHeightLines(...heightLines)
+  return mergeHeightLines(...lines.map(l => offsetMap.getOffsets(l)))
 }
 
 /**
@@ -79,77 +67,6 @@ export function convertHeightLineToWallOffsets(heightLine: HeightLine, wallLengt
   }
 
   return offsets.length > 0 ? offsets : undefined
-}
-
-/**
- * Step 2: Fill null regions with ceiling offset height jumps
- * Ensures entire line (0 to 1) is covered with height values
- * Converts nullAfter flags to explicit height jumps
- */
-function fillNullRegions(heightLine: HeightLine, ceilingOffset: Length): HeightLine {
-  if (heightLine.length === 0) {
-    // No coverage at all - return flat line at ceiling offset
-    return [
-      { position: 0, offset: ceilingOffset, nullAfter: false },
-      { position: 1, offset: ceilingOffset, nullAfter: false }
-    ]
-  }
-
-  let beforeWasNull = false
-  const result: HeightLine = []
-
-  // Check if we need to fill before first item
-  if (heightLine[0].position > 0) {
-    // NULL REGION AT START: Gap from 0 to first item
-    // Add ceiling offset at start
-    result.push({ position: 0, offset: ceilingOffset, nullAfter: false })
-    beforeWasNull = true
-  }
-
-  // Process remaining items, looking for null regions
-  for (const item of heightLine) {
-    const beforeOffset = 'offset' in item ? item.offset : item.offsetBefore
-    const afterOffset = 'offset' in item ? item.offset : item.offsetAfter
-    const isNullAfter = 'nullAfter' in item && item.nullAfter && item.position < 1
-
-    // Check if previous item has nullAfter flag
-    if (beforeWasNull) {
-      result.push({
-        position: item.position,
-        offsetBefore: ceilingOffset,
-        offsetAfter: afterOffset
-      })
-    } else if (isNullAfter) {
-      result.push({
-        position: item.position,
-        offsetBefore: beforeOffset,
-        offsetAfter: ceilingOffset
-      })
-    } else if (beforeOffset !== afterOffset) {
-      result.push({
-        position: item.position,
-        offsetBefore: beforeOffset,
-        offsetAfter: afterOffset
-      })
-    } else {
-      result.push({
-        position: item.position,
-        offset: afterOffset,
-        nullAfter: item.position === 1
-      })
-    }
-
-    beforeWasNull = isNullAfter
-  }
-
-  // Check if we need to fill after last item
-  if (heightLine[heightLine.length - 1].position < 1) {
-    // NULL REGION AT END: Gap from last item to 0
-    // Add ceiling offset at end
-    result.push({ position: 1, offset: ceilingOffset, nullAfter: true })
-  }
-
-  return result
 }
 
 function mergeHeightLines(...lines: HeightLine[]): HeightLine {

@@ -4,14 +4,15 @@ import type { LayerConfig } from '@/construction/layers/types'
 import type { MaterialId } from '@/construction/materials/material'
 import type { ConstructionModel } from '@/construction/model'
 import type { PerimeterConstructionContext } from '@/construction/perimeters/context'
-import type { Length, LineSegment2D } from '@/shared/geometry'
+import type { VerticalOffsetMap } from '@/construction/storeys/offsets'
+import type { Length } from '@/shared/geometry'
 import { assertUnreachable } from '@/shared/utils'
 
 export interface RoofAssembly {
   construct: (roof: Roof, contexts: PerimeterConstructionContext[]) => ConstructionModel
 
   get topOffset(): Length
-  getBottomOffsets: (roof: Roof, line: LineSegment2D, contexts: PerimeterConstructionContext[]) => HeightLine
+  getBottomOffsets: (roof: Roof, map: VerticalOffsetMap, contexts: PerimeterConstructionContext[]) => void
   get constructionThickness(): Length
   get totalThickness(): Length
 }

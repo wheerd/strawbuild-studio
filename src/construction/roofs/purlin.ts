@@ -21,6 +21,7 @@ import {
 } from '@/construction/results'
 import { BaseRoofAssembly, type RoofSide } from '@/construction/roofs/base'
 import { type ExtrudedShape, createExtrudedPolygon } from '@/construction/shapes'
+import type { VerticalOffsetMap } from '@/construction/storeys/offsets'
 import {
   TAG_DECKING,
   TAG_INSIDE_SHEATHING,
@@ -41,26 +42,23 @@ import {
 import {
   IDENTITY,
   type Length,
-  type LineSegment2D,
   type Polygon2D,
   type Vec2,
   addVec2,
   direction,
-  distVec2,
   dotAbsVec2,
   dotVec2,
   ensurePolygonIsClockwise,
   fromTrans,
   getPosition,
   intersectLineSegmentWithPolygon,
-  intersectLineWithPolygon,
   intersectPolygons,
   invertTransform,
   isPointStrictlyInPolygon,
-  lerpVec2,
   lineFromSegment,
   lineIntersection,
   midpoint,
+  negVec2,
   newVec3,
   offsetPolygon,
   perpendicular,
@@ -74,8 +72,9 @@ import {
   unionPolygons,
   vec3To2
 } from '@/shared/geometry'
+import { intersectLineWithPolygon } from '@/shared/geometry/polygon'
 
-import type { HeightLine, PurlinRoofConfig } from './types'
+import type { PurlinRoofConfig } from './types'
 
 const EPSILON = 1e-5
 
@@ -191,140 +190,27 @@ export class PurlinRoofAssembly extends BaseRoofAssembly<PurlinRoofConfig> {
     return this.config.layers.topThickness
   }
 
-  getBottomOffsets = (roof: Roof, line: LineSegment2D, contexts: PerimeterConstructionContext[]): HeightLine => {
-    // Step 1: Find intersection segments with overhang polygon
-    const intersection = intersectLineSegmentWithPolygon(line, roof.overhangPolygon)
-    if (!intersection || intersection.segments.length === 0) {
-      return [] // Line doesn't intersect roof - no coverage
-    }
-
-    // Step 2: Setup roof geometry calculations
-    const tanSlope = Math.tan(roof.slopeAngleRad)
+  getBottomOffsets = (roof: Roof, map: VerticalOffsetMap, contexts: PerimeterConstructionContext[]): void => {
     const ridgeHeight = this.calculateRidgeHeight(roof)
+    const roofSides = this.splitRoofPolygon(roof, ridgeHeight)
 
-    interface PurlinIntersection {
-      tStart: number
-      tEnd: number
-      offset: Length
+    for (const side of roofSides) {
+      map.addSlopedArea(side.polygon, roof.ridgeLine.start, negVec2(side.dirToRidge), roof.slopeAngleRad, ridgeHeight)
     }
+
     const purlins = Array.from(this.constructAllPurlins(roof, contexts, ridgeHeight))
-    const purlinIntersections: PurlinIntersection[] = purlins
+    purlins
       .filter(p => p.type === 'element')
       .map(p => p.element)
       .filter(p => 'shape' in p)
-      .flatMap(purlin => {
+      .forEach(purlin => {
         const purlinPolygon = (purlin.shape.base as ExtrudedShape).polygon.outer
         const position = getPosition(purlin.transform)
         const position2D = vec3To2(position)
         const transformed: Polygon2D = { points: purlinPolygon.points.map(p => addVec2(p, position2D)) }
-        const intersection = intersectLineSegmentWithPolygon(line, transformed)
-        if (!intersection) return []
         const offset = position[2]
-        return [{ tStart: intersection.segments[0].tStart, tEnd: intersection.segments[0].tEnd, offset }]
+        map.addConstantArea(transformed, offset)
       })
-      .sort((a, b) => b.tStart - a.tStart)
-
-    // Check if entire line runs along a purlin
-    if (purlinIntersections.length === 1) {
-      const purlin = purlinIntersections[0]
-      if (purlin.tStart === 0 && purlin.tEnd === 1) {
-        return [
-          { position: 0, offset: purlin.offset, nullAfter: false },
-          { position: 1, offset: purlin.offset, nullAfter: true }
-        ]
-      }
-    }
-
-    // Helper to get SIGNED distance from ridge (perpendicular)
-    const getSignedDistanceToRidge = (point: Vec2): number =>
-      projectVec2(roof.ridgeLine.start, point, roof.downSlopeDirection)
-
-    // Calculate height offset at a point
-    const calculateOffset = (signedDist: number): number =>
-      ridgeHeight - (roof.type === 'shed' ? signedDist : Math.abs(signedDist)) * tanSlope
-
-    // Calculate offset at a given T position along the line
-    const calculateOffsetAt = (t: number): Length => {
-      const point = lerpVec2(line.start, line.end, t)
-      return calculateOffset(getSignedDistanceToRidge(point))
-    }
-
-    // Step 3: Calculate ridge intersection ONCE (for gable roofs)
-    let ridgeT = -1
-    if (roof.type === 'gable') {
-      const wallLine = lineFromSegment(line)
-      const ridgeLine = lineFromSegment(roof.ridgeLine)
-      const ridgeIntersection = lineIntersection(wallLine, ridgeLine)
-
-      if (ridgeIntersection) {
-        const lineLength = distVec2(line.end, line.start)
-        if (lineLength > 0.001) {
-          ridgeT = projectVec2(line.start, ridgeIntersection, wallLine.direction) / lineLength
-        }
-      }
-    }
-
-    const processPurlinsUntilT = (t: number) => {
-      let lastT = -1
-      let purlin
-      while ((purlin = purlinIntersections.pop())) {
-        if (purlin.tStart >= t) {
-          purlinIntersections.push(purlin)
-          break
-        }
-        result.push({
-          position: purlin.tStart,
-          offsetBefore: calculateOffsetAt(purlin.tStart),
-          offsetAfter: purlin.offset
-        })
-        result.push({ position: purlin.tEnd, offsetBefore: purlin.offset, offsetAfter: calculateOffsetAt(purlin.tEnd) })
-        lastT = purlin.tEnd
-      }
-      return lastT < t
-    }
-
-    // Step 4: Build HeightLine for all segments
-    const result: HeightLine = []
-    for (const segment of intersection.segments) {
-      // Segment start
-      if (
-        purlinIntersections.length === 0 ||
-        purlinIntersections[purlinIntersections.length - 1].tStart > segment.tStart
-      ) {
-        result.push({ position: segment.tStart, offset: calculateOffsetAt(segment.tStart), nullAfter: false })
-      }
-
-      // Ridge intersection (if within this segment)
-      if (ridgeT > segment.tStart && ridgeT < segment.tEnd) {
-        if (processPurlinsUntilT(ridgeT)) {
-          result.push({ position: ridgeT, offset: ridgeHeight, nullAfter: false })
-        }
-      }
-
-      if (processPurlinsUntilT(segment.tEnd)) {
-        // Segment end
-        result.push({ position: segment.tEnd, offset: calculateOffsetAt(segment.tEnd), nullAfter: true })
-      }
-    }
-
-    const first = result[0]
-    if ('offsetBefore' in first) {
-      result[0] = {
-        offset: first.offsetAfter,
-        position: first.position,
-        nullAfter: false
-      }
-    }
-    const last = result[result.length - 1]
-    if ('offsetAfter' in last) {
-      result[result.length - 1] = {
-        offset: last.offsetBefore,
-        position: last.position,
-        nullAfter: true
-      }
-    }
-
-    return result
   }
 
   private *constructAllPurlins(
