@@ -3,7 +3,7 @@ import { useCallback, useMemo } from 'react'
 import { debounce } from 'throttle-debounce'
 import { temporal } from 'zundo'
 import { create } from 'zustand'
-import { persist } from 'zustand/middleware'
+import { persist, subscribeWithSelector } from 'zustand/middleware'
 import { immer } from 'zustand/middleware/immer'
 
 import type {
@@ -80,64 +80,66 @@ const createDebouncedSave = () => {
 
 // Create main store with persistence, undo/redo, and slices
 const useModelStore = create<Store>()(
-  persist(
-    temporal(
-      (set, get, store) => {
-        const storeysSlice = immer(createStoreysSlice)(set, get, store)
-        const perimetersSlice = immer(createPerimetersSlice)(set, get, store)
-        const floorsSlice = immer(createFloorsSlice)(set, get, store)
-        const roofsSlice = immer(createRoofsSlice)(set, get, store)
-        const timestampsSlice = immer(createTimestampsSlice)(set, get, store)
+  subscribeWithSelector(
+    persist(
+      temporal(
+        (set, get, store) => {
+          const storeysSlice = immer(createStoreysSlice)(set, get, store)
+          const perimetersSlice = immer(createPerimetersSlice)(set, get, store)
+          const floorsSlice = immer(createFloorsSlice)(set, get, store)
+          const roofsSlice = immer(createRoofsSlice)(set, get, store)
+          const timestampsSlice = immer(createTimestampsSlice)(set, get, store)
 
-        return {
-          ...storeysSlice,
-          ...perimetersSlice,
-          ...floorsSlice,
-          ...roofsSlice,
-          ...timestampsSlice,
-          actions: {
-            ...storeysSlice.actions,
-            ...perimetersSlice.actions,
-            ...floorsSlice.actions,
-            ...roofsSlice.actions,
-            ...timestampsSlice.actions,
-            reset: () => {
-              set(store.getInitialState())
+          return {
+            ...storeysSlice,
+            ...perimetersSlice,
+            ...floorsSlice,
+            ...roofsSlice,
+            ...timestampsSlice,
+            actions: {
+              ...storeysSlice.actions,
+              ...perimetersSlice.actions,
+              ...floorsSlice.actions,
+              ...roofsSlice.actions,
+              ...timestampsSlice.actions,
+              reset: () => {
+                set(store.getInitialState())
+              }
             }
           }
-        }
-      },
-      {
-        // Undo/redo configuration
-        limit: 50,
-        equality: (pastState, currentState) => isDeepEqual(pastState, currentState),
-        handleSet: set => debounce(500, set, { atBegin: false })
-      }
-    ),
-    {
-      // Persistence configuration
-      name: 'strawbaler-model',
-      version: CURRENT_VERSION,
-      migrate: (persistedState: unknown, version: number) => applyMigrations(persistedState, version) as StoreState,
-      partialize: state => Object.fromEntries(Object.entries(state).filter(([k]) => k !== 'actions')),
-      storage: {
-        getItem: name => {
-          const item = localStorage.getItem(name)
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-          return item ? JSON.parse(item) : null
         },
-        setItem: createDebouncedSave(),
-        removeItem: name => {
-          localStorage.removeItem(name)
+        {
+          // Undo/redo configuration
+          limit: 50,
+          equality: (pastState, currentState) => isDeepEqual(pastState, currentState),
+          handleSet: set => debounce(500, set, { atBegin: false })
         }
-      },
-      onRehydrateStorage: () => state => {
-        if (state) {
-          const persistenceActions = getPersistenceActions()
-          persistenceActions.setHydrated(true)
+      ),
+      {
+        // Persistence configuration
+        name: 'strawbaler-model',
+        version: CURRENT_VERSION,
+        migrate: (persistedState: unknown, version: number) => applyMigrations(persistedState, version) as StoreState,
+        partialize: state => Object.fromEntries(Object.entries(state).filter(([k]) => k !== 'actions')),
+        storage: {
+          getItem: name => {
+            const item = localStorage.getItem(name)
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+            return item ? JSON.parse(item) : null
+          },
+          setItem: createDebouncedSave(),
+          removeItem: name => {
+            localStorage.removeItem(name)
+          }
+        },
+        onRehydrateStorage: () => state => {
+          if (state) {
+            const persistenceActions = getPersistenceActions()
+            persistenceActions.setHydrated(true)
+          }
         }
       }
-    }
+    )
   )
 )
 
@@ -388,6 +390,8 @@ export const getCanRedo = (): boolean => useModelStore.temporal.getState().futur
 export const clearPersistence = (): void => {
   localStorage.removeItem('strawbaler-model')
 }
+
+export const subscribeToModelChanges = useModelStore.subscribe
 
 // Export types
 export type { StoreActions } from './types'

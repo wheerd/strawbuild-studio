@@ -61,19 +61,13 @@ export function setupPerimeterSlice() {
   const testStoreyId = createStoreyId()
 
   slice = createPerimetersSlice(mockSet, mockGet, mockStore)
-  ;(slice as any).actions.updateTimestamp = mockUpdateTimestamp
-  ;(slice as any).actions.removeTimestamp = mockRemoveTimestamp
+  slice = { ...slice, timestamps: {} } as any
 
   mockGet.mockImplementation(() => slice)
 
   mockSet.mockImplementation((updater: any) => {
     if (typeof updater === 'function') {
-      const newState = updater(slice)
-      if (newState !== slice) {
-        slice = { ...slice, ...newState }
-      }
-    } else {
-      slice = { ...slice, ...updater }
+      updater(slice)
     }
   })
 

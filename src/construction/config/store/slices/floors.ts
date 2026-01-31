@@ -9,7 +9,11 @@ import {
   sumLayerThickness,
   updateLayerAt
 } from '@/construction/config/store/layerUtils'
-import type { TimestampsActions } from '@/construction/config/store/slices/timestampsSlice'
+import {
+  type TimestampsState,
+  removeTimestampDraft,
+  updateTimestampDraft
+} from '@/construction/config/store/slices/timestampsSlice'
 import type { FloorAssemblyConfig } from '@/construction/config/types'
 import { type FloorConfig, validateFloorConfig } from '@/construction/floors/types'
 import type { LayerConfig } from '@/construction/layers/types'
@@ -62,7 +66,7 @@ const validateFloorAssemblyName = (name: string): void => {
 }
 
 export const createFloorAssembliesSlice: StateCreator<
-  FloorAssembliesSlice & { actions: FloorAssembliesActions & TimestampsActions },
+  FloorAssembliesSlice & TimestampsState,
   [['zustand/immer', never]],
   [],
   FloorAssembliesSlice
@@ -86,7 +90,7 @@ export const createFloorAssembliesSlice: StateCreator<
 
         set(state => {
           state.floorAssemblyConfigs[assembly.id] = assembly
-          state.actions.updateTimestamp(assembly.id)
+          updateTimestampDraft(state, assembly.id)
         })
 
         return assembly
@@ -102,7 +106,7 @@ export const createFloorAssembliesSlice: StateCreator<
           }
 
           const { [id]: _removed, ...remainingConfigs } = floorAssemblyConfigs
-          state.actions.removeTimestamp(id)
+          removeTimestampDraft(state, id)
 
           // If removing the default, set first remaining config as default
           let newDefaultId = state.defaultFloorAssemblyId
@@ -127,7 +131,7 @@ export const createFloorAssembliesSlice: StateCreator<
 
           assembly.name = name.trim()
           assembly.nameKey = undefined
-          state.actions.updateTimestamp(id)
+          updateTimestampDraft(state, id)
         })
       },
 
@@ -140,7 +144,7 @@ export const createFloorAssembliesSlice: StateCreator<
           validateFloorConfig(updatedConfig)
 
           state.floorAssemblyConfigs[id] = updatedConfig
-          state.actions.updateTimestamp(id)
+          updateTimestampDraft(state, id)
         })
       },
 
@@ -158,7 +162,7 @@ export const createFloorAssembliesSlice: StateCreator<
 
         set(state => {
           state.floorAssemblyConfigs[newId] = duplicated
-          state.actions.updateTimestamp(newId)
+          updateTimestampDraft(state, newId)
         })
 
         return duplicated
@@ -199,7 +203,7 @@ export const createFloorAssembliesSlice: StateCreator<
           const topThickness = sumLayerThickness(topLayers)
           config.layers = { ...config.layers, topLayers, topThickness }
           validateFloorConfig(config)
-          state.actions.updateTimestamp(id)
+          updateTimestampDraft(state, id)
         })
       },
 
@@ -212,7 +216,7 @@ export const createFloorAssembliesSlice: StateCreator<
           const topThickness = sumLayerThickness(topLayers)
           config.layers = { ...config.layers, topLayers, topThickness }
           validateFloorConfig(config)
-          state.actions.updateTimestamp(id)
+          updateTimestampDraft(state, id)
         })
       },
 
@@ -229,7 +233,7 @@ export const createFloorAssembliesSlice: StateCreator<
           const topThickness = sumLayerThickness(topLayers)
           config.layers = { ...config.layers, topLayers, topThickness }
           validateFloorConfig(config)
-          state.actions.updateTimestamp(id)
+          updateTimestampDraft(state, id)
         })
       },
 
@@ -242,7 +246,7 @@ export const createFloorAssembliesSlice: StateCreator<
           const topThickness = sumLayerThickness(topLayers)
           config.layers = { ...config.layers, topLayers, topThickness }
           validateFloorConfig(config)
-          state.actions.updateTimestamp(id)
+          updateTimestampDraft(state, id)
         })
       },
 
@@ -255,7 +259,7 @@ export const createFloorAssembliesSlice: StateCreator<
           const topThickness = sumLayerThickness(topLayers)
           config.layers = { ...config.layers, topLayers, topThickness }
           validateFloorConfig(config)
-          state.actions.updateTimestamp(id)
+          updateTimestampDraft(state, id)
         })
       },
 
@@ -268,7 +272,7 @@ export const createFloorAssembliesSlice: StateCreator<
           const bottomThickness = sumLayerThickness(bottomLayers)
           config.layers = { ...config.layers, bottomLayers, bottomThickness }
           validateFloorConfig(config)
-          state.actions.updateTimestamp(id)
+          updateTimestampDraft(state, id)
         })
       },
 
@@ -281,7 +285,7 @@ export const createFloorAssembliesSlice: StateCreator<
           const bottomThickness = sumLayerThickness(bottomLayers)
           config.layers = { ...config.layers, bottomLayers, bottomThickness }
           validateFloorConfig(config)
-          state.actions.updateTimestamp(id)
+          updateTimestampDraft(state, id)
         })
       },
 
@@ -298,7 +302,7 @@ export const createFloorAssembliesSlice: StateCreator<
           const bottomThickness = sumLayerThickness(bottomLayers)
           config.layers = { ...config.layers, bottomLayers, bottomThickness }
           validateFloorConfig(config)
-          state.actions.updateTimestamp(id)
+          updateTimestampDraft(state, id)
         })
       },
 
@@ -311,7 +315,7 @@ export const createFloorAssembliesSlice: StateCreator<
           const bottomThickness = sumLayerThickness(bottomLayers)
           config.layers = { ...config.layers, bottomLayers, bottomThickness }
           validateFloorConfig(config)
-          state.actions.updateTimestamp(id)
+          updateTimestampDraft(state, id)
         })
       },
 
@@ -324,7 +328,7 @@ export const createFloorAssembliesSlice: StateCreator<
           const bottomThickness = sumLayerThickness(bottomLayers)
           config.layers = { ...config.layers, bottomLayers, bottomThickness }
           validateFloorConfig(config)
-          state.actions.updateTimestamp(id)
+          updateTimestampDraft(state, id)
         })
       },
 
@@ -348,13 +352,13 @@ export const createFloorAssembliesSlice: StateCreator<
               continue
             }
             if (defaultIds.includes(id) && !(id in customAssemblies)) {
-              state.actions.removeTimestamp(id)
+              removeTimestampDraft(state, id)
             }
           }
 
           for (const assembly of DEFAULT_FLOOR_ASSEMBLIES) {
             if (!currentIds.includes(assembly.id)) {
-              state.actions.updateTimestamp(assembly.id)
+              updateTimestampDraft(state, assembly.id)
             }
           }
 

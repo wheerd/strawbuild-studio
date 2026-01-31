@@ -42,7 +42,11 @@ import {
   isWallPostId
 } from '@/building/model/ids'
 import { InvalidOperationError, NotFoundError } from '@/building/store/errors'
-import type { TimestampsActions } from '@/building/store/slices/timestampsSlice'
+import {
+  type TimestampsState,
+  removeTimestampDraft,
+  updateTimestampDraft
+} from '@/building/store/slices/timestampsSlice'
 import { type Length, type Polygon2D, type Vec2, addVec2, copyVec2, distVec2, scaleAddVec2 } from '@/shared/geometry'
 import { ensurePolygonIsClockwise, wouldClosingPolygonSelfIntersect } from '@/shared/geometry/polygon'
 
@@ -174,10 +178,9 @@ export interface PerimetersActions {
 }
 
 export type PerimetersSlice = PerimetersState & { actions: PerimetersActions }
-type PerimetersSliceWithTimestamp = PerimetersState & { actions: PerimetersActions & TimestampsActions }
 
 export const createPerimetersSlice: StateCreator<
-  PerimetersSliceWithTimestamp,
+  PerimetersSlice & TimestampsState,
   [['zustand/immer', never]],
   [],
   PerimetersSlice
@@ -278,7 +281,7 @@ export const createPerimetersSlice: StateCreator<
         updatePerimeterGeometry(state, perimeterId)
 
         // Update timestamps for perimeter, all corners, and all walls
-        state.actions.updateTimestamp(perimeterId, ...cornerIds, ...wallIds)
+        updateTimestampDraft(state, perimeterId, ...cornerIds, ...wallIds)
 
         result = { ...perimeter, ...state._perimeterGeometry[perimeterId] }
       })
@@ -486,7 +489,7 @@ export const createPerimetersSlice: StateCreator<
         const wall = state.perimeterWalls[wallId]
 
         wall.wallAssemblyId = assemblyId
-        state.actions.updateTimestamp(wallId)
+        updateTimestampDraft(state, wallId)
       })
     },
 
@@ -501,7 +504,7 @@ export const createPerimetersSlice: StateCreator<
 
         wall.thickness = thickness
         updatePerimeterGeometry(state, wall.perimeterId)
-        state.actions.updateTimestamp(wallId)
+        updateTimestampDraft(state, wallId)
       })
     },
 
@@ -517,7 +520,7 @@ export const createPerimetersSlice: StateCreator<
         })
 
         // Update timestamps for all walls in the perimeter
-        state.actions.updateTimestamp(...perimeter.wallIds)
+        updateTimestampDraft(state, ...perimeter.wallIds)
       })
     },
 
@@ -539,7 +542,7 @@ export const createPerimetersSlice: StateCreator<
         updatePerimeterGeometry(state, perimeterId)
 
         // Update timestamps for all walls in the perimeter
-        state.actions.updateTimestamp(...perimeter.wallIds)
+        updateTimestampDraft(state, ...perimeter.wallIds)
       })
     },
 
@@ -576,7 +579,7 @@ export const createPerimetersSlice: StateCreator<
         }
 
         corner.constructedByWall = constructedByWall
-        state.actions.updateTimestamp(cornerId)
+        updateTimestampDraft(state, cornerId)
       })
     },
 
@@ -623,7 +626,7 @@ export const createPerimetersSlice: StateCreator<
         state._openingGeometry[newOpening.id] = openingGeometry
 
         // Update timestamp for the new opening
-        state.actions.updateTimestamp(newOpening.id)
+        updateTimestampDraft(state, newOpening.id)
         result = { ...newOpening, ...openingGeometry }
       })
 
@@ -642,7 +645,7 @@ export const createPerimetersSlice: StateCreator<
         delete state._openingGeometry[openingId]
 
         // Remove timestamp for the opening
-        state.actions.removeTimestamp(openingId)
+        removeTimestampDraft(state, openingId)
       })
     },
 
@@ -707,7 +710,7 @@ export const createPerimetersSlice: StateCreator<
           state._openingGeometry[opening.id] = openingGeometry
 
           // Update timestamp for the opening
-          state.actions.updateTimestamp(openingId)
+          updateTimestampDraft(state, openingId)
         }
       })
     },
@@ -843,7 +846,7 @@ export const createPerimetersSlice: StateCreator<
         state._wallPostGeometry[newPost.id] = geometry
 
         // Update timestamp for the new post
-        state.actions.updateTimestamp(newPost.id)
+        updateTimestampDraft(state, newPost.id)
         result = { ...newPost, ...geometry }
       })
 
@@ -862,7 +865,7 @@ export const createPerimetersSlice: StateCreator<
         delete state._wallPostGeometry[postId]
 
         // Remove timestamp for the post
-        state.actions.removeTimestamp(postId)
+        removeTimestampDraft(state, postId)
       })
     },
 
@@ -886,7 +889,7 @@ export const createPerimetersSlice: StateCreator<
           state._wallPostGeometry[post.id] = geometry
 
           // Update timestamp for the post
-          state.actions.updateTimestamp(postId)
+          updateTimestampDraft(state, postId)
         }
       })
     },
@@ -945,7 +948,7 @@ export const createPerimetersSlice: StateCreator<
         updatePerimeterGeometry(state, perimeterId)
 
         // Update timestamps for perimeter and all its corners
-        state.actions.updateTimestamp(perimeterId, ...perimeter.cornerIds)
+        updateTimestampDraft(state, perimeterId, ...perimeter.cornerIds)
       })
 
       return true
@@ -978,7 +981,7 @@ export const createPerimetersSlice: StateCreator<
         updatePerimeterGeometry(state, perimeterId)
 
         // Update timestamps for perimeter and all its corners
-        state.actions.updateTimestamp(perimeterId, ...perimeter.cornerIds)
+        updateTimestampDraft(state, perimeterId, ...perimeter.cornerIds)
         success = true
       })
 
@@ -992,7 +995,7 @@ export const createPerimetersSlice: StateCreator<
         const wall = state.perimeterWalls[wallId]
 
         wall.baseRingBeamAssemblyId = assemblyId
-        state.actions.updateTimestamp(wallId)
+        updateTimestampDraft(state, wallId)
       })
     },
 
@@ -1002,7 +1005,7 @@ export const createPerimetersSlice: StateCreator<
         const wall = state.perimeterWalls[wallId]
 
         wall.topRingBeamAssemblyId = assemblyId
-        state.actions.updateTimestamp(wallId)
+        updateTimestampDraft(state, wallId)
       })
     },
 
@@ -1012,7 +1015,7 @@ export const createPerimetersSlice: StateCreator<
         const wall = state.perimeterWalls[wallId]
 
         wall.baseRingBeamAssemblyId = undefined
-        state.actions.updateTimestamp(wallId)
+        updateTimestampDraft(state, wallId)
       })
     },
 
@@ -1022,7 +1025,7 @@ export const createPerimetersSlice: StateCreator<
         const wall = state.perimeterWalls[wallId]
 
         wall.topRingBeamAssemblyId = undefined
-        state.actions.updateTimestamp(wallId)
+        updateTimestampDraft(state, wallId)
       })
     },
 
@@ -1038,7 +1041,7 @@ export const createPerimetersSlice: StateCreator<
         })
 
         // Update timestamps for all walls in the perimeter
-        state.actions.updateTimestamp(...perimeter.wallIds)
+        updateTimestampDraft(state, ...perimeter.wallIds)
       })
     },
 
@@ -1053,7 +1056,7 @@ export const createPerimetersSlice: StateCreator<
         })
 
         // Update timestamps for all walls in the perimeter
-        state.actions.updateTimestamp(...perimeter.wallIds)
+        updateTimestampDraft(state, ...perimeter.wallIds)
       })
     },
 
@@ -1068,7 +1071,7 @@ export const createPerimetersSlice: StateCreator<
         })
 
         // Update timestamps for all walls in the perimeter
-        state.actions.updateTimestamp(...perimeter.wallIds)
+        updateTimestampDraft(state, ...perimeter.wallIds)
       })
     },
 
@@ -1083,7 +1086,7 @@ export const createPerimetersSlice: StateCreator<
         })
 
         // Update timestamps for all walls in the perimeter
-        state.actions.updateTimestamp(...perimeter.wallIds)
+        updateTimestampDraft(state, ...perimeter.wallIds)
       })
     },
 
@@ -1104,7 +1107,7 @@ export const createPerimetersSlice: StateCreator<
         updatePerimeterGeometry(state, perimeterId)
 
         // Update timestamps for perimeter and all its corners
-        state.actions.updateTimestamp(perimeterId, ...perimeter.cornerIds)
+        updateTimestampDraft(state, perimeterId, ...perimeter.cornerIds)
       })
     }
   }
@@ -1112,7 +1115,7 @@ export const createPerimetersSlice: StateCreator<
 
 // Helper to remove a corner and merge adjacent walls
 const removeCornerAndMergeWalls = (
-  state: PerimetersSliceWithTimestamp,
+  state: PerimetersSlice & TimestampsState,
   perimeter: Perimeter,
   corner: PerimeterCorner
 ): void => {
@@ -1167,7 +1170,7 @@ const removeCornerAndMergeWalls = (
 }
 
 // Helper to remove a wall and merge the adjacent walls
-const removeWallAndMergeAdjacent = (state: PerimetersSliceWithTimestamp, wall: PerimeterWall): void => {
+const removeWallAndMergeAdjacent = (state: PerimetersSlice & TimestampsState, wall: PerimeterWall): void => {
   const perimeter = state.perimeters[wall.perimeterId]
   const startCorner = state.perimeterCorners[wall.startCornerId]
   const endCorner = state.perimeterCorners[wall.endCornerId]
@@ -1207,7 +1210,7 @@ const removeWallAndMergeAdjacent = (state: PerimetersSliceWithTimestamp, wall: P
  * Returns [minOffset, maxOffset]
  */
 const getWallPostPlacementBounds = (
-  state: PerimetersSliceWithTimestamp,
+  state: PerimetersSlice & TimestampsState,
   wallId: PerimeterWallId
 ): { minOffset: Length; maxOffset: Length } => {
   // Find wall index to get corners
@@ -1247,7 +1250,7 @@ const getWallPostPlacementBounds = (
  * Assumes posts are sorted by centerOffsetFromWallStart
  */
 const hasPostsInCornerArea = (
-  state: PerimetersSliceWithTimestamp,
+  state: PerimetersSlice & TimestampsState,
   wallId: PerimeterWallId,
   cornerPosition: 'start' | 'end'
 ): boolean => {
@@ -1276,7 +1279,7 @@ const hasPostsInCornerArea = (
 // Private helper function to validate wall item (opening or post) placement on a wall
 // This checks against BOTH openings and posts to ensure they don't overlap
 const validateWallItemPlacement = (
-  state: PerimetersSliceWithTimestamp,
+  state: PerimetersSlice & TimestampsState,
   wallId: PerimeterWallId,
   centerOffsetFromWallStart: Length,
   width: Length,
@@ -1321,7 +1324,7 @@ const validateWallItemPlacement = (
 
 // Helper wrapper for opening validation (for backward compatibility)
 const validateOpeningOnWall = (
-  state: PerimetersSliceWithTimestamp,
+  state: PerimetersSlice & TimestampsState,
   wallId: PerimeterWallId,
   centerOffsetFromWallStart: Length,
   width: Length,
@@ -1330,7 +1333,7 @@ const validateOpeningOnWall = (
 
 // Helper wrapper for post validation
 const validatePostOnWall = (
-  state: PerimetersSliceWithTimestamp,
+  state: PerimetersSlice & TimestampsState,
   wallId: PerimeterWallId,
   centerOffsetFromWallStart: Length,
   width: Length,
@@ -1348,7 +1351,7 @@ const validatePostOnWall = (
   )
 }
 
-function cleanUpOrphaned(state: PerimetersSliceWithTimestamp) {
+function cleanUpOrphaned(state: PerimetersSlice & TimestampsState) {
   // Track IDs of entities to delete for timestamp cleanup
   const entityIdsToRemove: EntityId[] = []
 
@@ -1396,7 +1399,7 @@ function cleanUpOrphaned(state: PerimetersSliceWithTimestamp) {
 
   // Clean up orphaned timestamps if actions are provided
   if (entityIdsToRemove.length > 0) {
-    state.actions.removeTimestamp(...entityIdsToRemove)
+    removeTimestampDraft(state, ...entityIdsToRemove)
   }
 }
 

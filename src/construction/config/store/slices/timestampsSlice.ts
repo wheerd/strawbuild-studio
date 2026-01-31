@@ -15,6 +15,23 @@ export interface TimestampsActions {
 
 export type TimestampsSlice = TimestampsState & { actions: TimestampsActions }
 
+export interface TimestampsDraftState {
+  timestamps: Record<AssemblyId, number>
+}
+
+export const updateTimestampDraft = (draft: TimestampsDraftState, ...entityIds: AssemblyId[]) => {
+  const now = Date.now()
+  for (const entityId of entityIds) {
+    draft.timestamps[entityId] = now
+  }
+}
+
+export const removeTimestampDraft = (draft: TimestampsDraftState, ...entityIds: AssemblyId[]) => {
+  for (const entityId of entityIds) {
+    delete draft.timestamps[entityId]
+  }
+}
+
 export const createTimestampsSlice: StateCreator<TimestampsSlice, [['zustand/immer', never]], [], TimestampsSlice> = (
   set,
   get
@@ -26,18 +43,13 @@ export const createTimestampsSlice: StateCreator<TimestampsSlice, [['zustand/imm
 
     updateTimestamp: (...entityIds: AssemblyId[]) => {
       set(state => {
-        const now = Date.now()
-        for (const entityId of entityIds) {
-          state.timestamps[entityId] = now
-        }
+        updateTimestampDraft(state, ...entityIds)
       })
     },
 
     removeTimestamp: (...entityIds: AssemblyId[]) => {
       set(state => {
-        for (const entityId of entityIds) {
-          delete state.timestamps[entityId]
-        }
+        removeTimestampDraft(state, ...entityIds)
       })
     },
 

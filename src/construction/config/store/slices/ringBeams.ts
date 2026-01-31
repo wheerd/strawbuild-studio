@@ -2,7 +2,11 @@ import { type StateCreator } from 'zustand'
 
 import type { RingBeamAssemblyId } from '@/building/model/ids'
 import { createRingBeamAssemblyId } from '@/building/model/ids'
-import type { TimestampsActions } from '@/construction/config/store/slices/timestampsSlice'
+import {
+  type TimestampsState,
+  removeTimestampDraft,
+  updateTimestampDraft
+} from '@/construction/config/store/slices/timestampsSlice'
 import type { RingBeamAssemblyConfig } from '@/construction/config/types'
 import { type RingBeamConfig, validateRingBeamConfig } from '@/construction/ringBeams/types'
 
@@ -47,7 +51,7 @@ const validateRingBeamName = (name: string): void => {
 }
 
 export const createRingBeamAssembliesSlice: StateCreator<
-  RingBeamAssembliesSlice & { actions: RingBeamAssembliesActions & TimestampsActions },
+  RingBeamAssembliesSlice & TimestampsState,
   [['zustand/immer', never]],
   [],
   RingBeamAssembliesSlice
@@ -72,7 +76,7 @@ export const createRingBeamAssembliesSlice: StateCreator<
 
         set(state => {
           state.ringBeamAssemblyConfigs[id] = assembly
-          state.actions.updateTimestamp(id)
+          updateTimestampDraft(state, id)
         })
 
         return assembly
@@ -82,7 +86,7 @@ export const createRingBeamAssembliesSlice: StateCreator<
         set(state => {
           const { [id]: _removed, ...remainingAssemblies } = state.ringBeamAssemblyConfigs
           state.ringBeamAssemblyConfigs = remainingAssemblies
-          state.actions.removeTimestamp(id)
+          removeTimestampDraft(state, id)
 
           state.defaultBaseRingBeamAssemblyId =
             state.defaultBaseRingBeamAssemblyId === id ? undefined : state.defaultBaseRingBeamAssemblyId
@@ -100,7 +104,7 @@ export const createRingBeamAssembliesSlice: StateCreator<
 
           assembly.name = name.trim()
           assembly.nameKey = undefined
-          state.actions.updateTimestamp(id)
+          updateTimestampDraft(state, id)
         })
       },
 
@@ -111,7 +115,7 @@ export const createRingBeamAssembliesSlice: StateCreator<
 
           Object.assign(assembly, config, { id })
           validateRingBeamConfig(assembly as RingBeamConfig)
-          state.actions.updateTimestamp(id)
+          updateTimestampDraft(state, id)
         })
       },
 
@@ -179,13 +183,13 @@ export const createRingBeamAssembliesSlice: StateCreator<
               continue
             }
             if (defaultIds.includes(id) && !(id in customAssemblies)) {
-              state.actions.removeTimestamp(id)
+              removeTimestampDraft(state, id)
             }
           }
 
           for (const assembly of DEFAULT_RING_BEAM_ASSEMBLIES) {
             if (!currentIds.includes(assembly.id)) {
-              state.actions.updateTimestamp(assembly.id)
+              updateTimestampDraft(state, assembly.id)
             }
           }
 

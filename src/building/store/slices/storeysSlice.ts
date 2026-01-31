@@ -4,7 +4,11 @@ import type { Storey } from '@/building/model'
 import { createStoreyLevel } from '@/building/model'
 import type { FloorAssemblyId, StoreyId } from '@/building/model/ids'
 import { DEFAULT_FLOOR_ASSEMBLY_ID, createStoreyId } from '@/building/model/ids'
-import type { TimestampsActions } from '@/building/store/slices/timestampsSlice'
+import {
+  type TimestampsState,
+  removeTimestampDraft,
+  updateTimestampDraft
+} from '@/building/store/slices/timestampsSlice'
 import type { Length } from '@/shared/geometry'
 
 export interface StoreysState {
@@ -63,7 +67,7 @@ const groundFloor: Storey = {
 }
 
 export const createStoreysSlice: StateCreator<
-  StoreysSlice & { actions: StoreysActions & TimestampsActions },
+  StoreysSlice & TimestampsState,
   [['zustand/immer', never]],
   [],
   StoreysSlice
@@ -105,7 +109,7 @@ export const createStoreysSlice: StateCreator<
           floorAssemblyId: floorAssemblyId ?? DEFAULT_FLOOR_ASSEMBLY_ID
         }
         state.storeys[storey.id] = storey
-        state.actions.updateTimestamp(storey.id)
+        updateTimestampDraft(state, storey.id)
       })
 
       if (!storey) {
@@ -142,7 +146,7 @@ export const createStoreysSlice: StateCreator<
             }
           }
 
-          state.actions.removeTimestamp(storeyId)
+          removeTimestampDraft(state, storeyId)
         }
       })
     },
@@ -155,13 +159,13 @@ export const createStoreysSlice: StateCreator<
           if (storeyId in state.storeys) {
             state.storeys[storeyId].name = name.trim()
             state.storeys[storeyId].useDefaultName = false
-            state.actions.updateTimestamp(storeyId)
+            updateTimestampDraft(state, storeyId)
           }
         } else {
           if (storeyId in state.storeys) {
             state.storeys[storeyId].name = 'default'
             state.storeys[storeyId].useDefaultName = true
-            state.actions.updateTimestamp(storeyId)
+            updateTimestampDraft(state, storeyId)
           }
         }
       })
@@ -172,7 +176,7 @@ export const createStoreysSlice: StateCreator<
         validateStoreyFloorHeight(floorHeight)
         if (storeyId in state.storeys) {
           state.storeys[storeyId].floorHeight = floorHeight
-          state.actions.updateTimestamp(storeyId)
+          updateTimestampDraft(state, storeyId)
         }
       })
     },
@@ -181,7 +185,7 @@ export const createStoreysSlice: StateCreator<
       set(state => {
         if (storeyId in state.storeys) {
           state.storeys[storeyId].floorAssemblyId = floorAssemblyId
-          state.actions.updateTimestamp(storeyId)
+          updateTimestampDraft(state, storeyId)
         }
       })
     },
@@ -194,7 +198,7 @@ export const createStoreysSlice: StateCreator<
           const storey2 = state.storeys[storeyId2]
 
           ;[storey1.level, storey2.level] = [storey2.level, storey1.level]
-          state.actions.updateTimestamp(storeyId1, storeyId2)
+          updateTimestampDraft(state, storeyId1, storeyId2)
         }
       })
     },
@@ -213,7 +217,7 @@ export const createStoreysSlice: StateCreator<
           throw new Error('Adjustment would remove floor 0, which is not allowed')
         }
 
-        state.actions.updateTimestamp(...(Object.keys(state.storeys) as StoreyId[]))
+        updateTimestampDraft(state, ...(Object.keys(state.storeys) as StoreyId[]))
       })
     },
 

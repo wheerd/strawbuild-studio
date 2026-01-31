@@ -1,7 +1,6 @@
-import { type Mock, beforeEach, describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import type { StoreyId } from '@/building/model/ids'
-import type { TimestampsActions } from '@/building/store/slices/timestampsSlice'
 
 import { type StoreysSlice, createStoreysSlice } from './storeysSlice'
 
@@ -12,28 +11,20 @@ describe('StoreysSlice', () => {
   let store: StoreysSlice
   let mockSet: any
   let mockGet: any
-  let mockUpdateTimestamp: Mock<TimestampsActions['updateTimestamp']>
-  let mockRemoveTimestamp: Mock<TimestampsActions['removeTimestamp']>
 
   beforeEach(() => {
     mockSet = vi.fn()
     mockGet = vi.fn()
-    mockUpdateTimestamp = vi.fn()
-    mockRemoveTimestamp = vi.fn()
     const mockStore = {} as any
 
     store = createStoreysSlice(mockSet, mockGet, mockStore)
-    ;(store as any).actions.updateTimestamp = mockUpdateTimestamp
-    ;(store as any).actions.removeTimestamp = mockRemoveTimestamp
+    store = { ...store, timestamps: {} } as any
 
     mockGet.mockImplementation(() => store)
 
     mockSet.mockImplementation((updater: any) => {
       if (typeof updater === 'function') {
-        const newState = updater(store)
-        if (newState !== store) {
-          store = { ...store, ...newState }
-        }
+        updater(store)
       } else {
         store = { ...store, ...updater }
       }

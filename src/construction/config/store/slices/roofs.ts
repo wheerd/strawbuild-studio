@@ -9,7 +9,11 @@ import {
   sumLayerThickness,
   updateLayerAt
 } from '@/construction/config/store/layerUtils'
-import type { TimestampsActions } from '@/construction/config/store/slices/timestampsSlice'
+import {
+  type TimestampsState,
+  removeTimestampDraft,
+  updateTimestampDraft
+} from '@/construction/config/store/slices/timestampsSlice'
 import type { RoofAssemblyConfig } from '@/construction/config/types'
 import type { LayerConfig } from '@/construction/layers/types'
 import { type RoofConfig, validateRoofConfig } from '@/construction/roofs/types'
@@ -79,7 +83,7 @@ const validateRoofAssemblyName = (name: string): void => {
 }
 
 export const createRoofAssembliesSlice: StateCreator<
-  RoofAssembliesSlice & { actions: RoofAssembliesActions & TimestampsActions },
+  RoofAssembliesSlice & TimestampsState,
   [['zustand/immer', never]],
   [],
   RoofAssembliesSlice
@@ -105,7 +109,7 @@ export const createRoofAssembliesSlice: StateCreator<
 
         set(state => {
           state.roofAssemblyConfigs[assembly.id] = assembly
-          state.actions.updateTimestamp(assembly.id)
+          updateTimestampDraft(state, assembly.id)
         })
 
         return assembly
@@ -121,7 +125,7 @@ export const createRoofAssembliesSlice: StateCreator<
           }
 
           const { [id]: _removed, ...remainingConfigs } = roofAssemblyConfigs
-          state.actions.removeTimestamp(id)
+          removeTimestampDraft(state, id)
 
           // If removing the default, set first remaining config as default
           let newDefaultId = state.defaultRoofAssemblyId
@@ -146,7 +150,7 @@ export const createRoofAssembliesSlice: StateCreator<
 
           assembly.name = name.trim()
           assembly.nameKey = undefined
-          state.actions.updateTimestamp(id)
+          updateTimestampDraft(state, id)
         })
       },
 
@@ -157,7 +161,7 @@ export const createRoofAssembliesSlice: StateCreator<
 
           Object.assign(config, updates, { id })
           validateRoofConfig(config)
-          state.actions.updateTimestamp(id)
+          updateTimestampDraft(state, id)
         })
       },
 
@@ -175,7 +179,7 @@ export const createRoofAssembliesSlice: StateCreator<
 
         set(state => {
           state.roofAssemblyConfigs[newId] = duplicated
-          state.actions.updateTimestamp(newId)
+          updateTimestampDraft(state, newId)
         })
 
         return duplicated
@@ -217,7 +221,7 @@ export const createRoofAssembliesSlice: StateCreator<
           const insideThickness = sumLayerThickness(insideLayers)
           config.layers = { ...config.layers, insideLayers, insideThickness }
           validateRoofConfig(config)
-          state.actions.updateTimestamp(id)
+          updateTimestampDraft(state, id)
         })
       },
 
@@ -230,7 +234,7 @@ export const createRoofAssembliesSlice: StateCreator<
           const insideThickness = sumLayerThickness(insideLayers)
           config.layers = { ...config.layers, insideLayers, insideThickness }
           validateRoofConfig(config)
-          state.actions.updateTimestamp(id)
+          updateTimestampDraft(state, id)
         })
       },
 
@@ -247,7 +251,7 @@ export const createRoofAssembliesSlice: StateCreator<
           const insideThickness = sumLayerThickness(insideLayers)
           config.layers = { ...config.layers, insideLayers, insideThickness }
           validateRoofConfig(config)
-          state.actions.updateTimestamp(id)
+          updateTimestampDraft(state, id)
         })
       },
 
@@ -260,7 +264,7 @@ export const createRoofAssembliesSlice: StateCreator<
           const insideThickness = sumLayerThickness(insideLayers)
           config.layers = { ...config.layers, insideLayers, insideThickness }
           validateRoofConfig(config)
-          state.actions.updateTimestamp(id)
+          updateTimestampDraft(state, id)
         })
       },
 
@@ -273,7 +277,7 @@ export const createRoofAssembliesSlice: StateCreator<
           const insideThickness = sumLayerThickness(insideLayers)
           config.layers = { ...config.layers, insideLayers, insideThickness }
           validateRoofConfig(config)
-          state.actions.updateTimestamp(id)
+          updateTimestampDraft(state, id)
         })
       },
 
@@ -287,7 +291,7 @@ export const createRoofAssembliesSlice: StateCreator<
           const topThickness = sumLayerThickness(topLayers)
           config.layers = { ...config.layers, topLayers, topThickness }
           validateRoofConfig(config)
-          state.actions.updateTimestamp(id)
+          updateTimestampDraft(state, id)
         })
       },
 
@@ -300,7 +304,7 @@ export const createRoofAssembliesSlice: StateCreator<
           const topThickness = sumLayerThickness(topLayers)
           config.layers = { ...config.layers, topLayers, topThickness }
           validateRoofConfig(config)
-          state.actions.updateTimestamp(id)
+          updateTimestampDraft(state, id)
         })
       },
 
@@ -313,7 +317,7 @@ export const createRoofAssembliesSlice: StateCreator<
           const topThickness = sumLayerThickness(topLayers)
           config.layers = { ...config.layers, topLayers, topThickness }
           validateRoofConfig(config)
-          state.actions.updateTimestamp(id)
+          updateTimestampDraft(state, id)
         })
       },
 
@@ -326,7 +330,7 @@ export const createRoofAssembliesSlice: StateCreator<
           const topThickness = sumLayerThickness(topLayers)
           config.layers = { ...config.layers, topLayers, topThickness }
           validateRoofConfig(config)
-          state.actions.updateTimestamp(id)
+          updateTimestampDraft(state, id)
         })
       },
 
@@ -339,7 +343,7 @@ export const createRoofAssembliesSlice: StateCreator<
           const topThickness = sumLayerThickness(topLayers)
           config.layers = { ...config.layers, topLayers, topThickness }
           validateRoofConfig(config)
-          state.actions.updateTimestamp(id)
+          updateTimestampDraft(state, id)
         })
       },
 
@@ -353,7 +357,7 @@ export const createRoofAssembliesSlice: StateCreator<
           const overhangThickness = sumLayerThickness(overhangLayers)
           config.layers = { ...config.layers, overhangLayers, overhangThickness }
           validateRoofConfig(config)
-          state.actions.updateTimestamp(id)
+          updateTimestampDraft(state, id)
         })
       },
 
@@ -366,7 +370,7 @@ export const createRoofAssembliesSlice: StateCreator<
           const overhangThickness = sumLayerThickness(overhangLayers)
           config.layers = { ...config.layers, overhangLayers, overhangThickness }
           validateRoofConfig(config)
-          state.actions.updateTimestamp(id)
+          updateTimestampDraft(state, id)
         })
       },
 
@@ -383,7 +387,7 @@ export const createRoofAssembliesSlice: StateCreator<
           const overhangThickness = sumLayerThickness(overhangLayers)
           config.layers = { ...config.layers, overhangLayers, overhangThickness }
           validateRoofConfig(config)
-          state.actions.updateTimestamp(id)
+          updateTimestampDraft(state, id)
         })
       },
 
@@ -396,7 +400,7 @@ export const createRoofAssembliesSlice: StateCreator<
           const overhangThickness = sumLayerThickness(overhangLayers)
           config.layers = { ...config.layers, overhangLayers, overhangThickness }
           validateRoofConfig(config)
-          state.actions.updateTimestamp(id)
+          updateTimestampDraft(state, id)
         })
       },
 
@@ -409,7 +413,7 @@ export const createRoofAssembliesSlice: StateCreator<
           const overhangThickness = sumLayerThickness(overhangLayers)
           config.layers = { ...config.layers, overhangLayers, overhangThickness }
           validateRoofConfig(config)
-          state.actions.updateTimestamp(id)
+          updateTimestampDraft(state, id)
         })
       },
 
@@ -433,13 +437,13 @@ export const createRoofAssembliesSlice: StateCreator<
               continue
             }
             if (defaultIds.includes(id) && !(id in customAssemblies)) {
-              state.actions.removeTimestamp(id)
+              removeTimestampDraft(state, id)
             }
           }
 
           for (const assembly of DEFAULT_ROOF_ASSEMBLIES) {
             if (!currentIds.includes(assembly.id)) {
-              state.actions.updateTimestamp(assembly.id)
+              updateTimestampDraft(state, assembly.id)
             }
           }
 

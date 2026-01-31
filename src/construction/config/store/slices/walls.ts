@@ -9,7 +9,11 @@ import {
   sumLayerThickness,
   updateLayerAt
 } from '@/construction/config/store/layerUtils'
-import type { TimestampsActions } from '@/construction/config/store/slices/timestampsSlice'
+import {
+  type TimestampsState,
+  removeTimestampDraft,
+  updateTimestampDraft
+} from '@/construction/config/store/slices/timestampsSlice'
 import type { WallAssemblyConfig } from '@/construction/config/types'
 import type { LayerConfig } from '@/construction/layers/types'
 import { type WallConfig, validateWallConfig } from '@/construction/walls/types'
@@ -69,7 +73,7 @@ const validateWallAssemblyName = (name: string): void => {
 }
 
 export const createWallAssembliesSlice: StateCreator<
-  WallAssembliesSlice & { actions: WallAssembliesActions & TimestampsActions },
+  WallAssembliesSlice & TimestampsState,
   [['zustand/immer', never]],
   [],
   WallAssembliesSlice
@@ -93,7 +97,7 @@ export const createWallAssembliesSlice: StateCreator<
 
         set(state => {
           state.wallAssemblyConfigs[id] = assembly
-          state.actions.updateTimestamp(id)
+          updateTimestampDraft(state, id)
         })
 
         return assembly
@@ -118,7 +122,7 @@ export const createWallAssembliesSlice: StateCreator<
 
         set(state => {
           state.wallAssemblyConfigs[newId] = duplicated
-          state.actions.updateTimestamp(newId)
+          updateTimestampDraft(state, newId)
         })
 
         return duplicated
@@ -132,7 +136,7 @@ export const createWallAssembliesSlice: StateCreator<
 
           const { [id]: _removed, ...remainingAssemblies } = state.wallAssemblyConfigs
           state.wallAssemblyConfigs = remainingAssemblies
-          state.actions.removeTimestamp(id)
+          removeTimestampDraft(state, id)
         })
       },
 
@@ -145,7 +149,7 @@ export const createWallAssembliesSlice: StateCreator<
 
           assembly.name = name.trim()
           assembly.nameKey = undefined
-          state.actions.updateTimestamp(id)
+          updateTimestampDraft(state, id)
         })
       },
 
@@ -157,7 +161,7 @@ export const createWallAssembliesSlice: StateCreator<
           Object.assign(assembly, config, { id })
           const { id: _id, name: _name, ...wallConfig } = assembly
           validateWallConfig(wallConfig as WallConfig)
-          state.actions.updateTimestamp(id)
+          updateTimestampDraft(state, id)
         })
       },
 
@@ -195,7 +199,7 @@ export const createWallAssembliesSlice: StateCreator<
 
           const { id: _id, name: _name, ...wallConfig } = assembly
           validateWallConfig(wallConfig as WallConfig)
-          state.actions.updateTimestamp(id)
+          updateTimestampDraft(state, id)
         })
       },
 
@@ -210,7 +214,7 @@ export const createWallAssembliesSlice: StateCreator<
 
           const { id: _id, name: _name, ...wallConfig } = assembly
           validateWallConfig(wallConfig as WallConfig)
-          state.actions.updateTimestamp(id)
+          updateTimestampDraft(state, id)
         })
       },
 
@@ -229,7 +233,7 @@ export const createWallAssembliesSlice: StateCreator<
 
           const { id: _id, name: _name, ...wallConfig } = assembly
           validateWallConfig(wallConfig as WallConfig)
-          state.actions.updateTimestamp(id)
+          updateTimestampDraft(state, id)
         })
       },
 
@@ -244,7 +248,7 @@ export const createWallAssembliesSlice: StateCreator<
 
           const { id: _id, name: _name, ...wallConfig } = assembly
           validateWallConfig(wallConfig as WallConfig)
-          state.actions.updateTimestamp(id)
+          updateTimestampDraft(state, id)
         })
       },
 
@@ -259,7 +263,7 @@ export const createWallAssembliesSlice: StateCreator<
 
           const { id: _id, name: _name, ...wallConfig } = assembly
           validateWallConfig(wallConfig as WallConfig)
-          state.actions.updateTimestamp(id)
+          updateTimestampDraft(state, id)
         })
       },
 
@@ -274,7 +278,7 @@ export const createWallAssembliesSlice: StateCreator<
 
           const { id: _id, name: _name, ...wallConfig } = assembly
           validateWallConfig(wallConfig as WallConfig)
-          state.actions.updateTimestamp(id)
+          updateTimestampDraft(state, id)
         })
       },
 
@@ -289,7 +293,7 @@ export const createWallAssembliesSlice: StateCreator<
 
           const { id: _id, name: _name, ...wallConfig } = assembly
           validateWallConfig(wallConfig as WallConfig)
-          state.actions.updateTimestamp(id)
+          updateTimestampDraft(state, id)
         })
       },
 
@@ -308,7 +312,7 @@ export const createWallAssembliesSlice: StateCreator<
 
           const { id: _id, name: _name, ...wallConfig } = assembly
           validateWallConfig(wallConfig as WallConfig)
-          state.actions.updateTimestamp(id)
+          updateTimestampDraft(state, id)
         })
       },
 
@@ -323,7 +327,7 @@ export const createWallAssembliesSlice: StateCreator<
 
           const { id: _id, name: _name, ...wallConfig } = assembly
           validateWallConfig(wallConfig as WallConfig)
-          state.actions.updateTimestamp(id)
+          updateTimestampDraft(state, id)
         })
       },
 
@@ -338,7 +342,7 @@ export const createWallAssembliesSlice: StateCreator<
 
           const { id: _id, name: _name, ...wallConfig } = assembly
           validateWallConfig(wallConfig as WallConfig)
-          state.actions.updateTimestamp(id)
+          updateTimestampDraft(state, id)
         })
       },
 
@@ -362,13 +366,13 @@ export const createWallAssembliesSlice: StateCreator<
               continue
             }
             if (defaultIds.includes(id) && !(id in customAssemblies)) {
-              state.actions.removeTimestamp(id)
+              removeTimestampDraft(state, id)
             }
           }
 
           for (const assembly of DEFAULT_WALL_ASSEMBLIES) {
             if (!currentIds.includes(assembly.id)) {
-              state.actions.updateTimestamp(assembly.id)
+              updateTimestampDraft(state, assembly.id)
             }
           }
 

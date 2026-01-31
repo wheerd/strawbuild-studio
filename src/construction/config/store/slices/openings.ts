@@ -6,7 +6,11 @@ import {
   DEFAULT_OPENING_ASSEMBLIES,
   DEFAULT_OPENING_ASSEMBLY_ID
 } from '@/construction/config/store/slices/opening.defaults'
-import type { TimestampsActions } from '@/construction/config/store/slices/timestampsSlice'
+import {
+  type TimestampsState,
+  removeTimestampDraft,
+  updateTimestampDraft
+} from '@/construction/config/store/slices/timestampsSlice'
 import type { OpeningAssemblyConfig } from '@/construction/config/types'
 import type { OpeningConfig } from '@/construction/openings/types'
 import { validateOpeningConfig } from '@/construction/openings/types'
@@ -44,7 +48,7 @@ const validateOpeningAssemblyName = (name: string): void => {
 }
 
 export const createOpeningAssembliesSlice: StateCreator<
-  OpeningAssembliesSlice & { actions: OpeningAssembliesActions & TimestampsActions },
+  OpeningAssembliesSlice & TimestampsState,
   [['zustand/immer', never]],
   [],
   OpeningAssembliesSlice
@@ -68,7 +72,7 @@ export const createOpeningAssembliesSlice: StateCreator<
 
         set(state => {
           state.openingAssemblyConfigs[id] = assembly
-          state.actions.updateTimestamp(id)
+          updateTimestampDraft(state, id)
         })
 
         return assembly
@@ -93,7 +97,7 @@ export const createOpeningAssembliesSlice: StateCreator<
 
         set(state => {
           state.openingAssemblyConfigs[newId] = duplicated
-          state.actions.updateTimestamp(newId)
+          updateTimestampDraft(state, newId)
         })
 
         return duplicated
@@ -107,7 +111,7 @@ export const createOpeningAssembliesSlice: StateCreator<
 
           const { [id]: _removed, ...remainingAssemblies } = state.openingAssemblyConfigs
           state.openingAssemblyConfigs = remainingAssemblies
-          state.actions.removeTimestamp(id)
+          removeTimestampDraft(state, id)
         })
       },
 
@@ -120,7 +124,7 @@ export const createOpeningAssembliesSlice: StateCreator<
 
           assembly.name = name.trim()
           assembly.nameKey = undefined
-          state.actions.updateTimestamp(id)
+          updateTimestampDraft(state, id)
         })
       },
 
@@ -132,7 +136,7 @@ export const createOpeningAssembliesSlice: StateCreator<
           Object.assign(assembly, config, { id: assembly.id })
           const { id: _id, name: _name, ...openingConfig } = assembly
           validateOpeningConfig(openingConfig as OpeningConfig)
-          state.actions.updateTimestamp(id)
+          updateTimestampDraft(state, id)
         })
       },
 
@@ -181,13 +185,13 @@ export const createOpeningAssembliesSlice: StateCreator<
               continue
             }
             if (defaultIds.includes(id) && !(id in customAssemblies)) {
-              state.actions.removeTimestamp(id)
+              removeTimestampDraft(state, id)
             }
           }
 
           for (const assembly of DEFAULT_OPENING_ASSEMBLIES) {
             if (!currentIds.includes(assembly.id)) {
-              state.actions.updateTimestamp(assembly.id)
+              updateTimestampDraft(state, assembly.id)
             }
           }
 

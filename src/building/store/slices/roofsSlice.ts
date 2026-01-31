@@ -3,7 +3,11 @@ import type { StateCreator } from 'zustand'
 import type { Roof, RoofOverhang, RoofType } from '@/building/model'
 import type { PerimeterId, RoofAssemblyId, RoofId, RoofOverhangId, StoreyId } from '@/building/model/ids'
 import { createRoofId, createRoofOverhangId } from '@/building/model/ids'
-import type { TimestampsActions } from '@/building/store/slices/timestampsSlice'
+import {
+  type TimestampsState,
+  removeTimestampDraft,
+  updateTimestampDraft
+} from '@/building/store/slices/timestampsSlice'
 import { getConfigActions } from '@/construction/config/store'
 import { polygonEdges } from '@/construction/helpers'
 import {
@@ -232,13 +236,14 @@ export const computeRoofDerivedProperties = (roof: Roof): void => {
 }
 
 export const createRoofsSlice: StateCreator<
-  RoofsSlice & { actions: RoofsActions & TimestampsActions },
+  RoofsSlice & TimestampsState,
   [['zustand/immer', never]],
   [],
   RoofsSlice
 > = (set, get) => ({
   roofs: {},
   roofOverhangs: {},
+  timestamps: {},
 
   actions: {
     addRoof: (
@@ -330,7 +335,7 @@ export const createRoofsSlice: StateCreator<
         })
 
         // Update timestamps for roof and all overhangs
-        state.actions.updateTimestamp(roofId, ...overhangIds)
+        updateTimestampDraft(state, roofId, ...overhangIds)
       })
 
       return newRoof
@@ -346,7 +351,7 @@ export const createRoofsSlice: StateCreator<
           })
 
           // Remove timestamps for roof and all overhangs
-          state.actions.removeTimestamp(roofId, ...roof.overhangIds)
+          removeTimestampDraft(state, roofId, ...roof.overhangIds)
         }
 
         // Remove roof
@@ -380,7 +385,7 @@ export const createRoofsSlice: StateCreator<
         })
 
         // Update timestamps for the overhang and the roof
-        state.actions.updateTimestamp(overhangId, overhang.roofId)
+        updateTimestampDraft(state, overhangId, overhang.roofId)
         success = true
       })
       return success
@@ -412,7 +417,7 @@ export const createRoofsSlice: StateCreator<
         })
 
         // Update timestamps for all overhangs and the roof
-        state.actions.updateTimestamp(roofId, ...roof.overhangIds)
+        updateTimestampDraft(state, roofId, ...roof.overhangIds)
         success = true
       })
       return success
@@ -473,7 +478,7 @@ export const createRoofsSlice: StateCreator<
         }
 
         // Update timestamp for the roof
-        state.actions.updateTimestamp(roofId)
+        updateTimestampDraft(state, roofId)
         success = true
       })
 
@@ -520,7 +525,7 @@ export const createRoofsSlice: StateCreator<
         computeRoofDerivedProperties(roof)
 
         // Update timestamp for the roof
-        state.actions.updateTimestamp(roofId)
+        updateTimestampDraft(state, roofId)
         success = true
       })
 
