@@ -46,6 +46,10 @@ vi.mock('@/construction/storeys/context', () => ({
   }))
 }))
 
+vi.mock('@/construction/derived/perimeterContextCache', () => ({
+  getPerimeterContextCached: vi.fn()
+}))
+
 describe('constructWall', () => {
   const perimeterId = createPerimeterId()
   const storeyId = createStoreyId()

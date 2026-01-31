@@ -2,6 +2,7 @@ import type { PerimeterWall, PerimeterWithGeometry } from '@/building/model'
 import { type RingBeamAssemblyId, isOpeningId } from '@/building/model/ids'
 import { getModelActions } from '@/building/store'
 import { getConfigActions } from '@/construction/config'
+import { getPerimeterContextCached } from '@/construction/derived/perimeterContextCache'
 import { polygonEdges } from '@/construction/helpers'
 import type { RawMeasurement } from '@/construction/measurements'
 import { type ConstructionModel, mergeModels, transformModel } from '@/construction/model'
@@ -44,12 +45,7 @@ import {
 } from '@/shared/geometry'
 import { assertUnreachable } from '@/shared/utils'
 
-import {
-  type PerimeterConstructionContext,
-  applyWallFaceOffsets,
-  computePerimeterConstructionContext,
-  createWallFaceOffsets
-} from './context'
+import { type PerimeterConstructionContext, applyWallFaceOffsets, createWallFaceOffsets } from './context'
 
 export function constructPerimeter(
   perimeter: PerimeterWithGeometry,
@@ -65,7 +61,7 @@ export function constructPerimeter(
 
   const { getRingBeamAssemblyById, getWallAssemblyById } = getConfigActions()
 
-  const perimeterContext = computePerimeterConstructionContext(perimeter, getFloorOpeningsByStorey(storey.id))
+  const perimeterContext = getPerimeterContextCached(perimeter.id)
   const storeyContext = createWallStoreyContext(perimeter.storeyId, [perimeterContext])
 
   const allModels: ConstructionModel[] = []

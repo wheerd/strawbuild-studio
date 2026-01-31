@@ -27,6 +27,7 @@ import type {
   WallAssemblyConfig
 } from '@/construction/config/types'
 import type { MaterialId } from '@/construction/materials/material'
+import { subscribeRecords } from '@/shared/utils/subscription'
 
 import { CURRENT_VERSION, applyMigrations } from './migrations'
 
@@ -227,6 +228,10 @@ export const setConfigState = (data: {
     timestamps: data.timestamps ?? {}
   })
 }
+
+// Subscription helpers for derived state invalidation
+export const subscribeToWallAssemblies = (cb: (current?: WallAssemblyConfig, previous?: WallAssemblyConfig) => void) =>
+  subscribeRecords(useConfigStore, s => s.wallAssemblyConfigs, cb)
 
 // Only for the tests
 export const _clearAllAssemblies = () =>

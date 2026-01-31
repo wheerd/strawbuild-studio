@@ -1,11 +1,11 @@
 import { getStoreyName } from '@/building/hooks/useStoreyName'
 import type { StoreyId } from '@/building/model'
 import { getModelActions } from '@/building/store'
+import { getPerimeterContextCached } from '@/construction/derived/perimeterContextCache'
 import { type ConstructionModel, mergeModels, transformModel } from '@/construction/model'
 import {
   type PerimeterConstructionContext,
   applyWallFaceOffsets,
-  computePerimeterConstructionContext,
   createWallFaceOffsets
 } from '@/construction/perimeters/context'
 import { constructPerimeter } from '@/construction/perimeters/perimeter'
@@ -70,11 +70,10 @@ function constructStoreyFloor(
 }
 
 export function constructStorey(storeyId: StoreyId): ConstructionModel | null {
-  const { getPerimetersByStorey, getRoofsByStorey, getFloorOpeningsByStorey } = getModelActions()
+  const { getPerimetersByStorey, getRoofsByStorey } = getModelActions()
   const perimeters = getPerimetersByStorey(storeyId)
 
-  const flooOpenings = getFloorOpeningsByStorey(storeyId)
-  const perimeterContexts = perimeters.map(p => computePerimeterConstructionContext(p, flooOpenings))
+  const perimeterContexts = perimeters.map(p => getPerimeterContextCached(p.id))
   const storeyContext = createWallStoreyContext(storeyId, perimeterContexts)
 
   const perimeterModels = perimeters.map(p => constructPerimeter(p, false, false))

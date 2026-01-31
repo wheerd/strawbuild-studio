@@ -72,6 +72,10 @@ vi.mock('@/construction/walls/corners/corners', () => ({
   calculateWallCornerInfo: () => cornerInfo
 }))
 
+vi.mock('@/construction/derived/perimeterContextCache', () => ({
+  getPerimeterContextCached: vi.fn()
+}))
+
 const createWall = (overrides: Partial<PerimeterWallWithGeometry> = {}) =>
   partial<PerimeterWallWithGeometry>({
     id: createPerimeterWallId(),
