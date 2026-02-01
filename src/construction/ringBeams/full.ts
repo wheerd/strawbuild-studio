@@ -56,9 +56,7 @@ export class FullRingBeamAssembly extends BaseRingBeamAssembly<FullRingBeamConfi
       const { heightLine, boundingRect } = this.getHeightLineForBeamPolygon(
         polygon,
         part.wall.direction,
-        segment.perimeter.storeyId,
-        -ceilingOffset,
-        storeyContext.perimeterContexts
+        segment.perimeter.storeyId
       )
 
       const subSegments = this.splitPolygonByHeightLine(boundingRect, heightLine)

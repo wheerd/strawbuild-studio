@@ -74,8 +74,10 @@ vi.mock('@/construction/materials/posts', () => ({
   constructWallPost: vi.fn()
 }))
 
-vi.mock('@/construction/derived/perimeterContextCache', () => ({
-  getPerimeterContextCached: vi.fn()
+vi.mock('@/construction/derived', () => ({
+  getPerimeterContextCached: vi.fn(),
+  subscribeToPerimeterContextInvalidations: vi.fn(() => vi.fn()),
+  getRoofHeightLineCached: vi.fn(() => [])
 }))
 
 const mockResolveOpeningAssembly = vi.mocked(resolveOpeningAssembly)

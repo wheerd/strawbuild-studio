@@ -3,12 +3,21 @@ import { getModelActions, subscribeToFloorOpenings, subscribeToPerimeters, subsc
 import { computePerimeterConstructionContext } from '@/construction/perimeters/context'
 import type { PerimeterConstructionContext } from '@/construction/perimeters/context'
 
+type InvalidationCallback = (perimeterId: PerimeterId) => void
+
 export class PerimeterContextCacheService {
   private readonly entries: Map<PerimeterId, PerimeterConstructionContext>
+  private readonly invalidationCallbacks: Set<InvalidationCallback>
 
   constructor() {
     this.entries = new Map()
+    this.invalidationCallbacks = new Set()
     this.setupSubscriptions()
+  }
+
+  onInvalidation(callback: InvalidationCallback): () => void {
+    this.invalidationCallbacks.add(callback)
+    return () => this.invalidationCallbacks.delete(callback)
   }
 
   getContext(perimeterId: PerimeterId): PerimeterConstructionContext {
@@ -29,21 +38,27 @@ export class PerimeterContextCacheService {
     return computePerimeterConstructionContext(perimeter, floorOpenings)
   }
 
+  private invalidate(perimeterId: PerimeterId): void {
+    this.entries.delete(perimeterId)
+    for (const callback of this.invalidationCallbacks) {
+      callback(perimeterId)
+    }
+  }
+
   private setupSubscriptions(): void {
-    const { getPerimeterWallById, getPerimetersByStorey } = getModelActions()
+    const { getPerimetersByStorey } = getModelActions()
 
     subscribeToPerimeters((current, previous) => {
       const perimeterId = current?.id ?? previous?.id
       if (perimeterId) {
-        this.entries.delete(perimeterId)
+        this.invalidate(perimeterId)
       }
     })
 
     subscribeToWalls((current, previous) => {
-      const wallId = current?.id ?? previous?.id
-      if (wallId) {
-        const wall = getPerimeterWallById(wallId)
-        this.entries.delete(wall.perimeterId)
+      const perimeterId = current?.perimeterId ?? previous?.perimeterId
+      if (perimeterId) {
+        this.invalidate(perimeterId)
       }
     })
 
@@ -52,7 +67,7 @@ export class PerimeterContextCacheService {
       if (storeyId) {
         const perimeters = getPerimetersByStorey(storeyId)
         perimeters.forEach(p => {
-          this.entries.delete(p.id)
+          this.invalidate(p.id)
         })
       }
     })
@@ -63,4 +78,8 @@ const serviceInstance = new PerimeterContextCacheService()
 
 export function getPerimeterContextCached(perimeterId: PerimeterId): PerimeterConstructionContext {
   return serviceInstance.getContext(perimeterId)
+}
+
+export function subscribeToPerimeterContextInvalidations(callback: InvalidationCallback): () => void {
+  return serviceInstance.onInvalidation(callback)
 }

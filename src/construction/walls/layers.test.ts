@@ -73,7 +73,12 @@ vi.mock('@/construction/walls/corners/corners', () => ({
 }))
 
 vi.mock('@/construction/derived/perimeterContextCache', () => ({
-  getPerimeterContextCached: vi.fn()
+  getPerimeterContextCached: vi.fn(),
+  subscribeToPerimeterContextInvalidations: vi.fn(() => vi.fn())
+}))
+
+vi.mock('@/construction/derived/roofHeightLineCache', () => ({
+  getRoofHeightLineCached: vi.fn(() => [])
 }))
 
 const createWall = (overrides: Partial<PerimeterWallWithGeometry> = {}) =>
@@ -279,8 +284,8 @@ describe('constructWallLayers', () => {
     expect(insidePolygon.polygon.outer.points).toEqual([
       newVec2(-30, -30),
       newVec2(3030, -30),
-      newVec2(3030, 2950),
-      newVec2(-30, 2950)
+      newVec2(3030, 2850),
+      newVec2(-30, 2850)
     ])
 
     expect(outsidePolygon.polygon.outer.points).toHaveLength(4)

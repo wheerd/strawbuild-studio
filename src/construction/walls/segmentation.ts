@@ -8,6 +8,7 @@ import {
 } from '@/building/model/ids'
 import { getModelActions } from '@/building/store'
 import { getConfigActions } from '@/construction/config'
+import { getRoofHeightLineCached } from '@/construction/derived'
 import { WallConstructionArea } from '@/construction/geometry'
 import { constructWallPost } from '@/construction/materials/posts'
 import { resolveOpeningAssembly, resolveOpeningConfig } from '@/construction/openings/resolver'
@@ -27,7 +28,6 @@ import type { SegmentInfillMethod, WallLayersConfig } from '@/construction/walls
 import {
   type WallTopOffsets,
   convertHeightLineToWallOffsets,
-  getRoofHeightLineForLines,
   splitAtHeightJumps
 } from '@/construction/walls/roofIntegration'
 import { type Length, ZERO_VEC2, fromTrans, newVec2, newVec3 } from '@/shared/geometry'
@@ -58,7 +58,7 @@ export function* segmentedWallConstruction(
   const standAtWallEnd = wallContext.endCorner.exteriorAngle !== 180 || cornerInfo.endCorner.constructedByThisWall
 
   // Calculate roof offsets
-  const roofOffsets = calculateRoofOffsets(cornerInfo, dimensions.ceilingOffset, storeyContext)
+  const roofOffsets = calculateRoofOffsets(cornerInfo, storeyContext)
 
   // Create overall wall construction area with roof offsets
   const overallWallArea = new WallConstructionArea(
@@ -213,17 +213,11 @@ function calculateWallDimensions(
 /**
  * Calculate roof offsets for wall construction
  */
-function calculateRoofOffsets(
-  cornerInfo: WallCornerInfo,
-  ceilingOffset: Length,
-  storeyContext: StoreyContext
-): WallTopOffsets {
-  const roofHeightLine = getRoofHeightLineForLines(
-    storeyContext.storeyId,
-    [cornerInfo.constructionInsideLine, cornerInfo.constructionOutsideLine],
-    -ceilingOffset,
-    storeyContext.perimeterContexts
-  )
+function calculateRoofOffsets(cornerInfo: WallCornerInfo, storeyContext: StoreyContext): WallTopOffsets {
+  const roofHeightLine = getRoofHeightLineCached(storeyContext.storeyId, [
+    cornerInfo.constructionInsideLine,
+    cornerInfo.constructionOutsideLine
+  ])
 
   return convertHeightLineToWallOffsets(roofHeightLine, cornerInfo.constructionLength)
 }

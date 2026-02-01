@@ -5,10 +5,12 @@ import { useTheme } from 'next-themes'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
+import { useActiveStoreyId } from '@/building/store'
 import { AlertDialog } from '@/components/ui/alert-dialog'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Code } from '@/components/ui/code'
+import { getRoofOffsetMapsDebug } from '@/construction/derived'
 import type { ConstructionModel } from '@/construction/model'
 import { matAppToThree, toThreeTransform } from '@/construction/viewer3d/utils/geometry'
 import { type SketchUpErrorCode, SketchUpExportError } from '@/exporters/sketchup'
@@ -17,6 +19,7 @@ import ConstructionElement3D from './components/ConstructionElement3D'
 import ConstructionGroup3D from './components/ConstructionGroup3D'
 import ExportButton, { type ExportFormat } from './components/ExportButton'
 import { GridToggleButton } from './components/GridToggleButton'
+import { OffsetMapDebug3D } from './components/OffsetMapDebug3D'
 import SceneExporter from './components/SceneExporter'
 import { TagOpacityMenu } from './components/TagOpacityMenu'
 import { useCustomTransparentSorting } from './hooks/useCustomSorting'
@@ -38,8 +41,16 @@ function ConstructionViewer3D({ model, containerSize }: ConstructionViewer3DProp
   const { resolvedTheme } = useTheme()
   const isDarkTheme = resolvedTheme === 'dark'
   const showGrid = useShowGrid3D()
+  const activeStoreyId = useActiveStoreyId()
   const exportFnRef = useRef<((format: ExportFormat) => void) | null>(null)
   const [exportError, setExportError] = useState<ExportError | null>(null)
+
+  const canDebug = process.env.NODE_ENV !== 'production'
+  const params = new URLSearchParams(window.location.search)
+  const debug = canDebug && params.has('debug')
+  const offsetMap = useMemo(() => {
+    return getRoofOffsetMapsDebug().get(activeStoreyId)?.map
+  }, [activeStoreyId])
 
   const [centerX, centerY, centerZ] = model.bounds.center
   const maxSize = Math.max(...model.bounds.size)
@@ -134,6 +145,8 @@ function ConstructionViewer3D({ model, containerSize }: ConstructionViewer3DProp
               <ConstructionElement3D key={element.id} element={element} />
             )
           )}
+
+          {debug && offsetMap && <OffsetMapDebug3D storeyId={activeStoreyId} map={offsetMap} />}
         </group>
 
         <OrbitControls target={[centerX, centerZ, -centerY]} makeDefault />
