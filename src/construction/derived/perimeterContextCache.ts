@@ -1,4 +1,4 @@
-import type { PerimeterId } from '@/building/model/ids'
+import type { PerimeterId, StoreyId } from '@/building/model/ids'
 import { getModelActions, subscribeToFloorOpenings, subscribeToPerimeters, subscribeToWalls } from '@/building/store'
 import { computePerimeterConstructionContext } from '@/construction/perimeters/context'
 import type { PerimeterConstructionContext } from '@/construction/perimeters/context'
@@ -82,4 +82,10 @@ export function getPerimeterContextCached(perimeterId: PerimeterId): PerimeterCo
 
 export function subscribeToPerimeterContextInvalidations(callback: InvalidationCallback): () => void {
   return serviceInstance.onInvalidation(callback)
+}
+
+export function getPerimeterContextsByStorey(storeyId: StoreyId): PerimeterConstructionContext[] {
+  const { getPerimetersByStorey } = getModelActions()
+  const perimeters = getPerimetersByStorey(storeyId)
+  return perimeters.map(p => getPerimeterContextCached(p.id))
 }

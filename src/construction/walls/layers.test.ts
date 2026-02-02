@@ -125,8 +125,7 @@ const storeyContext: StoreyContext = {
   floorConstructionTop: 20,
   wallBottom: 50,
   floorBottom: -200,
-  floorAssembly: {} as FloorAssembly,
-  perimeterContexts: []
+  floorAssembly: {} as FloorAssembly
 }
 
 const baseLayers: WallLayersConfig = {

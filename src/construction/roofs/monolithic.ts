@@ -89,7 +89,7 @@ export class MonolithicRoofAssembly extends BaseRoofAssembly<MonolithicRoofConfi
     return this.config.layers.topThickness
   }
 
-  getBottomOffsets = (roof: Roof, map: VerticalOffsetMap): void => {
+  getBottomOffsets = (roof: Roof, map: VerticalOffsetMap, _contexts: PerimeterConstructionContext[]): void => {
     const ridgeHeight = this.calculateRidgeHeight(roof)
     const roofSides = this.splitRoofPolygon(roof, ridgeHeight)
 

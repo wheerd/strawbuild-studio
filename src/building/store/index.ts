@@ -406,6 +406,9 @@ export const subscribeToWalls = (cb: (current?: PerimeterWall, previous?: Perime
 export const subscribeToFloorOpenings = (cb: (current?: FloorOpening, previous?: FloorOpening) => void) =>
   subscribeRecords(useModelStore, s => s.floorOpenings, cb)
 
+export const subscribeToStoreys = (cb: (current?: Storey, previous?: Storey) => void) =>
+  subscribeRecords(useModelStore, s => s.storeys, cb)
+
 export const subscribeToModelChanges = useModelStore.subscribe
 
 // Export types

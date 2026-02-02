@@ -221,8 +221,7 @@ function createMockStoreyContext(storeyHeight: Length = 2500, wallHeight: Length
     floorConstructionTop: 110,
     wallBottom: 100,
     floorBottom: 0,
-    floorAssembly: {} as FloorAssembly,
-    perimeterContexts: []
+    floorAssembly: {} as FloorAssembly
   }
 }
 

@@ -15,6 +15,7 @@
       "pnpm test *": "allow",
       "pnpm lint": "allow",
       "pnpm lint:format": "allow",
+      "pnpm format:check": "allow",
       "pnpm dev": "allow",
       "pnpm build": "allow",
       "pnpm typecheck": "allow",

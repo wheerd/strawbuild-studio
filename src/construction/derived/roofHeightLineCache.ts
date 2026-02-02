@@ -2,12 +2,12 @@ import type { StoreyId } from '@/building/model/ids'
 import { getModelActions, subscribeToRoofs } from '@/building/store'
 import { getConfigActions } from '@/construction/config'
 import {
-  getPerimeterContextCached,
+  getPerimeterContextsByStorey,
   subscribeToPerimeterContextInvalidations
 } from '@/construction/derived/perimeterContextCache'
 import { resolveRoofAssembly } from '@/construction/roofs'
 import type { HeightItem, HeightJumpItem, HeightLine } from '@/construction/roofs/types'
-import { createWallStoreyContext } from '@/construction/storeys/context'
+import { getWallStoreyContextCached, subscribeToWallStoreyContextInvalidations } from '@/construction/storeys/context'
 import { VerticalOffsetMap } from '@/construction/storeys/offsets'
 import { type Length, type LineSegment2D, subtractPolygons } from '@/shared/geometry'
 
@@ -36,14 +36,13 @@ export class RoofHeightLineCacheService {
   }
 
   private buildMap(storeyId: StoreyId): VerticalOffsetMap {
-    const { getRoofsByStorey, getPerimetersByStorey } = getModelActions()
+    const { getRoofsByStorey } = getModelActions()
     const { getRoofAssemblyById } = getConfigActions()
 
     const map = new VerticalOffsetMap(0, true)
     const roofs = getRoofsByStorey(storeyId)
-    const perimeters = getPerimetersByStorey(storeyId)
-    const perimeterContexts = perimeters.map(p => getPerimeterContextCached(p.id))
-    const storeyContext = createWallStoreyContext(storeyId, perimeterContexts)
+    const perimeterContexts = getPerimeterContextsByStorey(storeyId)
+    const storeyContext = getWallStoreyContextCached(storeyId)
 
     const roofPolygons = roofs.map(r => r.overhangPolygon)
     const innerFloorPolygons = subtractPolygons(
@@ -83,6 +82,10 @@ export class RoofHeightLineCacheService {
     subscribeToRoofs((current, previous) => {
       const storeyId = current?.storeyId ?? previous?.storeyId
       if (storeyId) this.invalidateStorey(storeyId)
+    })
+
+    subscribeToWallStoreyContextInvalidations(storeyId => {
+      this.invalidateStorey(storeyId)
     })
 
     subscribeToPerimeterContextInvalidations(perimeterId => {

@@ -1,25 +1,21 @@
 import { getStoreyName } from '@/building/hooks/useStoreyName'
 import type { StoreyId } from '@/building/model'
 import { getModelActions } from '@/building/store'
-import { getPerimeterContextCached } from '@/construction/derived/perimeterContextCache'
+import { getPerimeterContextsByStorey } from '@/construction/derived/perimeterContextCache'
 import { type ConstructionModel, mergeModels, transformModel } from '@/construction/model'
-import {
-  type PerimeterConstructionContext,
-  applyWallFaceOffsets,
-  createWallFaceOffsets
-} from '@/construction/perimeters/context'
+import { applyWallFaceOffsets, createWallFaceOffsets } from '@/construction/perimeters/context'
 import { constructPerimeter } from '@/construction/perimeters/perimeter'
 import { resultsToModel } from '@/construction/results'
 import { constructRoof } from '@/construction/roofs'
-import { type StoreyContext, createWallStoreyContext } from '@/construction/storeys/context'
+import { getWallStoreyContextCached } from '@/construction/storeys/context'
 import { TAG_FLOOR, TAG_STOREY, createTag } from '@/construction/tags'
 import { type Polygon2D, fromTrans, newVec3, subtractPolygons, unionPolygons } from '@/shared/geometry'
 
-function constructStoreyFloor(
-  storeyContext: StoreyContext,
-  perimeterContexts: PerimeterConstructionContext[]
-): ConstructionModel[] {
+function constructStoreyFloor(storeyId: StoreyId): ConstructionModel[] {
   const { getPerimetersByStorey, getFloorOpeningsByStorey } = getModelActions()
+
+  const storeyContext = getWallStoreyContextCached(storeyId)
+  const perimeterContexts = getPerimeterContextsByStorey(storeyId)
 
   const floorModels = perimeterContexts
     .map(c => storeyContext.floorAssembly.construct(c))
@@ -73,8 +69,8 @@ export function constructStorey(storeyId: StoreyId): ConstructionModel | null {
   const { getPerimetersByStorey, getRoofsByStorey } = getModelActions()
   const perimeters = getPerimetersByStorey(storeyId)
 
-  const perimeterContexts = perimeters.map(p => getPerimeterContextCached(p.id))
-  const storeyContext = createWallStoreyContext(storeyId, perimeterContexts)
+  const storeyContext = getWallStoreyContextCached(storeyId)
+  const perimeterContexts = getPerimeterContextsByStorey(storeyId)
 
   const perimeterModels = perimeters.map(p => constructPerimeter(p, false, false))
 
@@ -82,7 +78,7 @@ export function constructStorey(storeyId: StoreyId): ConstructionModel | null {
   const roofModels = roofs.map(r =>
     transformModel(constructRoof(r, perimeterContexts), fromTrans(newVec3(0, 0, storeyContext.roofBottom)))
   )
-  const floorModels = constructStoreyFloor(storeyContext, perimeterContexts)
+  const floorModels = constructStoreyFloor(storeyId)
 
   return mergeModels(...perimeterModels, ...floorModels, ...roofModels)
 }

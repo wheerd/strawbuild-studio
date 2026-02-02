@@ -9,7 +9,7 @@ import { type ConstructionModel, mergeModels, transformModel } from '@/construct
 import { resultsToModel } from '@/construction/results'
 import { resolveRingBeamAssembly } from '@/construction/ringBeams'
 import { constructRoof } from '@/construction/roofs'
-import { type StoreyContext, createWallStoreyContext } from '@/construction/storeys/context'
+import { type StoreyContext, getWallStoreyContextCached } from '@/construction/storeys/context'
 import {
   TAG_BASE_PLATE,
   TAG_FLOOR,
@@ -62,7 +62,7 @@ export function constructPerimeter(
   const { getRingBeamAssemblyById, getWallAssemblyById } = getConfigActions()
 
   const perimeterContext = getPerimeterContextCached(perimeter.id)
-  const storeyContext = createWallStoreyContext(perimeter.storeyId, [perimeterContext])
+  const storeyContext = getWallStoreyContextCached(perimeter.storeyId)
 
   const allModels: ConstructionModel[] = []
 
@@ -279,7 +279,7 @@ export interface PerimeterStats {
 export function getPerimeterStats(perimeter: PerimeterWithGeometry): PerimeterStats {
   const { getFloorOpeningsByStorey, getPerimeterWallById, getWallOpeningById } = getModelActions()
 
-  const storeyContext = createWallStoreyContext(perimeter.storeyId, [])
+  const storeyContext = getWallStoreyContextCached(perimeter.storeyId)
   const storeyConstructionHeight = storeyContext.wallTop - storeyContext.floorBottom
   const constructionHeight = storeyContext.ceilingConstructionBottom - storeyContext.floorConstructionTop
   const finishedHeight = storeyContext.finishedCeilingBottom - storeyContext.finishedFloorTop

@@ -233,6 +233,10 @@ export const setConfigState = (data: {
 export const subscribeToWallAssemblies = (cb: (current?: WallAssemblyConfig, previous?: WallAssemblyConfig) => void) =>
   subscribeRecords(useConfigStore, s => s.wallAssemblyConfigs, cb)
 
+export const subscribeToFloorAssemblies = (
+  cb: (current?: FloorAssemblyConfig, previous?: FloorAssemblyConfig) => void
+) => subscribeRecords(useConfigStore, s => s.floorAssemblyConfigs, cb)
+
 // Only for the tests
 export const _clearAllAssemblies = () =>
   useConfigStore.setState({
