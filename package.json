@@ -65,7 +65,7 @@
     "web-ifc": "^0.0.74",
     "workbox-window": "^7.4.0",
     "zundo": "^2.3.0",
-    "zustand": "^5.0.9"
+    "zustand": "^5.0.11"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.2",
