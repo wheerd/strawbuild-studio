@@ -276,6 +276,9 @@ export const migrateToVersion12: Migration = state => {
       state.wallPosts = {}
       state._wallPostGeometry = {}
       state._perimeterGeometry = {}
+      if (!('timestamps' in state)) {
+        ;(state as unknown as { timestamps: object }).timestamps = {}
+      }
     }
   }
 

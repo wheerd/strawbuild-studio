@@ -1,26 +1,15 @@
-/**
- * Perimeter geometry calculation utilities
- *
- * This module contains all the geometry calculation functions for perimeters,
- * walls, corners, and wall entities (openings/posts). These functions are used
- * both by the perimeter slice and by migrations to ensure consistent geometry.
- */
+import isDeepEqual from 'fast-deep-equal'
+
 import type {
-  Opening,
-  OpeningGeometry,
-  Perimeter,
-  PerimeterCorner,
   PerimeterCornerGeometry,
-  PerimeterGeometry,
   PerimeterReferenceSide,
-  PerimeterWall,
   PerimeterWallGeometry,
   WallEntity,
-  WallEntityGeometry,
-  WallPost,
-  WallPostGeometry
+  WallEntityGeometry
 } from '@/building/model'
 import { type PerimeterId, isOpeningId } from '@/building/model/ids'
+import type { PerimetersState } from '@/building/store/slices/perimeterSlice'
+import type { TimestampsState } from '@/building/store/slices/timestampsSlice'
 import {
   type Length,
   type Line2D,
@@ -45,20 +34,6 @@ import {
   scaleVec2
 } from '@/shared/geometry'
 import { ensurePolygonIsClockwise } from '@/shared/geometry/polygon'
-
-// State interface for perimeter geometry calculations
-export interface PerimetersState {
-  perimeters: Record<PerimeterId, Perimeter>
-  _perimeterGeometry: Record<PerimeterId, PerimeterGeometry>
-  perimeterWalls: Record<string, PerimeterWall>
-  _perimeterWallGeometry: Record<string, PerimeterWallGeometry>
-  perimeterCorners: Record<string, PerimeterCorner>
-  _perimeterCornerGeometry: Record<string, PerimeterCornerGeometry>
-  openings: Record<string, Opening>
-  _openingGeometry: Record<string, OpeningGeometry>
-  wallPosts: Record<string, WallPost>
-  _wallPostGeometry: Record<string, WallPostGeometry>
-}
 
 // Step 1: Create infinite inside and outside lines for each wall
 const createInfiniteLines = (
@@ -313,14 +288,7 @@ export function updateEntityGeometry(wall: PerimeterWallGeometry, entity: WallEn
   }
 }
 
-/**
- * High-level function to recalculate all perimeter geometry in place.
- * This updates the geometry for the perimeter, all its walls, corners, and wall entities.
- *
- * @param state - The perimeters state containing all normalized data
- * @param perimeterId - The ID of the perimeter to update
- */
-export function updatePerimeterGeometry(state: PerimetersState, perimeterId: PerimeterId): void {
+export function updatePerimeterGeometry(state: PerimetersState & TimestampsState, perimeterId: PerimeterId): void {
   const perimeter = state.perimeters[perimeterId]
 
   if (perimeter.wallIds.length !== perimeter.cornerIds.length) {
@@ -356,6 +324,7 @@ export function updatePerimeterGeometry(state: PerimetersState, perimeterId: Per
   updateAllCornerAngles(corners)
 
   // Store corner geometry
+  const cornerGeometriesOld = perimeter.cornerIds.map(id => state._perimeterCornerGeometry[id])
   perimeter.cornerIds.forEach((cornerId, i) => {
     state._perimeterCornerGeometry[cornerId] = corners[i]
   })
@@ -366,18 +335,28 @@ export function updatePerimeterGeometry(state: PerimetersState, perimeterId: Per
     const startCorner = state._perimeterCornerGeometry[wall.startCornerId]
     const endCorner = state._perimeterCornerGeometry[wall.endCornerId]
     const wallGeometry = updateWallGeometry(wall.thickness, startCorner, endCorner)
+    const changed = !isDeepEqual(state._perimeterWallGeometry[wallId], wallGeometry)
     state._perimeterWallGeometry[wallId] = wallGeometry
+    if (changed) {
+      state.timestamps[wallId] = Date.now()
+    }
 
     // Update entity geometry for all openings and posts
     for (const entityId of wall.entityIds) {
+      let entityChanged = false
       if (isOpeningId(entityId)) {
         const opening = state.openings[entityId]
         const openingGeometry = updateEntityGeometry(wallGeometry, opening)
+        entityChanged = !isDeepEqual(state._openingGeometry[entityId], openingGeometry)
         state._openingGeometry[entityId] = openingGeometry
       } else {
         const post = state.wallPosts[entityId]
         const postGeometry = updateEntityGeometry(wallGeometry, post)
+        entityChanged = !isDeepEqual(state._wallPostGeometry[entityId], postGeometry)
         state._wallPostGeometry[entityId] = postGeometry
+      }
+      if (entityChanged) {
+        state.timestamps[entityId] = Date.now()
       }
     }
   }
@@ -401,11 +380,19 @@ export function updatePerimeterGeometry(state: PerimetersState, perimeterId: Per
     }
 
     state._perimeterCornerGeometry[perimeter.cornerIds[i]] = cornerGeometry
+
+    if (!isDeepEqual(cornerGeometriesOld[i], cornerGeometry)) {
+      state.timestamps[perimeter.cornerIds[i]] = Date.now()
+    }
   }
 
   // Update perimeter-level geometry
-  state._perimeterGeometry[perimeterId] = {
+  const perimeterGeometry = {
     innerPolygon: { points: corners.map(c => c.insidePoint) },
     outerPolygon: { points: corners.map(c => c.outsidePoint) }
   }
+  if (!isDeepEqual(state._perimeterGeometry[perimeterId], perimeterGeometry)) {
+    state.timestamps[perimeterId] = Date.now()
+  }
+  state._perimeterGeometry[perimeterId] = perimeterGeometry
 }
