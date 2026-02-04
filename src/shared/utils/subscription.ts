@@ -27,6 +27,7 @@ export function subscribeRecords<TState, TKey extends string, TRecord>(
 
     for (const id of previous) {
       if (!current.includes(id)) {
+        // Delay removing the subscription so that entryChange still gets called for the removed entry
         setTimeout(() => {
           subscriptions[id]?.()
         }, 0)
