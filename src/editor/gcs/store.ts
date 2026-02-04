@@ -1,12 +1,16 @@
 import {
   Algorithm,
+  type Constraint,
   type GcsWrapper,
   type SketchLine,
   type SketchPoint,
-  make_gcs_wrapper as makeGcsWrapper
+  SolveStatus
 } from '@salusoft89/planegcs'
-import wasmUrl from '@salusoft89/planegcs/dist/planegcs_dist/planegcs.wasm?url'
 import { create } from 'zustand'
+
+import { createPerimeterWallId } from '@/building/model'
+import { createGcs } from '@/editor/gcs/gcsInstance'
+import type { Length } from '@/shared/geometry'
 
 interface DragState {
   pointId: string
@@ -17,26 +21,28 @@ interface DragState {
 }
 
 interface GcsStoreState {
-  points: Record<string, { x: number; y: number; fixed: boolean }>
-  lines: { id: string; p1Id: string; p2Id: string }[]
-  constraints: Record<string, unknown>[]
+  points: Record<string, SketchPoint>
+  lines: SketchLine[]
+  visualLines: { id: string; p1Id: string; p2Id: string }[]
+  constraints: Record<string, Constraint>
   gcs: GcsWrapper | null
-  gcsReady: boolean
   drag: DragState | null
 }
 
 interface GcsStoreActions {
-  initGCS: () => Promise<void>
+  initGCS: () => void
+  populateInitialState: () => void
 
   addPoint: (id: string, x: number, y: number, fixed?: boolean) => void
   addLine: (id: string, p1Id: string, p2Id: string) => void
-  addConstraint: (constraint: Record<string, unknown>) => void
+  addVisualLine: (id: string, p1Id: string, p2Id: string) => void
+  addConstraint: (constraint: Constraint) => void
 
   startDrag: (pointId: string, mouseX: number, mouseY: number) => void
   updateDrag: (mouseX: number, mouseY: number) => void
   endDrag: () => void
 
-  solve: () => number
+  solve: () => SolveStatus
   applySolution: () => void
 
   reset: () => void
@@ -46,60 +52,67 @@ type GcsStore = GcsStoreState & { actions: GcsStoreActions }
 
 const useGcsStore = create<GcsStore>()((set, get) => ({
   points: {},
-  lines: [] as { id: string; p1Id: string; p2Id: string }[],
-  constraints: [] as Record<string, unknown>[],
+  lines: [],
+  visualLines: [],
+  constraints: {},
   gcs: null,
-  gcsReady: false,
   drag: null,
 
   actions: {
-    initGCS: async () => {
-      const gcs = await makeGcsWrapper(wasmUrl)
-      const { actions } = get()
+    initGCS: () => {
+      const state = get()
+      if (!state.gcs) {
+        set({ gcs: createGcs() })
+      }
 
-      set({ gcs, gcsReady: true })
+      state.actions.populateInitialState()
+      state.actions.reset()
+      state.actions.applySolution()
+    },
 
-      actions.reset()
+    reset: () => {
+      const state = get()
+      if (!state.gcs) {
+        return
+      }
+
+      const gcs = state.gcs
+      gcs.clear_data()
+
+      for (const point of Object.values(state.points)) {
+        gcs.push_primitive(point)
+      }
+
+      for (const line of state.lines) {
+        gcs.push_primitive(line)
+      }
+
+      for (const constraint of Object.values(state.constraints)) {
+        gcs.push_primitive(constraint)
+      }
     },
 
     addPoint: (id, x, y, fixed = false) => {
-      const state = get()
-      const gcs = state.gcs
-      if (!gcs) return
-
-      const point: SketchPoint = { id, type: 'point', x, y, fixed }
-      gcs.push_primitive(point)
-
       set(state => ({
-        points: {
-          ...state.points,
-          [id]: { x, y, fixed }
-        }
+        points: { ...state.points, [id]: { id, type: 'point', x, y, fixed } }
       }))
     },
 
     addLine: (id, p1Id, p2Id) => {
-      const state = get()
-      const gcs = state.gcs
-      if (!gcs) return
-
-      const line: SketchLine = { id, type: 'line', p1_id: p1Id, p2_id: p2Id }
-      gcs.push_primitive(line)
-
       set(state => ({
-        lines: [...state.lines, { id, p1Id, p2Id }]
+        lines: [...state.lines, { id, type: 'line', p1_id: p1Id, p2_id: p2Id }]
+      }))
+    },
+
+    addVisualLine: (id, p1Id, p2Id) => {
+      set(state => ({
+        visualLines: [...state.visualLines, { id, p1Id, p2Id }]
       }))
     },
 
     addConstraint: constraint => {
-      const state = get()
-      const gcs = state.gcs
-      if (!gcs) return
-
-      gcs.push_primitive(constraint as never)
-
       set(state => ({
-        constraints: [...state.constraints, constraint]
+        constraints: { ...state.constraints, [constraint.id]: { ...constraint } }
       }))
     },
 
@@ -109,6 +122,7 @@ const useGcsStore = create<GcsStore>()((set, get) => ({
       // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       if (point?.fixed || !state.gcs) return
 
+      state.actions.reset()
       const gcs = state.gcs
       const constraintXId = `drag_${pointId}_x_${Date.now()}`
       const constraintYId = `drag_${pointId}_y_${Date.now()}`
@@ -120,7 +134,7 @@ const useGcsStore = create<GcsStore>()((set, get) => ({
         param2: mouseX,
         temporary: true,
         driving: true
-      } as never)
+      })
 
       gcs.push_primitive({
         type: 'equal',
@@ -129,7 +143,7 @@ const useGcsStore = create<GcsStore>()((set, get) => ({
         param2: mouseY,
         temporary: true,
         driving: true
-      } as never)
+      })
 
       const paramXPos = gcs.p_param_index.get(constraintXId) ?? -1
       const paramYPos = gcs.p_param_index.get(constraintYId) ?? -1
@@ -157,49 +171,19 @@ const useGcsStore = create<GcsStore>()((set, get) => ({
       gcs.gcs.set_p_param(paramXPos, mouseX, true)
       gcs.gcs.set_p_param(paramYPos, mouseY, true)
 
-      gcs.solve(Algorithm.DogLeg)
-      gcs.apply_solution()
-      state.actions.applySolution()
+      if (gcs.solve(Algorithm.DogLeg) === SolveStatus.Success) {
+        state.actions.applySolution()
+      }
     },
 
     endDrag: () => {
-      const state = get()
-      if (!state.drag || !state.gcs) return
-
-      const gcs = state.gcs
-      const { points, lines, constraints } = state
-
-      gcs.clear_data()
-      set({
-        points: {},
-        lines: [] as { id: string; p1Id: string; p2Id: string }[],
-        constraints: [] as Record<string, unknown>[],
-        drag: null
-      })
-
-      const gcsActions = get().actions
-
-      Object.entries(points).forEach(([id, point]) => {
-        gcsActions.addPoint(id, point.x, point.y, point.fixed)
-      })
-
-      for (const line of lines) {
-        gcsActions.addLine(line.id, line.p1Id, line.p2Id)
-      }
-
-      for (const constraint of constraints) {
-        gcsActions.addConstraint(constraint)
-      }
-
-      gcs.solve(Algorithm.DogLeg)
-      gcs.apply_solution()
-      gcsActions.applySolution()
+      set({ drag: null })
     },
 
     solve: () => {
       const state = get()
       const gcs = state.gcs
-      if (!gcs) return -1
+      if (!gcs) throw new Error('No GCS')
 
       const result = gcs.solve(Algorithm.DogLeg)
       return result
@@ -213,11 +197,12 @@ const useGcsStore = create<GcsStore>()((set, get) => ({
       gcs.apply_solution()
 
       const primitives = gcs.sketch_index.get_primitives()
-      const newPoints: Record<string, { x: number; y: number; fixed: boolean }> = {}
+      const newPoints: Record<string, SketchPoint> = {}
 
       for (const primitive of primitives) {
         if (primitive.type === 'point') {
           newPoints[primitive.id] = {
+            ...state.points[primitive.id],
             x: primitive.x,
             y: primitive.y,
             fixed: primitive.fixed
@@ -230,67 +215,92 @@ const useGcsStore = create<GcsStore>()((set, get) => ({
       })
     },
 
-    reset: () => {
-      const gcs = get().gcs
-      if (!gcs) return
-
-      gcs.clear_data()
+    populateInitialState: () => {
       set({
         points: {},
-        lines: [] as { id: string; p1Id: string; p2Id: string }[],
-        constraints: [] as Record<string, unknown>[],
+        lines: [],
+        visualLines: [],
+        constraints: {},
         drag: null
       })
 
       const { actions } = get()
 
-      actions.addPoint('A', 0, 0, true)
-      actions.addPoint('B', 2000, 0, false)
-      actions.addPoint('C', 2000, 2000, false)
-      actions.addPoint('D', 0, 2000, false)
+      actions.addPoint('A_in', 0, 0, false)
+      actions.addPoint('B_in', 2000, 0, false)
+      actions.addPoint('C_in', 2000, 2000, false)
+      actions.addPoint('D_in', 0, 2000, false)
 
-      actions.addLine('AB', 'A', 'B')
-      actions.addLine('BC', 'B', 'C')
-      actions.addLine('CD', 'C', 'D')
-      actions.addLine('DA', 'D', 'A')
+      actions.addPoint('A_out', -150, -150, false)
+      actions.addPoint('B_out', 2200, -150, false)
+      actions.addPoint('C_out', 2200, 2200, false)
+      actions.addPoint('D_out', -150, 2200, false)
+
+      const wallAB = addWall(actions, 'A', 'B', 200)
+      addWall(actions, 'B', 'C', 150)
+      addWall(actions, 'C', 'D', 200)
+      const wallDA = addWall(actions, 'D', 'A', 150)
 
       actions.addConstraint({
-        id: 'dist_ab',
+        id: `length_AB`,
         type: 'p2p_distance',
-        p1_id: 'A',
-        p2_id: 'B',
+        p1_id: 'A_in',
+        p2_id: 'B_in',
+        distance: 3000
+      })
+
+      actions.addConstraint({
+        id: `length_BC`,
+        type: 'p2p_distance',
+        p1_id: 'B_out',
+        p2_id: 'C_out',
         distance: 2000
       })
 
       actions.addConstraint({
-        id: 'parallel_ab_cd',
-        type: 'parallel',
-        l1_id: 'AB',
-        l2_id: 'CD'
-      })
-
-      actions.addConstraint({
-        id: 'parallel_bc_da',
-        type: 'parallel',
-        l1_id: 'BC',
-        l2_id: 'DA'
-      })
-
-      actions.addConstraint({
-        id: 'perp_ab_bc',
+        id: `perp_A`,
         type: 'perpendicular_ll',
-        l1_id: 'AB',
-        l2_id: 'BC'
+        l1_id: `wall_${wallAB}_out`,
+        l2_id: `wall_${wallDA}_out`
       })
 
-      void actions.solve()
-      actions.applySolution()
+      actions.addVisualLine('corner_A_line', 'A_in', 'A_out')
+      actions.addVisualLine('corner_B_line', 'B_in', 'B_out')
+      actions.addVisualLine('corner_C_line', 'C_in', 'C_out')
+      actions.addVisualLine('corner_D_line', 'D_in', 'D_out')
     }
   }
 }))
 
+function addWall(actions: GcsStoreActions, start: string, end: string, thickness: Length) {
+  const wallId = createPerimeterWallId()
+  const startIn = `${start}_in`
+  const startOut = `${start}_out`
+  const endIn = `${end}_in`
+  const endOut = `${end}_out`
+
+  actions.addLine(`wall_${wallId}_in`, startIn, endIn)
+  actions.addLine(`wall_${wallId}_out`, startOut, endOut)
+
+  actions.addConstraint({
+    id: `parallel_${wallId}`,
+    type: 'parallel',
+    l1_id: `wall_${wallId}_in`,
+    l2_id: `wall_${wallId}_out`
+  })
+  actions.addConstraint({
+    id: `thickness_${wallId}`,
+    type: 'p2l_distance',
+    p_id: startOut,
+    l_id: `wall_${wallId}_in`,
+    distance: thickness
+  })
+
+  return wallId
+}
+
 export const useGcsPoints = (): GcsStoreState['points'] => useGcsStore(state => state.points)
 export const useGcsLines = (): GcsStoreState['lines'] => useGcsStore(state => state.lines)
+export const useGcsVisualLines = (): GcsStoreState['visualLines'] => useGcsStore(state => state.visualLines)
 export const useGcsDrag = (): GcsStoreState['drag'] => useGcsStore(state => state.drag)
-export const useGcsReady = (): GcsStoreState['gcsReady'] => useGcsStore(state => state.gcsReady)
 export const useGcsActions = (): GcsStoreActions => useGcsStore(state => state.actions)

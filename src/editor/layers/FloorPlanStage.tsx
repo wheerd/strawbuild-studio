@@ -39,7 +39,7 @@ export function FloorPlanStage({ width, height }: FloorPlanStageProps): React.JS
   const gcsActions = useGcsActions()
 
   useEffect(() => {
-    gcsActions.initGCS().catch(console.error)
+    gcsActions.initGCS()
   }, [gcsActions])
 
   // Local state for panning (non-tool related)
