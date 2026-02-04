@@ -314,36 +314,3 @@ describe('WallConstructionArea.getters', () => {
     expect(area.minHeight).toBe(area.minTopHeight)
   })
 })
-
-describe.skip('WallConstructionArea.getSideProfilePolygon', () => {
-  it.skip('should handle bottom offsets in polygon', () => {
-    const area = new WallConstructionArea(newVec3(0, 0, 0), newVec3(3000, 300, 3000), undefined, [
-      newVec2(0, 200),
-      newVec2(3000, 0)
-    ])
-
-    const polygon = area.getSideProfilePolygon()
-
-    // Should have points along the bottom edge following offsets
-    expect(polygon.points.length).toBeGreaterThan(4)
-
-    // Check bottom-left point is offset up
-    const bottomLeft = polygon.points.find(p => p[0] === 0 && p[1] > 0)
-    expect(bottomLeft).toBeDefined()
-    expect(bottomLeft![1]).toBe(200)
-  })
-
-  it.skip('should handle both top and bottom offsets in polygon', () => {
-    const area = new WallConstructionArea(
-      newVec3(0, 0, 0),
-      newVec3(3000, 300, 3000),
-      [newVec2(0, 0), newVec2(3000, -500)],
-      [newVec2(0, 200), newVec2(3000, 0)]
-    )
-
-    const polygon = area.getSideProfilePolygon()
-
-    // Should have complex polygon with both top and bottom edges following offsets
-    expect(polygon.points.length).toBeGreaterThan(4)
-  })
-})

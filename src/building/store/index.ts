@@ -10,7 +10,9 @@ import type {
   FloorArea,
   FloorOpening,
   OpeningWithGeometry,
+  Perimeter,
   PerimeterCornerWithGeometry,
+  PerimeterWall,
   PerimeterWallWithGeometry,
   PerimeterWithGeometry,
   Roof,
@@ -41,6 +43,7 @@ import {
   isWallPostId
 } from '@/building/model/ids'
 import { assertUnreachable } from '@/shared/utils'
+import { subscribeRecords } from '@/shared/utils/subscription'
 
 import { CURRENT_VERSION, applyMigrations } from './migrations'
 import { getPersistenceActions } from './persistenceStore'
@@ -390,6 +393,21 @@ export const getCanRedo = (): boolean => useModelStore.temporal.getState().futur
 export const clearPersistence = (): void => {
   localStorage.removeItem('strawbaler-model')
 }
+
+export const subscribeToRoofs = (cb: (current?: Roof, previous?: Roof) => void) =>
+  subscribeRecords(useModelStore, s => s.roofs, cb)
+
+export const subscribeToPerimeters = (cb: (current?: Perimeter, previous?: Perimeter) => void) =>
+  subscribeRecords(useModelStore, s => s.perimeters, cb)
+
+export const subscribeToWalls = (cb: (current?: PerimeterWall, previous?: PerimeterWall) => void) =>
+  subscribeRecords(useModelStore, s => s.perimeterWalls, cb)
+
+export const subscribeToFloorOpenings = (cb: (current?: FloorOpening, previous?: FloorOpening) => void) =>
+  subscribeRecords(useModelStore, s => s.floorOpenings, cb)
+
+export const subscribeToStoreys = (cb: (current?: Storey, previous?: Storey) => void) =>
+  subscribeRecords(useModelStore, s => s.storeys, cb)
 
 export const subscribeToModelChanges = useModelStore.subscribe
 

@@ -12,7 +12,7 @@ import {
 } from '@/building/model'
 import { type StoreActions, getModelActions } from '@/building/store'
 import { type ConfigActions, getConfigActions } from '@/construction/config'
-import { type StoreyContext, createWallStoreyContext } from '@/construction/storeys/context'
+import { type StoreyContext, getWallStoreyContextCached } from '@/construction/storeys/context'
 import {
   type Length,
   type Polygon2D,
@@ -347,7 +347,7 @@ class IfcExporter {
     let finishedFloorElevation = 0
 
     for (const storey of storeys) {
-      const context = createWallStoreyContext(storey.id, [])
+      const context = getWallStoreyContextCached(storey.id)
 
       infos.push({
         ...context,

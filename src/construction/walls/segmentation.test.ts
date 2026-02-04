@@ -74,6 +74,12 @@ vi.mock('@/construction/materials/posts', () => ({
   constructWallPost: vi.fn()
 }))
 
+vi.mock('@/construction/derived', () => ({
+  getPerimeterContextCached: vi.fn(),
+  subscribeToPerimeterContextInvalidations: vi.fn(() => vi.fn()),
+  getRoofHeightLineCached: vi.fn(() => [])
+}))
+
 const mockResolveOpeningAssembly = vi.mocked(resolveOpeningAssembly)
 const mockResolveOpeningConfig = vi.mocked(resolveOpeningConfig)
 const mockGetWallContext = vi.mocked(getWallContext)
@@ -215,8 +221,7 @@ function createMockStoreyContext(storeyHeight: Length = 2500, wallHeight: Length
     floorConstructionTop: 110,
     wallBottom: 100,
     floorBottom: 0,
-    floorAssembly: {} as FloorAssembly,
-    perimeterContexts: []
+    floorAssembly: {} as FloorAssembly
   }
 }
 

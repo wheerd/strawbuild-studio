@@ -3,8 +3,7 @@ import type { PerimeterCornerId, PerimeterWallId } from '@/building/model/ids'
 import { getModelActions } from '@/building/store'
 import { getConfigActions } from '@/construction/config'
 import { type ConstructionModel, mergeModels, transformModel } from '@/construction/model'
-import { computePerimeterConstructionContext } from '@/construction/perimeters/context'
-import { createWallStoreyContext } from '@/construction/storeys/context'
+import { getWallStoreyContextCached } from '@/construction/storeys/context'
 import { TAG_WALLS, createTag } from '@/construction/tags'
 import { type Length, type LineSegment2D, fromTrans, newVec3 } from '@/shared/geometry'
 
@@ -66,8 +65,7 @@ export function constructWall(wallId: PerimeterWallId, includeColinear = false):
   const perimeter = getPerimeterById(wall.perimeterId)
   const walls = includeColinear ? findColinearWalls(wall) : [wall]
 
-  const perimeterContext = computePerimeterConstructionContext(perimeter, [])
-  const storeyContext = createWallStoreyContext(perimeter.storeyId, [perimeterContext])
+  const storeyContext = getWallStoreyContextCached(perimeter.storeyId)
 
   const wallModels: ConstructionModel[] = []
   let cumulativeOffset = 0

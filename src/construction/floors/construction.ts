@@ -1,14 +1,11 @@
 import type { PerimeterId } from '@/building/model/ids'
 import { getModelActions } from '@/building/store'
+import { getPerimeterContextCached } from '@/construction/derived/perimeterContextCache'
 import type { ConstructionModel } from '@/construction/model'
 import { mergeModels, transformModel } from '@/construction/model'
-import {
-  applyWallFaceOffsets,
-  computePerimeterConstructionContext,
-  createWallFaceOffsets
-} from '@/construction/perimeters/context'
+import { applyWallFaceOffsets, createWallFaceOffsets } from '@/construction/perimeters/context'
 import { resultsToModel } from '@/construction/results'
-import { createWallStoreyContext } from '@/construction/storeys/context'
+import { getWallStoreyContextCached } from '@/construction/storeys/context'
 import { TAG_FLOOR } from '@/construction/tags'
 import { type Polygon2D, fromTrans, newVec3, subtractPolygons, unionPolygons } from '@/shared/geometry'
 
@@ -16,9 +13,8 @@ export function constructFloor(perimeterId: PerimeterId): ConstructionModel {
   const { getPerimeterById, getFloorOpeningsByStorey, getPerimetersByStorey } = getModelActions()
 
   const perimeter = getPerimeterById(perimeterId)
-  const floorOpenings = getFloorOpeningsByStorey(perimeter.storeyId)
-  const perimeterContext = computePerimeterConstructionContext(perimeter, floorOpenings)
-  const storeyContext = createWallStoreyContext(perimeter.storeyId, [perimeterContext])
+  const perimeterContext = getPerimeterContextCached(perimeter.id)
+  const storeyContext = getWallStoreyContextCached(perimeter.storeyId)
 
   const floorModels = []
 

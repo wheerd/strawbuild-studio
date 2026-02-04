@@ -59,8 +59,8 @@ describe('MonolithicRoofAssembly.getBottomOffsets', () => {
   })
 
   describe('Shed Roof', () => {
-    it('should add sloped area to map for shed roof', () => {
-      const roof = createTestRoof('shed', newVec2(0, 5000), newVec2(10000, 5000), 30, verticalOffset)
+    it('should add one sloped area to map for shed roof', () => {
+      const roof = createTestRoof('shed', newVec2(5000, 5000), newVec2(5000, 0), 30, verticalOffset)
       const config = createTestConfig(0)
       const assembly = new MonolithicRoofAssembly(config)
       mockSplitPolygonByLine.mockReturnValue([{ side: 'right', polygon: roof.overhangPolygon }])
@@ -69,13 +69,13 @@ describe('MonolithicRoofAssembly.getBottomOffsets', () => {
       const mockMap = new VerticalOffsetMap(0, true)
       const addSlopedSpy = vi.spyOn(mockMap, 'addSlopedArea')
 
-      assembly.getBottomOffsets(roof, mockMap)
+      assembly.getBottomOffsets(roof, mockMap, [])
 
       expect(addSlopedSpy).toHaveBeenCalledTimes(1)
       expect(addSlopedSpy).toHaveBeenCalledWith(
         roof.overhangPolygon,
         roof.ridgeLine.start,
-        newVec2(-0, 1),
+        newVec2(1, 0),
         roof.slopeAngleRad,
         ridgeHeight
       )
@@ -98,7 +98,7 @@ describe('MonolithicRoofAssembly.getBottomOffsets', () => {
       const mockMap = new VerticalOffsetMap(0, true)
       const addSlopedSpy = vi.spyOn(mockMap, 'addSlopedArea')
 
-      assembly.getBottomOffsets(roof, mockMap)
+      assembly.getBottomOffsets(roof, mockMap, [])
 
       expect(addSlopedSpy).toHaveBeenCalledTimes(2)
       expect(addSlopedSpy).toHaveBeenCalledWith(

@@ -1,6 +1,7 @@
 import type { PerimeterCornerWithGeometry, PerimeterWallWithGeometry } from '@/building/model'
 import type { StoreyId } from '@/building/model/ids'
 import { getModelActions } from '@/building/store'
+import { getRoofHeightLineCached } from '@/construction/derived'
 import { createConstructionElement } from '@/construction/elements'
 import { PolygonWithBoundingRect, polygonEdges } from '@/construction/helpers'
 import type { MaterialId } from '@/construction/materials/material'
@@ -10,7 +11,7 @@ import { type ConstructionResult, yieldAndClip, yieldElement } from '@/construct
 import type { HeightLine } from '@/construction/roofs/types'
 import { createExtrudedPolygon } from '@/construction/shapes'
 import type { Tag } from '@/construction/tags'
-import { type WallTopOffsets, getRoofHeightLineForLines } from '@/construction/walls/roofIntegration'
+import { type WallTopOffsets } from '@/construction/walls/roofIntegration'
 import {
   type Length,
   type Line2D,
@@ -301,39 +302,38 @@ export abstract class BaseRingBeamAssembly<T extends RingBeamConfigBase> impleme
 
   /**
    * Get height line for a ring beam polygon using inner and outer edges
-   * Uses the bounding rect's perpendicular direction to get both lines
+   * Uses a bounding rect's perpendicular direction to get both lines
    */
   protected getHeightLineForBeamPolygon(
     polygon: Polygon2D,
     pathDirection: Vec2,
-    storeyId: StoreyId,
-    ceilingBottomOffset: Length,
-    perimeterContexts: PerimeterConstructionContext[]
+    storeyId: StoreyId
   ): {
     heightLine: HeightLine
     boundingRect: PolygonWithBoundingRect
   } {
     const boundingRect = PolygonWithBoundingRect.fromPolygon({ outer: polygon, holes: [] }, pathDirection)
 
-    // First line: along minPoint in the dir direction
+    const epsilon = 1e-2
+
+    // First line: along minPoint in dir direction
     const innerLine: LineSegment2D = {
       start: boundingRect.minPoint,
       end: scaleAddVec2(boundingRect.minPoint, boundingRect.dir, boundingRect.dirExtent)
     }
+    const innerLineWithEps: LineSegment2D = {
+      start: scaleAddVec2(innerLine.start, boundingRect.perpDir, epsilon),
+      end: scaleAddVec2(innerLine.end, boundingRect.perpDir, epsilon)
+    }
 
     // Second line: offset by perpExtent in perpDir direction
-    const outerStart = scaleAddVec2(boundingRect.minPoint, boundingRect.perpDir, boundingRect.perpExtent)
+    const outerStart = scaleAddVec2(boundingRect.minPoint, boundingRect.perpDir, boundingRect.perpExtent - epsilon)
     const outerLine: LineSegment2D = {
       start: outerStart,
       end: scaleAddVec2(outerStart, boundingRect.dir, boundingRect.dirExtent)
     }
 
-    const heightLine = getRoofHeightLineForLines(
-      storeyId,
-      [innerLine, outerLine],
-      ceilingBottomOffset,
-      perimeterContexts
-    )
+    const heightLine = getRoofHeightLineCached(storeyId, [innerLineWithEps, outerLine])
 
     return { heightLine, boundingRect }
   }

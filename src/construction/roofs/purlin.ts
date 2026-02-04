@@ -1,5 +1,6 @@
 import type { Roof } from '@/building/model'
 import type { PurlinRoofAssemblyConfig } from '@/construction/config'
+import { getPerimeterContextsByStorey } from '@/construction/derived/perimeterContextCache'
 import { createConstructionElement } from '@/construction/elements'
 import {
   PolygonWithBoundingRect,
@@ -79,14 +80,16 @@ import type { PurlinRoofConfig } from './types'
 const EPSILON = 1e-5
 
 export class PurlinRoofAssembly extends BaseRoofAssembly<PurlinRoofConfig> {
-  construct = (roof: Roof, contexts: PerimeterConstructionContext[]): ConstructionModel => {
+  construct = (roof: Roof, _contexts: PerimeterConstructionContext[]): ConstructionModel => {
     const ridgeHeight = this.calculateRidgeHeight(roof)
+    const perimeterContexts = getPerimeterContextsByStorey(roof.storeyId)
 
     const roofSides = this.splitRoofPolygon(roof, ridgeHeight)
 
-    const edgeRafterMidpoints = this.getRafterMidpoints(roof, roof.ridgeDirection, contexts)
+    const edgeRafterMidpoints = this.getRafterMidpoints(roof, roof.ridgeDirection, roof.storeyId)
 
-    const purlins = Array.from(this.constructAllPurlins(roof, contexts, ridgeHeight))
+    const purlins = Array.from(this.constructAllPurlins(roof, perimeterContexts, ridgeHeight))
+
     const purlinClippingVolume = purlins
       .filter(p => p.type === 'element')
       .map(p => p.element)
@@ -98,7 +101,7 @@ export class PurlinRoofAssembly extends BaseRoofAssembly<PurlinRoofConfig> {
     const minZ = -2 * (roof.rise + this.config.layers.insideThickness)
     const maxZ = (this.config.thickness + this.config.layers.topThickness) * 2
 
-    const outerConstructionClippingVolume = contexts
+    const outerConstructionClippingVolume = perimeterContexts
       .map(c =>
         this.createExtrudedVolume(
           offsetPolygon(c.outerPolygon, -0.01), // For avoiding clipping artifacts
@@ -108,7 +111,7 @@ export class PurlinRoofAssembly extends BaseRoofAssembly<PurlinRoofConfig> {
         )
       )
       .reduce((a, b) => a.add(b))
-    const innerConstructionClippingVolume = contexts
+    const innerConstructionClippingVolume = perimeterContexts
       .map(c => this.createExtrudedVolume(c.innerPolygon, roof.ridgeLine, minZ, maxZ))
       .reduce((a, b) => a.add(b))
     const ceilingClippingVolume = this.getCeilingPolygons(roof, true)
@@ -139,11 +142,11 @@ export class PurlinRoofAssembly extends BaseRoofAssembly<PurlinRoofConfig> {
       const results = Array.from(
         mergeResults(
           yieldAndClip(this.construcRafters(raftersAndGaps), m => m.intersect(roofSideClip).subtract(purlinClip)),
-          yieldAndClip(this.constructInfill(contexts, roof, roofSide, rafterPolygons), m =>
+          yieldAndClip(this.constructInfill(perimeterContexts, roof, roofSide, rafterPolygons), m =>
             m.intersect(roofSideClip).intersect(infillClip).subtract(purlinClip)
           ),
           yieldAndClip(this.constructDecking(roofSide, roof), m => m.intersect(roofSideClip)),
-          yieldAndClip(this.constructCeilingSheathing(roofSide, roof, contexts), m =>
+          yieldAndClip(this.constructCeilingSheathing(roofSide, roof, perimeterContexts), m =>
             m.intersect(roofSideClip).intersect(sheathingClip).subtract(purlinClip)
           ),
           yieldAndClip(this.constructTopLayers(roof, roofSide), m => m.intersect(roofSideClip)),
@@ -190,15 +193,17 @@ export class PurlinRoofAssembly extends BaseRoofAssembly<PurlinRoofConfig> {
     return this.config.layers.topThickness
   }
 
-  getBottomOffsets = (roof: Roof, map: VerticalOffsetMap, contexts: PerimeterConstructionContext[]): void => {
+  getBottomOffsets = (roof: Roof, map: VerticalOffsetMap, _contexts: PerimeterConstructionContext[]): void => {
     const ridgeHeight = this.calculateRidgeHeight(roof)
+    const perimeterContexts = getPerimeterContextsByStorey(roof.storeyId)
     const roofSides = this.splitRoofPolygon(roof, ridgeHeight)
 
     for (const side of roofSides) {
       map.addSlopedArea(side.polygon, roof.ridgeLine.start, negVec2(side.dirToRidge), roof.slopeAngleRad, ridgeHeight)
     }
 
-    const purlins = Array.from(this.constructAllPurlins(roof, contexts, ridgeHeight))
+    const purlins = Array.from(this.constructAllPurlins(roof, perimeterContexts, ridgeHeight))
+
     purlins
       .filter(p => p.type === 'element')
       .map(p => p.element)
@@ -215,10 +220,10 @@ export class PurlinRoofAssembly extends BaseRoofAssembly<PurlinRoofConfig> {
 
   private *constructAllPurlins(
     roof: Roof,
-    contexts: PerimeterConstructionContext[],
+    _contexts: PerimeterConstructionContext[],
     ridgeHeight: number
   ): Generator<ConstructionResult> {
-    const purlinArea = this.getPurlinArea(roof, contexts)
+    const purlinArea = this.getPurlinArea(roof, _contexts)
     const purlinCheckPoints = this.getPurlinCheckPoints(purlinArea, roof.ridgeDirection)
     const purlinAreaParts =
       roof.type === 'gable'
@@ -240,7 +245,8 @@ export class PurlinRoofAssembly extends BaseRoofAssembly<PurlinRoofConfig> {
     return purlinCheckPoints
   }
 
-  private getRafterMidpoints(roof: Roof, ridgeDirection: Vec2, perimeterContexts: PerimeterConstructionContext[]) {
+  private getRafterMidpoints(roof: Roof, ridgeDirection: Vec2, _storeyId: string) {
+    const perimeterContexts = getPerimeterContextsByStorey(roof.storeyId)
     const halfThickness = this.config.rafterWidth / 2
 
     const rafterEdgePolygon = offsetPolygon(roof.overhangPolygon, -halfThickness)
@@ -267,10 +273,11 @@ export class PurlinRoofAssembly extends BaseRoofAssembly<PurlinRoofConfig> {
       .map(p => subVec2(p, roof.ridgeLine.start))
   }
 
-  private getPurlinArea(roof: Roof, contexts: PerimeterConstructionContext[]): Polygon2D {
+  private getPurlinArea(roof: Roof, _contexts: PerimeterConstructionContext[]): Polygon2D {
+    const perimeterContexts = getPerimeterContextsByStorey(roof.storeyId)
     const adjustedPolygon = applyWallFaceOffsets(
       roof.referencePolygon,
-      contexts.flatMap(c => c.wallFaceOffsets)
+      perimeterContexts.flatMap(c => c.wallFaceOffsets)
     )
 
     const innerLines = [...polygonEdges(adjustedPolygon)].map(lineFromSegment)
@@ -449,8 +456,9 @@ export class PurlinRoofAssembly extends BaseRoofAssembly<PurlinRoofConfig> {
   private *constructCeilingSheathing(
     roofSide: RoofSide,
     roof: Roof,
-    perimeterContexts: PerimeterConstructionContext[]
+    _perimeterContexts: PerimeterConstructionContext[]
   ): Generator<ConstructionResult> {
+    const perimeterContexts = getPerimeterContextsByStorey(roof.storeyId)
     const roofSidePolygon = this.preparePolygonForConstruction(
       roofSide.polygon,
       roof.ridgeLine,
@@ -487,11 +495,12 @@ export class PurlinRoofAssembly extends BaseRoofAssembly<PurlinRoofConfig> {
   }
 
   private *constructInfill(
-    perimeterContexts: PerimeterConstructionContext[],
+    _perimeterContexts: PerimeterConstructionContext[],
     roof: Roof,
     roofSide: RoofSide,
     rafterPolygons: PolygonWithBoundingRect[]
   ): Generator<ConstructionResult> {
+    const perimeterContexts = getPerimeterContextsByStorey(roof.storeyId)
     const preparedRoofSide = this.preparePolygonForConstruction(
       roofSide.polygon,
       roof.ridgeLine,

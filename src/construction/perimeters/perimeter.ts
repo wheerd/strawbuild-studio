@@ -2,13 +2,14 @@ import type { PerimeterWall, PerimeterWithGeometry } from '@/building/model'
 import { type RingBeamAssemblyId, isOpeningId } from '@/building/model/ids'
 import { getModelActions } from '@/building/store'
 import { getConfigActions } from '@/construction/config'
+import { getPerimeterContextCached } from '@/construction/derived/perimeterContextCache'
 import { polygonEdges } from '@/construction/helpers'
 import type { RawMeasurement } from '@/construction/measurements'
 import { type ConstructionModel, mergeModels, transformModel } from '@/construction/model'
 import { resultsToModel } from '@/construction/results'
 import { resolveRingBeamAssembly } from '@/construction/ringBeams'
 import { constructRoof } from '@/construction/roofs'
-import { type StoreyContext, createWallStoreyContext } from '@/construction/storeys/context'
+import { type StoreyContext, getWallStoreyContextCached } from '@/construction/storeys/context'
 import {
   TAG_BASE_PLATE,
   TAG_FLOOR,
@@ -44,12 +45,7 @@ import {
 } from '@/shared/geometry'
 import { assertUnreachable } from '@/shared/utils'
 
-import {
-  type PerimeterConstructionContext,
-  applyWallFaceOffsets,
-  computePerimeterConstructionContext,
-  createWallFaceOffsets
-} from './context'
+import { type PerimeterConstructionContext, applyWallFaceOffsets, createWallFaceOffsets } from './context'
 
 export function constructPerimeter(
   perimeter: PerimeterWithGeometry,
@@ -65,8 +61,8 @@ export function constructPerimeter(
 
   const { getRingBeamAssemblyById, getWallAssemblyById } = getConfigActions()
 
-  const perimeterContext = computePerimeterConstructionContext(perimeter, getFloorOpeningsByStorey(storey.id))
-  const storeyContext = createWallStoreyContext(perimeter.storeyId, [perimeterContext])
+  const perimeterContext = getPerimeterContextCached(perimeter.id)
+  const storeyContext = getWallStoreyContextCached(perimeter.storeyId)
 
   const allModels: ConstructionModel[] = []
 
@@ -283,7 +279,7 @@ export interface PerimeterStats {
 export function getPerimeterStats(perimeter: PerimeterWithGeometry): PerimeterStats {
   const { getFloorOpeningsByStorey, getPerimeterWallById, getWallOpeningById } = getModelActions()
 
-  const storeyContext = createWallStoreyContext(perimeter.storeyId, [])
+  const storeyContext = getWallStoreyContextCached(perimeter.storeyId)
   const storeyConstructionHeight = storeyContext.wallTop - storeyContext.floorBottom
   const constructionHeight = storeyContext.ceilingConstructionBottom - storeyContext.floorConstructionTop
   const finishedHeight = storeyContext.finishedCeilingBottom - storeyContext.finishedFloorTop

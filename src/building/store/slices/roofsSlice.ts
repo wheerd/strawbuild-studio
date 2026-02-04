@@ -80,6 +80,7 @@ export interface RoofsActions {
   getRoofById: (roofId: RoofId) => Roof | null
   getRoofsByStorey: (storeyId: StoreyId) => Roof[]
   getRoofOverhangsByRoof: (roofId: RoofId) => RoofOverhang[]
+  getAllRoofs: () => Roof[]
   getAllRoofOverhangs: () => RoofOverhang[]
 }
 
@@ -575,6 +576,10 @@ export const createRoofsSlice: StateCreator<
 
       const overhangs = state.roofOverhangs
       return roof.overhangIds.filter(id => id in overhangs).map(id => overhangs[id])
+    },
+
+    getAllRoofs: () => {
+      return Object.values(get().roofs)
     },
 
     getAllRoofOverhangs: () => {

@@ -15,7 +15,7 @@ import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 import { Tooltip } from '@/components/ui/tooltip'
 import { OpeningAssemblySelectWithEdit } from '@/construction/config/components/OpeningAssemblySelectWithEdit'
 import { useDefaultOpeningAssemblyId, useOpeningAssemblyById } from '@/construction/config/store'
-import { createWallStoreyContext } from '@/construction/storeys/context'
+import { getWallStoreyContextCached } from '@/construction/storeys/context'
 import { useReactiveTool } from '@/editor/tools/system/hooks/useReactiveTool'
 import type { ToolInspectorProps } from '@/editor/tools/system/types'
 import { LengthField } from '@/shared/components/LengthField'
@@ -126,7 +126,7 @@ function AddOpeningToolInspectorImpl({ tool }: AddOpeningToolInspectorImplProps)
 
   const wallHeight = useMemo(() => {
     if (!activeStorey) return 2500
-    const context = createWallStoreyContext(activeStorey.id, [])
+    const context = getWallStoreyContextCached(activeStorey.id)
     return context.finishedCeilingBottom - context.finishedFloorTop
   }, [activeStorey])
 

@@ -1,8 +1,7 @@
 import type { StoreyId } from '@/building/model'
-import { getModelActions } from '@/building/store'
-import { getConfigActions } from '@/construction/config'
+import { getModelActions, subscribeToStoreys } from '@/building/store'
+import { getConfigActions, subscribeToFloorAssemblies } from '@/construction/config'
 import { type FloorAssembly, resolveFloorAssembly } from '@/construction/floors'
-import type { PerimeterConstructionContext } from '@/construction/perimeters/context'
 import type { Length } from '@/shared/geometry'
 
 export type ZOffset = number
@@ -23,73 +22,135 @@ export interface StoreyContext {
 
   floorAssembly: FloorAssembly
   ceilingAssembly?: FloorAssembly
-  perimeterContexts: PerimeterConstructionContext[]
 }
 
-export function createWallStoreyContext(
-  storeyId: StoreyId,
-  perimeterContexts: PerimeterConstructionContext[]
-): StoreyContext {
-  const { getStoreyById, getStoreyAbove } = getModelActions()
-  const { getFloorAssemblyById } = getConfigActions()
-  const storey = getStoreyById(storeyId)
-  if (!storey) {
-    throw new Error('Invalid storey')
+type InvalidationCallback = (storeyId: StoreyId) => void
+
+export class WallStoreyContextCacheService {
+  private readonly entries: Map<StoreyId, StoreyContext>
+  private readonly invalidationCallbacks: Set<InvalidationCallback>
+
+  constructor() {
+    this.entries = new Map()
+    this.invalidationCallbacks = new Set()
+    this.setupSubscriptions()
   }
 
-  const floorAssemblyConfig = getFloorAssemblyById(storey.floorAssemblyId)
-  if (!floorAssemblyConfig) {
-    throw new Error('Invalid floor assembly')
+  onInvalidation(callback: InvalidationCallback): () => void {
+    this.invalidationCallbacks.add(callback)
+    return () => this.invalidationCallbacks.delete(callback)
   }
-  const floorAssembly = resolveFloorAssembly(floorAssemblyConfig)
 
-  const nextStorey = getStoreyAbove(storey.id)
-  const nextFloorConfig = nextStorey ? getFloorAssemblyById(nextStorey.floorAssemblyId) : null
-  const ceilingAssembly = nextFloorConfig ? resolveFloorAssembly(nextFloorConfig) : null
+  getContext(storeyId: StoreyId): StoreyContext {
+    const cached = this.entries.get(storeyId)
+    if (cached) return cached
 
-  const finishedFloorTop = 0
+    const context = this.buildContext(storeyId)
+    this.entries.set(storeyId, context)
+    return context
+  }
 
-  const floorConstructionTop = finishedFloorTop - floorAssembly.topLayersThickness
-  const wallBottom = floorConstructionTop - floorAssembly.topOffset
-  const floorBottom = wallBottom - floorAssembly.constructionThickness
+  private buildContext(storeyId: StoreyId): StoreyContext {
+    const { getStoreyById, getStoreyAbove } = getModelActions()
+    const { getFloorAssemblyById } = getConfigActions()
+    const storey = getStoreyById(storeyId)
+    if (!storey) {
+      throw new Error('Invalid storey')
+    }
 
-  if (ceilingAssembly) {
-    const finishedCeilingBottom = finishedFloorTop + storey.floorHeight - ceilingAssembly.totalThickness
-    const ceilingConstructionBottom = finishedCeilingBottom + ceilingAssembly.bottomLayersThickness
-    const wallTop = ceilingConstructionBottom + ceilingAssembly.bottomOffset
+    const floorAssemblyConfig = getFloorAssemblyById(storey.floorAssemblyId)
+    if (!floorAssemblyConfig) {
+      throw new Error('Invalid floor assembly')
+    }
+    const floorAssembly = resolveFloorAssembly(floorAssemblyConfig)
+
+    const nextStorey = getStoreyAbove(storey.id)
+    const nextFloorConfig = nextStorey ? getFloorAssemblyById(nextStorey.floorAssemblyId) : null
+    const ceilingAssembly = nextFloorConfig ? resolveFloorAssembly(nextFloorConfig) : null
+
+    const finishedFloorTop = 0
+
+    const floorConstructionTop = finishedFloorTop - floorAssembly.topLayersThickness
+    const wallBottom = floorConstructionTop - floorAssembly.topOffset
+    const floorBottom = wallBottom - floorAssembly.constructionThickness
+
+    if (ceilingAssembly) {
+      const finishedCeilingBottom = finishedFloorTop + storey.floorHeight - ceilingAssembly.totalThickness
+      const ceilingConstructionBottom = finishedCeilingBottom + ceilingAssembly.bottomLayersThickness
+      const wallTop = ceilingConstructionBottom + ceilingAssembly.bottomOffset
+
+      return {
+        storeyId,
+        nextStoreyId: nextStorey?.id,
+        storeyHeight: storey.floorHeight,
+        roofBottom: wallTop,
+        wallTop,
+        ceilingConstructionBottom,
+        finishedCeilingBottom,
+        finishedFloorTop,
+        floorConstructionTop,
+        wallBottom,
+        floorBottom,
+        floorAssembly,
+        ceilingAssembly
+      }
+    }
+
+    const wallTop = finishedFloorTop + storey.floorHeight
 
     return {
       storeyId,
-      nextStoreyId: nextStorey?.id,
       storeyHeight: storey.floorHeight,
       roofBottom: wallTop,
       wallTop,
-      ceilingConstructionBottom,
-      finishedCeilingBottom,
+      ceilingConstructionBottom: wallTop,
+      finishedCeilingBottom: wallTop,
       finishedFloorTop,
       floorConstructionTop,
       wallBottom,
       floorBottom,
-      floorAssembly,
-      ceilingAssembly,
-      perimeterContexts
+      floorAssembly
     }
   }
 
-  const wallTop = finishedFloorTop + storey.floorHeight
-
-  return {
-    storeyId,
-    storeyHeight: storey.floorHeight,
-    roofBottom: wallTop,
-    wallTop,
-    ceilingConstructionBottom: wallTop,
-    finishedCeilingBottom: wallTop,
-    finishedFloorTop,
-    floorConstructionTop,
-    wallBottom,
-    floorBottom,
-    floorAssembly,
-    perimeterContexts
+  private invalidate(storeyId: StoreyId): void {
+    this.entries.delete(storeyId)
+    for (const callback of this.invalidationCallbacks) {
+      callback(storeyId)
+    }
   }
+
+  private setupSubscriptions(): void {
+    const { getStoreysOrderedByLevel, getStoreyBelow } = getModelActions()
+
+    subscribeToStoreys((current, previous) => {
+      const storeyId = current?.id ?? previous?.id
+      if (storeyId) {
+        this.invalidate(storeyId)
+        const below = getStoreyBelow(storeyId)
+        if (below) {
+          this.invalidate(below.id)
+        }
+      }
+    })
+
+    subscribeToFloorAssemblies((current, previous) => {
+      const assemblyId = current?.id ?? previous?.id
+      for (const storey of getStoreysOrderedByLevel()) {
+        if (storey.floorAssemblyId === assemblyId) {
+          this.invalidate(storey.id)
+        }
+      }
+    })
+  }
+}
+
+const serviceInstance = new WallStoreyContextCacheService()
+
+export function getWallStoreyContextCached(storeyId: StoreyId): StoreyContext {
+  return serviceInstance.getContext(storeyId)
+}
+
+export function subscribeToWallStoreyContextInvalidations(callback: InvalidationCallback): () => void {
+  return serviceInstance.onInvalidation(callback)
 }

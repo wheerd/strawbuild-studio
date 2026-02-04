@@ -1,11 +1,9 @@
 import type { Roof } from '@/building/model'
 import { getModelActions } from '@/building/store'
 import { getConfigActions } from '@/construction/config'
+import { getPerimeterContextCached } from '@/construction/derived/perimeterContextCache'
 import { type ConstructionModel, createUnsupportedModel } from '@/construction/model'
-import {
-  type PerimeterConstructionContext,
-  computePerimeterConstructionContext
-} from '@/construction/perimeters/context'
+import { type PerimeterConstructionContext } from '@/construction/perimeters/context'
 import { PurlinRoofAssembly } from '@/construction/roofs/purlin'
 
 import { MonolithicRoofAssembly } from './monolithic'
@@ -34,7 +32,7 @@ export function constructRoof(roof: Roof, contexts?: PerimeterConstructionContex
 
   contexts ??= getModelActions()
     .getPerimetersByStorey(roof.storeyId)
-    .map(p => computePerimeterConstructionContext(p, []))
+    .map(p => getPerimeterContextCached(p.id))
 
   const roofAssembly = resolveRoofAssembly(assemblyConfig)
   return roofAssembly.construct(roof, contexts)

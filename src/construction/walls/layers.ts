@@ -1,5 +1,6 @@
 import { type PerimeterWallWithGeometry, isOpeningId } from '@/building/model'
 import { getModelActions } from '@/building/store'
+import { getRoofHeightLineCached } from '@/construction/derived'
 import type { GroupOrElement } from '@/construction/elements'
 import { WallConstructionArea } from '@/construction/geometry'
 import { LAYER_CONSTRUCTIONS } from '@/construction/layers'
@@ -25,7 +26,7 @@ import { assertUnreachable } from '@/shared/utils'
 
 import { getWallContext } from './corners/corners'
 import { computeLayerSpan, subtractWallOpenings } from './polygons'
-import { convertHeightLineToWallOffsets, getRoofHeightLineForLines } from './roofIntegration'
+import { convertHeightLineToWallOffsets } from './roofIntegration'
 import type { WallLayersConfig } from './types'
 
 const WALL_LAYER_PLANE: Plane3D = 'xz'
@@ -89,23 +90,17 @@ export function constructWallLayers(
 
     const bottom = storeyContext.floorConstructionTop - storeyContext.wallBottom
     const top = storeyContext.ceilingConstructionBottom - storeyContext.wallBottom
-    const ceilingOffset = storeyContext.roofBottom - storeyContext.ceilingConstructionBottom
     const zAdjustment = storeyContext.finishedFloorTop - storeyContext.wallBottom
 
     const insideLayers = [...layers.insideLayers].reverse()
+
     insideLayers.forEach(layer => {
       const cumulativeInside = insideOffset + layer.thickness
       const span = computeLayerSpan('inside', cumulativeInside, wall, context)
       const start = Math.min(span.start, previousSpan.start)
       const end = Math.max(span.end, previousSpan.end)
 
-      // Query roof for this layer's height line
-      const heightLine = getRoofHeightLineForLines(
-        storeyContext.storeyId,
-        [span.line],
-        ceilingOffset,
-        storeyContext.perimeterContexts
-      )
+      const heightLine = getRoofHeightLineCached(storeyContext.storeyId, [span.line])
       const layerTopOffsets = convertHeightLineToWallOffsets(heightLine, span.end - span.start)
 
       // Create WallConstructionArea with roof-adjusted top
@@ -149,7 +144,6 @@ export function constructWallLayers(
   if (layers.outsideLayers.length > 0) {
     const bottom = storeyContext.floorBottom - storeyContext.wallBottom
     const top = storeyContext.wallTop - storeyContext.wallBottom
-    const ceilingOffset = storeyContext.roofBottom - storeyContext.wallTop
     const zAdjustment = storeyContext.finishedFloorTop - storeyContext.wallBottom
 
     let outsideOffset: Length = wall.thickness - layers.outsideThickness
@@ -161,13 +155,7 @@ export function constructWallLayers(
       const start = Math.min(span.start, previousSpan.start)
       const end = Math.max(span.end, previousSpan.end)
 
-      // Query roof for this layer's height line
-      const heightLine = getRoofHeightLineForLines(
-        storeyContext.storeyId,
-        [span.line],
-        -ceilingOffset,
-        storeyContext.perimeterContexts
-      )
+      const heightLine = getRoofHeightLineCached(storeyContext.storeyId, [span.line])
       const layerTopOffsets = convertHeightLineToWallOffsets(heightLine, span.end - span.start)
 
       // Create WallConstructionArea with roof-adjusted top

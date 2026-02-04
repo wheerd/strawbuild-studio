@@ -21,7 +21,7 @@ import { Tooltip } from '@/components/ui/tooltip'
 import { OpeningAssemblySelectWithEdit } from '@/construction/config/components/OpeningAssemblySelectWithEdit'
 import { useWallAssemblyById } from '@/construction/config/store'
 import { resolveOpeningConfig } from '@/construction/openings/resolver'
-import { createWallStoreyContext } from '@/construction/storeys/context'
+import { getWallStoreyContextCached } from '@/construction/storeys/context'
 import { useSelectionStore } from '@/editor/hooks/useSelectionStore'
 import { useViewportActions } from '@/editor/hooks/useViewportStore'
 import { FitToViewIcon } from '@/shared/components/Icons'
@@ -57,7 +57,7 @@ export function OpeningInspector({ openingId }: { openingId: OpeningId }): React
 
   const wallHeight = useMemo(() => {
     if (!storey) return null
-    const context = createWallStoreyContext(storey.id, [])
+    const context = getWallStoreyContextCached(storey.id)
     return context.finishedCeilingBottom - context.finishedFloorTop
   }, [storey])
 

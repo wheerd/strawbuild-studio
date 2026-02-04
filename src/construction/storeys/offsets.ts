@@ -143,6 +143,24 @@ export class VerticalOffsetMap {
     return { offset: maxOffset ?? this.fallbackOffset, activeIndices }
   }
 
+  getDebugSlopedAreas(): readonly {
+    polygon: Polygon2D
+    base: Vec2
+    downSlopeDir: Vec2
+    angleRad: number
+    baseOffset: Length
+  }[] {
+    return this.slopedAreas
+  }
+
+  getDebugConstantAreas(): readonly { polygon: Polygon2D; offset: Length }[] {
+    return this.constantAreas
+  }
+
+  getDebugInvert(): boolean {
+    return this.invert
+  }
+
   private readonly slopedAreas: SlopedArea[] = []
   private readonly constantAreas: ConstantArea[] = []
 }

@@ -119,9 +119,7 @@ export class DoubleRingBeamAssembly extends BaseRingBeamAssembly<DoubleRingBeamC
     const { heightLine, boundingRect } = this.getHeightLineForBeamPolygon(
       polygon,
       direction,
-      segment.perimeter.storeyId,
-      -ceilingOffset,
-      storeyContext.perimeterContexts
+      segment.perimeter.storeyId
     )
 
     const subSegments = this.splitPolygonByHeightLine(boundingRect, heightLine)

@@ -39,11 +39,15 @@ vi.mock('./index', () => ({
 }))
 
 vi.mock('@/construction/storeys/context', () => ({
-  createWallStoreyContext: vi.fn(() => ({
+  getWallStoreyContextCached: vi.fn(() => ({
     storeyHeight: 3000,
     floorTopOffset: 0,
     ceilingBottomOffset: 0
   }))
+}))
+
+vi.mock('@/construction/derived/perimeterContextCache', () => ({
+  getPerimeterContextCached: vi.fn()
 }))
 
 describe('constructWall', () => {

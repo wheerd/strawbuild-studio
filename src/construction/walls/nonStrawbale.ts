@@ -1,6 +1,7 @@
 import { type PerimeterWallWithGeometry, isOpeningId } from '@/building/model'
 import { getModelActions } from '@/building/store'
 import { getConfigActions } from '@/construction/config'
+import { getRoofHeightLineCached } from '@/construction/derived'
 import { createConstructionElement } from '@/construction/elements'
 import { WallConstructionArea } from '@/construction/geometry'
 import type { ConstructionModel } from '@/construction/model'
@@ -15,7 +16,7 @@ import { BaseWallAssembly } from '@/construction/walls/base'
 import { calculateWallCornerInfo, getWallContext } from '@/construction/walls/corners/corners'
 import { constructWallLayers } from '@/construction/walls/layers'
 import { WALL_POLYGON_PLANE, createWallPolygonWithOpenings } from '@/construction/walls/polygons'
-import { convertHeightLineToWallOffsets, getRoofHeightLineForLines } from '@/construction/walls/roofIntegration'
+import { convertHeightLineToWallOffsets } from '@/construction/walls/roofIntegration'
 import { segmentedWallConstruction } from '@/construction/walls/segmentation'
 import { Bounds3D, fromTrans, newVec2, newVec3 } from '@/shared/geometry'
 
@@ -41,12 +42,10 @@ export class NonStrawbaleWallAssembly extends BaseWallAssembly<NonStrawbaleWallC
       throw new Error('Non-strawbale wall structural thickness must be greater than 0')
     }
 
-    const roofHeightLine = getRoofHeightLineForLines(
-      storeyContext.storeyId,
-      [cornerInfo.constructionInsideLine, cornerInfo.constructionOutsideLine],
-      -ceilingOffset,
-      storeyContext.perimeterContexts
-    )
+    const roofHeightLine = getRoofHeightLineCached(storeyContext.storeyId, [
+      cornerInfo.constructionInsideLine,
+      cornerInfo.constructionOutsideLine
+    ])
 
     // Convert roof height line to wall offsets
     let roofOffsets
