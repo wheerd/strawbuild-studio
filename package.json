@@ -43,6 +43,7 @@
     "@radix-ui/react-tooltip": "^1.2.8",
     "@react-three/drei": "^10.7.7",
     "@react-three/fiber": "^9.5.0",
+    "@salusoft89/planegcs": "^1.1.7",
     "@types/jest": "^30.0.0",
     "class-variance-authority": "^0.7.1",
     "clipper2-wasm": "^0.2.1",

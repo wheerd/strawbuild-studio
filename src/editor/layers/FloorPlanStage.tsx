@@ -1,7 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 
+import { useGcsActions } from '@/editor/gcs/store'
 import { usePointerPositionActions } from '@/editor/hooks/usePointerPosition'
+import { useViewMode } from '@/editor/hooks/useViewMode'
 import { usePanX, usePanY, useViewportActions, useZoom } from '@/editor/hooks/useViewportStore'
+import { GcsLayer } from '@/editor/layers/GcsLayer'
 import { GridLayer } from '@/editor/layers/GridLayer'
 import { SelectionOverlay } from '@/editor/layers/SelectionOverlay'
 import { ToolOverlayLayer } from '@/editor/layers/ToolOverlayLayer'
@@ -31,6 +34,13 @@ export function FloorPlanStage({ width, height }: FloorPlanStageProps): React.JS
   const { setStageDimensions, zoomBy, panBy, setPan, stageToWorld } = useViewportActions()
   const pointerActions = usePointerPositionActions()
   const cursor = useToolCursor()
+  const mode = useViewMode()
+  const showGcsLayer = mode === 'constraints'
+  const gcsActions = useGcsActions()
+
+  useEffect(() => {
+    gcsActions.initGCS().catch(console.error)
+  }, [gcsActions])
 
   // Local state for panning (non-tool related)
   const [dragStart, setDragStart] = useState<Vec2 | null>(null)
@@ -261,6 +271,7 @@ export function FloorPlanStage({ width, height }: FloorPlanStageProps): React.JS
         <g transform={`translate(${panX}, ${panY}) scale(${zoom}, ${-zoom})`}>
           <GridLayer width={width} height={height} viewport={{ zoom, panX, panY }} />
           <PlanImageLayer placement="under" />
+          {showGcsLayer && <GcsLayer svgRef={svgRef} />}
           <FloorLayer />
           <PerimeterLayer />
           <RoofLayer />

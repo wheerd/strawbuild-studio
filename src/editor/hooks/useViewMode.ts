@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 import { devtools } from 'zustand/middleware'
 
-export type ViewMode = 'walls' | 'floors' | 'roofs'
+export type ViewMode = 'walls' | 'floors' | 'roofs' | 'constraints'
 
 interface ViewModeState {
   mode: ViewMode
