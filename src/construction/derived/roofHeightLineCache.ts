@@ -1,6 +1,6 @@
 import type { StoreyId } from '@/building/model/ids'
 import { getModelActions, subscribeToRoofs } from '@/building/store'
-import { getConfigActions } from '@/construction/config'
+import { getConfigActions, subscribeToRoofAssemblies } from '@/construction/config'
 import {
   getPerimeterContextsByStorey,
   subscribeToPerimeterContextInvalidations
@@ -77,11 +77,20 @@ export class RoofHeightLineCacheService {
   }
 
   private setupSubscriptions(): void {
-    const { getPerimeterById } = getModelActions()
+    const { getPerimeterById, getAllRoofs } = getModelActions()
 
     subscribeToRoofs((current, previous) => {
       const storeyId = current?.storeyId ?? previous?.storeyId
       if (storeyId) this.invalidateStorey(storeyId)
+    })
+
+    subscribeToRoofAssemblies((current, previous) => {
+      const assemblyId = current?.id ?? previous?.id
+      for (const roof of getAllRoofs()) {
+        if (roof.assemblyId === assemblyId) {
+          this.invalidateStorey(roof.storeyId)
+        }
+      }
     })
 
     subscribeToWallStoreyContextInvalidations(storeyId => {

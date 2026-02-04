@@ -237,6 +237,9 @@ export const subscribeToFloorAssemblies = (
   cb: (current?: FloorAssemblyConfig, previous?: FloorAssemblyConfig) => void
 ) => subscribeRecords(useConfigStore, s => s.floorAssemblyConfigs, cb)
 
+export const subscribeToRoofAssemblies = (cb: (current?: RoofAssemblyConfig, previous?: RoofAssemblyConfig) => void) =>
+  subscribeRecords(useConfigStore, s => s.roofAssemblyConfigs, cb)
+
 // Only for the tests
 export const _clearAllAssemblies = () =>
   useConfigStore.setState({
