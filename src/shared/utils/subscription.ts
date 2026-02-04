@@ -27,11 +27,12 @@ export function subscribeRecords<TState, TKey extends string, TRecord>(
 
     for (const id of previous) {
       if (!current.includes(id)) {
+        const subscription = subscriptions[id]
+        delete subscriptions[id]
         // Delay removing the subscription so that entryChange still gets called for the removed entry
         setTimeout(() => {
-          subscriptions[id]?.()
+          subscription?.()
         }, 0)
-        delete subscriptions[id]
       }
     }
   }

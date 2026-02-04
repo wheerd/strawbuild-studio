@@ -314,7 +314,7 @@ export abstract class BaseRingBeamAssembly<T extends RingBeamConfigBase> impleme
   } {
     const boundingRect = PolygonWithBoundingRect.fromPolygon({ outer: polygon, holes: [] }, pathDirection)
 
-    const epslion = 1e-2
+    const epsilon = 1e-2
 
     // First line: along minPoint in dir direction
     const innerLine: LineSegment2D = {
@@ -322,12 +322,12 @@ export abstract class BaseRingBeamAssembly<T extends RingBeamConfigBase> impleme
       end: scaleAddVec2(boundingRect.minPoint, boundingRect.dir, boundingRect.dirExtent)
     }
     const innerLineWithEps: LineSegment2D = {
-      start: scaleAddVec2(innerLine.start, boundingRect.perpDir, epslion),
-      end: scaleAddVec2(innerLine.end, boundingRect.perpDir, epslion)
+      start: scaleAddVec2(innerLine.start, boundingRect.perpDir, epsilon),
+      end: scaleAddVec2(innerLine.end, boundingRect.perpDir, epsilon)
     }
 
     // Second line: offset by perpExtent in perpDir direction
-    const outerStart = scaleAddVec2(boundingRect.minPoint, boundingRect.perpDir, boundingRect.perpExtent - epslion)
+    const outerStart = scaleAddVec2(boundingRect.minPoint, boundingRect.perpDir, boundingRect.perpExtent - epsilon)
     const outerLine: LineSegment2D = {
       start: outerStart,
       end: scaleAddVec2(outerStart, boundingRect.dir, boundingRect.dirExtent)

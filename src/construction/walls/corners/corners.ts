@@ -74,27 +74,27 @@ export function calculateWallCornerInfo(wall: PerimeterWallWithGeometry, context
   const constructionLength = Math.round(wall.wallLength + appliedStartExtension + appliedEndExtension)
 
   // Calculate construction lines adjusted by layer thickness
-  const epslion = 1e-2
+  const epsilon = 1e-2
   const constructionInsideLine = {
     start: scaleAddVec2(
-      scaleAddVec2(wall.insideLine.start, wall.outsideDirection, currentAssembly.layers.insideThickness + epslion),
+      scaleAddVec2(wall.insideLine.start, wall.outsideDirection, currentAssembly.layers.insideThickness + epsilon),
       wall.direction,
       -appliedStartExtension
     ),
     end: scaleAddVec2(
-      scaleAddVec2(wall.insideLine.end, wall.outsideDirection, currentAssembly.layers.insideThickness + epslion),
+      scaleAddVec2(wall.insideLine.end, wall.outsideDirection, currentAssembly.layers.insideThickness + epsilon),
       wall.direction,
       appliedEndExtension
     )
   }
   const constructionOutsideLine = {
     start: scaleAddVec2(
-      scaleAddVec2(wall.outsideLine.start, wall.outsideDirection, -currentAssembly.layers.outsideThickness - epslion),
+      scaleAddVec2(wall.outsideLine.start, wall.outsideDirection, -currentAssembly.layers.outsideThickness - epsilon),
       wall.direction,
       -appliedStartExtension
     ),
     end: scaleAddVec2(
-      scaleAddVec2(wall.outsideLine.end, wall.outsideDirection, -currentAssembly.layers.outsideThickness - epslion),
+      scaleAddVec2(wall.outsideLine.end, wall.outsideDirection, -currentAssembly.layers.outsideThickness - epsilon),
       wall.direction,
       appliedEndExtension
     )

@@ -22,7 +22,6 @@ export class RoofHeightLineCacheService {
   getOffsets(storeyId: StoreyId, lines: LineSegment2D[]): HeightLine {
     const map = this.getOrCreateMap(storeyId)
     const rawOffsets = lines.map(l => map.getOffsets(l))
-    console.log('raw', rawOffsets)
     return this.mergeHeightLines(...rawOffsets)
   }
 
