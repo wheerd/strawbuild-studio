@@ -8,9 +8,11 @@ import {
 } from '@salusoft89/planegcs'
 import { create } from 'zustand'
 
-import type { PerimeterWithGeometry } from '@/building/model'
+import type { PerimeterCornerId, PerimeterId, PerimeterWithGeometry } from '@/building/model'
 import { getModelActions } from '@/building/store'
 import { createGcs } from '@/editor/gcs/gcsInstance'
+
+import { validateSolution } from './validator'
 
 interface DragState {
   pointId: string
@@ -27,6 +29,7 @@ interface GcsStoreState {
   constraints: Record<string, Constraint>
   gcs: GcsWrapper | null
   drag: DragState | null
+  cornerOrderMap: Map<PerimeterId, PerimeterCornerId[]>
 }
 
 interface GcsStoreActions {
@@ -38,12 +41,13 @@ interface GcsStoreActions {
   addVisualLine: (id: string, p1Id: string, p2Id: string) => void
   addConstraint: (constraint: Constraint) => void
 
+  installDragConstraints: (pointId: string, mouseX: number, mouseY: number) => DragState | null
   startDrag: (pointId: string, mouseX: number, mouseY: number) => void
   updateDrag: (mouseX: number, mouseY: number) => void
   endDrag: () => void
 
   solve: () => SolveStatus
-  applySolution: () => void
+  applySolution: () => boolean
 
   reset: () => void
 }
@@ -57,6 +61,7 @@ const useGcsStore = create<GcsStore>()((set, get) => ({
   constraints: {},
   gcs: null,
   drag: null,
+  cornerOrderMap: new Map(),
 
   actions: {
     initGCS: () => {
@@ -64,6 +69,44 @@ const useGcsStore = create<GcsStore>()((set, get) => ({
       if (!state.gcs) {
         set({ gcs: createGcs() })
       }
+    },
+
+    installDragConstraints: (pointId, mouseX, mouseY) => {
+      const state = get()
+      const gcs = state.gcs
+      if (!gcs) throw new Error('No GCS')
+
+      const point = state.points[pointId]
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+      if (point?.fixed) {
+        return null
+      }
+
+      const constraintXId = `drag_${pointId}_x_${Date.now()}`
+      const constraintYId = `drag_${pointId}_y_${Date.now()}`
+
+      gcs.push_primitive({
+        type: 'equal',
+        id: constraintXId,
+        param1: { o_id: pointId, prop: 'x' },
+        param2: mouseX,
+        temporary: true,
+        driving: true
+      })
+
+      gcs.push_primitive({
+        type: 'equal',
+        id: constraintYId,
+        param1: { o_id: pointId, prop: 'y' },
+        param2: mouseY,
+        temporary: true,
+        driving: true
+      })
+
+      const paramXPos = gcs.p_param_index.get(constraintXId) ?? -1
+      const paramYPos = gcs.p_param_index.get(constraintYId) ?? -1
+
+      return { pointId, constraintXId, constraintYId, paramXPos, paramYPos }
     },
 
     reset: () => {
@@ -119,42 +162,8 @@ const useGcsStore = create<GcsStore>()((set, get) => ({
       if (point?.fixed || !state.gcs) return
 
       state.actions.reset()
-      const gcs = state.gcs
-      const constraintXId = `drag_${pointId}_x_${Date.now()}`
-      const constraintYId = `drag_${pointId}_y_${Date.now()}`
-
-      gcs.push_primitive({
-        type: 'equal',
-        id: constraintXId,
-        param1: { o_id: pointId, prop: 'x' },
-        param2: mouseX,
-        temporary: true,
-        driving: true
-      })
-
-      gcs.push_primitive({
-        type: 'equal',
-        id: constraintYId,
-        param1: { o_id: pointId, prop: 'y' },
-        param2: mouseY,
-        temporary: true,
-        driving: true
-      })
-
-      const paramXPos = gcs.p_param_index.get(constraintXId) ?? -1
-      const paramYPos = gcs.p_param_index.get(constraintYId) ?? -1
-
-      const dragState = {
-        pointId,
-        constraintXId,
-        constraintYId,
-        paramXPos,
-        paramYPos
-      }
-
-      set({
-        drag: dragState
-      })
+      const dragData = state.actions.installDragConstraints(pointId, mouseX, mouseY)
+      set({ drag: dragData })
     },
 
     updateDrag: (mouseX, mouseY) => {
@@ -168,11 +177,19 @@ const useGcsStore = create<GcsStore>()((set, get) => ({
       gcs.gcs.set_p_param(paramYPos, mouseY, true)
 
       if (gcs.solve(Algorithm.DogLeg) === SolveStatus.Success) {
-        state.actions.applySolution()
+        if (!state.actions.applySolution()) {
+          const dragData = state.actions.installDragConstraints(state.drag.pointId, mouseX, mouseY)
+          set({ drag: dragData })
+        }
       }
     },
 
     endDrag: () => {
+      const state = get()
+      if (!state.drag) return
+
+      state.actions.reset()
+
       set({ drag: null })
     },
 
@@ -188,7 +205,7 @@ const useGcsStore = create<GcsStore>()((set, get) => ({
     applySolution: () => {
       const state = get()
       const gcs = state.gcs
-      if (!gcs) return
+      if (!gcs) return false
 
       gcs.apply_solution()
 
@@ -206,18 +223,34 @@ const useGcsStore = create<GcsStore>()((set, get) => ({
         }
       }
 
-      set({
-        points: newPoints
-      })
+      const validation = validateSolution(newPoints, state.cornerOrderMap)
+
+      if (validation.valid) {
+        set({
+          points: newPoints
+        })
+        return true
+      }
+
+      console.warn(validation)
+
+      state.actions.reset()
+      return false
     },
 
     populateFromPerimeters: perimeters => {
+      const cornerOrderMap = new Map<PerimeterId, PerimeterCornerId[]>()
+      for (const perimeter of perimeters) {
+        cornerOrderMap.set(perimeter.id, [...perimeter.cornerIds])
+      }
+
       set({
         points: {},
         lines: [],
         visualLines: [],
         constraints: {},
-        drag: null
+        drag: null,
+        cornerOrderMap
       })
 
       const { actions } = get()
