@@ -34,9 +34,6 @@ export function GcsLayer({ svgRef }: GcsLayerProps): React.JSX.Element {
       e.stopPropagation()
       e.currentTarget.setPointerCapture(e.pointerId)
 
-      const point = points[pointId]
-      if (!point || point.fixed) return
-
       const svgCoords = mouseTransform({ clientX: e.clientX, clientY: e.clientY })
       const worldCoords = stageToWorld(svgCoords)
       actions.startDrag(pointId, worldCoords[0], worldCoords[1])
@@ -87,9 +84,6 @@ export function GcsLayer({ svgRef }: GcsLayerProps): React.JSX.Element {
       {lines.map(line => {
         const p1 = points[line.p1_id]
         const p2 = points[line.p2_id]
-        if (p1 === undefined || p2 === undefined) {
-          return null
-        }
 
         return (
           <line
@@ -109,8 +103,6 @@ export function GcsLayer({ svgRef }: GcsLayerProps): React.JSX.Element {
       {Object.entries(points)
         .filter(([id]) => !id.startsWith('virt_'))
         .map(([id, point]) => {
-          if (!point) return null
-
           return (
             <g key={id}>
               <circle
@@ -145,9 +137,6 @@ export function GcsLayer({ svgRef }: GcsLayerProps): React.JSX.Element {
       {visualLines.map(line => {
         const p1 = points[line.p1Id]
         const p2 = points[line.p2Id]
-        if (p1 === undefined || p2 === undefined) {
-          return null
-        }
 
         return (
           <line

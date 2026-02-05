@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 
+import { usePerimetersOfActiveStorey } from '@/building/store'
 import { useGcsActions } from '@/editor/gcs/store'
 import { usePointerPositionActions } from '@/editor/hooks/usePointerPosition'
 import { useViewMode } from '@/editor/hooks/useViewMode'
@@ -37,10 +38,15 @@ export function FloorPlanStage({ width, height }: FloorPlanStageProps): React.JS
   const mode = useViewMode()
   const showGcsLayer = mode === 'constraints'
   const gcsActions = useGcsActions()
+  const perimeters = usePerimetersOfActiveStorey()
 
   useEffect(() => {
     gcsActions.initGCS()
   }, [gcsActions])
+
+  useEffect(() => {
+    gcsActions.populateFromPerimeters(perimeters)
+  }, [perimeters, gcsActions])
 
   // Local state for panning (non-tool related)
   const [dragStart, setDragStart] = useState<Vec2 | null>(null)

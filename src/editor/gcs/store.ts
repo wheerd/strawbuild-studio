@@ -8,9 +8,9 @@ import {
 } from '@salusoft89/planegcs'
 import { create } from 'zustand'
 
-import { createPerimeterWallId } from '@/building/model'
+import type { PerimeterWithGeometry } from '@/building/model'
+import { getModelActions } from '@/building/store'
 import { createGcs } from '@/editor/gcs/gcsInstance'
-import type { Length } from '@/shared/geometry'
 
 interface DragState {
   pointId: string
@@ -31,7 +31,7 @@ interface GcsStoreState {
 
 interface GcsStoreActions {
   initGCS: () => void
-  populateInitialState: () => void
+  populateFromPerimeters: (perimeters: PerimeterWithGeometry[]) => void
 
   addPoint: (id: string, x: number, y: number, fixed?: boolean) => void
   addLine: (id: string, p1Id: string, p2Id: string) => void
@@ -64,10 +64,6 @@ const useGcsStore = create<GcsStore>()((set, get) => ({
       if (!state.gcs) {
         set({ gcs: createGcs() })
       }
-
-      state.actions.populateInitialState()
-      state.actions.reset()
-      state.actions.applySolution()
     },
 
     reset: () => {
@@ -215,7 +211,7 @@ const useGcsStore = create<GcsStore>()((set, get) => ({
       })
     },
 
-    populateInitialState: () => {
+    populateFromPerimeters: perimeters => {
       set({
         points: {},
         lines: [],
@@ -225,79 +221,46 @@ const useGcsStore = create<GcsStore>()((set, get) => ({
       })
 
       const { actions } = get()
+      const modelActions = getModelActions()
 
-      actions.addPoint('A_in', 0, 0, false)
-      actions.addPoint('B_in', 2000, 0, false)
-      actions.addPoint('C_in', 2000, 2000, false)
-      actions.addPoint('D_in', 0, 2000, false)
+      for (const perimeter of perimeters) {
+        const corners = modelActions.getPerimeterCornersById(perimeter.id)
+        const walls = modelActions.getPerimeterWallsById(perimeter.id)
 
-      actions.addPoint('A_out', -150, -150, false)
-      actions.addPoint('B_out', 2200, -150, false)
-      actions.addPoint('C_out', 2200, 2200, false)
-      actions.addPoint('D_out', -150, 2200, false)
+        for (const corner of corners) {
+          actions.addPoint(`corner_${corner.id}_in`, corner.insidePoint[0], corner.insidePoint[1], false)
+          actions.addPoint(`corner_${corner.id}_out`, corner.outsidePoint[0], corner.outsidePoint[1], false)
+          actions.addVisualLine(`corner_${corner.id}_line`, `corner_${corner.id}_in`, `corner_${corner.id}_out`)
+        }
 
-      const wallAB = addWall(actions, 'A', 'B', 200)
-      addWall(actions, 'B', 'C', 150)
-      addWall(actions, 'C', 'D', 200)
-      const wallDA = addWall(actions, 'D', 'A', 150)
+        for (const wall of walls) {
+          const startIn = `corner_${wall.startCornerId}_in`
+          const startOut = `corner_${wall.startCornerId}_out`
+          const endIn = `corner_${wall.endCornerId}_in`
+          const endOut = `corner_${wall.endCornerId}_out`
 
-      actions.addConstraint({
-        id: `length_AB`,
-        type: 'p2p_distance',
-        p1_id: 'A_in',
-        p2_id: 'B_in',
-        distance: 3000
-      })
+          actions.addLine(`wall_${wall.id}_in`, startIn, endIn)
+          actions.addLine(`wall_${wall.id}_out`, startOut, endOut)
 
-      actions.addConstraint({
-        id: `length_BC`,
-        type: 'p2p_distance',
-        p1_id: 'B_out',
-        p2_id: 'C_out',
-        distance: 2000
-      })
+          actions.addConstraint({
+            id: `parallel_${wall.id}`,
+            type: 'parallel',
+            l1_id: `wall_${wall.id}_in`,
+            l2_id: `wall_${wall.id}_out`
+          })
 
-      actions.addConstraint({
-        id: `perp_A`,
-        type: 'perpendicular_ll',
-        l1_id: `wall_${wallAB}_out`,
-        l2_id: `wall_${wallDA}_out`
-      })
-
-      actions.addVisualLine('corner_A_line', 'A_in', 'A_out')
-      actions.addVisualLine('corner_B_line', 'B_in', 'B_out')
-      actions.addVisualLine('corner_C_line', 'C_in', 'C_out')
-      actions.addVisualLine('corner_D_line', 'D_in', 'D_out')
+          actions.addConstraint({
+            id: `thickness_${wall.id}`,
+            type: 'p2l_distance',
+            p_id: startOut,
+            l_id: `wall_${wall.id}_in`,
+            distance: wall.thickness
+          })
+        }
+      }
     }
   }
 }))
-
-function addWall(actions: GcsStoreActions, start: string, end: string, thickness: Length) {
-  const wallId = createPerimeterWallId()
-  const startIn = `${start}_in`
-  const startOut = `${start}_out`
-  const endIn = `${end}_in`
-  const endOut = `${end}_out`
-
-  actions.addLine(`wall_${wallId}_in`, startIn, endIn)
-  actions.addLine(`wall_${wallId}_out`, startOut, endOut)
-
-  actions.addConstraint({
-    id: `parallel_${wallId}`,
-    type: 'parallel',
-    l1_id: `wall_${wallId}_in`,
-    l2_id: `wall_${wallId}_out`
-  })
-  actions.addConstraint({
-    id: `thickness_${wallId}`,
-    type: 'p2l_distance',
-    p_id: startOut,
-    l_id: `wall_${wallId}_in`,
-    distance: thickness
-  })
-
-  return wallId
-}
 
 export const useGcsPoints = (): GcsStoreState['points'] => useGcsStore(state => state.points)
 export const useGcsLines = (): GcsStoreState['lines'] => useGcsStore(state => state.lines)
