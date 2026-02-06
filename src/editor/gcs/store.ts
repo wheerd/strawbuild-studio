@@ -32,14 +32,12 @@ interface DragState {
 interface PerimeterRegistryEntry {
   pointIds: string[]
   lineIds: string[]
-  visualLineIds: string[]
   constraintIds: string[]
 }
 
 interface GcsStoreState {
   points: Record<string, SketchPoint>
   lines: SketchLine[]
-  visualLines: { id: string; p1Id: string; p2Id: string }[]
   constraints: Record<string, Constraint>
   buildingConstraints: Record<string, ConstraintInput>
   gcs: GcsWrapper | null
@@ -56,12 +54,10 @@ interface GcsStoreActions {
 
   addPoint: (id: string, x: number, y: number, fixed?: boolean) => void
   addLine: (id: string, p1Id: string, p2Id: string) => void
-  addVisualLine: (id: string, p1Id: string, p2Id: string) => void
   addConstraint: (constraint: Constraint) => void
 
   removePoints: (ids: string[]) => void
   removeLines: (ids: string[]) => void
-  removeVisualLines: (ids: string[]) => void
   removeConstraints: (ids: string[]) => void
 
   addBuildingConstraint: (constraint: ConstraintInput) => string
@@ -83,7 +79,6 @@ type GcsStore = GcsStoreState & { actions: GcsStoreActions }
 const useGcsStore = create<GcsStore>()((set, get) => ({
   points: {},
   lines: [],
-  visualLines: [],
   constraints: {},
   buildingConstraints: {},
   gcs: null,
@@ -171,12 +166,6 @@ const useGcsStore = create<GcsStore>()((set, get) => ({
       }))
     },
 
-    addVisualLine: (id, p1Id, p2Id) => {
-      set(state => ({
-        visualLines: [...state.visualLines, { id, p1Id, p2Id }]
-      }))
-    },
-
     addConstraint: constraint => {
       set(state => ({
         constraints: { ...state.constraints, [constraint.id]: { ...constraint } }
@@ -200,14 +189,6 @@ const useGcsStore = create<GcsStore>()((set, get) => ({
       const toRemove = new Set(ids)
       set(state => ({
         lines: state.lines.filter(l => !toRemove.has(l.id))
-      }))
-    },
-
-    removeVisualLines: ids => {
-      if (ids.length === 0) return
-      const toRemove = new Set(ids)
-      set(state => ({
-        visualLines: state.visualLines.filter(l => !toRemove.has(l.id))
       }))
     },
 
@@ -400,7 +381,6 @@ const useGcsStore = create<GcsStore>()((set, get) => ({
       const entry: PerimeterRegistryEntry = {
         pointIds: [],
         lineIds: [],
-        visualLineIds: [],
         constraintIds: []
       }
 
@@ -411,10 +391,6 @@ const useGcsStore = create<GcsStore>()((set, get) => ({
         actions.addPoint(inId, corner.insidePoint[0], corner.insidePoint[1], false)
         actions.addPoint(outId, corner.outsidePoint[0], corner.outsidePoint[1], false)
         entry.pointIds.push(inId, outId)
-
-        const visualId = `corner_${corner.id}_line`
-        actions.addVisualLine(visualId, inId, outId)
-        entry.visualLineIds.push(visualId)
       }
 
       // Add lines and structural constraints for each wall
@@ -471,10 +447,9 @@ const useGcsStore = create<GcsStore>()((set, get) => ({
         return
       }
 
-      // Remove structural constraints, lines, visual lines, and points
+      // Remove structural constraints, lines, and points
       actions.removeConstraints(entry.constraintIds)
       actions.removeLines(entry.lineIds)
-      actions.removeVisualLines(entry.visualLineIds)
       actions.removePoints(entry.pointIds)
 
       // Update registry and corner order map
@@ -495,7 +470,6 @@ const useGcsStore = create<GcsStore>()((set, get) => ({
 
 export const useGcsPoints = (): GcsStoreState['points'] => useGcsStore(state => state.points)
 export const useGcsLines = (): GcsStoreState['lines'] => useGcsStore(state => state.lines)
-export const useGcsVisualLines = (): GcsStoreState['visualLines'] => useGcsStore(state => state.visualLines)
 export const useGcsDrag = (): GcsStoreState['drag'] => useGcsStore(state => state.drag)
 export const useGcsBuildingConstraints = (): GcsStoreState['buildingConstraints'] =>
   useGcsStore(state => state.buildingConstraints)

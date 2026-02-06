@@ -365,17 +365,6 @@ describe('GCS store perimeter geometry', () => {
       expect(state.lines.find(l => l.id === `wall_${wallB}_out`)).toBeDefined()
     })
 
-    it('creates visual lines for each corner', () => {
-      setupRectangleMocks(perimeterA)
-      const actions = getGcsActions()
-
-      actions.addPerimeterGeometry(perimeterA)
-
-      const state = getGcsState()
-      expect(state.visualLines.find(l => l.id === `corner_${cornerA}_line`)).toBeDefined()
-      expect(state.visualLines.find(l => l.id === `corner_${cornerB}_line`)).toBeDefined()
-    })
-
     it('creates parallel and thickness constraints for each wall', () => {
       setupRectangleMocks(perimeterA)
       const actions = getGcsActions()
@@ -401,7 +390,6 @@ describe('GCS store perimeter geometry', () => {
       expect(entry).toBeDefined()
       expect(entry.pointIds).toHaveLength(8) // 4 corners × 2 (in + out)
       expect(entry.lineIds).toHaveLength(8) // 4 walls × 2 (in + out)
-      expect(entry.visualLineIds).toHaveLength(4) // 4 corners
       expect(entry.constraintIds).toHaveLength(8) // 4 walls × 2 (parallel + thickness)
     })
 
@@ -448,7 +436,6 @@ describe('GCS store perimeter geometry', () => {
       const state = getGcsState()
       expect(Object.keys(state.points)).toHaveLength(0)
       expect(state.lines).toHaveLength(0)
-      expect(state.visualLines).toHaveLength(0)
       expect(Object.keys(state.constraints)).toHaveLength(0)
     })
 
@@ -594,20 +581,6 @@ describe('GCS store perimeter geometry', () => {
       expect(state.lines.find(l => l.id === 'l2')).toBeDefined()
     })
 
-    it('removeVisualLines removes specified visual lines', () => {
-      const actions = getGcsActions()
-      actions.addPoint('a', 0, 0)
-      actions.addPoint('b', 1, 1)
-      actions.addVisualLine('vl1', 'a', 'b')
-      actions.addVisualLine('vl2', 'a', 'b')
-
-      actions.removeVisualLines(['vl1'])
-
-      const state = getGcsState()
-      expect(state.visualLines.find(l => l.id === 'vl1')).toBeUndefined()
-      expect(state.visualLines.find(l => l.id === 'vl2')).toBeDefined()
-    })
-
     it('removeConstraints removes specified constraints', () => {
       const actions = getGcsActions()
       actions.addConstraint({ id: 'c1', type: 'equal', param1: 0, param2: 0 })
@@ -626,7 +599,6 @@ describe('GCS store perimeter geometry', () => {
 
       actions.removePoints([])
       actions.removeLines([])
-      actions.removeVisualLines([])
       actions.removeConstraints([])
 
       expect(getGcsState().points.p1).toBeDefined()

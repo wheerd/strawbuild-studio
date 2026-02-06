@@ -1,15 +1,20 @@
-import type { PerimeterCornerId } from '@/building/model'
-import { usePerimeterCornerById, usePerimeterWallById } from '@/building/store'
+import { useMemo } from 'react'
+
+import type { ColinearConstraint, PerimeterCornerId, PerpendicularConstraint } from '@/building/model'
+import { useConstraintsForEntity, usePerimeterCornerById, usePerimeterWallById } from '@/building/store'
 import { useWallAssemblyById } from '@/construction/config/store'
 import { Arrow } from '@/editor/components/Arrow'
+import { ConstraintBadge } from '@/editor/components/ConstraintBadge'
 import { useSelectionStore } from '@/editor/hooks/useSelectionStore'
-import { direction, midpoint, perpendicular, scaleAddVec2, scaleVec2 } from '@/shared/geometry'
+import { useZoom } from '@/editor/hooks/useViewportStore'
+import { type Vec2, direction, midpoint, perpendicular, scaleAddVec2, scaleVec2 } from '@/shared/geometry'
 import { MATERIAL_COLORS } from '@/shared/theme/colors'
 import { polygonToSvgPath } from '@/shared/utils/svg'
 
 export function PerimeterCornerShape({ cornerId }: { cornerId: PerimeterCornerId }): React.JSX.Element {
   const select = useSelectionStore()
   const isSelected = select.isCurrentSelection(cornerId)
+  const zoom = useZoom()
 
   const corner = usePerimeterCornerById(cornerId)
   const previousWall = usePerimeterWallById(corner.previousWallId)
@@ -34,8 +39,31 @@ export function PerimeterCornerShape({ cornerId }: { cornerId: PerimeterCornerId
   const isNearStraight = Math.abs(interiorAngleDegrees - 180) <= 5 || Math.abs(exteriorAngleDegrees - 180) <= 5
 
   // Calculate overlay rectangle for near-straight corners
-  const normal = perpendicular(direction(corner.insidePoint, corner.outsidePoint))
+  const outsideDirection = direction(corner.insidePoint, corner.outsidePoint)
+  const normal = perpendicular(outsideDirection)
   const overlayHalfWidth = 80 / 2
+
+  // Look up constraints for this corner and its adjacent walls
+  const cornerConstraints = useConstraintsForEntity(cornerId)
+  const prevWallConstraints = useConstraintsForEntity(corner.previousWallId)
+  const nextWallConstraints = useConstraintsForEntity(corner.nextWallId)
+
+  // Find colinear constraints where this corner is nodeB (the middle node)
+  const colinearConstraints = useMemo(
+    () => cornerConstraints.filter((c): c is ColinearConstraint => c.type === 'colinear' && c.nodeB === cornerId),
+    [cornerConstraints, cornerId]
+  )
+
+  // Find perpendicular constraints between the two adjacent walls
+  const perpendicularConstraint = useMemo(() => {
+    const allWallConstraints = [...prevWallConstraints, ...nextWallConstraints]
+    return allWallConstraints.find(
+      (c): c is PerpendicularConstraint =>
+        c.type === 'perpendicular' &&
+        ((c.wallA === corner.previousWallId && c.wallB === corner.nextWallId) ||
+          (c.wallA === corner.nextWallId && c.wallB === corner.previousWallId))
+    )
+  }, [prevWallConstraints, nextWallConstraints, corner.previousWallId, corner.nextWallId])
 
   return (
     <g
@@ -79,6 +107,40 @@ export function PerimeterCornerShape({ cornerId }: { cornerId: PerimeterCornerId
 
       {/* Corner ownership indicator - arrow when selected */}
       {isSelected && <Arrow color="var(--color-white)" strokeWidth={30} arrowStart={arrowStart} arrowEnd={arrowEnd} />}
+
+      {/* Colinear constraint indicators */}
+      {colinearConstraints.map(c => (
+        <ColinearBadge key={c.id} point={corner.insidePoint} zoom={zoom} />
+      ))}
+
+      {/* H/V constraint badge on the outside of the wall */}
+      {perpendicularConstraint && (
+        <ConstraintBadge
+          label={'\u27C2'}
+          offset={50}
+          startPoint={corner.outsidePoint}
+          endPoint={corner.outsidePoint}
+          outsideDirection={outsideDirection}
+        />
+      )}
     </g>
+  )
+}
+
+// --- Sub-components and helpers ---
+
+function ColinearBadge({ point, zoom }: { point: Vec2; zoom: number }): React.JSX.Element {
+  const r = 4 / zoom
+  return (
+    <circle
+      cx={point[0]}
+      cy={point[1]}
+      r={r}
+      fill="none"
+      stroke="var(--color-muted-foreground)"
+      strokeWidth={1.5 / zoom}
+      opacity={0.8}
+      pointerEvents="none"
+    />
   )
 }

@@ -17,6 +17,7 @@ export interface ConstraintsActions {
   removeConstraintsReferencingEntity: (entityId: ConstraintEntityId) => void
   getBuildingConstraintById: (id: ConstraintId) => Constraint | null
   getAllBuildingConstraints: () => Record<ConstraintId, Constraint>
+  getConstraintsForEntity: (entityId: ConstraintEntityId) => Constraint[]
 }
 
 export type ConstraintsSlice = ConstraintsState & { actions: ConstraintsActions }
@@ -151,6 +152,13 @@ export const createConstraintsSlice: StateCreator<
 
     getAllBuildingConstraints: () => {
       return get().buildingConstraints
+    },
+
+    getConstraintsForEntity: (entityId: ConstraintEntityId) => {
+      const state = get()
+      const ids = state._constraintsByEntity[entityId]
+      if (!ids || ids.length === 0) return []
+      return ids.map(id => state.buildingConstraints[id])
     }
   }
 })

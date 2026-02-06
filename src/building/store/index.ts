@@ -23,6 +23,7 @@ import type {
   WallPostWithGeometry
 } from '@/building/model'
 import {
+  type ConstraintEntityId,
   type ConstraintId,
   type FloorAreaId,
   type FloorOpeningId,
@@ -408,6 +409,13 @@ export const useRoofOverhangsByRoof = (roofId: RoofId): RoofOverhang[] => {
 
 export const useBuildingConstraints = (): Record<ConstraintId, Constraint> =>
   useModelStore(state => state.buildingConstraints)
+
+export const useConstraintsForEntity = (entityId: ConstraintEntityId): Constraint[] => {
+  const buildingConstraints = useModelStore(state => state.buildingConstraints)
+  const reverseIndex = useModelStore(state => state._constraintsByEntity)
+  const getConstraintsForEntity = useModelStore(state => state.actions.getConstraintsForEntity)
+  return useMemo(() => getConstraintsForEntity(entityId), [buildingConstraints, reverseIndex, entityId])
+}
 
 export const usePerimeterCornerGeometries = (): Record<PerimeterCornerId, PerimeterCornerGeometry> =>
   useModelStore(state => state._perimeterCornerGeometry)

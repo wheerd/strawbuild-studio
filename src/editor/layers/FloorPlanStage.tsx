@@ -4,7 +4,6 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import '@/editor/gcs/gcsSync'
 import { useGcsActions } from '@/editor/gcs/store'
 import { usePointerPositionActions } from '@/editor/hooks/usePointerPosition'
-import { useViewMode } from '@/editor/hooks/useViewMode'
 import { usePanX, usePanY, useViewportActions, useZoom } from '@/editor/hooks/useViewportStore'
 import { GcsLayer } from '@/editor/layers/GcsLayer'
 import { GridLayer } from '@/editor/layers/GridLayer'
@@ -15,6 +14,7 @@ import { useSvgMouseTransform } from '@/editor/tools/system/hooks/useSvgMouseTra
 import { handleEditorEvent } from '@/editor/tools/system/store'
 import { EditorSvgPatterns } from '@/editor/utils/patterns'
 import type { Vec2 } from '@/shared/geometry'
+import { isDebug } from '@/shared/hooks/useDebug'
 
 import { FloorLayer } from './FloorLayer'
 import { PerimeterLayer } from './PerimeterLayer'
@@ -36,8 +36,7 @@ export function FloorPlanStage({ width, height }: FloorPlanStageProps): React.JS
   const { setStageDimensions, zoomBy, panBy, setPan, stageToWorld } = useViewportActions()
   const pointerActions = usePointerPositionActions()
   const cursor = useToolCursor()
-  const mode = useViewMode()
-  const showGcsLayer = mode === 'constraints'
+  const showDebugGcsLayer = isDebug
   const gcsActions = useGcsActions()
 
   useEffect(() => {
@@ -273,11 +272,11 @@ export function FloorPlanStage({ width, height }: FloorPlanStageProps): React.JS
         <g transform={`translate(${panX}, ${panY}) scale(${zoom}, ${-zoom})`}>
           <GridLayer width={width} height={height} viewport={{ zoom, panX, panY }} />
           <PlanImageLayer placement="under" />
-          {showGcsLayer && <GcsLayer svgRef={svgRef} />}
           <FloorLayer />
           <PerimeterLayer />
           <RoofLayer />
           <PlanImageLayer placement="over" />
+          {showDebugGcsLayer && <GcsLayer svgRef={svgRef} />}
           <SelectionOverlay />
           <ToolOverlayLayer />
         </g>

@@ -1,11 +1,9 @@
 import { useCallback } from 'react'
 import type { RefObject } from 'react'
 
-import { useGcsActions, useGcsDrag, useGcsLines, useGcsPoints, useGcsVisualLines } from '@/editor/gcs/store'
+import { useGcsActions, useGcsDrag, useGcsLines, useGcsPoints } from '@/editor/gcs/store'
 import { useViewportActions, useZoom } from '@/editor/hooks/useViewportStore'
 import { useSvgMouseTransform } from '@/editor/tools/system/hooks/useSvgMouseTransform'
-
-import { ConstraintAnnotations } from './ConstraintAnnotations'
 
 interface GcsLayerProps {
   svgRef: RefObject<SVGSVGElement | null>
@@ -14,7 +12,6 @@ interface GcsLayerProps {
 export function GcsLayer({ svgRef }: GcsLayerProps): React.JSX.Element {
   const points = useGcsPoints()
   const lines = useGcsLines()
-  const visualLines = useGcsVisualLines()
   const drag = useGcsDrag()
   const actions = useGcsActions()
   const zoom = useZoom()
@@ -125,27 +122,6 @@ export function GcsLayer({ svgRef }: GcsLayerProps): React.JSX.Element {
             </g>
           )
         })}
-
-      {visualLines.map(line => {
-        const p1 = points[line.p1Id]
-        const p2 = points[line.p2Id]
-
-        return (
-          <line
-            key={line.id}
-            x1={p1.x}
-            y1={p1.y}
-            x2={p2.x}
-            y2={p2.y}
-            stroke="hsl(var(--muted))"
-            strokeWidth={1 / zoom}
-            strokeLinecap="round"
-            className="stroke-border-contrast pointer-events-none opacity-50"
-          />
-        )
-      })}
-
-      <ConstraintAnnotations />
     </g>
   )
 }

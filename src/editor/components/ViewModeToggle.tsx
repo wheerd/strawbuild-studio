@@ -25,7 +25,6 @@ export function ViewModeToggle(): React.JSX.Element {
       <ToggleGroupItem value="walls">{t($ => $.viewMode.walls)}</ToggleGroupItem>
       <ToggleGroupItem value="floors">{t($ => $.viewMode.floors)}</ToggleGroupItem>
       <ToggleGroupItem value="roofs">{t($ => $.viewMode.roofs)}</ToggleGroupItem>
-      <ToggleGroupItem value="constraints">Constraints</ToggleGroupItem>
     </ToggleGroup>
   )
 }
