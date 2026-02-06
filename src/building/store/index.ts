@@ -7,6 +7,7 @@ import { persist, subscribeWithSelector } from 'zustand/middleware'
 import { immer } from 'zustand/middleware/immer'
 
 import type {
+  Constraint,
   FloorArea,
   FloorOpening,
   OpeningWithGeometry,
@@ -22,6 +23,7 @@ import type {
   WallPostWithGeometry
 } from '@/building/model'
 import {
+  type ConstraintId,
   type FloorAreaId,
   type FloorOpeningId,
   type OpeningId,
@@ -33,6 +35,7 @@ import {
   type SelectableId,
   type StoreyId,
   type WallPostId,
+  isConstraintId,
   isFloorAreaId,
   isFloorOpeningId,
   isOpeningId,
@@ -48,6 +51,7 @@ import { subscribeRecords } from '@/shared/utils/subscription'
 
 import { CURRENT_VERSION, applyMigrations } from './migrations'
 import { getPersistenceActions } from './persistenceStore'
+import { createConstraintsSlice } from './slices/constraintsSlice'
 import { createFloorsSlice } from './slices/floorsSlice'
 import { createPerimetersSlice } from './slices/perimeterSlice'
 import { createRoofsSlice } from './slices/roofsSlice'
@@ -93,6 +97,7 @@ const useModelStore = create<Store>()(
           const floorsSlice = immer(createFloorsSlice)(set, get, store)
           const roofsSlice = immer(createRoofsSlice)(set, get, store)
           const timestampsSlice = immer(createTimestampsSlice)(set, get, store)
+          const constraintsSlice = immer(createConstraintsSlice)(set, get, store)
 
           return {
             ...storeysSlice,
@@ -100,12 +105,14 @@ const useModelStore = create<Store>()(
             ...floorsSlice,
             ...roofsSlice,
             ...timestampsSlice,
+            ...constraintsSlice,
             actions: {
               ...storeysSlice.actions,
               ...perimetersSlice.actions,
               ...floorsSlice.actions,
               ...roofsSlice.actions,
               ...timestampsSlice.actions,
+              ...constraintsSlice.actions,
               reset: () => {
                 set(store.getInitialState())
               }
@@ -172,6 +179,7 @@ const emptyGeometry = {}
 export const useModelEntityById = (
   id: SelectableId | null
 ):
+  | Constraint
   | PerimeterWithGeometry
   | PerimeterWallWithGeometry
   | PerimeterCornerWithGeometry
@@ -194,6 +202,7 @@ export const useModelEntityById = (
       if (isFloorOpeningId(id)) return state.floorOpenings[id]
       if (isRoofId(id)) return state.roofs[id]
       if (isRoofOverhangId(id)) return state.roofOverhangs[id]
+      if (isConstraintId(id)) return state.buildingConstraints[id] ?? null
       assertUnreachable(id, `Unsupported entity: ${id}`)
     },
     [id]
@@ -223,6 +232,7 @@ export const useModelEntityById = (
       if (isFloorOpeningId(id)) return state.actions.getFloorOpeningById
       if (isRoofId(id)) return state.actions.getRoofById
       if (isRoofOverhangId(id)) return state.actions.getRoofOverhangById
+      if (isConstraintId(id)) return state.actions.getBuildingConstraintById
       assertUnreachable(id, `Unsupported entity: ${id}`)
     },
     [id]
@@ -379,6 +389,9 @@ export const useRoofOverhangsByRoof = (roofId: RoofId): RoofOverhang[] => {
   return useMemo(() => getRoofOverhangsByRoof(roofId), [overhangs, roofs, roofId])
 }
 
+export const useBuildingConstraints = (): Record<ConstraintId, Constraint> =>
+  useModelStore(state => state.buildingConstraints)
+
 export const useModelActions = (): StoreActions => useModelStore(state => state.actions)
 
 // Non-reactive actions-only accessor for tools and services
@@ -412,6 +425,9 @@ export const subscribeToFloorOpenings = (cb: (current?: FloorOpening, previous?:
 
 export const subscribeToStoreys = (cb: (current?: Storey, previous?: Storey) => void) =>
   subscribeRecords(useModelStore, s => s.storeys, cb)
+
+export const subscribeToConstraints = (cb: (current?: Constraint, previous?: Constraint) => void) =>
+  subscribeRecords(useModelStore, s => s.buildingConstraints, cb)
 
 export const subscribeToModelChanges = useModelStore.subscribe
 

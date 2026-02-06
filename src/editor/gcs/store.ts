@@ -8,12 +8,7 @@ import {
 } from '@salusoft89/planegcs'
 import { create } from 'zustand'
 
-import type {
-  Constraint as BuildingConstraint,
-  PerimeterCornerId,
-  PerimeterId,
-  PerimeterWallId
-} from '@/building/model'
+import type { ConstraintInput, PerimeterCornerId, PerimeterId, PerimeterWallId } from '@/building/model'
 import { getModelActions } from '@/building/store'
 import { createGcs } from '@/editor/gcs/gcsInstance'
 
@@ -46,7 +41,7 @@ interface GcsStoreState {
   lines: SketchLine[]
   visualLines: { id: string; p1Id: string; p2Id: string }[]
   constraints: Record<string, Constraint>
-  buildingConstraints: Record<string, BuildingConstraint>
+  buildingConstraints: Record<string, ConstraintInput>
   gcs: GcsWrapper | null
   drag: DragState | null
   cornerOrderMap: Map<PerimeterId, PerimeterCornerId[]>
@@ -69,7 +64,7 @@ interface GcsStoreActions {
   removeVisualLines: (ids: string[]) => void
   removeConstraints: (ids: string[]) => void
 
-  addBuildingConstraint: (constraint: BuildingConstraint) => string
+  addBuildingConstraint: (constraint: ConstraintInput) => string
   removeBuildingConstraint: (key: string) => void
 
   installDragConstraints: (pointId: string, mouseX: number, mouseY: number) => DragState | null

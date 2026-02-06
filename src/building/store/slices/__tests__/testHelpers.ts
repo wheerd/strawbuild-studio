@@ -61,7 +61,7 @@ export function setupPerimeterSlice() {
   const testStoreyId = createStoreyId()
 
   slice = createPerimetersSlice(mockSet, mockGet, mockStore)
-  slice = { ...slice, timestamps: {} } as any
+  slice = { ...slice, timestamps: {}, buildingConstraints: {}, _constraintsByEntity: {} } as any
 
   mockGet.mockImplementation(() => slice)
 

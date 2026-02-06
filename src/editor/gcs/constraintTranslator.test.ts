@@ -1,16 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import type {
-  AngleConstraint,
-  ColinearConstraint,
-  DistanceConstraint,
-  HorizontalConstraint,
-  ParallelConstraint,
-  PerimeterCornerId,
-  PerimeterWallId,
-  PerpendicularConstraint,
-  VerticalConstraint
-} from '@/building/model'
+import type { ConstraintInput, PerimeterCornerId, PerimeterWallId } from '@/building/model'
 
 import {
   buildingConstraintKey,
@@ -58,33 +48,33 @@ describe('wallInsideLineId', () => {
 describe('buildingConstraintKey', () => {
   describe('distance', () => {
     it('produces a deterministic key', () => {
-      const c: DistanceConstraint = { type: 'distance', nodeA: cornerA, nodeB: cornerB, side: 'left', length: 100 }
+      const c: ConstraintInput = { type: 'distance', nodeA: cornerA, nodeB: cornerB, side: 'left', length: 100 }
       expect(buildingConstraintKey(c)).toBe(`distance_${cornerA}_${cornerB}`)
     })
 
     it('sorts the node pair so order does not matter', () => {
-      const c1: DistanceConstraint = { type: 'distance', nodeA: cornerA, nodeB: cornerB, side: 'left', length: 100 }
-      const c2: DistanceConstraint = { type: 'distance', nodeA: cornerB, nodeB: cornerA, side: 'right', length: 200 }
+      const c1: ConstraintInput = { type: 'distance', nodeA: cornerA, nodeB: cornerB, side: 'left', length: 100 }
+      const c2: ConstraintInput = { type: 'distance', nodeA: cornerB, nodeB: cornerA, side: 'right', length: 200 }
       expect(buildingConstraintKey(c1)).toBe(buildingConstraintKey(c2))
     })
 
     it('does not include side in the key', () => {
-      const c1: DistanceConstraint = { type: 'distance', nodeA: cornerA, nodeB: cornerB, side: 'left', length: 100 }
-      const c2: DistanceConstraint = { type: 'distance', nodeA: cornerA, nodeB: cornerB, side: 'right', length: 100 }
+      const c1: ConstraintInput = { type: 'distance', nodeA: cornerA, nodeB: cornerB, side: 'left', length: 100 }
+      const c2: ConstraintInput = { type: 'distance', nodeA: cornerA, nodeB: cornerB, side: 'right', length: 100 }
       expect(buildingConstraintKey(c1)).toBe(buildingConstraintKey(c2))
     })
   })
 
   describe('colinear', () => {
     it('sorts all three nodes', () => {
-      const c1: ColinearConstraint = {
+      const c1: ConstraintInput = {
         type: 'colinear',
         nodeA: cornerC,
         nodeB: cornerA,
         nodeC: cornerB,
         side: 'left'
       }
-      const c2: ColinearConstraint = {
+      const c2: ConstraintInput = {
         type: 'colinear',
         nodeA: cornerA,
         nodeB: cornerB,
@@ -97,50 +87,50 @@ describe('buildingConstraintKey', () => {
 
   describe('parallel / perpendicular share key space', () => {
     it('parallel and perpendicular on the same walls produce the same key', () => {
-      const par: ParallelConstraint = { type: 'parallel', wallA, wallB }
-      const perp: PerpendicularConstraint = { type: 'perpendicular', wallA, wallB }
+      const par: ConstraintInput = { type: 'parallel', wallA, wallB }
+      const perp: ConstraintInput = { type: 'perpendicular', wallA, wallB }
       expect(buildingConstraintKey(par)).toBe(buildingConstraintKey(perp))
     })
 
     it('sorts wall pair', () => {
-      const c1: ParallelConstraint = { type: 'parallel', wallA, wallB }
-      const c2: ParallelConstraint = { type: 'parallel', wallA: wallB, wallB: wallA }
+      const c1: ConstraintInput = { type: 'parallel', wallA, wallB }
+      const c2: ConstraintInput = { type: 'parallel', wallA: wallB, wallB: wallA }
       expect(buildingConstraintKey(c1)).toBe(buildingConstraintKey(c2))
     })
   })
 
   describe('horizontal / vertical share key space', () => {
     it('horizontal and vertical on the same nodes produce the same key', () => {
-      const h: HorizontalConstraint = { type: 'horizontal', nodeA: cornerA, nodeB: cornerB }
-      const v: VerticalConstraint = { type: 'vertical', nodeA: cornerA, nodeB: cornerB }
+      const h: ConstraintInput = { type: 'horizontal', nodeA: cornerA, nodeB: cornerB }
+      const v: ConstraintInput = { type: 'vertical', nodeA: cornerA, nodeB: cornerB }
       expect(buildingConstraintKey(h)).toBe(buildingConstraintKey(v))
     })
 
     it('sorts node pair', () => {
-      const h1: HorizontalConstraint = { type: 'horizontal', nodeA: cornerA, nodeB: cornerB }
-      const h2: HorizontalConstraint = { type: 'horizontal', nodeA: cornerB, nodeB: cornerA }
+      const h1: ConstraintInput = { type: 'horizontal', nodeA: cornerA, nodeB: cornerB }
+      const h2: ConstraintInput = { type: 'horizontal', nodeA: cornerB, nodeB: cornerA }
       expect(buildingConstraintKey(h1)).toBe(buildingConstraintKey(h2))
     })
   })
 
   describe('angle', () => {
     it('sorts all three nodes', () => {
-      const c1: AngleConstraint = { type: 'angle', pivot: cornerA, nodeA: cornerB, nodeB: cornerC, angle: 1 }
-      const c2: AngleConstraint = { type: 'angle', pivot: cornerC, nodeA: cornerA, nodeB: cornerB, angle: 2 }
+      const c1: ConstraintInput = { type: 'angle', pivot: cornerA, nodeA: cornerB, nodeB: cornerC, angle: 1 }
+      const c2: ConstraintInput = { type: 'angle', pivot: cornerC, nodeA: cornerA, nodeB: cornerB, angle: 2 }
       expect(buildingConstraintKey(c1)).toBe(buildingConstraintKey(c2))
     })
   })
 
   describe('keys are unique across different constraint types', () => {
     it('distance key differs from hv key for same nodes', () => {
-      const dist: DistanceConstraint = {
+      const dist: ConstraintInput = {
         type: 'distance',
         nodeA: cornerA,
         nodeB: cornerB,
         side: 'left',
         length: 100
       }
-      const h: HorizontalConstraint = { type: 'horizontal', nodeA: cornerA, nodeB: cornerB }
+      const h: ConstraintInput = { type: 'horizontal', nodeA: cornerA, nodeB: cornerB }
       expect(buildingConstraintKey(dist)).not.toBe(buildingConstraintKey(h))
     })
   })
@@ -151,7 +141,7 @@ describe('buildingConstraintKey', () => {
 describe('translateBuildingConstraint', () => {
   describe('distance', () => {
     it('translates to p2p_distance on the left (outside) side', () => {
-      const c: DistanceConstraint = { type: 'distance', nodeA: cornerA, nodeB: cornerB, side: 'left', length: 5000 }
+      const c: ConstraintInput = { type: 'distance', nodeA: cornerA, nodeB: cornerB, side: 'left', length: 5000 }
       const key = 'distance_test'
       const result = translateBuildingConstraint(c, key)
 
@@ -167,7 +157,7 @@ describe('translateBuildingConstraint', () => {
     })
 
     it('translates to p2p_distance on the right (inside) side', () => {
-      const c: DistanceConstraint = { type: 'distance', nodeA: cornerA, nodeB: cornerB, side: 'right', length: 3000 }
+      const c: ConstraintInput = { type: 'distance', nodeA: cornerA, nodeB: cornerB, side: 'right', length: 3000 }
       const result = translateBuildingConstraint(c, 'test')
 
       expect(result).toHaveLength(1)
@@ -182,7 +172,7 @@ describe('translateBuildingConstraint', () => {
 
   describe('colinear', () => {
     it('translates to point_on_line_ppp', () => {
-      const c: ColinearConstraint = {
+      const c: ConstraintInput = {
         type: 'colinear',
         nodeA: cornerA,
         nodeB: cornerB,
@@ -205,7 +195,7 @@ describe('translateBuildingConstraint', () => {
 
   describe('parallel', () => {
     it('translates to parallel without distance', () => {
-      const c: ParallelConstraint = { type: 'parallel', wallA, wallB }
+      const c: ConstraintInput = { type: 'parallel', wallA, wallB }
       const result = translateBuildingConstraint(c, 'par_test')
 
       expect(result).toHaveLength(1)
@@ -219,7 +209,7 @@ describe('translateBuildingConstraint', () => {
     })
 
     it('translates to parallel + p2l_distance when distance is set', () => {
-      const c: ParallelConstraint = { type: 'parallel', wallA, wallB, distance: 1000 }
+      const c: ConstraintInput = { type: 'parallel', wallA, wallB, distance: 1000 }
       const context = {
         getLineStartPointId: (lineId: string) => {
           if (lineId === `wall_${wallA}_in`) return `corner_${cornerA}_in`
@@ -241,7 +231,7 @@ describe('translateBuildingConstraint', () => {
     })
 
     it('skips distance constraint if line start point is not found', () => {
-      const c: ParallelConstraint = { type: 'parallel', wallA, wallB, distance: 1000 }
+      const c: ConstraintInput = { type: 'parallel', wallA, wallB, distance: 1000 }
       const context = {
         getLineStartPointId: () => undefined
       }
@@ -252,7 +242,7 @@ describe('translateBuildingConstraint', () => {
     })
 
     it('skips distance constraint if no context provided', () => {
-      const c: ParallelConstraint = { type: 'parallel', wallA, wallB, distance: 1000 }
+      const c: ConstraintInput = { type: 'parallel', wallA, wallB, distance: 1000 }
       const result = translateBuildingConstraint(c, 'par_no_ctx2')
 
       expect(result).toHaveLength(1)
@@ -261,7 +251,7 @@ describe('translateBuildingConstraint', () => {
 
   describe('perpendicular', () => {
     it('translates to perpendicular_ll', () => {
-      const c: PerpendicularConstraint = { type: 'perpendicular', wallA, wallB }
+      const c: ConstraintInput = { type: 'perpendicular', wallA, wallB }
       const result = translateBuildingConstraint(c, 'perp_test')
 
       expect(result).toHaveLength(1)
@@ -277,7 +267,7 @@ describe('translateBuildingConstraint', () => {
 
   describe('angle', () => {
     it('translates to l2l_angle_pppp using inside points', () => {
-      const c: AngleConstraint = { type: 'angle', pivot: cornerA, nodeA: cornerB, nodeB: cornerC, angle: Math.PI / 2 }
+      const c: ConstraintInput = { type: 'angle', pivot: cornerA, nodeA: cornerB, nodeB: cornerC, angle: Math.PI / 2 }
       const result = translateBuildingConstraint(c, 'ang_test')
 
       expect(result).toHaveLength(1)
@@ -296,7 +286,7 @@ describe('translateBuildingConstraint', () => {
 
   describe('horizontal', () => {
     it('translates to horizontal_pp using inside points', () => {
-      const c: HorizontalConstraint = { type: 'horizontal', nodeA: cornerA, nodeB: cornerB }
+      const c: ConstraintInput = { type: 'horizontal', nodeA: cornerA, nodeB: cornerB }
       const result = translateBuildingConstraint(c, 'h_test')
 
       expect(result).toHaveLength(1)
@@ -312,7 +302,7 @@ describe('translateBuildingConstraint', () => {
 
   describe('vertical', () => {
     it('translates to vertical_pp using inside points', () => {
-      const c: VerticalConstraint = { type: 'vertical', nodeA: cornerA, nodeB: cornerB }
+      const c: ConstraintInput = { type: 'vertical', nodeA: cornerA, nodeB: cornerB }
       const result = translateBuildingConstraint(c, 'v_test')
 
       expect(result).toHaveLength(1)
@@ -331,12 +321,12 @@ describe('translateBuildingConstraint', () => {
 
 describe('getReferencedCornerIds', () => {
   it('extracts corner IDs from distance constraint', () => {
-    const c: DistanceConstraint = { type: 'distance', nodeA: cornerA, nodeB: cornerB, side: 'left', length: 100 }
+    const c: ConstraintInput = { type: 'distance', nodeA: cornerA, nodeB: cornerB, side: 'left', length: 100 }
     expect(getReferencedCornerIds(c)).toEqual([cornerA, cornerB])
   })
 
   it('extracts corner IDs from colinear constraint', () => {
-    const c: ColinearConstraint = {
+    const c: ConstraintInput = {
       type: 'colinear',
       nodeA: cornerA,
       nodeB: cornerB,
@@ -347,29 +337,29 @@ describe('getReferencedCornerIds', () => {
   })
 
   it('extracts corner IDs from angle constraint', () => {
-    const c: AngleConstraint = { type: 'angle', pivot: cornerA, nodeA: cornerB, nodeB: cornerC, angle: 1 }
+    const c: ConstraintInput = { type: 'angle', pivot: cornerA, nodeA: cornerB, nodeB: cornerC, angle: 1 }
     expect(getReferencedCornerIds(c)).toEqual([cornerA, cornerB, cornerC])
   })
 
   it('returns empty for wall-based constraints', () => {
-    const c: ParallelConstraint = { type: 'parallel', wallA, wallB }
+    const c: ConstraintInput = { type: 'parallel', wallA, wallB }
     expect(getReferencedCornerIds(c)).toEqual([])
   })
 })
 
 describe('getReferencedWallIds', () => {
   it('extracts wall IDs from parallel constraint', () => {
-    const c: ParallelConstraint = { type: 'parallel', wallA, wallB }
+    const c: ConstraintInput = { type: 'parallel', wallA, wallB }
     expect(getReferencedWallIds(c)).toEqual([wallA, wallB])
   })
 
   it('extracts wall IDs from perpendicular constraint', () => {
-    const c: PerpendicularConstraint = { type: 'perpendicular', wallA, wallB }
+    const c: ConstraintInput = { type: 'perpendicular', wallA, wallB }
     expect(getReferencedWallIds(c)).toEqual([wallA, wallB])
   })
 
   it('returns empty for node-based constraints', () => {
-    const c: HorizontalConstraint = { type: 'horizontal', nodeA: cornerA, nodeB: cornerB }
+    const c: ConstraintInput = { type: 'horizontal', nodeA: cornerA, nodeB: cornerB }
     expect(getReferencedWallIds(c)).toEqual([])
   })
 })

@@ -1,12 +1,6 @@
 import type { Constraint } from '@salusoft89/planegcs'
 
-import type {
-  Constraint as BuildingConstraint,
-  NodeId,
-  PerimeterCornerId,
-  PerimeterWallId,
-  WallId
-} from '@/building/model'
+import type { ConstraintInput, NodeId, PerimeterCornerId, PerimeterWallId, WallId } from '@/building/model'
 import { isPerimeterCornerId, isPerimeterWallId } from '@/building/model'
 
 // --- ID helpers ---
@@ -63,7 +57,7 @@ export function wallInsideLineId(wallId: WallId): string {
  * and vertical on the same nodes, or parallel and perpendicular on the same
  * walls).
  */
-export function buildingConstraintKey(constraint: BuildingConstraint): string {
+export function buildingConstraintKey(constraint: ConstraintInput): string {
   switch (constraint.type) {
     case 'distance': {
       const [a, b] = sortedPair(constraint.nodeA, constraint.nodeB)
@@ -116,7 +110,7 @@ export interface TranslationContext {
  *   Provides a way to look up line start points from the store.
  */
 export function translateBuildingConstraint(
-  constraint: BuildingConstraint,
+  constraint: ConstraintInput,
   key: string,
   context?: TranslationContext
 ): Constraint[] {
@@ -245,7 +239,7 @@ export function translatedConstraintIds(key: string): string[] {
 /**
  * Extract all PerimeterCornerIds referenced by a building constraint.
  */
-export function getReferencedCornerIds(constraint: BuildingConstraint): PerimeterCornerId[] {
+export function getReferencedCornerIds(constraint: ConstraintInput): PerimeterCornerId[] {
   const nodeIds = getReferencedNodeIds(constraint)
   return nodeIds.filter(isPerimeterCornerId)
 }
@@ -253,12 +247,12 @@ export function getReferencedCornerIds(constraint: BuildingConstraint): Perimete
 /**
  * Extract all PerimeterWallIds referenced by a building constraint.
  */
-export function getReferencedWallIds(constraint: BuildingConstraint): PerimeterWallId[] {
+export function getReferencedWallIds(constraint: ConstraintInput): PerimeterWallId[] {
   const wallIds = getReferencedWallIdsRaw(constraint)
   return wallIds.filter(isPerimeterWallId)
 }
 
-function getReferencedNodeIds(constraint: BuildingConstraint): NodeId[] {
+function getReferencedNodeIds(constraint: ConstraintInput): NodeId[] {
   switch (constraint.type) {
     case 'distance':
     case 'horizontal':
@@ -274,7 +268,7 @@ function getReferencedNodeIds(constraint: BuildingConstraint): NodeId[] {
   }
 }
 
-function getReferencedWallIdsRaw(constraint: BuildingConstraint): WallId[] {
+function getReferencedWallIdsRaw(constraint: ConstraintInput): WallId[] {
   switch (constraint.type) {
     case 'parallel':
     case 'perpendicular':

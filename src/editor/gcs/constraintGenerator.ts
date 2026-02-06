@@ -1,5 +1,5 @@
 import type {
-  Constraint as BuildingConstraint,
+  ConstraintInput,
   PerimeterCornerWithGeometry,
   PerimeterReferenceSide,
   PerimeterWallWithGeometry
@@ -45,9 +45,9 @@ export function generatePresetConstraints(
   corners: PerimeterCornerWithGeometry[],
   walls: PerimeterWallWithGeometry[],
   referenceSide: PerimeterReferenceSide
-): BuildingConstraint[] {
+): ConstraintInput[] {
   const side = referenceSideToConstraintSide(referenceSide)
-  const constraints: BuildingConstraint[] = []
+  const constraints: ConstraintInput[] = []
   const n = corners.length
 
   // Distance constraint for each wall
@@ -116,9 +116,9 @@ export function generateFreeformConstraints(
   walls: PerimeterWallWithGeometry[],
   referenceSide: PerimeterReferenceSide,
   segmentLengthOverrides: (Length | null)[]
-): BuildingConstraint[] {
+): ConstraintInput[] {
   const side = referenceSideToConstraintSide(referenceSide)
-  const constraints: BuildingConstraint[] = []
+  const constraints: ConstraintInput[] = []
   const n = corners.length
 
   // Track which wall indices have H/V constraints on their endpoints

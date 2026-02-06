@@ -1,12 +1,6 @@
 import { useMemo } from 'react'
 
-import type {
-  Constraint as BuildingConstraint,
-  ColinearConstraint,
-  DistanceConstraint,
-  HorizontalConstraint,
-  VerticalConstraint
-} from '@/building/model'
+import type { ConstraintInput } from '@/building/model'
 import { nodeInsidePointId, nodeSidePointId } from '@/editor/gcs/constraintTranslator'
 import { useGcsBuildingConstraints, useGcsPoints } from '@/editor/gcs/store'
 import { useZoom } from '@/editor/hooks/useViewportStore'
@@ -14,7 +8,7 @@ import { useFormatters } from '@/shared/i18n/useFormatters'
 
 interface AnnotationEntry {
   key: string
-  constraint: BuildingConstraint
+  constraint: ConstraintInput
 }
 
 export function ConstraintAnnotations(): React.JSX.Element {
@@ -65,7 +59,7 @@ type PointLookup = Record<string, { x: number; y: number } | undefined>
 // --- Distance annotation ---
 
 interface DistanceAnnotationProps {
-  constraint: DistanceConstraint
+  constraint: Extract<ConstraintInput, { type: 'distance' }>
   points: PointLookup
   zoom: number
   formatLength: (value: number) => string
@@ -162,7 +156,7 @@ function DistanceAnnotation({
 // --- Horizontal annotation ---
 
 interface HVAnnotationProps {
-  constraint: HorizontalConstraint | VerticalConstraint
+  constraint: Extract<ConstraintInput, { type: 'horizontal' }> | Extract<ConstraintInput, { type: 'vertical' }>
   points: PointLookup
   zoom: number
 }
@@ -224,7 +218,7 @@ function VerticalAnnotation({ constraint, points, zoom }: HVAnnotationProps): Re
 // --- Colinear annotation ---
 
 interface ColinearAnnotationProps {
-  constraint: ColinearConstraint
+  constraint: Extract<ConstraintInput, { type: 'colinear' }>
   points: PointLookup
   zoom: number
 }

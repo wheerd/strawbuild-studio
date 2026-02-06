@@ -42,6 +42,7 @@ import {
   isWallPostId
 } from '@/building/model/ids'
 import { InvalidOperationError, NotFoundError } from '@/building/store/errors'
+import { type ConstraintsState, removeConstraintsForEntityDraft } from '@/building/store/slices/constraintsSlice'
 import {
   type TimestampsState,
   removeTimestampDraft,
@@ -180,7 +181,7 @@ export interface PerimetersActions {
 export type PerimetersSlice = PerimetersState & { actions: PerimetersActions }
 
 export const createPerimetersSlice: StateCreator<
-  PerimetersSlice & TimestampsState,
+  PerimetersSlice & TimestampsState & ConstraintsState,
   [['zustand/immer', never]],
   [],
   PerimetersSlice
@@ -1115,7 +1116,7 @@ export const createPerimetersSlice: StateCreator<
 
 // Helper to remove a corner and merge adjacent walls
 const removeCornerAndMergeWalls = (
-  state: PerimetersSlice & TimestampsState,
+  state: PerimetersSlice & TimestampsState & ConstraintsState,
   perimeter: Perimeter,
   corner: PerimeterCorner
 ): void => {
@@ -1170,7 +1171,10 @@ const removeCornerAndMergeWalls = (
 }
 
 // Helper to remove a wall and merge the adjacent walls
-const removeWallAndMergeAdjacent = (state: PerimetersSlice & TimestampsState, wall: PerimeterWall): void => {
+const removeWallAndMergeAdjacent = (
+  state: PerimetersSlice & TimestampsState & ConstraintsState,
+  wall: PerimeterWall
+): void => {
   const perimeter = state.perimeters[wall.perimeterId]
   const startCorner = state.perimeterCorners[wall.startCornerId]
   const endCorner = state.perimeterCorners[wall.endCornerId]
@@ -1351,7 +1355,7 @@ const validatePostOnWall = (
   )
 }
 
-function cleanUpOrphaned(state: PerimetersSlice & TimestampsState) {
+function cleanUpOrphaned(state: PerimetersSlice & TimestampsState & ConstraintsState) {
   // Track IDs of entities to delete for timestamp cleanup
   const entityIdsToRemove: EntityId[] = []
 
@@ -1362,6 +1366,7 @@ function cleanUpOrphaned(state: PerimetersSlice & TimestampsState) {
       delete state.perimeterWalls[wall.id]
       delete state._perimeterWallGeometry[wall.id]
       entityIdsToRemove.push(wall.id)
+      removeConstraintsForEntityDraft(state, wall.id)
     } else {
       validWallIds.add(wall.id)
     }
@@ -1376,6 +1381,7 @@ function cleanUpOrphaned(state: PerimetersSlice & TimestampsState) {
       delete state.perimeterCorners[corner.id]
       delete state._perimeterCornerGeometry[corner.id]
       entityIdsToRemove.push(corner.id)
+      removeConstraintsForEntityDraft(state, corner.id)
     }
   }
 
