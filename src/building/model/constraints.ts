@@ -31,6 +31,7 @@ export interface ColinearConstraint {
   nodeA: NodeId
   nodeB: NodeId
   nodeC: NodeId
+  side: 'left' | 'right'
 }
 
 export interface PerpendicularConstraint {

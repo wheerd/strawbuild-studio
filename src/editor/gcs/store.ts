@@ -8,10 +8,23 @@ import {
 } from '@salusoft89/planegcs'
 import { create } from 'zustand'
 
-import type { PerimeterCornerId, PerimeterId, PerimeterWithGeometry } from '@/building/model'
+import type {
+  Constraint as BuildingConstraint,
+  PerimeterCornerId,
+  PerimeterId,
+  PerimeterWallId,
+  PerimeterWithGeometry
+} from '@/building/model'
 import { getModelActions } from '@/building/store'
 import { createGcs } from '@/editor/gcs/gcsInstance'
 
+import {
+  buildingConstraintKey,
+  getReferencedCornerIds,
+  getReferencedWallIds,
+  translateBuildingConstraint,
+  translatedConstraintIds
+} from './constraintTranslator'
 import { validateSolution } from './validator'
 
 interface DragState {
@@ -27,6 +40,7 @@ interface GcsStoreState {
   lines: SketchLine[]
   visualLines: { id: string; p1Id: string; p2Id: string }[]
   constraints: Record<string, Constraint>
+  buildingConstraints: Record<string, BuildingConstraint>
   gcs: GcsWrapper | null
   drag: DragState | null
   cornerOrderMap: Map<PerimeterId, PerimeterCornerId[]>
@@ -40,6 +54,9 @@ interface GcsStoreActions {
   addLine: (id: string, p1Id: string, p2Id: string) => void
   addVisualLine: (id: string, p1Id: string, p2Id: string) => void
   addConstraint: (constraint: Constraint) => void
+
+  addBuildingConstraint: (constraint: BuildingConstraint) => string
+  removeBuildingConstraint: (key: string) => void
 
   installDragConstraints: (pointId: string, mouseX: number, mouseY: number) => DragState | null
   startDrag: (pointId: string, mouseX: number, mouseY: number) => void
@@ -59,6 +76,7 @@ const useGcsStore = create<GcsStore>()((set, get) => ({
   lines: [],
   visualLines: [],
   constraints: {},
+  buildingConstraints: {},
   gcs: null,
   drag: null,
   cornerOrderMap: new Map(),
@@ -155,6 +173,83 @@ const useGcsStore = create<GcsStore>()((set, get) => ({
       }))
     },
 
+    addBuildingConstraint: constraint => {
+      const state = get()
+      const key = buildingConstraintKey(constraint)
+
+      // Check for duplicate
+      if (key in state.buildingConstraints) {
+        console.warn(`Building constraint with key "${key}" already exists, skipping.`)
+        return key
+      }
+
+      // Validate that all referenced corners exist as GCS points
+      const cornerIds = getReferencedCornerIds(constraint)
+      for (const cornerId of cornerIds) {
+        const inId = `corner_${cornerId}_in`
+        const outId = `corner_${cornerId}_out`
+        if (!(inId in state.points) || !(outId in state.points)) {
+          throw new Error(`Cannot add building constraint: corner "${cornerId}" not found in GCS points.`)
+        }
+      }
+
+      // Validate that all referenced walls exist as GCS lines
+      const wallIds = getReferencedWallIds(constraint)
+      for (const wallId of wallIds) {
+        const lineId = `wall_${wallId}_in`
+        if (!state.lines.some(l => l.id === lineId)) {
+          throw new Error(`Cannot add building constraint: wall "${wallId}" not found in GCS lines.`)
+        }
+      }
+
+      // Translate and add the planegcs constraints
+      const context = {
+        getLineStartPointId: (lineId: string) => {
+          const line = state.lines.find(l => l.id === lineId)
+          return line?.p1_id
+        }
+      }
+
+      const translated = translateBuildingConstraint(constraint, key, context)
+
+      set(state => {
+        const newConstraints = { ...state.constraints }
+        for (const c of translated) {
+          newConstraints[c.id] = c
+        }
+        return {
+          buildingConstraints: { ...state.buildingConstraints, [key]: constraint },
+          constraints: newConstraints
+        }
+      })
+
+      return key
+    },
+
+    removeBuildingConstraint: key => {
+      const state = get()
+
+      if (!(key in state.buildingConstraints)) {
+        console.warn(`Building constraint with key "${key}" not found, skipping removal.`)
+        return
+      }
+
+      const idsToRemove = new Set(translatedConstraintIds(key))
+
+      set(state => {
+        const newConstraints = { ...state.constraints }
+        for (const id of idsToRemove) {
+          delete newConstraints[id]
+        }
+
+        const { [key]: _, ...remainingBuildingConstraints } = state.buildingConstraints
+        return {
+          buildingConstraints: remainingBuildingConstraints,
+          constraints: newConstraints
+        }
+      })
+    },
+
     startDrag: (pointId, mouseX, mouseY) => {
       const state = get()
       const point = state.points[pointId]
@@ -244,18 +339,52 @@ const useGcsStore = create<GcsStore>()((set, get) => ({
         cornerOrderMap.set(perimeter.id, [...perimeter.cornerIds])
       }
 
+      // Collect the set of valid corner IDs and wall IDs from the new perimeters
+      const validCornerIds = new Set<PerimeterCornerId>()
+      const validWallIds = new Set<PerimeterWallId>()
+      const modelActions = getModelActions()
+
+      for (const perimeter of perimeters) {
+        const corners = modelActions.getPerimeterCornersById(perimeter.id)
+        const walls = modelActions.getPerimeterWallsById(perimeter.id)
+        for (const corner of corners) {
+          validCornerIds.add(corner.id)
+        }
+        for (const wall of walls) {
+          validWallIds.add(wall.id)
+        }
+      }
+
+      // Filter existing building constraints: keep only those whose references still exist
+      const previousBuildingConstraints = get().buildingConstraints
+      const survivingConstraints: Record<string, BuildingConstraint> = {}
+
+      for (const [key, constraint] of Object.entries(previousBuildingConstraints)) {
+        const referencedCorners = getReferencedCornerIds(constraint)
+        const referencedWalls = getReferencedWallIds(constraint)
+
+        const allCornersExist = referencedCorners.every(id => validCornerIds.has(id))
+        const allWallsExist = referencedWalls.every(id => validWallIds.has(id))
+
+        if (allCornersExist && allWallsExist) {
+          survivingConstraints[key] = constraint
+        }
+      }
+
+      // Reset geometry state (but not buildingConstraints yet)
       set({
         points: {},
         lines: [],
         visualLines: [],
         constraints: {},
+        buildingConstraints: {},
         drag: null,
         cornerOrderMap
       })
 
       const { actions } = get()
-      const modelActions = getModelActions()
 
+      // Repopulate geometry from perimeters
       for (const perimeter of perimeters) {
         const corners = modelActions.getPerimeterCornersById(perimeter.id)
         const walls = modelActions.getPerimeterWallsById(perimeter.id)
@@ -291,6 +420,11 @@ const useGcsStore = create<GcsStore>()((set, get) => ({
           })
         }
       }
+
+      // Re-add surviving building constraints
+      for (const constraint of Object.values(survivingConstraints)) {
+        actions.addBuildingConstraint(constraint)
+      }
     }
   }
 }))
@@ -299,4 +433,10 @@ export const useGcsPoints = (): GcsStoreState['points'] => useGcsStore(state => 
 export const useGcsLines = (): GcsStoreState['lines'] => useGcsStore(state => state.lines)
 export const useGcsVisualLines = (): GcsStoreState['visualLines'] => useGcsStore(state => state.visualLines)
 export const useGcsDrag = (): GcsStoreState['drag'] => useGcsStore(state => state.drag)
+export const useGcsBuildingConstraints = (): GcsStoreState['buildingConstraints'] =>
+  useGcsStore(state => state.buildingConstraints)
 export const useGcsActions = (): GcsStoreActions => useGcsStore(state => state.actions)
+
+// Non-hook getters for use outside React components (e.g. in tests or imperative code)
+export const getGcsActions = (): GcsStoreActions => useGcsStore.getState().actions
+export const getGcsState = (): GcsStoreState => useGcsStore.getState()
