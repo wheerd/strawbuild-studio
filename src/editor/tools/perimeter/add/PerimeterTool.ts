@@ -2,6 +2,8 @@ import type { PerimeterReferenceSide } from '@/building/model'
 import type { RingBeamAssemblyId, WallAssemblyId } from '@/building/model/ids'
 import { getModelActions } from '@/building/store'
 import { getConfigActions } from '@/construction/config/store'
+import { generateFreeformConstraints } from '@/editor/gcs/constraintGenerator'
+import { getGcsActions } from '@/editor/gcs/store'
 import { getViewModeActions } from '@/editor/hooks/useViewMode'
 import { BasePolygonTool, type PolygonToolStateBase } from '@/editor/tools/shared/polygon/BasePolygonTool'
 import type { ToolImplementation } from '@/editor/tools/system/types'
@@ -65,19 +67,25 @@ export class PerimeterTool extends BasePolygonTool<PerimeterToolState> implement
     this.state.referenceSide = 'inside'
   }
 
+  /** Whether `buildPolygon` reversed the points to make them clockwise. */
+  private wasReversed = false
+
   protected buildPolygon(points: Vec2[]): Polygon2D {
     let polygon: Polygon2D = { points }
     if (!polygonIsClockwise(polygon)) {
       polygon = { points: [...points].reverse() }
+      this.wasReversed = true
+    } else {
+      this.wasReversed = false
     }
     return polygon
   }
 
   protected onPolygonCompleted(polygon: Polygon2D): void {
-    const { addPerimeter, getActiveStoreyId } = getModelActions()
+    const { addPerimeter, getActiveStoreyId, getPerimeterCornersById, getPerimeterWallsById } = getModelActions()
     const activeStoreyId = getActiveStoreyId()
 
-    addPerimeter(
+    const perimeter = addPerimeter(
       activeStoreyId,
       polygon,
       this.state.wallAssemblyId,
@@ -86,5 +94,29 @@ export class PerimeterTool extends BasePolygonTool<PerimeterToolState> implement
       this.state.topRingBeamAssemblyId,
       this.state.referenceSide
     )
+
+    // Adjust overrides if buildPolygon reversed the point order.
+    // Original segments [P0→P1, ..., Pn-1→P0] with overrides [o0, ..., on-1].
+    // Reversed segments [Pn-1→Pn-2, ..., P1→P0, P0→Pn-1].
+    // Non-closing overrides reverse; closing override stays at end.
+    let overrides = [...this.state.segmentLengthOverrides]
+    if (this.wasReversed && overrides.length > 1) {
+      const closing = overrides[overrides.length - 1]
+      const nonClosing = overrides.slice(0, -1).reverse()
+      overrides = [...nonClosing, closing]
+    }
+
+    // Generate and add freeform constraints
+    const corners = getPerimeterCornersById(perimeter.id)
+    const walls = getPerimeterWallsById(perimeter.id)
+    const constraints = generateFreeformConstraints(corners, walls, this.state.referenceSide, overrides)
+    const gcsActions = getGcsActions()
+    for (const constraint of constraints) {
+      try {
+        gcsActions.addBuildingConstraint(constraint)
+      } catch {
+        // Non-fatal: constraint may conflict or reference missing geometry
+      }
+    }
   }
 }

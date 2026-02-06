@@ -1,4 +1,6 @@
 import { getModelActions } from '@/building/store'
+import { generatePresetConstraints } from '@/editor/gcs/constraintGenerator'
+import { getGcsActions } from '@/editor/gcs/store'
 import { replaceSelection } from '@/editor/hooks/useSelectionStore'
 import { getViewModeActions } from '@/editor/hooks/useViewMode'
 import { viewportActions } from '@/editor/hooks/useViewportStore'
@@ -24,7 +26,7 @@ export class PerimeterPresetTool extends BaseTool implements ToolImplementation 
       const translatedPoints = points.map(point => subVec2(point, points[0]))
       const polygon = ensurePolygonIsClockwise({ points: translatedPoints })
 
-      const { getActiveStoreyId, addPerimeter } = getModelActions()
+      const { getActiveStoreyId, addPerimeter, getPerimeterCornersById, getPerimeterWallsById } = getModelActions()
       const perimeter = addPerimeter(
         getActiveStoreyId(),
         polygon,
@@ -34,6 +36,19 @@ export class PerimeterPresetTool extends BaseTool implements ToolImplementation 
         config.topRingBeamAssemblyId,
         config.referenceSide
       )
+
+      // Generate and add preset constraints
+      const corners = getPerimeterCornersById(perimeter.id)
+      const walls = getPerimeterWallsById(perimeter.id)
+      const constraints = generatePresetConstraints(corners, walls, config.referenceSide)
+      const gcsActions = getGcsActions()
+      for (const constraint of constraints) {
+        try {
+          gcsActions.addBuildingConstraint(constraint)
+        } catch (e) {
+          console.warn('Could not add constraint', constraint, e)
+        }
+      }
 
       // Select the newly created perimeter
       replaceSelection([perimeter.id])

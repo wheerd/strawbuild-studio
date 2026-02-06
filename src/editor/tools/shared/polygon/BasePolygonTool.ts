@@ -26,6 +26,8 @@ export interface PolygonToolStateBase {
   isCurrentSegmentValid: boolean
   isClosingSegmentValid: boolean
   lengthOverride: Length | null
+  /** Per-segment record of which segments had a user-typed length override. */
+  segmentLengthOverrides: (Length | null)[]
 }
 
 /**
@@ -47,6 +49,7 @@ export abstract class BasePolygonTool<TState extends PolygonToolStateBase> exten
       isCurrentSegmentValid: true,
       isClosingSegmentValid: true,
       lengthOverride: null,
+      segmentLengthOverrides: [] as (Length | null)[],
       snapContext: this.extendSnapContext(this.createBaseSnapContext([])),
       ...initialState
     } as TState
@@ -73,6 +76,13 @@ export abstract class BasePolygonTool<TState extends PolygonToolStateBase> exten
         const lastPoint = this.state.points[this.state.points.length - 1]
         const dir = direction(lastPoint, snapCoords)
         pointToAdd = scaleAddVec2(lastPoint, dir, this.state.lengthOverride)
+      }
+
+      // Record the length override for the segment that just ended at pointToAdd.
+      // Segment i goes from points[i] to points[i+1], so when we push point[n]
+      // the segment from points[n-1] to points[n] is segment n-1.
+      if (this.state.points.length > 0) {
+        this.state.segmentLengthOverrides.push(this.state.lengthOverride)
       }
 
       this.state.points.push(pointToAdd)
@@ -144,6 +154,9 @@ export abstract class BasePolygonTool<TState extends PolygonToolStateBase> exten
   public complete(): void {
     if (this.state.points.length < this.getMinimumPointCount()) return
     if (!this.state.isClosingSegmentValid) return
+
+    // The closing segment (last→first) never has a user-typed override.
+    this.state.segmentLengthOverrides.push(null)
 
     const polygon = this.buildPolygon([...this.state.points])
 
@@ -326,6 +339,7 @@ export abstract class BasePolygonTool<TState extends PolygonToolStateBase> exten
     this.state.isCurrentSegmentValid = true
     this.state.isClosingSegmentValid = true
     this.state.lengthOverride = null
+    this.state.segmentLengthOverrides = []
     this.updateSnapContext()
   }
 }

@@ -41,6 +41,7 @@ describe('PolygonToolOverlay', () => {
       },
       isCurrentSegmentValid: true,
       isClosingSegmentValid: true,
+      segmentLengthOverrides: [],
       wallAssemblyId: createWallAssemblyId(),
       wallThickness: 420,
       lengthOverride: null,

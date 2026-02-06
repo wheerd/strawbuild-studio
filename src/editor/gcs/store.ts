@@ -12,8 +12,7 @@ import type {
   Constraint as BuildingConstraint,
   PerimeterCornerId,
   PerimeterId,
-  PerimeterWallId,
-  PerimeterWithGeometry
+  PerimeterWallId
 } from '@/building/model'
 import { getModelActions } from '@/building/store'
 import { createGcs } from '@/editor/gcs/gcsInstance'
@@ -35,6 +34,13 @@ interface DragState {
   paramYPos: number
 }
 
+interface PerimeterRegistryEntry {
+  pointIds: string[]
+  lineIds: string[]
+  visualLineIds: string[]
+  constraintIds: string[]
+}
+
 interface GcsStoreState {
   points: Record<string, SketchPoint>
   lines: SketchLine[]
@@ -44,16 +50,24 @@ interface GcsStoreState {
   gcs: GcsWrapper | null
   drag: DragState | null
   cornerOrderMap: Map<PerimeterId, PerimeterCornerId[]>
+  perimeterRegistry: Record<PerimeterId, PerimeterRegistryEntry>
 }
 
 interface GcsStoreActions {
   initGCS: () => void
-  populateFromPerimeters: (perimeters: PerimeterWithGeometry[]) => void
+
+  addPerimeterGeometry: (perimeterId: PerimeterId) => void
+  removePerimeterGeometry: (perimeterId: PerimeterId) => void
 
   addPoint: (id: string, x: number, y: number, fixed?: boolean) => void
   addLine: (id: string, p1Id: string, p2Id: string) => void
   addVisualLine: (id: string, p1Id: string, p2Id: string) => void
   addConstraint: (constraint: Constraint) => void
+
+  removePoints: (ids: string[]) => void
+  removeLines: (ids: string[]) => void
+  removeVisualLines: (ids: string[]) => void
+  removeConstraints: (ids: string[]) => void
 
   addBuildingConstraint: (constraint: BuildingConstraint) => string
   removeBuildingConstraint: (key: string) => void
@@ -80,6 +94,7 @@ const useGcsStore = create<GcsStore>()((set, get) => ({
   gcs: null,
   drag: null,
   cornerOrderMap: new Map(),
+  perimeterRegistry: {},
 
   actions: {
     initGCS: () => {
@@ -171,6 +186,46 @@ const useGcsStore = create<GcsStore>()((set, get) => ({
       set(state => ({
         constraints: { ...state.constraints, [constraint.id]: { ...constraint } }
       }))
+    },
+
+    removePoints: ids => {
+      if (ids.length === 0) return
+      const toRemove = new Set(ids)
+      set(state => {
+        const newPoints = { ...state.points }
+        for (const id of toRemove) {
+          delete newPoints[id]
+        }
+        return { points: newPoints }
+      })
+    },
+
+    removeLines: ids => {
+      if (ids.length === 0) return
+      const toRemove = new Set(ids)
+      set(state => ({
+        lines: state.lines.filter(l => !toRemove.has(l.id))
+      }))
+    },
+
+    removeVisualLines: ids => {
+      if (ids.length === 0) return
+      const toRemove = new Set(ids)
+      set(state => ({
+        visualLines: state.visualLines.filter(l => !toRemove.has(l.id))
+      }))
+    },
+
+    removeConstraints: ids => {
+      if (ids.length === 0) return
+      const toRemove = new Set(ids)
+      set(state => {
+        const newConstraints = { ...state.constraints }
+        for (const id of toRemove) {
+          delete newConstraints[id]
+        }
+        return { constraints: newConstraints }
+      })
     },
 
     addBuildingConstraint: constraint => {
@@ -333,98 +388,150 @@ const useGcsStore = create<GcsStore>()((set, get) => ({
       return false
     },
 
-    populateFromPerimeters: perimeters => {
-      const cornerOrderMap = new Map<PerimeterId, PerimeterCornerId[]>()
-      for (const perimeter of perimeters) {
-        cornerOrderMap.set(perimeter.id, [...perimeter.cornerIds])
+    addPerimeterGeometry: perimeterId => {
+      const state = get()
+      const { actions } = state
+
+      // If already tracked, remove first (graceful upsert)
+      if (perimeterId in state.perimeterRegistry) {
+        actions.removePerimeterGeometry(perimeterId)
       }
 
-      // Collect the set of valid corner IDs and wall IDs from the new perimeters
-      const validCornerIds = new Set<PerimeterCornerId>()
-      const validWallIds = new Set<PerimeterWallId>()
       const modelActions = getModelActions()
+      const corners = modelActions.getPerimeterCornersById(perimeterId)
+      const walls = modelActions.getPerimeterWallsById(perimeterId)
+      const perimeter = modelActions.getPerimeterById(perimeterId)
 
-      for (const perimeter of perimeters) {
-        const corners = modelActions.getPerimeterCornersById(perimeter.id)
-        const walls = modelActions.getPerimeterWallsById(perimeter.id)
-        for (const corner of corners) {
-          validCornerIds.add(corner.id)
-        }
-        for (const wall of walls) {
-          validWallIds.add(wall.id)
+      const entry: PerimeterRegistryEntry = {
+        pointIds: [],
+        lineIds: [],
+        visualLineIds: [],
+        constraintIds: []
+      }
+
+      // Add points for each corner
+      for (const corner of corners) {
+        const inId = `corner_${corner.id}_in`
+        const outId = `corner_${corner.id}_out`
+        actions.addPoint(inId, corner.insidePoint[0], corner.insidePoint[1], false)
+        actions.addPoint(outId, corner.outsidePoint[0], corner.outsidePoint[1], false)
+        entry.pointIds.push(inId, outId)
+
+        const visualId = `corner_${corner.id}_line`
+        actions.addVisualLine(visualId, inId, outId)
+        entry.visualLineIds.push(visualId)
+      }
+
+      // Add lines and structural constraints for each wall
+      for (const wall of walls) {
+        const startIn = `corner_${wall.startCornerId}_in`
+        const startOut = `corner_${wall.startCornerId}_out`
+        const endIn = `corner_${wall.endCornerId}_in`
+        const endOut = `corner_${wall.endCornerId}_out`
+
+        const inLineId = `wall_${wall.id}_in`
+        const outLineId = `wall_${wall.id}_out`
+        actions.addLine(inLineId, startIn, endIn)
+        actions.addLine(outLineId, startOut, endOut)
+        entry.lineIds.push(inLineId, outLineId)
+
+        const parallelId = `parallel_${wall.id}`
+        actions.addConstraint({
+          id: parallelId,
+          type: 'parallel',
+          l1_id: inLineId,
+          l2_id: outLineId
+        })
+        entry.constraintIds.push(parallelId)
+
+        const thicknessId = `thickness_${wall.id}`
+        actions.addConstraint({
+          id: thicknessId,
+          type: 'p2l_distance',
+          p_id: startOut,
+          l_id: inLineId,
+          distance: wall.thickness
+        })
+        entry.constraintIds.push(thicknessId)
+      }
+
+      // Update registry and corner order map
+      const newCornerOrderMap = new Map(state.cornerOrderMap)
+      newCornerOrderMap.set(perimeterId, [...perimeter.cornerIds])
+
+      set(state => ({
+        perimeterRegistry: { ...state.perimeterRegistry, [perimeterId]: entry },
+        cornerOrderMap: newCornerOrderMap
+      }))
+    },
+
+    removePerimeterGeometry: perimeterId => {
+      const state = get()
+      const { actions } = state
+      const entry = state.perimeterRegistry[perimeterId]
+
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+      if (!entry) {
+        console.warn(`Perimeter "${perimeterId}" not found in GCS registry, skipping removal.`)
+        return
+      }
+
+      // Collect corner and wall IDs belonging to this perimeter
+      const perimeterCornerIds = new Set<PerimeterCornerId>()
+      const perimeterWallIds = new Set<PerimeterWallId>()
+
+      for (const pointId of entry.pointIds) {
+        // Point IDs are like "corner_{cornerId}_in" or "corner_{cornerId}_out"
+        const match = /^corner_(.+?)_(in|out)$/.exec(pointId)
+        if (match) {
+          perimeterCornerIds.add(match[1] as PerimeterCornerId)
         }
       }
 
-      // Filter existing building constraints: keep only those whose references still exist
-      const previousBuildingConstraints = get().buildingConstraints
-      const survivingConstraints: Record<string, BuildingConstraint> = {}
+      for (const lineId of entry.lineIds) {
+        // Line IDs are like "wall_{wallId}_in" or "wall_{wallId}_out"
+        const match = /^wall_(.+?)_(in|out)$/.exec(lineId)
+        if (match) {
+          perimeterWallIds.add(match[1] as PerimeterWallId)
+        }
+      }
 
-      for (const [key, constraint] of Object.entries(previousBuildingConstraints)) {
+      // Remove building constraints whose referenced entities belong to this perimeter
+      const buildingConstraintKeysToRemove: string[] = []
+      for (const [key, constraint] of Object.entries(state.buildingConstraints)) {
         const referencedCorners = getReferencedCornerIds(constraint)
         const referencedWalls = getReferencedWallIds(constraint)
 
-        const allCornersExist = referencedCorners.every(id => validCornerIds.has(id))
-        const allWallsExist = referencedWalls.every(id => validWallIds.has(id))
+        const usesPerimeterCorner = referencedCorners.some(id => perimeterCornerIds.has(id))
+        const usesPerimeterWall = referencedWalls.some(id => perimeterWallIds.has(id))
 
-        if (allCornersExist && allWallsExist) {
-          survivingConstraints[key] = constraint
+        if (usesPerimeterCorner || usesPerimeterWall) {
+          buildingConstraintKeysToRemove.push(key)
         }
       }
 
-      // Reset geometry state (but not buildingConstraints yet)
-      set({
-        points: {},
-        lines: [],
-        visualLines: [],
-        constraints: {},
-        buildingConstraints: {},
-        drag: null,
-        cornerOrderMap
+      for (const key of buildingConstraintKeysToRemove) {
+        actions.removeBuildingConstraint(key)
+      }
+
+      // Remove structural constraints, lines, visual lines, and points
+      actions.removeConstraints(entry.constraintIds)
+      actions.removeLines(entry.lineIds)
+      actions.removeVisualLines(entry.visualLineIds)
+      actions.removePoints(entry.pointIds)
+
+      // Update registry and corner order map
+      const newCornerOrderMap = new Map(state.cornerOrderMap)
+      newCornerOrderMap.delete(perimeterId)
+
+      set(state => {
+        const { [perimeterId]: _, ...remainingRegistry } = state.perimeterRegistry
+        return {
+          perimeterRegistry: remainingRegistry,
+          cornerOrderMap: newCornerOrderMap,
+          drag: null
+        }
       })
-
-      const { actions } = get()
-
-      // Repopulate geometry from perimeters
-      for (const perimeter of perimeters) {
-        const corners = modelActions.getPerimeterCornersById(perimeter.id)
-        const walls = modelActions.getPerimeterWallsById(perimeter.id)
-
-        for (const corner of corners) {
-          actions.addPoint(`corner_${corner.id}_in`, corner.insidePoint[0], corner.insidePoint[1], false)
-          actions.addPoint(`corner_${corner.id}_out`, corner.outsidePoint[0], corner.outsidePoint[1], false)
-          actions.addVisualLine(`corner_${corner.id}_line`, `corner_${corner.id}_in`, `corner_${corner.id}_out`)
-        }
-
-        for (const wall of walls) {
-          const startIn = `corner_${wall.startCornerId}_in`
-          const startOut = `corner_${wall.startCornerId}_out`
-          const endIn = `corner_${wall.endCornerId}_in`
-          const endOut = `corner_${wall.endCornerId}_out`
-
-          actions.addLine(`wall_${wall.id}_in`, startIn, endIn)
-          actions.addLine(`wall_${wall.id}_out`, startOut, endOut)
-
-          actions.addConstraint({
-            id: `parallel_${wall.id}`,
-            type: 'parallel',
-            l1_id: `wall_${wall.id}_in`,
-            l2_id: `wall_${wall.id}_out`
-          })
-
-          actions.addConstraint({
-            id: `thickness_${wall.id}`,
-            type: 'p2l_distance',
-            p_id: startOut,
-            l_id: `wall_${wall.id}_in`,
-            distance: wall.thickness
-          })
-        }
-      }
-
-      // Re-add surviving building constraints
-      for (const constraint of Object.values(survivingConstraints)) {
-        actions.addBuildingConstraint(constraint)
-      }
     }
   }
 }))
@@ -435,6 +542,8 @@ export const useGcsVisualLines = (): GcsStoreState['visualLines'] => useGcsStore
 export const useGcsDrag = (): GcsStoreState['drag'] => useGcsStore(state => state.drag)
 export const useGcsBuildingConstraints = (): GcsStoreState['buildingConstraints'] =>
   useGcsStore(state => state.buildingConstraints)
+export const useGcsPerimeterRegistry = (): GcsStoreState['perimeterRegistry'] =>
+  useGcsStore(state => state.perimeterRegistry)
 export const useGcsActions = (): GcsStoreActions => useGcsStore(state => state.actions)
 
 // Non-hook getters for use outside React components (e.g. in tests or imperative code)

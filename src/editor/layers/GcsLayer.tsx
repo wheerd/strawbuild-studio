@@ -1,9 +1,11 @@
-import { useCallback, useMemo } from 'react'
+import { useCallback } from 'react'
 import type { RefObject } from 'react'
 
 import { useGcsActions, useGcsDrag, useGcsLines, useGcsPoints, useGcsVisualLines } from '@/editor/gcs/store'
 import { useViewportActions, useZoom } from '@/editor/hooks/useViewportStore'
 import { useSvgMouseTransform } from '@/editor/tools/system/hooks/useSvgMouseTransform'
+
+import { ConstraintAnnotations } from './ConstraintAnnotations'
 
 interface GcsLayerProps {
   svgRef: RefObject<SVGSVGElement | null>
@@ -18,16 +20,6 @@ export function GcsLayer({ svgRef }: GcsLayerProps): React.JSX.Element {
   const zoom = useZoom()
   const { stageToWorld } = useViewportActions()
   const mouseTransform = useSvgMouseTransform(svgRef)
-
-  const cornerPoints = useMemo(() => {
-    const corners: { id: string; point: { x: number; y: number } | undefined }[] = [
-      { id: 'A_corner', point: points.A_corner },
-      { id: 'B_corner', point: points.B_corner },
-      { id: 'C_corner', point: points.C_corner },
-      { id: 'D_corner', point: points.D_corner }
-    ]
-    return corners
-  }, [points])
 
   const handlePointerDown = useCallback(
     (e: React.PointerEvent<SVGElement>, pointId: string) => {
@@ -153,23 +145,7 @@ export function GcsLayer({ svgRef }: GcsLayerProps): React.JSX.Element {
         )
       })}
 
-      {cornerPoints.map(({ id, point }) => {
-        if (!point) {
-          return null
-        }
-
-        return (
-          <circle
-            key={id}
-            cx={point.x}
-            cy={point.y}
-            r={5 / zoom}
-            fill="hsl(var(--primary))"
-            stroke="none"
-            className="pointer-events-none"
-          />
-        )
-      })}
+      <ConstraintAnnotations />
     </g>
   )
 }

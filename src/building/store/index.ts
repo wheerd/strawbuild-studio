@@ -11,6 +11,7 @@ import type {
   FloorOpening,
   OpeningWithGeometry,
   Perimeter,
+  PerimeterCorner,
   PerimeterCornerWithGeometry,
   PerimeterWall,
   PerimeterWallWithGeometry,
@@ -402,6 +403,9 @@ export const subscribeToPerimeters = (cb: (current?: Perimeter, previous?: Perim
 
 export const subscribeToWalls = (cb: (current?: PerimeterWall, previous?: PerimeterWall) => void) =>
   subscribeRecords(useModelStore, s => s.perimeterWalls, cb)
+
+export const subscribeToCorners = (cb: (current?: PerimeterCorner, previous?: PerimeterCorner) => void) =>
+  subscribeRecords(useModelStore, s => s.perimeterCorners, cb)
 
 export const subscribeToFloorOpenings = (cb: (current?: FloorOpening, previous?: FloorOpening) => void) =>
   subscribeRecords(useModelStore, s => s.floorOpenings, cb)
