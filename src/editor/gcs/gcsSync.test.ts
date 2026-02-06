@@ -1,13 +1,14 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-import type { Constraint, Perimeter, PerimeterId, StoreyId } from '@/building/model'
-import type { ConstraintInput, NodeId } from '@/building/model'
+import type { Constraint, ConstraintId, NodeId, Perimeter, PerimeterId, StoreyId } from '@/building/model'
 
 // --- Mock state ---
 
 let mockActiveStoreyId: StoreyId = 'storey_1' as StoreyId
 const mockPerimetersByStorey: Record<StoreyId, Perimeter[]> = {}
 const mockPerimeterRegistry: Record<PerimeterId, unknown> = {}
+const mockPerimetersById: Record<PerimeterId, Perimeter> = {}
+const mockBuildingConstraints: Record<ConstraintId, Constraint> = {}
 
 // Captured subscription callbacks
 let capturedStoreySelector: ((state: unknown) => unknown) | null = null
@@ -25,7 +26,9 @@ const mockGcsRemoveBuildingConstraint = vi.fn()
 vi.mock('@/building/store', () => ({
   getModelActions: () => ({
     getActiveStoreyId: () => mockActiveStoreyId,
-    getPerimetersByStorey: (storeyId: StoreyId) => mockPerimetersByStorey[storeyId] ?? []
+    getPerimetersByStorey: (storeyId: StoreyId) => mockPerimetersByStorey[storeyId] ?? [],
+    getPerimeterById: (perimeterId: PerimeterId) => mockPerimetersById[perimeterId],
+    getAllBuildingConstraints: () => mockBuildingConstraints
   }),
   subscribeToModelChanges: (
     selector: (state: unknown) => unknown,
@@ -60,7 +63,7 @@ vi.mock('./store', () => ({
 
 // Reset state before each test
 beforeEach(() => {
-  vi.clearAllMocks()
+  vi.resetAllMocks()
   capturedStoreySelector = null
   capturedStoreyListener = null
   capturedPerimeterCallback = null
@@ -74,6 +77,12 @@ beforeEach(() => {
   for (const key of Object.keys(mockPerimeterRegistry) as PerimeterId[]) {
     delete mockPerimeterRegistry[key]
   }
+  for (const key of Object.keys(mockPerimetersById) as PerimeterId[]) {
+    delete mockPerimetersById[key]
+  }
+  for (const key of Object.keys(mockBuildingConstraints) as ConstraintId[]) {
+    delete mockBuildingConstraints[key]
+  }
 })
 
 function importGcsSync(): Promise<void> {
@@ -83,12 +92,17 @@ function importGcsSync(): Promise<void> {
 }
 
 function makePerimeter(id: string, storeyId: string, cornerIds: string[] = [], wallIds: string[] = []): Perimeter {
-  return {
+  const perimeter = {
     id: id as PerimeterId,
     storeyId: storeyId as StoreyId,
     cornerIds: cornerIds as Perimeter['cornerIds'],
     wallIds: wallIds as Perimeter['wallIds']
   } as Perimeter
+
+  // Also register in the mock so getPerimeterById returns it
+  mockPerimetersById[id as PerimeterId] = perimeter
+
+  return perimeter
 }
 
 describe('GcsSyncService', () => {
@@ -258,7 +272,7 @@ describe('GcsSyncService', () => {
 
   describe('constraint propagation', () => {
     const makeConstraint = (id: string, nodeA: string, nodeB: string): Constraint => ({
-      id: `constraint_${id}` as Constraint['id'],
+      id: `constraint_${id}`,
       type: 'horizontal',
       nodeA: nodeA as NodeId,
       nodeB: nodeB as NodeId
@@ -272,7 +286,7 @@ describe('GcsSyncService', () => {
 
       expect(mockGcsAddBuildingConstraint).toHaveBeenCalledTimes(1)
       // Should strip `id` field
-      const calledWith = mockGcsAddBuildingConstraint.mock.calls[0][0] as ConstraintInput
+      const calledWith = mockGcsAddBuildingConstraint.mock.calls[0][0]
       expect(calledWith).toEqual({ type: 'horizontal', nodeA: 'cornerA', nodeB: 'cornerB' })
       expect(calledWith).not.toHaveProperty('id')
     })
@@ -302,21 +316,33 @@ describe('GcsSyncService', () => {
 
       expect(mockGcsRemoveBuildingConstraint).toHaveBeenCalledTimes(1)
       expect(mockGcsAddBuildingConstraint).toHaveBeenCalledTimes(1)
-      const calledWith = mockGcsAddBuildingConstraint.mock.calls[0][0] as ConstraintInput
+      const calledWith = mockGcsAddBuildingConstraint.mock.calls[0][0]
       expect(calledWith).toEqual({ type: 'vertical', nodeA: 'cornerA', nodeB: 'cornerB' })
     })
 
-    it('swallows errors when GCS geometry does not exist yet', async () => {
+    it('warns but does not throw when GCS geometry does not exist yet', async () => {
       mockGcsAddBuildingConstraint.mockImplementation(() => {
         throw new Error('corner not found')
       })
+      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(vi.fn())
 
       await importGcsSync()
 
       const constraint = makeConstraint('1', 'cornerA', 'cornerB')
 
       // Should not throw
-      expect(() => capturedConstraintCallback!(constraint, undefined)).not.toThrow()
+      expect(() => {
+        capturedConstraintCallback!(constraint, undefined)
+      }).not.toThrow()
+
+      // Should have logged a warning
+      expect(warnSpy).toHaveBeenCalledTimes(1)
+      expect(warnSpy).toHaveBeenCalledWith(
+        expect.stringContaining('Failed to add building constraint'),
+        expect.any(Error)
+      )
+
+      warnSpy.mockRestore()
     })
 
     it('does nothing when both current and previous are undefined', async () => {
@@ -326,6 +352,148 @@ describe('GcsSyncService', () => {
 
       expect(mockGcsAddBuildingConstraint).not.toHaveBeenCalled()
       expect(mockGcsRemoveBuildingConstraint).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('constraint re-sync after perimeter geometry creation', () => {
+    const makeConstraintWithCorners = (id: string, nodeA: string, nodeB: string): Constraint => ({
+      id: `constraint_${id}`,
+      type: 'horizontal',
+      nodeA: nodeA as NodeId,
+      nodeB: nodeB as NodeId
+    })
+
+    it('syncs building constraints referencing a perimeter after adding it', async () => {
+      // Set up a perimeter with proper corner IDs
+      const perimeter = makePerimeter('p1', 'storey_1', ['outcorner_c1', 'outcorner_c2'], ['outwall_w1'])
+      mockPerimetersById['p1' as PerimeterId] = perimeter
+
+      // Set up a model-store constraint that references the perimeter's corners
+      const constraint = makeConstraintWithCorners('1', 'outcorner_c1', 'outcorner_c2')
+      mockBuildingConstraints[constraint.id] = constraint
+
+      await importGcsSync()
+
+      // Trigger perimeter addition
+      capturedPerimeterCallback!(perimeter, undefined)
+
+      // addPerimeterGeometry should be called first, then addBuildingConstraint for the matching constraint
+      expect(mockAddPerimeterGeometry).toHaveBeenCalledWith('p1')
+      expect(mockGcsAddBuildingConstraint).toHaveBeenCalledTimes(1)
+      expect(mockGcsAddBuildingConstraint).toHaveBeenCalledWith({
+        type: 'horizontal',
+        nodeA: 'outcorner_c1',
+        nodeB: 'outcorner_c2'
+      })
+    })
+
+    it('does not sync constraints that do not reference the perimeter', async () => {
+      // Perimeter with corners c1, c2
+      const perimeter = makePerimeter('p1', 'storey_1', ['outcorner_c1', 'outcorner_c2'])
+      mockPerimetersById['p1' as PerimeterId] = perimeter
+
+      // Constraint referencing corners from a different perimeter
+      const unrelatedConstraint = makeConstraintWithCorners('1', 'outcorner_c3', 'outcorner_c4')
+      mockBuildingConstraints[unrelatedConstraint.id] = unrelatedConstraint
+
+      await importGcsSync()
+
+      capturedPerimeterCallback!(perimeter, undefined)
+
+      expect(mockAddPerimeterGeometry).toHaveBeenCalledWith('p1')
+      // Should NOT have synced the unrelated constraint
+      expect(mockGcsAddBuildingConstraint).not.toHaveBeenCalled()
+    })
+
+    it('syncs constraints after perimeter upsert (update)', async () => {
+      const prev = makePerimeter('p1', 'storey_1', ['outcorner_c1', 'outcorner_c2'])
+      const curr = makePerimeter('p1', 'storey_1', ['outcorner_c1', 'outcorner_c2', 'outcorner_c3'])
+      mockPerimetersById['p1' as PerimeterId] = curr
+
+      const constraint = makeConstraintWithCorners('1', 'outcorner_c1', 'outcorner_c3')
+      mockBuildingConstraints[constraint.id] = constraint
+
+      await importGcsSync()
+
+      capturedPerimeterCallback!(curr, prev)
+
+      expect(mockAddPerimeterGeometry).toHaveBeenCalledWith('p1')
+      expect(mockGcsAddBuildingConstraint).toHaveBeenCalledTimes(1)
+      expect(mockGcsAddBuildingConstraint).toHaveBeenCalledWith({
+        type: 'horizontal',
+        nodeA: 'outcorner_c1',
+        nodeB: 'outcorner_c3'
+      })
+    })
+
+    it('syncs constraints during active storey change', async () => {
+      mockPerimeterRegistry['p_old' as PerimeterId] = { pointIds: [] }
+
+      const newStoreyId = 'storey_2' as StoreyId
+      const perimeter = makePerimeter('p3', 'storey_2', ['outcorner_c1', 'outcorner_c2'])
+      mockPerimetersByStorey[newStoreyId] = [perimeter]
+      mockPerimetersById['p3' as PerimeterId] = perimeter
+
+      const constraint = makeConstraintWithCorners('1', 'outcorner_c1', 'outcorner_c2')
+      mockBuildingConstraints[constraint.id] = constraint
+
+      await importGcsSync()
+
+      capturedStoreyListener!(newStoreyId, 'storey_1')
+
+      expect(mockAddPerimeterGeometry).toHaveBeenCalledWith('p3')
+      expect(mockGcsAddBuildingConstraint).toHaveBeenCalledTimes(1)
+      expect(mockGcsAddBuildingConstraint).toHaveBeenCalledWith({
+        type: 'horizontal',
+        nodeA: 'outcorner_c1',
+        nodeB: 'outcorner_c2'
+      })
+    })
+
+    it('warns but does not throw when constraint sync fails for cross-perimeter constraint', async () => {
+      const perimeter = makePerimeter('p1', 'storey_1', ['outcorner_c1', 'outcorner_c2'])
+      mockPerimetersById['p1' as PerimeterId] = perimeter
+
+      // Constraint references c1 from this perimeter but also c3 from another (missing) perimeter
+      const constraint = makeConstraintWithCorners('1', 'outcorner_c1', 'outcorner_c3')
+      mockBuildingConstraints[constraint.id] = constraint
+
+      // addBuildingConstraint will fail because c3's geometry doesn't exist
+      mockGcsAddBuildingConstraint.mockImplementation(() => {
+        throw new Error('corner "outcorner_c3" not found')
+      })
+      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(vi.fn())
+
+      await importGcsSync()
+
+      // Should not throw
+      expect(() => {
+        capturedPerimeterCallback!(perimeter, undefined)
+      }).not.toThrow()
+
+      // Should have attempted to add the constraint and warned
+      expect(mockGcsAddBuildingConstraint).toHaveBeenCalledTimes(1)
+      expect(warnSpy).toHaveBeenCalledWith(
+        expect.stringContaining('Failed to sync building constraint'),
+        expect.any(Error)
+      )
+
+      warnSpy.mockRestore()
+    })
+
+    it('does not sync constraints when perimeter is added to non-active storey', async () => {
+      const perimeter = makePerimeter('p1', 'storey_other', ['outcorner_c1', 'outcorner_c2'])
+      mockPerimetersById['p1' as PerimeterId] = perimeter
+
+      const constraint = makeConstraintWithCorners('1', 'outcorner_c1', 'outcorner_c2')
+      mockBuildingConstraints[constraint.id] = constraint
+
+      await importGcsSync()
+
+      capturedPerimeterCallback!(perimeter, undefined)
+
+      expect(mockAddPerimeterGeometry).not.toHaveBeenCalled()
+      expect(mockGcsAddBuildingConstraint).not.toHaveBeenCalled()
     })
   })
 })

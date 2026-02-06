@@ -116,9 +116,6 @@ importers:
       three:
         specifier: ^0.182.0
         version: 0.182.0
-      throttle-debounce:
-        specifier: ^5.0.2
-        version: 5.0.2
       use-image:
         specifier: ^1.1.4
         version: 1.1.4(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
@@ -171,9 +168,6 @@ importers:
       '@types/three':
         specifier: ^0.182.0
         version: 0.182.0
-      '@types/throttle-debounce':
-        specifier: ^5.0.2
-        version: 5.0.2
       '@vitejs/plugin-react':
         specifier: ^5.1.2
         version: 5.1.2(vite@7.3.1(@types/node@25.0.9)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.1)(yaml@2.8.2))
@@ -2468,9 +2462,6 @@ packages:
 
   '@types/three@0.182.0':
     resolution: {integrity: sha512-WByN9V3Sbwbe2OkWuSGyoqQO8Du6yhYaXtXLoA5FkKTUJorZ+yOHBZ35zUUPQXlAKABZmbYp5oAqpA4RBjtJ/Q==}
-
-  '@types/throttle-debounce@5.0.2':
-    resolution: {integrity: sha512-pDzSNulqooSKvSNcksnV72nk8p7gRqN8As71Sp28nov1IgmPKWbOEIwAWvBME5pPTtaXJAvG3O4oc76HlQ4kqQ==}
 
   '@types/trusted-types@2.0.7':
     resolution: {integrity: sha512-ScaPdn1dQczgbl0QFTeTOmVHFULt394XJgOQNoyVhZ6r2vLnMLJfBPd53SB52T/3G36VI1/g2MZaX0cwDuXsfw==}
@@ -4984,10 +4975,6 @@ packages:
 
   three@0.182.0:
     resolution: {integrity: sha512-GbHabT+Irv+ihI1/f5kIIsZ+Ef9Sl5A1Y7imvS5RQjWgtTPfPnZ43JmlYI7NtCRDK9zir20lQpfg8/9Yd02OvQ==}
-
-  throttle-debounce@5.0.2:
-    resolution: {integrity: sha512-B71/4oyj61iNH0KeCamLuE2rmKuTO5byTOSVwECM5FA7TiAiAW+UqTKZ9ERueC4qvgSttUhdmq1mXC3kJqGX7A==}
-    engines: {node: '>=12.22'}
 
   tinybench@2.9.0:
     resolution: {integrity: sha512-0+DUvqWMValLmha6lr4kD8iAMK1HzV0/aKnCtWb9v9641TnP/MFb7Pc2bxoxQjTXAErryXVgUOfv2YqNllqGeg==}
@@ -7693,8 +7680,6 @@ snapshots:
       '@webgpu/types': 0.1.68
       fflate: 0.8.2
       meshoptimizer: 0.22.0
-
-  '@types/throttle-debounce@5.0.2': {}
 
   '@types/trusted-types@2.0.7': {}
 
@@ -10505,8 +10490,6 @@ snapshots:
       three: 0.182.0
 
   three@0.182.0: {}
-
-  throttle-debounce@5.0.2: {}
 
   tinybench@2.9.0: {}
 

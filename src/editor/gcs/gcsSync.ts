@@ -1,4 +1,5 @@
 import type { Constraint, ConstraintInput, Perimeter, PerimeterId, StoreyId } from '@/building/model'
+import type { PerimeterCornerId, PerimeterWallId } from '@/building/model/ids'
 import {
   getModelActions,
   subscribeToConstraints,
@@ -6,7 +7,7 @@ import {
   subscribeToPerimeters
 } from '@/building/store'
 
-import { buildingConstraintKey } from './constraintTranslator'
+import { buildingConstraintKey, getReferencedCornerIds, getReferencedWallIds } from './constraintTranslator'
 import { getGcsActions, getGcsState } from './store'
 
 class GcsSyncService {
@@ -56,6 +57,7 @@ class GcsSyncService {
     const perimeters = modelActions.getPerimetersByStorey(newStoreyId)
     for (const perimeter of perimeters) {
       gcsActions.addPerimeterGeometry(perimeter.id)
+      this.syncConstraintsForPerimeter(perimeter.id)
     }
   }
 
@@ -74,12 +76,14 @@ class GcsSyncService {
       // Perimeter added — only if it belongs to the active storey
       if (current.storeyId === this.activeStoreyId) {
         gcsActions.addPerimeterGeometry(perimeterId)
+        this.syncConstraintsForPerimeter(perimeterId)
       }
     } else if (current && previous) {
       // Perimeter updated (e.g. corner removed → cornerIds/wallIds changed)
       if (current.storeyId === this.activeStoreyId) {
         // addPerimeterGeometry handles upsert (removes old data first)
         gcsActions.addPerimeterGeometry(perimeterId)
+        this.syncConstraintsForPerimeter(perimeterId)
       } else if (perimeterId in getGcsState().perimeterRegistry) {
         // Storey changed away from active — remove it
         gcsActions.removePerimeterGeometry(perimeterId)
@@ -96,18 +100,58 @@ class GcsSyncService {
     return input as ConstraintInput
   }
 
+  /**
+   * After addPerimeterGeometry creates/recreates GCS points and lines for a perimeter,
+   * ensure all building constraints from the model store that reference this perimeter's
+   * entities are present in the GCS store. This handles cases where the constraint
+   * subscription fires before geometry exists (e.g. during redo) or where an upsert
+   * rebuilds geometry that existing translated constraints reference.
+   *
+   * The GCS store's addBuildingConstraint has a duplicate check, so re-adding
+   * constraints that are already present is harmless (logs a warning and returns).
+   */
+  private syncConstraintsForPerimeter(perimeterId: PerimeterId): void {
+    const modelActions = getModelActions()
+    const gcsActions = getGcsActions()
+
+    // Collect the set of corner and wall IDs belonging to this perimeter
+    const perimeter = modelActions.getPerimeterById(perimeterId)
+    const perimeterCornerIds = new Set<PerimeterCornerId>(perimeter.cornerIds)
+    const perimeterWallIds = new Set<PerimeterWallId>(perimeter.wallIds)
+
+    // Find all model-store constraints that reference any of these entities
+    const allConstraints = modelActions.getAllBuildingConstraints()
+    for (const constraint of Object.values(allConstraints)) {
+      const referencedCorners = getReferencedCornerIds(this.toInput(constraint))
+      const referencedWalls = getReferencedWallIds(this.toInput(constraint))
+
+      const referencesPerimeter =
+        referencedCorners.some(c => perimeterCornerIds.has(c)) || referencedWalls.some(w => perimeterWallIds.has(w))
+
+      if (referencesPerimeter) {
+        try {
+          gcsActions.addBuildingConstraint(this.toInput(constraint))
+        } catch (e) {
+          // This can happen if the constraint references entities from multiple
+          // perimeters and the other perimeter's geometry doesn't exist yet.
+          // It will be synced when that other perimeter's geometry is created.
+          console.warn(`Failed to sync building constraint to GCS store:`, e)
+        }
+      }
+    }
+  }
+
   private handleConstraintChange(current?: Constraint, previous?: Constraint): void {
     const gcsActions = getGcsActions()
 
     if (current && !previous) {
-      // Constraint added — push to GCS store
+      // Constraint added — push to GCS store.
+      // If geometry doesn't exist yet (e.g. during redo), syncConstraintsForPerimeter
+      // will handle it when the perimeter subscription fires.
       try {
         gcsActions.addBuildingConstraint(this.toInput(current))
-      } catch {
-        // GCS geometry may not exist yet (e.g. during redo the perimeter subscription
-        // hasn't fired yet). This is non-fatal — the perimeter subscription will
-        // re-add geometry, and the constraint subscription will fire again for the
-        // next change or the constraint is already covered by the perimeter upsert path.
+      } catch (e) {
+        console.warn(`Failed to add building constraint to GCS store (will be synced by perimeter):`, e)
       }
     } else if (!current && previous) {
       // Constraint removed — remove from GCS store
@@ -120,8 +164,8 @@ class GcsSyncService {
 
       try {
         gcsActions.addBuildingConstraint(this.toInput(current))
-      } catch {
-        // Same reasoning as the "added" case above.
+      } catch (e) {
+        console.warn(`Failed to add updated building constraint to GCS store (will be synced by perimeter):`, e)
       }
     }
   }
