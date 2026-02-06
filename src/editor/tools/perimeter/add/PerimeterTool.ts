@@ -3,7 +3,6 @@ import type { RingBeamAssemblyId, WallAssemblyId } from '@/building/model/ids'
 import { getModelActions } from '@/building/store'
 import { getConfigActions } from '@/construction/config/store'
 import { generateFreeformConstraints } from '@/editor/gcs/constraintGenerator'
-import { getGcsActions } from '@/editor/gcs/store'
 import { getViewModeActions } from '@/editor/hooks/useViewMode'
 import { BasePolygonTool, type PolygonToolStateBase } from '@/editor/tools/shared/polygon/BasePolygonTool'
 import type { ToolImplementation } from '@/editor/tools/system/types'
@@ -82,7 +81,8 @@ export class PerimeterTool extends BasePolygonTool<PerimeterToolState> implement
   }
 
   protected onPolygonCompleted(polygon: Polygon2D): void {
-    const { addPerimeter, getActiveStoreyId, getPerimeterCornersById, getPerimeterWallsById } = getModelActions()
+    const { addPerimeter, getActiveStoreyId, getPerimeterCornersById, getPerimeterWallsById, addBuildingConstraint } =
+      getModelActions()
     const activeStoreyId = getActiveStoreyId()
 
     const perimeter = addPerimeter(
@@ -110,12 +110,11 @@ export class PerimeterTool extends BasePolygonTool<PerimeterToolState> implement
     const corners = getPerimeterCornersById(perimeter.id)
     const walls = getPerimeterWallsById(perimeter.id)
     const constraints = generateFreeformConstraints(corners, walls, this.state.referenceSide, overrides)
-    const gcsActions = getGcsActions()
     for (const constraint of constraints) {
       try {
-        gcsActions.addBuildingConstraint(constraint)
-      } catch {
-        // Non-fatal: constraint may conflict or reference missing geometry
+        addBuildingConstraint(constraint)
+      } catch (e) {
+        console.warn('Failed to add constraint', constraint, e)
       }
     }
   }

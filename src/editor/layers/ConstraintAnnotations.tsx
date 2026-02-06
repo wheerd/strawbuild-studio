@@ -1,21 +1,32 @@
 import { useMemo } from 'react'
 
-import type { ConstraintInput } from '@/building/model'
+import type { Constraint } from '@/building/model'
+import { useBuildingConstraints, usePerimeterCornerGeometries } from '@/building/store'
 import { nodeInsidePointId, nodeSidePointId } from '@/editor/gcs/constraintTranslator'
-import { useGcsBuildingConstraints, useGcsPoints } from '@/editor/gcs/store'
 import { useZoom } from '@/editor/hooks/useViewportStore'
 import { useFormatters } from '@/shared/i18n/useFormatters'
 
 interface AnnotationEntry {
   key: string
-  constraint: ConstraintInput
+  constraint: Constraint
 }
 
 export function ConstraintAnnotations(): React.JSX.Element {
-  const buildingConstraints = useGcsBuildingConstraints()
-  const points = useGcsPoints()
+  const buildingConstraints = useBuildingConstraints()
+  const cornerGeometries = usePerimeterCornerGeometries()
   const zoom = useZoom()
   const { formatLength } = useFormatters()
+
+  // Build a point lookup map from corner geometry so sub-components
+  // can resolve positions using the same GCS point ID scheme (corner_{id}_in / corner_{id}_out).
+  const points: PointLookup = useMemo(() => {
+    const lookup: Record<string, { x: number; y: number }> = {}
+    for (const [cornerId, geometry] of Object.entries(cornerGeometries)) {
+      lookup[`corner_${cornerId}_in`] = { x: geometry.insidePoint[0], y: geometry.insidePoint[1] }
+      lookup[`corner_${cornerId}_out`] = { x: geometry.outsidePoint[0], y: geometry.outsidePoint[1] }
+    }
+    return lookup
+  }, [cornerGeometries])
 
   const entries: AnnotationEntry[] = useMemo(
     () => Object.entries(buildingConstraints).map(([key, c]) => ({ key, constraint: c })),
@@ -59,7 +70,7 @@ type PointLookup = Record<string, { x: number; y: number } | undefined>
 // --- Distance annotation ---
 
 interface DistanceAnnotationProps {
-  constraint: Extract<ConstraintInput, { type: 'distance' }>
+  constraint: Extract<Constraint, { type: 'distance' }>
   points: PointLookup
   zoom: number
   formatLength: (value: number) => string
@@ -156,7 +167,7 @@ function DistanceAnnotation({
 // --- Horizontal annotation ---
 
 interface HVAnnotationProps {
-  constraint: Extract<ConstraintInput, { type: 'horizontal' }> | Extract<ConstraintInput, { type: 'vertical' }>
+  constraint: Extract<Constraint, { type: 'horizontal' }> | Extract<Constraint, { type: 'vertical' }>
   points: PointLookup
   zoom: number
 }
@@ -218,7 +229,7 @@ function VerticalAnnotation({ constraint, points, zoom }: HVAnnotationProps): Re
 // --- Colinear annotation ---
 
 interface ColinearAnnotationProps {
-  constraint: Extract<ConstraintInput, { type: 'colinear' }>
+  constraint: Extract<Constraint, { type: 'colinear' }>
   points: PointLookup
   zoom: number
 }

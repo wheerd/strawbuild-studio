@@ -85,8 +85,6 @@ export function generatePresetConstraints(
     }
   }
 
-  console.log(constraints)
-
   return constraints
 }
 

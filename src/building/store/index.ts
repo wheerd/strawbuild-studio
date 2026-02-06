@@ -1,6 +1,5 @@
 import isDeepEqual from 'fast-deep-equal'
 import { useCallback, useMemo } from 'react'
-import { debounce } from 'throttle-debounce'
 import { temporal } from 'zundo'
 import { create } from 'zustand'
 import { persist, subscribeWithSelector } from 'zustand/middleware'
@@ -13,6 +12,7 @@ import type {
   OpeningWithGeometry,
   Perimeter,
   PerimeterCorner,
+  PerimeterCornerGeometry,
   PerimeterCornerWithGeometry,
   PerimeterWall,
   PerimeterWallWithGeometry,
@@ -123,7 +123,24 @@ const useModelStore = create<Store>()(
           // Undo/redo configuration
           limit: 50,
           equality: (pastState, currentState) => isDeepEqual(pastState, currentState),
-          handleSet: set => debounce(500, set, { atBegin: false })
+          handleSet: handleSet => {
+            let timeoutId: ReturnType<typeof setTimeout> | undefined
+            let firstPastState: Parameters<typeof handleSet>[0]
+            return (...args: Parameters<typeof handleSet>) => {
+              // Capture pastState from the first call in a burst
+              if (timeoutId === undefined) {
+                firstPastState = args[0]
+              }
+              clearTimeout(timeoutId)
+              timeoutId = setTimeout(() => {
+                timeoutId = undefined
+                // Use pastState from the first call (the true "before" state)
+                // but keep the remaining args from the last call
+                args[0] = firstPastState
+                handleSet(...args)
+              }, 500)
+            }
+          }
         }
       ),
       {
@@ -391,6 +408,9 @@ export const useRoofOverhangsByRoof = (roofId: RoofId): RoofOverhang[] => {
 
 export const useBuildingConstraints = (): Record<ConstraintId, Constraint> =>
   useModelStore(state => state.buildingConstraints)
+
+export const usePerimeterCornerGeometries = (): Record<PerimeterCornerId, PerimeterCornerGeometry> =>
+  useModelStore(state => state._perimeterCornerGeometry)
 
 export const useModelActions = (): StoreActions => useModelStore(state => state.actions)
 

@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-import type { Perimeter, PerimeterId, StoreyId } from '@/building/model'
+import type { Constraint, Perimeter, PerimeterId, StoreyId } from '@/building/model'
+import type { ConstraintInput, NodeId } from '@/building/model'
 
 // --- Mock state ---
 
@@ -12,10 +13,13 @@ const mockPerimeterRegistry: Record<PerimeterId, unknown> = {}
 let capturedStoreySelector: ((state: unknown) => unknown) | null = null
 let capturedStoreyListener: ((newVal: unknown, oldVal: unknown) => void) | null = null
 let capturedPerimeterCallback: ((current?: Perimeter, previous?: Perimeter) => void) | null = null
+let capturedConstraintCallback: ((current?: Constraint, previous?: Constraint) => void) | null = null
 
 // Mock GCS actions
 const mockAddPerimeterGeometry = vi.fn()
 const mockRemovePerimeterGeometry = vi.fn()
+const mockGcsAddBuildingConstraint = vi.fn()
+const mockGcsRemoveBuildingConstraint = vi.fn()
 
 // Mock building store
 vi.mock('@/building/store', () => ({
@@ -34,6 +38,10 @@ vi.mock('@/building/store', () => ({
   subscribeToPerimeters: (cb: (current?: Perimeter, previous?: Perimeter) => void) => {
     capturedPerimeterCallback = cb
     return vi.fn() // unsubscribe
+  },
+  subscribeToConstraints: (cb: (current?: Constraint, previous?: Constraint) => void) => {
+    capturedConstraintCallback = cb
+    return vi.fn() // unsubscribe
   }
 }))
 
@@ -41,7 +49,9 @@ vi.mock('@/building/store', () => ({
 vi.mock('./store', () => ({
   getGcsActions: () => ({
     addPerimeterGeometry: (...args: unknown[]) => mockAddPerimeterGeometry(...args),
-    removePerimeterGeometry: (...args: unknown[]) => mockRemovePerimeterGeometry(...args)
+    removePerimeterGeometry: (...args: unknown[]) => mockRemovePerimeterGeometry(...args),
+    addBuildingConstraint: (...args: unknown[]) => mockGcsAddBuildingConstraint(...args),
+    removeBuildingConstraint: (...args: unknown[]) => mockGcsRemoveBuildingConstraint(...args)
   }),
   getGcsState: () => ({
     perimeterRegistry: mockPerimeterRegistry
@@ -54,6 +64,7 @@ beforeEach(() => {
   capturedStoreySelector = null
   capturedStoreyListener = null
   capturedPerimeterCallback = null
+  capturedConstraintCallback = null
   mockActiveStoreyId = 'storey_1' as StoreyId
 
   // Clear mutable objects
@@ -85,9 +96,10 @@ describe('GcsSyncService', () => {
     it('sets up subscriptions on import', async () => {
       await importGcsSync()
 
-      // Both subscription callbacks should have been captured
+      // All subscription callbacks should have been captured
       expect(capturedStoreyListener).toBeTypeOf('function')
       expect(capturedPerimeterCallback).toBeTypeOf('function')
+      expect(capturedConstraintCallback).toBeTypeOf('function')
     })
 
     it('captures a storey selector that selects activeStoreyId', async () => {
@@ -244,15 +256,76 @@ describe('GcsSyncService', () => {
     })
   })
 
-  describe('edge cases', () => {
-    it('handles callback with both current and previous undefined (no-op)', async () => {
+  describe('constraint propagation', () => {
+    const makeConstraint = (id: string, nodeA: string, nodeB: string): Constraint => ({
+      id: `constraint_${id}` as Constraint['id'],
+      type: 'horizontal',
+      nodeA: nodeA as NodeId,
+      nodeB: nodeB as NodeId
+    })
+
+    it('adds constraint to GCS store when a new constraint appears in model store', async () => {
       await importGcsSync()
 
-      // Should not throw
-      capturedPerimeterCallback!(undefined, undefined)
+      const constraint = makeConstraint('1', 'cornerA', 'cornerB')
+      capturedConstraintCallback!(constraint, undefined)
 
-      expect(mockAddPerimeterGeometry).not.toHaveBeenCalled()
-      expect(mockRemovePerimeterGeometry).not.toHaveBeenCalled()
+      expect(mockGcsAddBuildingConstraint).toHaveBeenCalledTimes(1)
+      // Should strip `id` field
+      const calledWith = mockGcsAddBuildingConstraint.mock.calls[0][0] as ConstraintInput
+      expect(calledWith).toEqual({ type: 'horizontal', nodeA: 'cornerA', nodeB: 'cornerB' })
+      expect(calledWith).not.toHaveProperty('id')
+    })
+
+    it('removes constraint from GCS store when a constraint is removed from model store', async () => {
+      await importGcsSync()
+
+      const constraint = makeConstraint('1', 'cornerA', 'cornerB')
+      capturedConstraintCallback!(undefined, constraint)
+
+      expect(mockGcsRemoveBuildingConstraint).toHaveBeenCalledTimes(1)
+      // The key is derived from the constraint input (buildingConstraintKey)
+      expect(mockGcsRemoveBuildingConstraint).toHaveBeenCalledWith(expect.any(String))
+    })
+
+    it('removes old and adds new constraint when a constraint is updated', async () => {
+      await importGcsSync()
+
+      const prev = makeConstraint('1', 'cornerA', 'cornerB')
+      const curr: Constraint = {
+        id: `constraint_1` as Constraint['id'],
+        type: 'vertical',
+        nodeA: 'cornerA' as NodeId,
+        nodeB: 'cornerB' as NodeId
+      }
+      capturedConstraintCallback!(curr, prev)
+
+      expect(mockGcsRemoveBuildingConstraint).toHaveBeenCalledTimes(1)
+      expect(mockGcsAddBuildingConstraint).toHaveBeenCalledTimes(1)
+      const calledWith = mockGcsAddBuildingConstraint.mock.calls[0][0] as ConstraintInput
+      expect(calledWith).toEqual({ type: 'vertical', nodeA: 'cornerA', nodeB: 'cornerB' })
+    })
+
+    it('swallows errors when GCS geometry does not exist yet', async () => {
+      mockGcsAddBuildingConstraint.mockImplementation(() => {
+        throw new Error('corner not found')
+      })
+
+      await importGcsSync()
+
+      const constraint = makeConstraint('1', 'cornerA', 'cornerB')
+
+      // Should not throw
+      expect(() => capturedConstraintCallback!(constraint, undefined)).not.toThrow()
+    })
+
+    it('does nothing when both current and previous are undefined', async () => {
+      await importGcsSync()
+
+      capturedConstraintCallback!(undefined, undefined)
+
+      expect(mockGcsAddBuildingConstraint).not.toHaveBeenCalled()
+      expect(mockGcsRemoveBuildingConstraint).not.toHaveBeenCalled()
     })
   })
 })

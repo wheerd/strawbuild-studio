@@ -431,8 +431,9 @@ describe('GCS store perimeter geometry', () => {
       const state = getGcsState()
       // Should still have exactly the right number of points (not doubled)
       expect(Object.keys(state.points)).toHaveLength(8)
-      // The building constraint that referenced the old corners should be removed
-      expect(Object.keys(state.buildingConstraints)).toHaveLength(0)
+      // Building constraints are NOT cascade-removed by the GCS store;
+      // that responsibility belongs to gcsSync's constraint subscription.
+      expect(Object.keys(state.buildingConstraints)).toHaveLength(1)
     })
   })
 
@@ -471,7 +472,7 @@ describe('GCS store perimeter geometry', () => {
       expect(getGcsState().cornerOrderMap.has(perimeterA)).toBe(false)
     })
 
-    it('removes building constraints that reference the perimeter entities', () => {
+    it('does not cascade-remove building constraints (handled by gcsSync)', () => {
       setupRectangleMocks(perimeterA)
       const actions = getGcsActions()
 
@@ -493,7 +494,9 @@ describe('GCS store perimeter geometry', () => {
 
       actions.removePerimeterGeometry(perimeterA)
 
-      expect(Object.keys(getGcsState().buildingConstraints)).toHaveLength(0)
+      // Building constraints remain in the GCS store; cascade removal is
+      // handled by gcsSync's constraint subscription, not by removePerimeterGeometry.
+      expect(Object.keys(getGcsState().buildingConstraints)).toHaveLength(2)
     })
 
     it('warns when removing a non-existent perimeter', () => {

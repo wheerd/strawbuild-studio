@@ -18,7 +18,6 @@ describe('PerimeterPresetTool', () => {
   vi.mock('@/editor/hooks/useSelectionStore', () => ({ replaceSelection: vi.fn() }))
   vi.mock('@/editor/hooks/useViewportStore', () => ({ viewportActions: vi.fn() }))
   vi.mock('@/editor/tools/system', () => ({ getToolActions: vi.fn() }))
-  vi.mock('@/editor/gcs/store', () => ({ getGcsActions: vi.fn(() => ({ addBuildingConstraint: vi.fn() })) }))
 
   const mockGetModelActions = vi.mocked(getModelActions)
   const mockViewportActions = vi.mocked(viewportActions)
@@ -28,6 +27,7 @@ describe('PerimeterPresetTool', () => {
   const mockAddPerimeter = vi.fn<StoreActions['addPerimeter']>()
   const mockGetPerimeterCornersById = vi.fn<StoreActions['getPerimeterCornersById']>()
   const mockGetPerimeterWallsById = vi.fn<StoreActions['getPerimeterWallsById']>()
+  const mockAddBuildingConstraint = vi.fn<StoreActions['addBuildingConstraint']>()
   const mockReplaceSelection = vi.mocked(replaceSelection)
   const mockFitToView = vi.fn()
   const mockPopTool = vi.fn()
@@ -49,7 +49,8 @@ describe('PerimeterPresetTool', () => {
       getActiveStoreyId: mockGetActiveStoreyId,
       addPerimeter: mockAddPerimeter,
       getPerimeterCornersById: mockGetPerimeterCornersById,
-      getPerimeterWallsById: mockGetPerimeterWallsById
+      getPerimeterWallsById: mockGetPerimeterWallsById,
+      addBuildingConstraint: mockAddBuildingConstraint
     } as any)
     mockViewportActions.mockReturnValue({ fitToView: mockFitToView } as any)
     mockGetToolActions.mockReturnValue({ popTool: mockPopTool } as any)

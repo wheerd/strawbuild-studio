@@ -8,7 +8,7 @@ import {
 } from '@salusoft89/planegcs'
 import { create } from 'zustand'
 
-import type { ConstraintInput, PerimeterCornerId, PerimeterId, PerimeterWallId } from '@/building/model'
+import type { ConstraintInput, PerimeterCornerId, PerimeterId } from '@/building/model'
 import { getModelActions } from '@/building/store'
 import { createGcs } from '@/editor/gcs/gcsInstance'
 
@@ -469,44 +469,6 @@ const useGcsStore = create<GcsStore>()((set, get) => ({
       if (!entry) {
         console.warn(`Perimeter "${perimeterId}" not found in GCS registry, skipping removal.`)
         return
-      }
-
-      // Collect corner and wall IDs belonging to this perimeter
-      const perimeterCornerIds = new Set<PerimeterCornerId>()
-      const perimeterWallIds = new Set<PerimeterWallId>()
-
-      for (const pointId of entry.pointIds) {
-        // Point IDs are like "corner_{cornerId}_in" or "corner_{cornerId}_out"
-        const match = /^corner_(.+?)_(in|out)$/.exec(pointId)
-        if (match) {
-          perimeterCornerIds.add(match[1] as PerimeterCornerId)
-        }
-      }
-
-      for (const lineId of entry.lineIds) {
-        // Line IDs are like "wall_{wallId}_in" or "wall_{wallId}_out"
-        const match = /^wall_(.+?)_(in|out)$/.exec(lineId)
-        if (match) {
-          perimeterWallIds.add(match[1] as PerimeterWallId)
-        }
-      }
-
-      // Remove building constraints whose referenced entities belong to this perimeter
-      const buildingConstraintKeysToRemove: string[] = []
-      for (const [key, constraint] of Object.entries(state.buildingConstraints)) {
-        const referencedCorners = getReferencedCornerIds(constraint)
-        const referencedWalls = getReferencedWallIds(constraint)
-
-        const usesPerimeterCorner = referencedCorners.some(id => perimeterCornerIds.has(id))
-        const usesPerimeterWall = referencedWalls.some(id => perimeterWallIds.has(id))
-
-        if (usesPerimeterCorner || usesPerimeterWall) {
-          buildingConstraintKeysToRemove.push(key)
-        }
-      }
-
-      for (const key of buildingConstraintKeysToRemove) {
-        actions.removeBuildingConstraint(key)
       }
 
       // Remove structural constraints, lines, visual lines, and points

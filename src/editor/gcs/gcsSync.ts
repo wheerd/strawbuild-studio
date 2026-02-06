@@ -1,6 +1,12 @@
-import type { Perimeter, PerimeterId, StoreyId } from '@/building/model'
-import { getModelActions, subscribeToModelChanges, subscribeToPerimeters } from '@/building/store'
+import type { Constraint, ConstraintInput, Perimeter, PerimeterId, StoreyId } from '@/building/model'
+import {
+  getModelActions,
+  subscribeToConstraints,
+  subscribeToModelChanges,
+  subscribeToPerimeters
+} from '@/building/store'
 
+import { buildingConstraintKey } from './constraintTranslator'
 import { getGcsActions, getGcsState } from './store'
 
 class GcsSyncService {
@@ -20,9 +26,17 @@ class GcsSyncService {
       }
     )
 
-    // Subscribe to perimeter record changes (add/remove/update)
+    // Subscribe to perimeter record changes (add/remove/update).
+    // Must be registered BEFORE the constraint subscription so that
+    // GCS geometry (points, lines) exists before constraints reference it.
     subscribeToPerimeters((current, previous) => {
       this.handlePerimeterChange(current, previous)
+    })
+
+    // Subscribe to building constraint changes in the model store
+    // and propagate them to the GCS store.
+    subscribeToConstraints((current, previous) => {
+      this.handleConstraintChange(current, previous)
     })
   }
 
@@ -69,6 +83,45 @@ class GcsSyncService {
       } else if (perimeterId in getGcsState().perimeterRegistry) {
         // Storey changed away from active — remove it
         gcsActions.removePerimeterGeometry(perimeterId)
+      }
+    }
+  }
+
+  /**
+   * Strip the `id` field from a model-store Constraint to produce a ConstraintInput
+   * suitable for the GCS store.
+   */
+  private toInput(constraint: Constraint): ConstraintInput {
+    const { id: _id, ...input } = constraint
+    return input as ConstraintInput
+  }
+
+  private handleConstraintChange(current?: Constraint, previous?: Constraint): void {
+    const gcsActions = getGcsActions()
+
+    if (current && !previous) {
+      // Constraint added — push to GCS store
+      try {
+        gcsActions.addBuildingConstraint(this.toInput(current))
+      } catch {
+        // GCS geometry may not exist yet (e.g. during redo the perimeter subscription
+        // hasn't fired yet). This is non-fatal — the perimeter subscription will
+        // re-add geometry, and the constraint subscription will fire again for the
+        // next change or the constraint is already covered by the perimeter upsert path.
+      }
+    } else if (!current && previous) {
+      // Constraint removed — remove from GCS store
+      const key = buildingConstraintKey(this.toInput(previous))
+      gcsActions.removeBuildingConstraint(key)
+    } else if (current && previous) {
+      // Constraint updated — remove old, add new
+      const oldKey = buildingConstraintKey(this.toInput(previous))
+      gcsActions.removeBuildingConstraint(oldKey)
+
+      try {
+        gcsActions.addBuildingConstraint(this.toInput(current))
+      } catch {
+        // Same reasoning as the "added" case above.
       }
     }
   }
