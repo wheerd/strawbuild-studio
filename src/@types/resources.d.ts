@@ -1037,6 +1037,20 @@ interface Resources {
     }
   },
   "inspector": {
+    "constraint": {
+      "horizontal": {
+        "active": "Horizontal constraint (click to remove)",
+        "suggestion": "Click to add horizontal constraint"
+      },
+      "perpendicular": {
+        "active": "Perpendicular constraint (click to remove)",
+        "suggestion": "Click to add perpendicular constraint"
+      },
+      "vertical": {
+        "active": "Vertical constraint (click to remove)",
+        "suggestion": "Click to add vertical constraint"
+      }
+    },
     "floorArea": {
       "area": "Area",
       "fitToView": "Fit to view",

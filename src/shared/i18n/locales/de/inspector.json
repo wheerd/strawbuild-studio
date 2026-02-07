@@ -163,6 +163,20 @@
     "wallToWindowRatio": "Wand-Fenster-Verhältnis (WWR)",
     "windowArea": "Fensterfläche"
   },
+  "constraint": {
+    "horizontal": {
+      "active": "Horizontale Beschränkung (Klicken zum Entfernen)",
+      "suggestion": "Klicken, um horizontale Beschränkung hinzuzufügen"
+    },
+    "vertical": {
+      "active": "Vertikale Beschränkung (Klicken zum Entfernen)",
+      "suggestion": "Klicken, um vertikale Beschränkung hinzuzufügen"
+    },
+    "perpendicular": {
+      "active": "Rechtwinklige Beschränkung (Klicken zum Entfernen)",
+      "suggestion": "Klicken, um rechtwinklige Beschränkung hinzuzufügen"
+    }
+  },
   "wallPost": {
     "actsAsPost": "Fungiert als Ständer",
     "behavior": "Verhalten",

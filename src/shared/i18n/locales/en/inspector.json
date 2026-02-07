@@ -163,6 +163,20 @@
     "wallToWindowRatio": "Wall-to-window ratio (WWR)",
     "windowArea": "Window Area"
   },
+  "constraint": {
+    "horizontal": {
+      "active": "Horizontal constraint (click to remove)",
+      "suggestion": "Click to add horizontal constraint"
+    },
+    "vertical": {
+      "active": "Vertical constraint (click to remove)",
+      "suggestion": "Click to add vertical constraint"
+    },
+    "perpendicular": {
+      "active": "Perpendicular constraint (click to remove)",
+      "suggestion": "Click to add perpendicular constraint"
+    }
+  },
   "wallPost": {
     "actsAsPost": "Acts as Post",
     "behavior": "Behavior",

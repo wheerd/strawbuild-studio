@@ -1,7 +1,12 @@
-import { useMemo } from 'react'
+import { useCallback, useMemo } from 'react'
 
 import type { ColinearConstraint, PerimeterCornerId, PerpendicularConstraint } from '@/building/model'
-import { useConstraintsForEntity, usePerimeterCornerById, usePerimeterWallById } from '@/building/store'
+import {
+  useConstraintsForEntity,
+  useModelActions,
+  usePerimeterCornerById,
+  usePerimeterWallById
+} from '@/building/store'
 import { useWallAssemblyById } from '@/construction/config/store'
 import { Arrow } from '@/editor/components/Arrow'
 import { ConstraintBadge } from '@/editor/components/ConstraintBadge'
@@ -15,6 +20,7 @@ export function PerimeterCornerShape({ cornerId }: { cornerId: PerimeterCornerId
   const select = useSelectionStore()
   const isSelected = select.isCurrentSelection(cornerId)
   const zoom = useZoom()
+  const modelActions = useModelActions()
 
   const corner = usePerimeterCornerById(cornerId)
   const previousWall = usePerimeterWallById(corner.previousWallId)
@@ -65,6 +71,28 @@ export function PerimeterCornerShape({ cornerId }: { cornerId: PerimeterCornerId
     )
   }, [prevWallConstraints, nextWallConstraints, corner.previousWallId, corner.nextWallId])
 
+  // Determine if the corner is close to 90° (for suggesting perpendicular constraint)
+  /** 5-degree tolerance for perpendicular suggestion. */
+  const isNearPerpendicular =
+    !perpendicularConstraint && (Math.abs(corner.interiorAngle - 90) <= 5 || Math.abs(corner.exteriorAngle - 90) <= 5)
+
+  // Whether to show perpendicular badge
+  const showPerpendicularBadge = perpendicularConstraint != null || (isSelected && isNearPerpendicular)
+
+  // --- Perpendicular constraint handlers ---
+  const handleAddPerpendicular = useCallback(() => {
+    modelActions.addBuildingConstraint({
+      type: 'perpendicular',
+      wallA: corner.previousWallId,
+      wallB: corner.nextWallId
+    })
+  }, [modelActions, corner.previousWallId, corner.nextWallId])
+
+  const handleRemovePerpendicular = useCallback(() => {
+    if (!perpendicularConstraint) return
+    modelActions.removeBuildingConstraint(perpendicularConstraint.id)
+  }, [modelActions, perpendicularConstraint])
+
   return (
     <g
       data-entity-id={corner.id}
@@ -113,14 +141,19 @@ export function PerimeterCornerShape({ cornerId }: { cornerId: PerimeterCornerId
         <ColinearBadge key={c.id} point={corner.insidePoint} zoom={zoom} />
       ))}
 
-      {/* H/V constraint badge on the outside of the wall */}
-      {perpendicularConstraint && (
+      {/* Perpendicular constraint badge on the outside of the corner */}
+      {showPerpendicularBadge && (
         <ConstraintBadge
           label={'\u27C2'}
           offset={50}
           startPoint={corner.outsidePoint}
           endPoint={corner.outsidePoint}
           outsideDirection={outsideDirection}
+          locked={perpendicularConstraint != null}
+          onClick={
+            isSelected ? (perpendicularConstraint ? handleRemovePerpendicular : handleAddPerpendicular) : undefined
+          }
+          tooltipKey="perpendicular"
         />
       )}
     </g>

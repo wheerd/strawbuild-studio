@@ -166,7 +166,7 @@ export function LengthIndicator({
 
       {/* Label text */}
       <g
-        className="text"
+        className="text select-none"
         transform={`translate(${lineMidpoint[0]} ${lineMidpoint[1]}) rotate(${angleDegrees}) scale(1, -1)`}
       >
         <text
