@@ -393,16 +393,6 @@ describe('GCS store perimeter geometry', () => {
       expect(entry.constraintIds).toHaveLength(8) // 4 walls × 2 (parallel + thickness)
     })
 
-    it('updates cornerOrderMap', () => {
-      setupRectangleMocks(perimeterA)
-      const actions = getGcsActions()
-
-      actions.addPerimeterGeometry(perimeterA)
-
-      const state = getGcsState()
-      expect(state.cornerOrderMap.get(perimeterA)).toEqual([cornerA, cornerB, cornerC, cornerD])
-    })
-
     it('handles upsert — removes old data before re-adding', () => {
       setupRectangleMocks(perimeterA)
       const actions = getGcsActions()
@@ -447,16 +437,6 @@ describe('GCS store perimeter geometry', () => {
       actions.removePerimeterGeometry(perimeterA)
 
       expect(getGcsState().perimeterRegistry[perimeterA]).toBeUndefined()
-    })
-
-    it('removes the perimeter from cornerOrderMap', () => {
-      setupRectangleMocks(perimeterA)
-      const actions = getGcsActions()
-
-      actions.addPerimeterGeometry(perimeterA)
-      actions.removePerimeterGeometry(perimeterA)
-
-      expect(getGcsState().cornerOrderMap.has(perimeterA)).toBe(false)
     })
 
     it('does not cascade-remove building constraints (handled by gcsSync)', () => {

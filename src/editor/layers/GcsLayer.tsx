@@ -1,75 +1,13 @@
-import { useCallback } from 'react'
-import type { RefObject } from 'react'
+import { useGcsLines, useGcsPoints } from '@/editor/gcs/store'
+import { useZoom } from '@/editor/hooks/useViewportStore'
 
-import { useGcsActions, useGcsDrag, useGcsLines, useGcsPoints } from '@/editor/gcs/store'
-import { useViewportActions, useZoom } from '@/editor/hooks/useViewportStore'
-import { useSvgMouseTransform } from '@/editor/tools/system/hooks/useSvgMouseTransform'
-
-interface GcsLayerProps {
-  svgRef: RefObject<SVGSVGElement | null>
-}
-
-export function GcsLayer({ svgRef }: GcsLayerProps): React.JSX.Element {
+export function GcsLayer(): React.JSX.Element {
   const points = useGcsPoints()
   const lines = useGcsLines()
-  const drag = useGcsDrag()
-  const actions = useGcsActions()
   const zoom = useZoom()
-  const { stageToWorld } = useViewportActions()
-  const mouseTransform = useSvgMouseTransform(svgRef)
-
-  const handlePointerDown = useCallback(
-    (e: React.PointerEvent<SVGElement>, pointId: string) => {
-      e.stopPropagation()
-      e.currentTarget.setPointerCapture(e.pointerId)
-
-      const svgCoords = mouseTransform({ clientX: e.clientX, clientY: e.clientY })
-      const worldCoords = stageToWorld(svgCoords)
-      actions.startDrag(pointId, worldCoords[0], worldCoords[1])
-    },
-    [points, actions, stageToWorld, mouseTransform]
-  )
-
-  const handlePointerMove = useCallback(
-    (e: React.PointerEvent<SVGElement>) => {
-      if (!drag) {
-        return
-      }
-
-      e.stopPropagation()
-      const svgCoords = mouseTransform({ clientX: e.clientX, clientY: e.clientY })
-      const worldCoords = stageToWorld(svgCoords)
-      actions.updateDrag(worldCoords[0], worldCoords[1])
-    },
-    [drag, actions, stageToWorld, mouseTransform]
-  )
-
-  const handlePointerUp = useCallback(
-    (e: React.PointerEvent<SVGElement>) => {
-      if (!drag) {
-        return
-      }
-
-      e.stopPropagation()
-      e.currentTarget.releasePointerCapture(e.pointerId)
-      actions.endDrag()
-    },
-    [drag, actions]
-  )
-
-  const handlePointerLeave = useCallback(() => {
-    if (drag) {
-      actions.endDrag()
-    }
-  }, [drag, actions])
 
   return (
-    <g
-      data-layer="gcs"
-      onPointerMove={handlePointerMove}
-      onPointerUp={handlePointerUp}
-      onPointerLeave={handlePointerLeave}
-    >
+    <g data-layer="gcs">
       {lines.map(line => {
         const p1 = points[line.p1_id]
         const p2 = points[line.p2_id]
@@ -102,23 +40,8 @@ export function GcsLayer({ svgRef }: GcsLayerProps): React.JSX.Element {
                 stroke="currentColor"
                 strokeWidth={2 / zoom}
                 className={point.fixed ? 'cursor-not-allowed' : 'cursor-move'}
-                onPointerDown={e => {
-                  handlePointerDown(e, id)
-                }}
                 data-point-id={id}
               />
-              {drag?.pointId === id && (
-                <circle
-                  cx={point.x}
-                  cy={point.y}
-                  r={12 / zoom}
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth={1 / zoom}
-                  strokeDasharray="4 2"
-                  className="pointer-events-none"
-                />
-              )}
             </g>
           )
         })}

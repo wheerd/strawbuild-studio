@@ -2,7 +2,6 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 
 // Side-effect import: initializes the GCS sync service that subscribes to model store changes
 import '@/editor/gcs/gcsSync'
-import { useGcsActions } from '@/editor/gcs/store'
 import { usePointerPositionActions } from '@/editor/hooks/usePointerPosition'
 import { usePanX, usePanY, useViewportActions, useZoom } from '@/editor/hooks/useViewportStore'
 import { GcsLayer } from '@/editor/layers/GcsLayer'
@@ -37,11 +36,6 @@ export function FloorPlanStage({ width, height }: FloorPlanStageProps): React.JS
   const pointerActions = usePointerPositionActions()
   const cursor = useToolCursor()
   const showDebugGcsLayer = isDebug
-  const gcsActions = useGcsActions()
-
-  useEffect(() => {
-    gcsActions.initGCS()
-  }, [gcsActions])
 
   // Local state for panning (non-tool related)
   const [dragStart, setDragStart] = useState<Vec2 | null>(null)
@@ -276,7 +270,7 @@ export function FloorPlanStage({ width, height }: FloorPlanStageProps): React.JS
           <PerimeterLayer />
           <RoofLayer />
           <PlanImageLayer placement="over" />
-          {showDebugGcsLayer && <GcsLayer svgRef={svgRef} />}
+          {showDebugGcsLayer && <GcsLayer />}
           <SelectionOverlay />
           <ToolOverlayLayer />
         </g>

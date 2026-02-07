@@ -1,16 +1,8 @@
-import {
-  Algorithm,
-  type Constraint,
-  type GcsWrapper,
-  type SketchLine,
-  type SketchPoint,
-  SolveStatus
-} from '@salusoft89/planegcs'
+import { type Constraint, type SketchLine, type SketchPoint } from '@salusoft89/planegcs'
 import { create } from 'zustand'
 
-import type { ConstraintInput, PerimeterCornerId, PerimeterId } from '@/building/model'
+import type { ConstraintInput, PerimeterId } from '@/building/model'
 import { getModelActions } from '@/building/store'
-import { createGcs } from '@/editor/gcs/gcsInstance'
 
 import {
   buildingConstraintKey,
@@ -19,15 +11,6 @@ import {
   translateBuildingConstraint,
   translatedConstraintIds
 } from './constraintTranslator'
-import { validateSolution } from './validator'
-
-interface DragState {
-  pointId: string
-  constraintXId: string
-  constraintYId: string
-  paramXPos: number
-  paramYPos: number
-}
 
 interface PerimeterRegistryEntry {
   pointIds: string[]
@@ -40,15 +23,10 @@ interface GcsStoreState {
   lines: SketchLine[]
   constraints: Record<string, Constraint>
   buildingConstraints: Record<string, ConstraintInput>
-  gcs: GcsWrapper | null
-  drag: DragState | null
-  cornerOrderMap: Map<PerimeterId, PerimeterCornerId[]>
   perimeterRegistry: Record<PerimeterId, PerimeterRegistryEntry>
 }
 
 interface GcsStoreActions {
-  initGCS: () => void
-
   addPerimeterGeometry: (perimeterId: PerimeterId) => void
   removePerimeterGeometry: (perimeterId: PerimeterId) => void
 
@@ -62,16 +40,6 @@ interface GcsStoreActions {
 
   addBuildingConstraint: (constraint: ConstraintInput) => string
   removeBuildingConstraint: (key: string) => void
-
-  installDragConstraints: (pointId: string, mouseX: number, mouseY: number) => DragState | null
-  startDrag: (pointId: string, mouseX: number, mouseY: number) => void
-  updateDrag: (mouseX: number, mouseY: number) => void
-  endDrag: () => void
-
-  solve: () => SolveStatus
-  applySolution: () => boolean
-
-  reset: () => void
 }
 
 type GcsStore = GcsStoreState & { actions: GcsStoreActions }
@@ -87,73 +55,6 @@ const useGcsStore = create<GcsStore>()((set, get) => ({
   perimeterRegistry: {},
 
   actions: {
-    initGCS: () => {
-      const state = get()
-      if (!state.gcs) {
-        set({ gcs: createGcs() })
-      }
-    },
-
-    installDragConstraints: (pointId, mouseX, mouseY) => {
-      const state = get()
-      const gcs = state.gcs
-      if (!gcs) throw new Error('No GCS')
-
-      const point = state.points[pointId]
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-      if (point?.fixed) {
-        return null
-      }
-
-      const constraintXId = `drag_${pointId}_x_${Date.now()}`
-      const constraintYId = `drag_${pointId}_y_${Date.now()}`
-
-      gcs.push_primitive({
-        type: 'equal',
-        id: constraintXId,
-        param1: { o_id: pointId, prop: 'x' },
-        param2: mouseX,
-        temporary: true,
-        driving: true
-      })
-
-      gcs.push_primitive({
-        type: 'equal',
-        id: constraintYId,
-        param1: { o_id: pointId, prop: 'y' },
-        param2: mouseY,
-        temporary: true,
-        driving: true
-      })
-
-      const paramXPos = gcs.p_param_index.get(constraintXId) ?? -1
-      const paramYPos = gcs.p_param_index.get(constraintYId) ?? -1
-
-      return { pointId, constraintXId, constraintYId, paramXPos, paramYPos }
-    },
-
-    reset: () => {
-      const state = get()
-      if (!state.gcs) {
-        return
-      }
-
-      const gcs = state.gcs
-      gcs.clear_data()
-
-      for (const point of Object.values(state.points)) {
-        gcs.push_primitive(point)
-      }
-
-      for (const line of state.lines) {
-        gcs.push_primitive(line)
-      }
-
-      for (const constraint of Object.values(state.constraints)) {
-        gcs.push_primitive(constraint)
-      }
-    },
-
     addPoint: (id, x, y, fixed = false) => {
       set(state => ({
         points: { ...state.points, [id]: { id, type: 'point', x, y, fixed } }
@@ -281,89 +182,6 @@ const useGcsStore = create<GcsStore>()((set, get) => ({
       })
     },
 
-    startDrag: (pointId, mouseX, mouseY) => {
-      const state = get()
-      const point = state.points[pointId]
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-      if (point?.fixed || !state.gcs) return
-
-      state.actions.reset()
-      const dragData = state.actions.installDragConstraints(pointId, mouseX, mouseY)
-      set({ drag: dragData })
-    },
-
-    updateDrag: (mouseX, mouseY) => {
-      const state = get()
-      if (!state.drag || !state.gcs) return
-
-      const { paramXPos, paramYPos } = state.drag
-      const gcs = state.gcs
-
-      gcs.gcs.set_p_param(paramXPos, mouseX, true)
-      gcs.gcs.set_p_param(paramYPos, mouseY, true)
-
-      if (gcs.solve(Algorithm.DogLeg) === SolveStatus.Success) {
-        if (!state.actions.applySolution()) {
-          const dragData = state.actions.installDragConstraints(state.drag.pointId, mouseX, mouseY)
-          set({ drag: dragData })
-        }
-      }
-    },
-
-    endDrag: () => {
-      const state = get()
-      if (!state.drag) return
-
-      state.actions.reset()
-
-      set({ drag: null })
-    },
-
-    solve: () => {
-      const state = get()
-      const gcs = state.gcs
-      if (!gcs) throw new Error('No GCS')
-
-      const result = gcs.solve(Algorithm.DogLeg)
-      return result
-    },
-
-    applySolution: () => {
-      const state = get()
-      const gcs = state.gcs
-      if (!gcs) return false
-
-      gcs.apply_solution()
-
-      const primitives = gcs.sketch_index.get_primitives()
-      const newPoints: Record<string, SketchPoint> = {}
-
-      for (const primitive of primitives) {
-        if (primitive.type === 'point') {
-          newPoints[primitive.id] = {
-            ...state.points[primitive.id],
-            x: primitive.x,
-            y: primitive.y,
-            fixed: primitive.fixed
-          }
-        }
-      }
-
-      const validation = validateSolution(newPoints, state.cornerOrderMap)
-
-      if (validation.valid) {
-        set({
-          points: newPoints
-        })
-        return true
-      }
-
-      console.warn(validation)
-
-      state.actions.reset()
-      return false
-    },
-
     addPerimeterGeometry: perimeterId => {
       const state = get()
       const { actions } = state
@@ -376,7 +194,6 @@ const useGcsStore = create<GcsStore>()((set, get) => ({
       const modelActions = getModelActions()
       const corners = modelActions.getPerimeterCornersById(perimeterId)
       const walls = modelActions.getPerimeterWallsById(perimeterId)
-      const perimeter = modelActions.getPerimeterById(perimeterId)
 
       const entry: PerimeterRegistryEntry = {
         pointIds: [],
@@ -426,13 +243,8 @@ const useGcsStore = create<GcsStore>()((set, get) => ({
         entry.constraintIds.push(thicknessId)
       }
 
-      // Update registry and corner order map
-      const newCornerOrderMap = new Map(state.cornerOrderMap)
-      newCornerOrderMap.set(perimeterId, [...perimeter.cornerIds])
-
       set(state => ({
-        perimeterRegistry: { ...state.perimeterRegistry, [perimeterId]: entry },
-        cornerOrderMap: newCornerOrderMap
+        perimeterRegistry: { ...state.perimeterRegistry, [perimeterId]: entry }
       }))
     },
 
@@ -452,15 +264,10 @@ const useGcsStore = create<GcsStore>()((set, get) => ({
       actions.removeLines(entry.lineIds)
       actions.removePoints(entry.pointIds)
 
-      // Update registry and corner order map
-      const newCornerOrderMap = new Map(state.cornerOrderMap)
-      newCornerOrderMap.delete(perimeterId)
-
       set(state => {
         const { [perimeterId]: _, ...remainingRegistry } = state.perimeterRegistry
         return {
           perimeterRegistry: remainingRegistry,
-          cornerOrderMap: newCornerOrderMap,
           drag: null
         }
       })
@@ -470,7 +277,6 @@ const useGcsStore = create<GcsStore>()((set, get) => ({
 
 export const useGcsPoints = (): GcsStoreState['points'] => useGcsStore(state => state.points)
 export const useGcsLines = (): GcsStoreState['lines'] => useGcsStore(state => state.lines)
-export const useGcsDrag = (): GcsStoreState['drag'] => useGcsStore(state => state.drag)
 export const useGcsBuildingConstraints = (): GcsStoreState['buildingConstraints'] =>
   useGcsStore(state => state.buildingConstraints)
 export const useGcsPerimeterRegistry = (): GcsStoreState['perimeterRegistry'] =>
