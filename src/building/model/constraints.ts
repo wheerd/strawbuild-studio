@@ -1,22 +1,21 @@
 import { type Length } from '@/shared/geometry'
 
-import type { ConstraintId, NodeId, WallId } from './ids'
+import type { ConstraintId, PerimeterCornerId, WallId } from './ids'
 
 export type Constraint =
-  | DistanceConstraint
-  | ColinearConstraint
+  | WallLengthConstraint
+  | ColinearCornerConstraint
   | ParallelConstraint
-  | PerpendicularConstraint
-  | AngleConstraint
-  | HorizontalConstraint
-  | VerticalConstraint
+  | PerpendicularCornerConstraint
+  | CornerAngleConstraint
+  | HorizontalWallConstraint
+  | VerticalWallConstraint
 
-export interface DistanceConstraint {
+export interface WallLengthConstraint {
   id: ConstraintId
-  type: 'distance'
+  type: 'wallLength'
   side: 'left' | 'right'
-  nodeA: NodeId
-  nodeB: NodeId
+  wall: WallId
   length: Length
 }
 
@@ -28,43 +27,35 @@ export interface ParallelConstraint {
   distance?: Length
 }
 
-export interface ColinearConstraint {
+export interface ColinearCornerConstraint {
   id: ConstraintId
-  type: 'colinear'
-  nodeA: NodeId
-  nodeB: NodeId
-  nodeC: NodeId
-  side: 'left' | 'right'
+  type: 'colinearCorner'
+  corner: PerimeterCornerId
 }
 
-export interface PerpendicularConstraint {
+export interface PerpendicularCornerConstraint {
   id: ConstraintId
-  type: 'perpendicular'
-  wallA: WallId
-  wallB: WallId
+  type: 'perpendicularCorner'
+  corner: PerimeterCornerId
 }
 
-export interface AngleConstraint {
+export interface CornerAngleConstraint {
   id: ConstraintId
-  type: 'angle'
-  pivot: NodeId
-  nodeA: NodeId
-  nodeB: NodeId
+  type: 'cornerAngle'
+  corner: PerimeterCornerId
   angle: number // radians
 }
 
-export interface HorizontalConstraint {
+export interface HorizontalWallConstraint {
   id: ConstraintId
-  type: 'horizontal'
-  nodeA: NodeId
-  nodeB: NodeId
+  type: 'horizontalWall'
+  wall: WallId
 }
 
-export interface VerticalConstraint {
+export interface VerticalWallConstraint {
   id: ConstraintId
-  type: 'vertical'
-  nodeA: NodeId
-  nodeB: NodeId
+  type: 'verticalWall'
+  wall: WallId
 }
 
 /** A constraint without the `id` field, used when adding constraints to the store. */

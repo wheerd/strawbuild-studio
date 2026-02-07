@@ -34,7 +34,7 @@ function getReferenceSideLength(wall: PerimeterWallWithGeometry, referenceSide: 
  * Generate building constraints for a preset (axis-aligned) perimeter.
  *
  * Produces:
- * - A distance constraint for every wall (using the reference-side length)
+ * - A wallLength constraint for every wall (using the reference-side length)
  * - Horizontal/vertical constraints for consecutive corner pairs where the
  *   reference-side points are exactly aligned on one axis
  *
@@ -50,19 +50,18 @@ export function generatePresetConstraints(
   const constraints: ConstraintInput[] = []
   const n = corners.length
 
-  // Distance constraint for each wall
+  // Wall length constraint for each wall
   for (const wall of walls) {
     const length = getReferenceSideLength(wall, referenceSide)
     constraints.push({
-      type: 'distance',
+      type: 'wallLength',
       side,
-      nodeA: wall.startCornerId,
-      nodeB: wall.endCornerId,
+      wall: wall.id,
       length
     })
   }
 
-  // Horizontal/vertical constraints for consecutive corner pairs
+  // Horizontal/vertical constraints for walls
   for (let i = 0; i < n; i++) {
     const cornerA = corners[i]
     const cornerB = corners[(i + 1) % n]
@@ -72,15 +71,13 @@ export function generatePresetConstraints(
     // Exact equality check — preset geometry is precise
     if (pA[1] === pB[1]) {
       constraints.push({
-        type: 'horizontal',
-        nodeA: cornerA.id,
-        nodeB: cornerB.id
+        type: 'horizontalWall',
+        wall: walls[i].id
       })
     } else if (pA[0] === pB[0]) {
       constraints.push({
-        type: 'vertical',
-        nodeA: cornerA.id,
-        nodeB: cornerB.id
+        type: 'verticalWall',
+        wall: walls[i].id
       })
     }
   }
@@ -101,13 +98,13 @@ const COLINEAR_DOT_THRESHOLD = 0.9999
  * Generate building constraints for a freeform (user-drawn) perimeter.
  *
  * Produces:
- * - Distance constraints for walls where the user typed a length override
- * - Horizontal/vertical constraints for consecutive corner pairs whose
- *   reference-side points are aligned within a small tolerance
- * - Perpendicular constraints for adjacent wall pairs that meet at ~90°,
+ * - WallLength constraints for walls where the user typed a length override
+ * - Horizontal/vertical constraints for walls whose reference-side endpoint
+ *   points are aligned within a small tolerance
+ * - Perpendicular constraints for corners where adjacent walls meet at ~90°,
  *   but only when both walls don't already have H/V constraints
- * - Colinear constraints for 3 consecutive corners where the interior
- *   angle is ~180° (i.e. the middle corner is on the line between the others)
+ * - Colinear constraints for corners where the interior angle is ~180°
+ *   (i.e. the corner is on the line between its neighbors)
  */
 export function generateFreeformConstraints(
   corners: PerimeterCornerWithGeometry[],
@@ -119,25 +116,24 @@ export function generateFreeformConstraints(
   const constraints: ConstraintInput[] = []
   const n = corners.length
 
-  // Track which wall indices have H/V constraints on their endpoints
+  // Track which wall indices have H/V constraints
   // (wall i goes from corners[i] to corners[(i+1)%n])
   const wallHasHV = new Set<number>()
 
-  // --- Distance constraints for overridden segments ---
+  // --- WallLength constraints for overridden segments ---
   for (let i = 0; i < walls.length; i++) {
     const override = segmentLengthOverrides[i]
     if (override != null) {
       constraints.push({
-        type: 'distance',
+        type: 'wallLength',
         side,
-        nodeA: walls[i].startCornerId,
-        nodeB: walls[i].endCornerId,
+        wall: walls[i].id,
         length: override
       })
     }
   }
 
-  // --- Horizontal/vertical constraints for aligned consecutive corners ---
+  // --- Horizontal/vertical constraints for aligned walls ---
   for (let i = 0; i < n; i++) {
     const cornerA = corners[i]
     const cornerB = corners[(i + 1) % n]
@@ -149,22 +145,20 @@ export function generateFreeformConstraints(
 
     if (dy < ALIGNMENT_TOLERANCE) {
       constraints.push({
-        type: 'horizontal',
-        nodeA: cornerA.id,
-        nodeB: cornerB.id
+        type: 'horizontalWall',
+        wall: walls[i].id
       })
       wallHasHV.add(i)
     } else if (dx < ALIGNMENT_TOLERANCE) {
       constraints.push({
-        type: 'vertical',
-        nodeA: cornerA.id,
-        nodeB: cornerB.id
+        type: 'verticalWall',
+        wall: walls[i].id
       })
       wallHasHV.add(i)
     }
   }
 
-  // --- Perpendicular constraints for adjacent ~90° wall pairs ---
+  // --- Perpendicular constraints for corners between adjacent ~90° walls ---
   for (let i = 0; i < n; i++) {
     const nextIdx = (i + 1) % n
     const wallA = walls[i]
@@ -177,10 +171,10 @@ export function generateFreeformConstraints(
 
     const dot = Math.abs(dotVec2(wallA.direction, wallB.direction))
     if (dot < PERPENDICULAR_DOT_TOLERANCE) {
+      // The corner between wallA and wallB is corners[(i+1)%n]
       constraints.push({
-        type: 'perpendicular',
-        wallA: wallA.id,
-        wallB: wallB.id
+        type: 'perpendicularCorner',
+        corner: corners[nextIdx].id
       })
     }
   }
@@ -203,12 +197,10 @@ export function generateFreeformConstraints(
     const dot = dotVec2(abDir, bcDir)
 
     if (dot >= COLINEAR_DOT_THRESHOLD) {
+      // The middle corner (cornerB) is the one that should be colinear
       constraints.push({
-        type: 'colinear',
-        nodeA: cornerA.id,
-        nodeB: cornerB.id,
-        nodeC: cornerC.id,
-        side
+        type: 'colinearCorner',
+        corner: cornerB.id
       })
     }
   }

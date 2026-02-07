@@ -9,12 +9,16 @@ import { getGcsActions, getGcsState } from './store'
 const mockGetPerimeterCornersById = vi.fn().mockReturnValue([])
 const mockGetPerimeterWallsById = vi.fn().mockReturnValue([])
 const mockGetPerimeterById = vi.fn().mockReturnValue({ cornerIds: [] })
+const mockGetPerimeterWallById = vi.fn()
+const mockGetPerimeterCornerById = vi.fn()
 
 vi.mock('@/building/store', () => ({
   getModelActions: () => ({
     getPerimeterCornersById: (...args: unknown[]) => mockGetPerimeterCornersById(...args),
     getPerimeterWallsById: (...args: unknown[]) => mockGetPerimeterWallsById(...args),
-    getPerimeterById: (...args: unknown[]) => mockGetPerimeterById(...args)
+    getPerimeterById: (...args: unknown[]) => mockGetPerimeterById(...args),
+    getPerimeterWallById: (...args: unknown[]) => mockGetPerimeterWallById(...args),
+    getPerimeterCornerById: (...args: unknown[]) => mockGetPerimeterCornerById(...args)
   })
 }))
 
@@ -41,6 +45,22 @@ const wallC = 'outwall_ccc' as PerimeterWallId
 const wallD = 'outwall_ddd' as PerimeterWallId
 const perimeterA = 'perimeter_aaa' as PerimeterId
 const perimeterB = 'perimeter_bbb' as PerimeterId
+
+/** Helper to configure getPerimeterWallById so TranslationContext can resolve wall→corner mappings. */
+function setupWallCornerMocks(): void {
+  mockGetPerimeterWallById.mockImplementation((wallId: PerimeterWallId) => {
+    const walls: Record<
+      string,
+      { id: PerimeterWallId; startCornerId: PerimeterCornerId; endCornerId: PerimeterCornerId }
+    > = {
+      [wallA]: { id: wallA, startCornerId: cornerA, endCornerId: cornerB },
+      [wallB]: { id: wallB, startCornerId: cornerB, endCornerId: cornerC }
+    }
+    const wall = walls[wallId]
+    if (!wall) throw new Error(`Wall "${wallId}" not found`)
+    return wall
+  })
+}
 
 /**
  * Helper to set up the store with points and lines so that building
@@ -96,16 +116,18 @@ describe('GCS store building constraints', () => {
     mockGetPerimeterCornersById.mockReturnValue([])
     mockGetPerimeterWallsById.mockReturnValue([])
     mockGetPerimeterById.mockReturnValue({ cornerIds: [] })
+    mockGetPerimeterWallById.mockReturnValue(undefined)
+    mockGetPerimeterCornerById.mockReturnValue(undefined)
     setupGeometry()
+    setupWallCornerMocks()
   })
 
   describe('addBuildingConstraint', () => {
     it('adds a distance constraint and stores it', () => {
       const actions = getGcsActions()
       const constraint: ConstraintInput = {
-        type: 'distance',
-        nodeA: cornerA,
-        nodeB: cornerB,
+        type: 'wallLength',
+        wall: wallA,
         side: 'left',
         length: 5000
       }
@@ -119,9 +141,8 @@ describe('GCS store building constraints', () => {
     it('returns the deterministic key', () => {
       const actions = getGcsActions()
       const constraint: ConstraintInput = {
-        type: 'distance',
-        nodeA: cornerA,
-        nodeB: cornerB,
+        type: 'wallLength',
+        wall: wallA,
         side: 'left',
         length: 5000
       }
@@ -133,9 +154,8 @@ describe('GCS store building constraints', () => {
     it('adds translated planegcs constraints to the constraints record', () => {
       const actions = getGcsActions()
       const constraint: ConstraintInput = {
-        type: 'distance',
-        nodeA: cornerA,
-        nodeB: cornerB,
+        type: 'wallLength',
+        wall: wallA,
         side: 'left',
         length: 5000
       }
@@ -153,9 +173,8 @@ describe('GCS store building constraints', () => {
     it('rejects duplicate constraints', () => {
       const actions = getGcsActions()
       const constraint: ConstraintInput = {
-        type: 'distance',
-        nodeA: cornerA,
-        nodeB: cornerB,
+        type: 'wallLength',
+        wall: wallA,
         side: 'left',
         length: 5000
       }
@@ -165,9 +184,8 @@ describe('GCS store building constraints', () => {
 
       // Same constraint with different length should produce same key
       const constraint2: ConstraintInput = {
-        type: 'distance',
-        nodeA: cornerA,
-        nodeB: cornerB,
+        type: 'wallLength',
+        wall: wallA,
         side: 'right',
         length: 3000
       }
@@ -182,19 +200,17 @@ describe('GCS store building constraints', () => {
       warnSpy.mockRestore()
     })
 
-    it('rejects constraints with swapped node order as duplicates', () => {
+    it('rejects constraints on the same wall as duplicates', () => {
       const actions = getGcsActions()
       const constraint1: ConstraintInput = {
-        type: 'distance',
-        nodeA: cornerA,
-        nodeB: cornerB,
+        type: 'wallLength',
+        wall: wallA,
         side: 'left',
         length: 5000
       }
       const constraint2: ConstraintInput = {
-        type: 'distance',
-        nodeA: cornerB,
-        nodeB: cornerA,
+        type: 'wallLength',
+        wall: wallA,
         side: 'right',
         length: 3000
       }
@@ -208,8 +224,8 @@ describe('GCS store building constraints', () => {
 
     it('prevents contradicting horizontal/vertical constraints', () => {
       const actions = getGcsActions()
-      const h: ConstraintInput = { type: 'horizontal', nodeA: cornerA, nodeB: cornerB }
-      const v: ConstraintInput = { type: 'vertical', nodeA: cornerA, nodeB: cornerB }
+      const h: ConstraintInput = { type: 'horizontalWall', wall: wallA }
+      const v: ConstraintInput = { type: 'verticalWall', wall: wallA }
 
       actions.addBuildingConstraint(h)
       const warnSpy = vi.spyOn(console, 'warn').mockImplementation(vi.fn())
@@ -224,12 +240,11 @@ describe('GCS store building constraints', () => {
       warnSpy.mockRestore()
     })
 
-    it('throws when referencing a non-existent corner', () => {
+    it('throws when referencing a non-existent wall in wallLength', () => {
       const actions = getGcsActions()
       const constraint: ConstraintInput = {
-        type: 'distance',
-        nodeA: 'outcorner_nonexistent' as PerimeterCornerId,
-        nodeB: cornerB,
+        type: 'wallLength',
+        wall: 'outwall_nonexistent' as PerimeterWallId,
         side: 'left',
         length: 100
       }
@@ -252,7 +267,7 @@ describe('GCS store building constraints', () => {
   describe('removeBuildingConstraint', () => {
     it('removes the building constraint and its translated constraints', () => {
       const actions = getGcsActions()
-      const constraint: ConstraintInput = { type: 'horizontal', nodeA: cornerA, nodeB: cornerB }
+      const constraint: ConstraintInput = { type: 'horizontalWall', wall: wallA }
 
       const key = actions.addBuildingConstraint(constraint)
       const translatedId = `bc_${key}`
@@ -270,13 +285,13 @@ describe('GCS store building constraints', () => {
 
     it('allows re-adding after removal', () => {
       const actions = getGcsActions()
-      const h: ConstraintInput = { type: 'horizontal', nodeA: cornerA, nodeB: cornerB }
-      const v: ConstraintInput = { type: 'vertical', nodeA: cornerA, nodeB: cornerB }
+      const h: ConstraintInput = { type: 'horizontalWall', wall: wallA }
+      const v: ConstraintInput = { type: 'verticalWall', wall: wallA }
 
       const key = actions.addBuildingConstraint(h)
       actions.removeBuildingConstraint(key)
 
-      // Should now be able to add vertical on the same nodes
+      // Should now be able to add vertical on the same wall
       const key2 = actions.addBuildingConstraint(v)
       expect(key).toBe(key2)
       expect(getGcsState().buildingConstraints[key2]).toEqual(v)
@@ -294,11 +309,10 @@ describe('GCS store building constraints', () => {
 
     it('does not affect other building constraints', () => {
       const actions = getGcsActions()
-      const h: ConstraintInput = { type: 'horizontal', nodeA: cornerA, nodeB: cornerB }
+      const h: ConstraintInput = { type: 'horizontalWall', wall: wallA }
       const dist: ConstraintInput = {
-        type: 'distance',
-        nodeA: cornerA,
-        nodeB: cornerC,
+        type: 'wallLength',
+        wall: wallB,
         side: 'right',
         length: 3000
       }
@@ -400,7 +414,7 @@ describe('GCS store perimeter geometry', () => {
       actions.addPerimeterGeometry(perimeterA)
 
       // Add a building constraint referencing this perimeter's corners
-      const constraint: ConstraintInput = { type: 'horizontal', nodeA: cornerA, nodeB: cornerB }
+      const constraint: ConstraintInput = { type: 'horizontalWall', wall: wallA }
       actions.addBuildingConstraint(constraint)
 
       // Re-add with same data (upsert)
@@ -446,11 +460,10 @@ describe('GCS store perimeter geometry', () => {
       actions.addPerimeterGeometry(perimeterA)
 
       // Add building constraints referencing this perimeter
-      const h: ConstraintInput = { type: 'horizontal', nodeA: cornerA, nodeB: cornerB }
+      const h: ConstraintInput = { type: 'horizontalWall', wall: wallA }
       const dist: ConstraintInput = {
-        type: 'distance',
-        nodeA: cornerB,
-        nodeB: cornerC,
+        type: 'wallLength',
+        wall: wallB,
         side: 'right',
         length: 3000
       }

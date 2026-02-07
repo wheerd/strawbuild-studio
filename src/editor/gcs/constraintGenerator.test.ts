@@ -201,22 +201,22 @@ describe('generatePresetConstraints', () => {
   describe('rectangular preset', () => {
     it('generates a distance constraint for each wall', () => {
       const constraints = generatePresetConstraints(rectCorners, rectWalls, 'inside')
-      const distConstraints = constraints.filter(c => c.type === 'distance')
+      const distConstraints = constraints.filter(c => c.type === 'wallLength')
 
       expect(distConstraints).toHaveLength(4)
       expect(distConstraints).toEqual(
         expect.arrayContaining([
-          expect.objectContaining({ type: 'distance', side: 'right', length: 6000 }),
-          expect.objectContaining({ type: 'distance', side: 'right', length: 4000 }),
-          expect.objectContaining({ type: 'distance', side: 'right', length: 6000 }),
-          expect.objectContaining({ type: 'distance', side: 'right', length: 4000 })
+          expect.objectContaining({ type: 'wallLength', side: 'right', length: 6000 }),
+          expect.objectContaining({ type: 'wallLength', side: 'right', length: 4000 }),
+          expect.objectContaining({ type: 'wallLength', side: 'right', length: 6000 }),
+          expect.objectContaining({ type: 'wallLength', side: 'right', length: 4000 })
         ])
       )
     })
 
     it('generates horizontal constraints for horizontal wall segments', () => {
       const constraints = generatePresetConstraints(rectCorners, rectWalls, 'inside')
-      const hConstraints = constraints.filter(c => c.type === 'horizontal')
+      const hConstraints = constraints.filter(c => c.type === 'horizontalWall')
 
       // Walls AB and CD are horizontal
       expect(hConstraints).toHaveLength(2)
@@ -224,7 +224,7 @@ describe('generatePresetConstraints', () => {
 
     it('generates vertical constraints for vertical wall segments', () => {
       const constraints = generatePresetConstraints(rectCorners, rectWalls, 'inside')
-      const vConstraints = constraints.filter(c => c.type === 'vertical')
+      const vConstraints = constraints.filter(c => c.type === 'verticalWall')
 
       // Walls BC and DA are vertical
       expect(vConstraints).toHaveLength(2)
@@ -232,19 +232,19 @@ describe('generatePresetConstraints', () => {
 
     it('does not generate perpendicular constraints', () => {
       const constraints = generatePresetConstraints(rectCorners, rectWalls, 'inside')
-      const perpConstraints = constraints.filter(c => c.type === 'perpendicular')
+      const perpConstraints = constraints.filter(c => c.type === 'perpendicularCorner')
 
       expect(perpConstraints).toHaveLength(0)
     })
 
     it('uses outside lengths when referenceSide is outside', () => {
       const constraints = generatePresetConstraints(rectCorners, rectWalls, 'outside')
-      const distConstraints = constraints.filter(c => c.type === 'distance')
+      const distConstraints = constraints.filter(c => c.type === 'wallLength')
 
       expect(distConstraints).toEqual(
         expect.arrayContaining([
-          expect.objectContaining({ type: 'distance', side: 'left', length: 6840 }),
-          expect.objectContaining({ type: 'distance', side: 'left', length: 4840 })
+          expect.objectContaining({ type: 'wallLength', side: 'left', length: 6840 }),
+          expect.objectContaining({ type: 'wallLength', side: 'left', length: 4840 })
         ])
       )
     })
@@ -253,15 +253,15 @@ describe('generatePresetConstraints', () => {
   describe('L-shaped preset', () => {
     it('generates a distance constraint for each wall', () => {
       const constraints = generatePresetConstraints(lCorners, lWalls, 'inside')
-      const distConstraints = constraints.filter(c => c.type === 'distance')
+      const distConstraints = constraints.filter(c => c.type === 'wallLength')
 
       expect(distConstraints).toHaveLength(6)
     })
 
     it('generates correct H/V constraints for axis-aligned segments', () => {
       const constraints = generatePresetConstraints(lCorners, lWalls, 'inside')
-      const hConstraints = constraints.filter(c => c.type === 'horizontal')
-      const vConstraints = constraints.filter(c => c.type === 'vertical')
+      const hConstraints = constraints.filter(c => c.type === 'horizontalWall')
+      const vConstraints = constraints.filter(c => c.type === 'verticalWall')
 
       // Horizontal walls: LA→LB, LC→LD, LE→LF (3)
       expect(hConstraints).toHaveLength(3)
@@ -277,9 +277,9 @@ describe('generateFreeformConstraints', () => {
       const overrides: (number | null)[] = [null, null, null, null]
       const constraints = generateFreeformConstraints(rectCorners, rectWalls, 'inside', overrides)
 
-      const distConstraints = constraints.filter(c => c.type === 'distance')
-      const hConstraints = constraints.filter(c => c.type === 'horizontal')
-      const vConstraints = constraints.filter(c => c.type === 'vertical')
+      const distConstraints = constraints.filter(c => c.type === 'wallLength')
+      const hConstraints = constraints.filter(c => c.type === 'horizontalWall')
+      const vConstraints = constraints.filter(c => c.type === 'verticalWall')
 
       expect(distConstraints).toHaveLength(0)
       expect(hConstraints).toHaveLength(2)
@@ -292,22 +292,20 @@ describe('generateFreeformConstraints', () => {
       const overrides: (number | null)[] = [5500, null, null, 3500]
       const constraints = generateFreeformConstraints(rectCorners, rectWalls, 'inside', overrides)
 
-      const distConstraints = constraints.filter(c => c.type === 'distance')
+      const distConstraints = constraints.filter(c => c.type === 'wallLength')
 
       expect(distConstraints).toHaveLength(2)
       expect(distConstraints[0]).toMatchObject({
-        type: 'distance',
+        type: 'wallLength',
         side: 'right',
         length: 5500,
-        nodeA: 'outcorner_a',
-        nodeB: 'outcorner_b'
+        wall: 'outwall_ab'
       })
       expect(distConstraints[1]).toMatchObject({
-        type: 'distance',
+        type: 'wallLength',
         side: 'right',
         length: 3500,
-        nodeA: 'outcorner_d',
-        nodeB: 'outcorner_a'
+        wall: 'outwall_da'
       })
     })
   })
@@ -342,7 +340,7 @@ describe('generateFreeformConstraints', () => {
       const overrides: (number | null)[] = [null, null, null]
       const constraints = generateFreeformConstraints(diagonalCorners, diagonalWalls, 'inside', overrides)
 
-      const perpConstraints = constraints.filter(c => c.type === 'perpendicular')
+      const perpConstraints = constraints.filter(c => c.type === 'perpendicularCorner')
 
       // XY⊥YZ (both non-axis-aligned) and YZ⊥ZX (ZX is horizontal, but YZ is not)
       // XY is not H/V, YZ is not H/V, ZX is horizontal
@@ -352,9 +350,8 @@ describe('generateFreeformConstraints', () => {
       expect(perpConstraints).toEqual(
         expect.arrayContaining([
           expect.objectContaining({
-            type: 'perpendicular',
-            wallA: 'outwall_xy',
-            wallB: 'outwall_yz'
+            type: 'perpendicularCorner',
+            corner: 'outcorner_y'
           })
         ])
       )
@@ -365,7 +362,7 @@ describe('generateFreeformConstraints', () => {
       const overrides: (number | null)[] = [null, null, null, null]
       const constraints = generateFreeformConstraints(rectCorners, rectWalls, 'inside', overrides)
 
-      const perpConstraints = constraints.filter(c => c.type === 'perpendicular')
+      const perpConstraints = constraints.filter(c => c.type === 'perpendicularCorner')
       expect(perpConstraints).toHaveLength(0)
     })
   })
@@ -412,16 +409,13 @@ describe('generateFreeformConstraints', () => {
       const overrides: (number | null)[] = [null, null, null, null, null]
       const constraints = generateFreeformConstraints(colinearCorners, colinearWalls, 'inside', overrides)
 
-      const colinConstraints = constraints.filter(c => c.type === 'colinear')
+      const colinConstraints = constraints.filter(c => c.type === 'colinearCorner')
 
       // Corner Q is between P and R, all on same horizontal line
       expect(colinConstraints).toHaveLength(1)
       expect(colinConstraints[0]).toMatchObject({
-        type: 'colinear',
-        nodeA: 'outcorner_p',
-        nodeB: 'outcorner_q',
-        nodeC: 'outcorner_r',
-        side: 'right'
+        type: 'colinearCorner',
+        corner: 'outcorner_q'
       })
     })
   })
@@ -431,8 +425,8 @@ describe('generateFreeformConstraints', () => {
       const overrides: (number | null)[] = [null, null, null, null]
       const constraints = generateFreeformConstraints(rectCorners, rectWalls, 'outside', overrides)
 
-      const hConstraints = constraints.filter(c => c.type === 'horizontal')
-      const vConstraints = constraints.filter(c => c.type === 'vertical')
+      const hConstraints = constraints.filter(c => c.type === 'horizontalWall')
+      const vConstraints = constraints.filter(c => c.type === 'verticalWall')
 
       // Outside points of the rectangle are also axis-aligned
       expect(hConstraints).toHaveLength(2)
@@ -443,10 +437,10 @@ describe('generateFreeformConstraints', () => {
       const overrides: (number | null)[] = [7000, null, null, null]
       const constraints = generateFreeformConstraints(rectCorners, rectWalls, 'outside', overrides)
 
-      const distConstraints = constraints.filter(c => c.type === 'distance')
+      const distConstraints = constraints.filter(c => c.type === 'wallLength')
       expect(distConstraints).toHaveLength(1)
       expect(distConstraints[0]).toMatchObject({
-        type: 'distance',
+        type: 'wallLength',
         side: 'left',
         length: 7000
       })

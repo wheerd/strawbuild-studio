@@ -1,10 +1,12 @@
 import { type Constraint, type SketchLine, type SketchPoint } from '@salusoft89/planegcs'
 import { create } from 'zustand'
 
-import type { ConstraintInput, PerimeterId } from '@/building/model'
+import type { ConstraintInput, PerimeterCornerId, PerimeterId, WallId } from '@/building/model'
 import { getModelActions } from '@/building/store'
+import { referenceSideToConstraintSide } from '@/editor/gcs/constraintGenerator'
 
 import {
+  type TranslationContext,
   buildingConstraintKey,
   getReferencedCornerIds,
   getReferencedWallIds,
@@ -143,10 +145,32 @@ const useGcsStore = create<GcsStore>()((set, get) => ({
       }
 
       // Translate and add the planegcs constraints
-      const context = {
+      const modelActionsRef = getModelActions()
+      const context: TranslationContext = {
         getLineStartPointId: (lineId: string) => {
           const line = state.lines.find(l => l.id === lineId)
           return line?.p1_id
+        },
+        getWallCornerIds: (wallId: WallId) => {
+          try {
+            const wall = modelActionsRef.getPerimeterWallById(wallId as `outwall_${string}`)
+            return { startCornerId: wall.startCornerId, endCornerId: wall.endCornerId }
+          } catch {
+            return undefined
+          }
+        },
+        getCornerAdjacentWallIds: (cornerId: PerimeterCornerId) => {
+          try {
+            const corner = modelActionsRef.getPerimeterCornerById(cornerId)
+            return { previousWallId: corner.previousWallId, nextWallId: corner.nextWallId }
+          } catch {
+            return undefined
+          }
+        },
+        getReferenceSide: (cornerId: PerimeterCornerId) => {
+          const corner = modelActionsRef.getPerimeterCornerById(cornerId)
+          const perimeter = modelActionsRef.getPerimeterById(corner.perimeterId)
+          return referenceSideToConstraintSide(perimeter.referenceSide)
         }
       }
 

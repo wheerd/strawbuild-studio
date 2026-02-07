@@ -1,6 +1,6 @@
 import { useCallback, useMemo } from 'react'
 
-import type { ColinearConstraint, PerimeterCornerId, PerpendicularConstraint } from '@/building/model'
+import type { ColinearCornerConstraint, PerimeterCornerId, PerpendicularCornerConstraint } from '@/building/model'
 import {
   useConstraintsForEntity,
   useModelActions,
@@ -49,27 +49,26 @@ export function PerimeterCornerShape({ cornerId }: { cornerId: PerimeterCornerId
   const normal = perpendicular(outsideDirection)
   const overlayHalfWidth = 80 / 2
 
-  // Look up constraints for this corner and its adjacent walls
+  // Look up constraints for this corner
   const cornerConstraints = useConstraintsForEntity(cornerId)
-  const prevWallConstraints = useConstraintsForEntity(corner.previousWallId)
-  const nextWallConstraints = useConstraintsForEntity(corner.nextWallId)
 
-  // Find colinear constraints where this corner is nodeB (the middle node)
+  // Find colinear constraints for this corner
   const colinearConstraints = useMemo(
-    () => cornerConstraints.filter((c): c is ColinearConstraint => c.type === 'colinear' && c.nodeB === cornerId),
+    () =>
+      cornerConstraints.filter(
+        (c): c is ColinearCornerConstraint => c.type === 'colinearCorner' && c.corner === cornerId
+      ),
     [cornerConstraints, cornerId]
   )
 
-  // Find perpendicular constraints between the two adjacent walls
-  const perpendicularConstraint = useMemo(() => {
-    const allWallConstraints = [...prevWallConstraints, ...nextWallConstraints]
-    return allWallConstraints.find(
-      (c): c is PerpendicularConstraint =>
-        c.type === 'perpendicular' &&
-        ((c.wallA === corner.previousWallId && c.wallB === corner.nextWallId) ||
-          (c.wallA === corner.nextWallId && c.wallB === corner.previousWallId))
-    )
-  }, [prevWallConstraints, nextWallConstraints, corner.previousWallId, corner.nextWallId])
+  // Find perpendicular constraint for this corner
+  const perpendicularConstraint = useMemo(
+    () =>
+      cornerConstraints.find(
+        (c): c is PerpendicularCornerConstraint => c.type === 'perpendicularCorner' && c.corner === cornerId
+      ),
+    [cornerConstraints, cornerId]
+  )
 
   // Determine if the corner is close to 90° (for suggesting perpendicular constraint)
   /** 5-degree tolerance for perpendicular suggestion. */
@@ -82,11 +81,10 @@ export function PerimeterCornerShape({ cornerId }: { cornerId: PerimeterCornerId
   // --- Perpendicular constraint handlers ---
   const handleAddPerpendicular = useCallback(() => {
     modelActions.addBuildingConstraint({
-      type: 'perpendicular',
-      wallA: corner.previousWallId,
-      wallB: corner.nextWallId
+      type: 'perpendicularCorner',
+      corner: cornerId
     })
-  }, [modelActions, corner.previousWallId, corner.nextWallId])
+  }, [modelActions, cornerId])
 
   const handleRemovePerpendicular = useCallback(() => {
     if (!perpendicularConstraint) return

@@ -1,7 +1,12 @@
 import { useCallback, useMemo } from 'react'
 
-import type { Constraint, DistanceConstraint, HorizontalConstraint, VerticalConstraint } from '@/building/model'
-import { type PerimeterCornerId, type PerimeterWallId } from '@/building/model/ids'
+import type {
+  Constraint,
+  HorizontalWallConstraint,
+  VerticalWallConstraint,
+  WallLengthConstraint
+} from '@/building/model'
+import { type PerimeterWallId } from '@/building/model/ids'
 import {
   useConstraintsForEntity,
   useModelActions,
@@ -24,34 +29,28 @@ import { polygonToSvgPath } from '@/shared/utils/svg'
 const SUGGESTION_SIN_TOLERANCE = Math.sin((5 * Math.PI) / 180)
 
 /**
- * Find a distance constraint that spans between two corner IDs on a given side.
+ * Find a wallLength constraint for a given wall and side.
  */
-function findDistanceConstraint(
+function findWallLengthConstraint(
   constraints: readonly Constraint[],
-  cornerA: PerimeterCornerId,
-  cornerB: PerimeterCornerId,
+  wallId: PerimeterWallId,
   side: 'left' | 'right'
-): DistanceConstraint | undefined {
+): WallLengthConstraint | undefined {
   return constraints.find(
-    (c): c is DistanceConstraint =>
-      c.type === 'distance' &&
-      c.side === side &&
-      ((c.nodeA === cornerA && c.nodeB === cornerB) || (c.nodeA === cornerB && c.nodeB === cornerA))
+    (c): c is WallLengthConstraint => c.type === 'wallLength' && c.wall === wallId && c.side === side
   )
 }
 
 /**
- * Find an H/V constraint that spans between two corner IDs.
+ * Find an H/V constraint for a given wall.
  */
 function findHVConstraint(
   constraints: readonly Constraint[],
-  cornerA: PerimeterCornerId,
-  cornerB: PerimeterCornerId
-): (HorizontalConstraint | VerticalConstraint) | undefined {
+  wallId: PerimeterWallId
+): (HorizontalWallConstraint | VerticalWallConstraint) | undefined {
   return constraints.find(
-    (c): c is HorizontalConstraint | VerticalConstraint =>
-      (c.type === 'horizontal' || c.type === 'vertical') &&
-      ((c.nodeA === cornerA && c.nodeB === cornerB) || (c.nodeA === cornerB && c.nodeB === cornerA))
+    (c): c is HorizontalWallConstraint | VerticalWallConstraint =>
+      (c.type === 'horizontalWall' || c.type === 'verticalWall') && c.wall === wallId
   )
 }
 
@@ -72,37 +71,29 @@ export function PerimeterWallShape({ wallId }: { wallId: PerimeterWallId }): Rea
 
   const wallPath = polygonToSvgPath(wall.polygon)
 
-  // Look up constraints referencing this wall's start and end corners
-  const startConstraints = useConstraintsForEntity(wall.startCornerId)
-  const endConstraints = useConstraintsForEntity(wall.endCornerId)
-  const allCornerConstraints = useMemo(
-    () => [...startConstraints, ...endConstraints],
-    [startConstraints, endConstraints]
-  )
+  // Look up constraints referencing this wall
+  const wallConstraints = useConstraintsForEntity(wallId)
 
   // Find distance constraints for inside ('right') and outside ('left') sides
   const insideDistanceConstraint = useMemo(
-    () => findDistanceConstraint(allCornerConstraints, wall.startCornerId, wall.endCornerId, 'right'),
-    [allCornerConstraints, wall.startCornerId, wall.endCornerId]
+    () => findWallLengthConstraint(wallConstraints, wallId, 'right'),
+    [wallConstraints, wallId]
   )
   const outsideDistanceConstraint = useMemo(
-    () => findDistanceConstraint(allCornerConstraints, wall.startCornerId, wall.endCornerId, 'left'),
-    [allCornerConstraints, wall.startCornerId, wall.endCornerId]
+    () => findWallLengthConstraint(wallConstraints, wallId, 'left'),
+    [wallConstraints, wallId]
   )
 
-  // Find H/V constraint for this wall's two corners
-  const hvConstraint = useMemo(
-    () => findHVConstraint(allCornerConstraints, wall.startCornerId, wall.endCornerId),
-    [allCornerConstraints, wall.startCornerId, wall.endCornerId]
-  )
+  // Find H/V constraint for this wall
+  const hvConstraint = useMemo(() => findHVConstraint(wallConstraints, wallId), [wallConstraints, wallId])
 
   // Determine if the wall is close to horizontal or vertical (for suggesting constraints)
-  const suggestedHVType = useMemo<'horizontal' | 'vertical' | null>(() => {
+  const suggestedHVType = useMemo<'horizontalWall' | 'verticalWall' | null>(() => {
     if (hvConstraint) return null // Already has an H/V constraint
     const dx = wall.direction[0]
     const dy = wall.direction[1]
-    if (Math.abs(dy) < SUGGESTION_SIN_TOLERANCE) return 'horizontal'
-    if (Math.abs(dx) < SUGGESTION_SIN_TOLERANCE) return 'vertical'
+    if (Math.abs(dy) < SUGGESTION_SIN_TOLERANCE) return 'horizontalWall'
+    if (Math.abs(dx) < SUGGESTION_SIN_TOLERANCE) return 'verticalWall'
     return null
   }, [hvConstraint, wall.direction])
 
@@ -124,10 +115,9 @@ export function PerimeterWallShape({ wallId }: { wallId: PerimeterWallId }): Rea
     if (!suggestedHVType) return
     modelActions.addBuildingConstraint({
       type: suggestedHVType,
-      nodeA: wall.startCornerId,
-      nodeB: wall.endCornerId
+      wall: wallId
     })
-  }, [suggestedHVType, modelActions, wall.startCornerId, wall.endCornerId])
+  }, [suggestedHVType, modelActions, wallId])
 
   const handleRemoveHVConstraint = useCallback(() => {
     if (!hvConstraint) return
@@ -138,7 +128,7 @@ export function PerimeterWallShape({ wallId }: { wallId: PerimeterWallId }): Rea
   const handleDistanceClick = useCallback(
     (
       side: 'left' | 'right',
-      existingConstraint: DistanceConstraint | undefined,
+      existingConstraint: WallLengthConstraint | undefined,
       currentLength: Length,
       indicatorStartPoint: Vec2,
       indicatorEndPoint: Vec2,
@@ -159,10 +149,9 @@ export function PerimeterWallShape({ wallId }: { wallId: PerimeterWallId }): Rea
         placeholder: 'Enter length...',
         onCommit: enteredValue => {
           modelActions.addBuildingConstraint({
-            type: 'distance',
+            type: 'wallLength',
             side,
-            nodeA: wall.startCornerId,
-            nodeB: wall.endCornerId,
+            wall: wallId,
             length: enteredValue
           })
         },
@@ -173,7 +162,7 @@ export function PerimeterWallShape({ wallId }: { wallId: PerimeterWallId }): Rea
         }
       })
     },
-    [viewportActions, modelActions, wall.startCornerId, wall.endCornerId]
+    [viewportActions, modelActions, wallId]
   )
 
   // Whether to show H/V badge
@@ -181,12 +170,23 @@ export function PerimeterWallShape({ wallId }: { wallId: PerimeterWallId }): Rea
 
   // H/V badge label
   const hvLabel = hvConstraint
-    ? hvConstraint.type === 'horizontal'
+    ? hvConstraint.type === 'horizontalWall'
       ? '\u2015'
       : '\u007c'
-    : suggestedHVType === 'horizontal'
+    : suggestedHVType === 'horizontalWall'
       ? '\u2015'
       : '\u007c'
+
+  // Map constraint type to tooltip key (display concept, not type discriminant)
+  const hvTooltipKey = hvConstraint
+    ? hvConstraint.type === 'horizontalWall'
+      ? ('horizontal' as const)
+      : ('vertical' as const)
+    : suggestedHVType === 'horizontalWall'
+      ? ('horizontal' as const)
+      : suggestedHVType === 'verticalWall'
+        ? ('vertical' as const)
+        : undefined
 
   return (
     <g data-entity-id={wall.id} data-entity-type="perimeter-wall" data-parent-ids={JSON.stringify([wall.perimeterId])}>
@@ -271,7 +271,7 @@ export function PerimeterWallShape({ wallId }: { wallId: PerimeterWallId }): Rea
           outsideDirection={wall.outsideDirection}
           locked={hvConstraint != null}
           onClick={isSelected ? (hvConstraint ? handleRemoveHVConstraint : handleAddHVConstraint) : undefined}
-          tooltipKey={hvConstraint ? hvConstraint.type : (suggestedHVType ?? undefined)}
+          tooltipKey={hvTooltipKey}
         />
       )}
     </g>
