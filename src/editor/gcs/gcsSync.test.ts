@@ -1,6 +1,17 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-import type { Constraint, ConstraintId, NodeId, Perimeter, PerimeterId, StoreyId } from '@/building/model'
+import type {
+  Constraint,
+  ConstraintId,
+  NodeId,
+  Perimeter,
+  PerimeterCorner,
+  PerimeterCornerWithGeometry,
+  PerimeterId,
+  StoreyId
+} from '@/building/model'
+import type { PerimeterCornerId } from '@/building/model/ids'
+import { newVec2 } from '@/shared/geometry'
 
 // --- Mock state ---
 
@@ -15,12 +26,17 @@ let capturedStoreySelector: ((state: unknown) => unknown) | null = null
 let capturedStoreyListener: ((newVal: unknown, oldVal: unknown) => void) | null = null
 let capturedPerimeterCallback: ((current?: Perimeter, previous?: Perimeter) => void) | null = null
 let capturedConstraintCallback: ((current?: Constraint, previous?: Constraint) => void) | null = null
+let capturedCornerCallback: ((current?: PerimeterCorner, previous?: PerimeterCorner) => void) | null = null
 
 // Mock GCS actions
 const mockAddPerimeterGeometry = vi.fn()
 const mockRemovePerimeterGeometry = vi.fn()
 const mockGcsAddBuildingConstraint = vi.fn()
 const mockGcsRemoveBuildingConstraint = vi.fn()
+const mockUpdatePointPosition = vi.fn()
+
+// Mock corner geometry lookup
+const mockCornerGeometries: Record<string, PerimeterCornerWithGeometry> = {}
 
 // Mock building store
 vi.mock('@/building/store', () => ({
@@ -28,6 +44,7 @@ vi.mock('@/building/store', () => ({
     getActiveStoreyId: () => mockActiveStoreyId,
     getPerimetersByStorey: (storeyId: StoreyId) => mockPerimetersByStorey[storeyId] ?? [],
     getPerimeterById: (perimeterId: PerimeterId) => mockPerimetersById[perimeterId],
+    getPerimeterCornerById: (cornerId: string) => mockCornerGeometries[cornerId],
     getAllBuildingConstraints: () => mockBuildingConstraints
   }),
   subscribeToModelChanges: (
@@ -45,6 +62,10 @@ vi.mock('@/building/store', () => ({
   subscribeToConstraints: (cb: (current?: Constraint, previous?: Constraint) => void) => {
     capturedConstraintCallback = cb
     return vi.fn() // unsubscribe
+  },
+  subscribeToCorners: (cb: (current?: PerimeterCorner, previous?: PerimeterCorner) => void) => {
+    capturedCornerCallback = cb
+    return vi.fn() // unsubscribe
   }
 }))
 
@@ -54,7 +75,8 @@ vi.mock('./store', () => ({
     addPerimeterGeometry: (...args: unknown[]) => mockAddPerimeterGeometry(...args),
     removePerimeterGeometry: (...args: unknown[]) => mockRemovePerimeterGeometry(...args),
     addBuildingConstraint: (...args: unknown[]) => mockGcsAddBuildingConstraint(...args),
-    removeBuildingConstraint: (...args: unknown[]) => mockGcsRemoveBuildingConstraint(...args)
+    removeBuildingConstraint: (...args: unknown[]) => mockGcsRemoveBuildingConstraint(...args),
+    updatePointPosition: (...args: unknown[]) => mockUpdatePointPosition(...args)
   }),
   getGcsState: () => ({
     perimeterRegistry: mockPerimeterRegistry
@@ -68,6 +90,7 @@ beforeEach(() => {
   capturedStoreyListener = null
   capturedPerimeterCallback = null
   capturedConstraintCallback = null
+  capturedCornerCallback = null
   mockActiveStoreyId = 'storey_1' as StoreyId
 
   // Clear mutable objects
@@ -82,6 +105,9 @@ beforeEach(() => {
   }
   for (const key of Object.keys(mockBuildingConstraints) as ConstraintId[]) {
     delete mockBuildingConstraints[key]
+  }
+  for (const key of Object.keys(mockCornerGeometries)) {
+    delete mockCornerGeometries[key]
   }
 })
 
@@ -114,6 +140,7 @@ describe('GcsSyncService', () => {
       expect(capturedStoreyListener).toBeTypeOf('function')
       expect(capturedPerimeterCallback).toBeTypeOf('function')
       expect(capturedConstraintCallback).toBeTypeOf('function')
+      expect(capturedCornerCallback).toBeTypeOf('function')
     })
 
     it('captures a storey selector that selects activeStoreyId', async () => {
@@ -494,6 +521,83 @@ describe('GcsSyncService', () => {
 
       expect(mockAddPerimeterGeometry).not.toHaveBeenCalled()
       expect(mockGcsAddBuildingConstraint).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('corner position sync', () => {
+    function makeCorner(id: string, perimeterId: string): PerimeterCorner {
+      return {
+        id: id as PerimeterCornerId,
+        perimeterId: perimeterId as PerimeterId,
+        previousWallId: 'outwall_w1',
+        nextWallId: 'outwall_w2',
+        referencePoint: newVec2(0, 0),
+        constructedByWall: 'previous'
+      } as PerimeterCorner
+    }
+
+    function registerCornerGeometry(
+      cornerId: string,
+      insideX: number,
+      insideY: number,
+      outsideX: number,
+      outsideY: number
+    ): void {
+      mockCornerGeometries[cornerId] = {
+        insidePoint: newVec2(insideX, insideY),
+        outsidePoint: newVec2(outsideX, outsideY)
+      } as PerimeterCornerWithGeometry
+    }
+
+    it('updates GCS point positions when a tracked corner referencePoint changes', async () => {
+      // Perimeter is tracked in GCS registry
+      mockPerimeterRegistry['p1' as PerimeterId] = { pointIds: ['corner_c1_in', 'corner_c1_out'] }
+
+      // Register the corner geometry that getPerimeterCornerById will return
+      registerCornerGeometry('outcorner_c1', 100, 200, 110, 210)
+
+      await importGcsSync()
+
+      const prev = makeCorner('outcorner_c1', 'p1')
+      const curr = { ...prev, referencePoint: newVec2(100, 200) }
+      capturedCornerCallback!(curr, prev)
+
+      expect(mockUpdatePointPosition).toHaveBeenCalledTimes(2)
+      expect(mockUpdatePointPosition).toHaveBeenCalledWith('corner_outcorner_c1_in', 100, 200)
+      expect(mockUpdatePointPosition).toHaveBeenCalledWith('corner_outcorner_c1_out', 110, 210)
+    })
+
+    it('does not update positions for untracked perimeters', async () => {
+      // Registry is empty — perimeter not tracked
+      await importGcsSync()
+
+      const prev = makeCorner('outcorner_c1', 'p_untracked')
+      const curr = { ...prev, referencePoint: newVec2(50, 60) }
+      capturedCornerCallback!(curr, prev)
+
+      expect(mockUpdatePointPosition).not.toHaveBeenCalled()
+    })
+
+    it('does not update positions when a corner is added (no previous)', async () => {
+      mockPerimeterRegistry['p1' as PerimeterId] = { pointIds: [] }
+
+      await importGcsSync()
+
+      const curr = makeCorner('outcorner_c1', 'p1')
+      capturedCornerCallback!(curr, undefined)
+
+      expect(mockUpdatePointPosition).not.toHaveBeenCalled()
+    })
+
+    it('does not update positions when a corner is removed (no current)', async () => {
+      mockPerimeterRegistry['p1' as PerimeterId] = { pointIds: [] }
+
+      await importGcsSync()
+
+      const prev = makeCorner('outcorner_c1', 'p1')
+      capturedCornerCallback!(undefined, prev)
+
+      expect(mockUpdatePointPosition).not.toHaveBeenCalled()
     })
   })
 })

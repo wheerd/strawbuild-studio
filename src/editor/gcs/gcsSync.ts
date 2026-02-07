@@ -1,8 +1,9 @@
-import type { Constraint, ConstraintInput, Perimeter, PerimeterId, StoreyId } from '@/building/model'
+import type { Constraint, ConstraintInput, Perimeter, PerimeterCorner, PerimeterId, StoreyId } from '@/building/model'
 import type { PerimeterCornerId, PerimeterWallId } from '@/building/model/ids'
 import {
   getModelActions,
   subscribeToConstraints,
+  subscribeToCorners,
   subscribeToModelChanges,
   subscribeToPerimeters
 } from '@/building/store'
@@ -38,6 +39,12 @@ class GcsSyncService {
     // and propagate them to the GCS store.
     subscribeToConstraints((current, previous) => {
       this.handleConstraintChange(current, previous)
+    })
+
+    // Subscribe to corner data changes (e.g. referencePoint updates from boundary moves).
+    // This catches position changes that don't alter the Perimeter record itself.
+    subscribeToCorners((current, previous) => {
+      this.handleCornerChange(current, previous)
     })
   }
 
@@ -168,6 +175,29 @@ class GcsSyncService {
         console.warn(`Failed to add updated building constraint to GCS store (will be synced by perimeter):`, e)
       }
     }
+  }
+
+  private handleCornerChange(current?: PerimeterCorner, previous?: PerimeterCorner): void {
+    // Only handle updates — additions/removals are covered by the perimeter subscription
+    // (which fires when cornerIds changes on the Perimeter record).
+    if (!current || !previous) return
+
+    const cornerId = current.id
+    const perimeterId = current.perimeterId
+    const { perimeterRegistry } = getGcsState()
+
+    // Only update if this corner's perimeter is currently tracked
+    if (!(perimeterId in perimeterRegistry)) return
+
+    // Read the fresh computed geometry (insidePoint/outsidePoint derived from referencePoint)
+    const modelActions = getModelActions()
+    const cornerWithGeometry = modelActions.getPerimeterCornerById(cornerId)
+
+    const gcsActions = getGcsActions()
+    const inId = `corner_${cornerId}_in`
+    const outId = `corner_${cornerId}_out`
+    gcsActions.updatePointPosition(inId, cornerWithGeometry.insidePoint[0], cornerWithGeometry.insidePoint[1])
+    gcsActions.updatePointPosition(outId, cornerWithGeometry.outsidePoint[0], cornerWithGeometry.outsidePoint[1])
   }
 }
 

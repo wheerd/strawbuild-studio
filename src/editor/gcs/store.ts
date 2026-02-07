@@ -34,6 +34,8 @@ interface GcsStoreActions {
   addLine: (id: string, p1Id: string, p2Id: string) => void
   addConstraint: (constraint: Constraint) => void
 
+  updatePointPosition: (id: string, x: number, y: number) => void
+
   removePoints: (ids: string[]) => void
   removeLines: (ids: string[]) => void
   removeConstraints: (ids: string[]) => void
@@ -70,6 +72,12 @@ const useGcsStore = create<GcsStore>()((set, get) => ({
     addConstraint: constraint => {
       set(state => ({
         constraints: { ...state.constraints, [constraint.id]: { ...constraint } }
+      }))
+    },
+
+    updatePointPosition: (id, x, y) => {
+      set(state => ({
+        points: { ...state.points, [id]: { ...state.points[id], x, y } }
       }))
     },
 

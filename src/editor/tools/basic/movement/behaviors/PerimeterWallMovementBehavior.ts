@@ -9,13 +9,14 @@ import type {
   PointerMovementState
 } from '@/editor/tools/basic/movement/MovementBehavior'
 import { PerimeterWallMovementPreview } from '@/editor/tools/basic/movement/previews/PerimeterWallMovementPreview'
-import { type Vec2, addVec2, midpoint, subVec2 } from '@/shared/geometry'
+import { type Vec2, addVec2, subVec2 } from '@/shared/geometry'
 
 // Perimeter wall movement needs access to the wall to update the boundary
 export interface PerimeterWallEntityContext {
   perimeter: PerimeterWithGeometry
   wall: PerimeterWallWithGeometry
   wallIndex: number // Index of the wall in the perimeter
+  startPoint: Vec2
   referenceSide: PerimeterReferenceSide
   gcs: WrappedGcs
 }
@@ -50,13 +51,14 @@ export class PerimeterWallMovementBehavior implements MovementBehavior<
     const gcs = gcsService.getGcs()
 
     // Set up GCS for wall drag (adds temp point constrained to wall line)
-    gcs.startWallDrag(wall.id, perimeter.referenceSide)
+    const startPoint = gcs.startWallDrag(wall.id, perimeter.referenceSide)
 
     return {
       perimeter,
       wall,
       wallIndex,
       referenceSide: perimeter.referenceSide,
+      startPoint,
       gcs
     }
   }
@@ -77,11 +79,10 @@ export class PerimeterWallMovementBehavior implements MovementBehavior<
     pointerState: PointerMovementState,
     context: MovementContext<PerimeterWallEntityContext>
   ): PerimeterWallMovementState {
-    const { wall, perimeter, referenceSide, gcs } = context.entity
+    const { perimeter, referenceSide, gcs, startPoint } = context.entity
 
     // Move the temp point by the pointer delta from the wall midpoint
-    const originalMidpoint = midpoint(wall.insideLine.start, wall.insideLine.end)
-    const targetPosition = addVec2(originalMidpoint, pointerState.delta)
+    const targetPosition = addVec2(startPoint, pointerState.delta)
 
     gcs.updateDrag(targetPosition[0], targetPosition[1])
 
@@ -89,7 +90,7 @@ export class PerimeterWallMovementBehavior implements MovementBehavior<
 
     // Compute the effective movement delta from the solved drag point (wall midpoint)
     const solvedDragPos = gcs.getDragPointPosition()
-    const movementDelta = subVec2(solvedDragPos, originalMidpoint)
+    const movementDelta = subVec2(solvedDragPos, startPoint)
 
     return { movementDelta, newBoundary }
   }
