@@ -1,4 +1,4 @@
-import type { PerimeterCornerWithGeometry, PerimeterReferenceSide } from '@/building/model'
+import type { PerimeterCornerWithGeometry } from '@/building/model'
 import { type SelectableId, isPerimeterCornerId } from '@/building/model/ids'
 import type { StoreActions } from '@/building/store/types'
 import { type WrappedGcs, gcsService } from '@/editor/gcs/service'
@@ -17,7 +17,6 @@ export interface CornerEntityContext {
   corner: PerimeterCornerWithGeometry
   corners: PerimeterCornerWithGeometry[]
   cornerIndex: number // Index of the boundary point that corresponds to this corner
-  referenceSide: PerimeterReferenceSide
   snapContext: SnappingContext
   gcs: WrappedGcs
 }
@@ -54,13 +53,13 @@ export class PerimeterCornerMovementBehavior implements MovementBehavior<CornerE
       referenceLineSegments: snapLines
     }
 
-    const gcs = gcsService.getGcs()
+    const fixedCornerIds = perimeter.cornerIds.filter(c => c !== entityId)
+    const gcs = gcsService.getGcs(fixedCornerIds)
 
     return {
       corners,
       corner,
       cornerIndex,
-      referenceSide: perimeter.referenceSide,
       snapContext,
       gcs
     }
@@ -70,14 +69,14 @@ export class PerimeterCornerMovementBehavior implements MovementBehavior<CornerE
     pointerState: PointerMovementState,
     context: MovementContext<CornerEntityContext>
   ): CornerMovementState {
-    const { corner, referenceSide, gcs } = context.entity
+    const { corner, gcs } = context.entity
 
-    gcs.startCornerDrag(corner.id, referenceSide)
+    gcs.startCornerDrag(corner.id)
 
     return {
       position: corner.referencePoint,
       movementDelta: pointerState.delta,
-      newBoundary: gcs.getPerimeterBoundary(corner.perimeterId, referenceSide)
+      newBoundary: gcs.getPerimeterBoundary(corner.perimeterId)
     }
   }
 
@@ -85,7 +84,7 @@ export class PerimeterCornerMovementBehavior implements MovementBehavior<CornerE
     pointerState: PointerMovementState,
     context: MovementContext<CornerEntityContext>
   ): CornerMovementState {
-    const { corner, referenceSide, snapContext, gcs } = context.entity
+    const { corner, snapContext, gcs } = context.entity
 
     const newPosition = addVec2(corner.referencePoint, pointerState.delta)
 
@@ -96,10 +95,10 @@ export class PerimeterCornerMovementBehavior implements MovementBehavior<CornerE
     gcs.updateDrag(finalPosition[0], finalPosition[1])
 
     // Read solved positions to build the boundary
-    const newBoundary = gcs.getPerimeterBoundary(corner.perimeterId, referenceSide)
+    const newBoundary = gcs.getPerimeterBoundary(corner.perimeterId)
 
     // The actual solved position of the dragged corner
-    const solvedPosition = gcs.getCornerPosition(corner.id, referenceSide)
+    const solvedPosition = gcs.getCornerPosition(corner.id)
 
     return {
       position: solvedPosition,
@@ -122,17 +121,17 @@ export class PerimeterCornerMovementBehavior implements MovementBehavior<CornerE
   }
 
   applyRelativeMovement(deltaDifference: Vec2, context: MovementContext<CornerEntityContext>): boolean {
-    const { corner, referenceSide, gcs } = context.entity
+    const { corner, gcs } = context.entity
 
     // Start a new drag cycle on the same GCS instance
-    const dragPos = gcs.startCornerDrag(corner.id, referenceSide)
+    const dragPos = gcs.startCornerDrag(corner.id)
 
     const targetX = dragPos[0] + deltaDifference[0]
     const targetY = dragPos[1] + deltaDifference[1]
 
     gcs.updateDrag(targetX, targetY)
 
-    const newBoundary = gcs.getPerimeterBoundary(corner.perimeterId, referenceSide)
+    const newBoundary = gcs.getPerimeterBoundary(corner.perimeterId)
 
     gcs.endDrag()
 

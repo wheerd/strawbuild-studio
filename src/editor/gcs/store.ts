@@ -2,14 +2,19 @@ import { type Constraint, type SketchLine, type SketchPoint } from '@salusoft89/
 import { create } from 'zustand'
 
 import type { ConstraintInput, PerimeterCornerId, PerimeterId, WallId } from '@/building/model'
+import type { PerimeterCornerWithGeometry } from '@/building/model/perimeters'
 import { getModelActions } from '@/building/store'
 import { referenceSideToConstraintSide } from '@/editor/gcs/constraintGenerator'
+import { scaleAddVec2 } from '@/shared/geometry/2d'
 
 import {
   type TranslationContext,
   buildingConstraintKey,
   getReferencedCornerIds,
   getReferencedWallIds,
+  nodeNonRefSidePointForNextWall,
+  nodeNonRefSidePointForPrevWall,
+  nodeRefSidePointId,
   translateBuildingConstraint,
   translatedConstraintIds
 } from './constraintTranslator'
@@ -128,9 +133,8 @@ const useGcsStore = create<GcsStore>()((set, get) => ({
       // Validate that all referenced corners exist as GCS points
       const cornerIds = getReferencedCornerIds(constraint)
       for (const cornerId of cornerIds) {
-        const inId = `corner_${cornerId}_in`
-        const outId = `corner_${cornerId}_out`
-        if (!(inId in state.points) || !(outId in state.points)) {
+        const refId = `corner_${cornerId}_ref`
+        if (!(refId in state.points)) {
           throw new Error(`Cannot add building constraint: corner "${cornerId}" not found in GCS points.`)
         }
       }
@@ -138,8 +142,8 @@ const useGcsStore = create<GcsStore>()((set, get) => ({
       // Validate that all referenced walls exist as GCS lines
       const wallIds = getReferencedWallIds(constraint)
       for (const wallId of wallIds) {
-        const lineId = `wall_${wallId}_in`
-        if (!state.lines.some(l => l.id === lineId)) {
+        const refLineId = `wall_${wallId}_ref`
+        if (!state.lines.some(l => l.id === refLineId)) {
           throw new Error(`Cannot add building constraint: wall "${wallId}" not found in GCS lines.`)
         }
       }
@@ -233,34 +237,74 @@ const useGcsStore = create<GcsStore>()((set, get) => ({
         constraintIds: []
       }
 
-      // Add points for each corner
+      // Build corner lookup map first
+      const cornerGeomMap = new Map<PerimeterCornerId, PerimeterCornerWithGeometry>()
       for (const corner of corners) {
-        const inId = `corner_${corner.id}_in`
-        const outId = `corner_${corner.id}_out`
-        actions.addPoint(inId, corner.insidePoint[0], corner.insidePoint[1], false)
-        actions.addPoint(outId, corner.outsidePoint[0], corner.outsidePoint[1], false)
-        entry.pointIds.push(inId, outId)
+        cornerGeomMap.set(corner.id, corner)
       }
 
-      // Add lines and structural constraints for each wall
+      // Add points for each corner
+      for (const corner of corners) {
+        const refPointId = nodeRefSidePointId(corner.id)
+        const nonRefPrevId = nodeNonRefSidePointForPrevWall(corner.id)
+        const nonRefNextId = nodeNonRefSidePointForNextWall(corner.id)
+
+        const isRefInside = modelActions.getPerimeterById(perimeterId).referenceSide === 'inside'
+        const refPos = isRefInside ? corner.insidePoint : corner.outsidePoint
+        const nonRefPos = isRefInside ? corner.outsidePoint : corner.insidePoint
+
+        // Add reference side point
+        actions.addPoint(refPointId, refPos[0], refPos[1], false)
+
+        if (corner.interiorAngle !== 180) {
+          actions.addPoint(nonRefPrevId, nonRefPos[0], nonRefPos[1], false)
+          actions.addPoint(nonRefNextId, nonRefPos[0], nonRefPos[1], false)
+        } else {
+          // Add non-reference side points with wall-specific thickness offsets
+          const prevWall = walls.find(w => w.endCornerId === corner.id)
+          const nextWall = walls.find(w => w.startCornerId === corner.id)
+
+          if (prevWall) {
+            const prevPos = scaleAddVec2(
+              refPos,
+              prevWall.outsideDirection,
+              isRefInside ? prevWall.thickness : -prevWall.thickness
+            )
+            actions.addPoint(nonRefPrevId, prevPos[0], prevPos[1], false)
+          }
+
+          if (nextWall) {
+            const nextPos = scaleAddVec2(
+              refPos,
+              nextWall.outsideDirection,
+              isRefInside ? nextWall.thickness : -nextWall.thickness
+            )
+            actions.addPoint(nonRefNextId, nextPos[0], nextPos[1], false)
+          }
+        }
+
+        entry.pointIds.push(refPointId, nonRefPrevId, nonRefNextId)
+      }
+
+      // Add lines for each wall
       for (const wall of walls) {
-        const startIn = `corner_${wall.startCornerId}_in`
-        const startOut = `corner_${wall.startCornerId}_out`
-        const endIn = `corner_${wall.endCornerId}_in`
-        const endOut = `corner_${wall.endCornerId}_out`
+        const startRef = `corner_${wall.startCornerId}_ref`
+        const startNonRef = `corner_${wall.startCornerId}_nonref_next`
+        const endRef = `corner_${wall.endCornerId}_ref`
+        const endNonRef = `corner_${wall.endCornerId}_nonref_prev`
 
-        const inLineId = `wall_${wall.id}_in`
-        const outLineId = `wall_${wall.id}_out`
-        actions.addLine(inLineId, startIn, endIn)
-        actions.addLine(outLineId, startOut, endOut)
-        entry.lineIds.push(inLineId, outLineId)
+        const refLineId = `wall_${wall.id}_ref`
+        const nonRefLineId = `wall_${wall.id}_nonref`
 
+        actions.addLine(refLineId, startRef, endRef)
+        actions.addLine(nonRefLineId, startNonRef, endNonRef)
+        entry.lineIds.push(refLineId, nonRefLineId)
         const parallelId = `parallel_${wall.id}`
         actions.addConstraint({
           id: parallelId,
           type: 'parallel',
-          l1_id: inLineId,
-          l2_id: outLineId
+          l1_id: refLineId,
+          l2_id: nonRefLineId
         })
         entry.constraintIds.push(parallelId)
 
@@ -268,11 +312,67 @@ const useGcsStore = create<GcsStore>()((set, get) => ({
         actions.addConstraint({
           id: thicknessId,
           type: 'p2l_distance',
-          p_id: startOut,
-          l_id: inLineId,
+          p_id: startNonRef,
+          l_id: refLineId,
           distance: wall.thickness
         })
         entry.constraintIds.push(thicknessId)
+      }
+
+      // Add corner structure constraints for non-reference side
+      for (const corner of corners) {
+        const refPointId = `corner_${corner.id}_ref`
+        const nonRefPrevId = `corner_${corner.id}_nonref_prev`
+        const nonRefNextId = `corner_${corner.id}_nonref_next`
+
+        const prevWall = walls.find(w => w.endCornerId === corner.id)
+        const nextWall = walls.find(w => w.startCornerId === corner.id)
+
+        if (!prevWall || !nextWall) continue
+
+        const isColinear = corner.interiorAngle === 180
+
+        if (isColinear) {
+          const prevCornerId = prevWall.startCornerId
+          const prevCornerRefId = `corner_${prevCornerId}_ref`
+
+          const perp1Id = `corner_${corner.id}_nonref_perp1`
+          actions.addConstraint({
+            id: perp1Id,
+            type: 'perpendicular_pppp',
+            l1p1_id: prevCornerRefId,
+            l1p2_id: refPointId,
+            l2p1_id: refPointId,
+            l2p2_id: nonRefPrevId,
+            driving: true
+          })
+          entry.constraintIds.push(perp1Id)
+
+          const nextCornerId = nextWall.endCornerId
+          const nextCornerRefId = `corner_${nextCornerId}_ref`
+
+          const perp2Id = `corner_${corner.id}_nonref_perp2`
+          actions.addConstraint({
+            id: perp2Id,
+            type: 'perpendicular_pppp',
+            l1p1_id: refPointId,
+            l1p2_id: nextCornerRefId,
+            l2p1_id: refPointId,
+            l2p2_id: nonRefNextId,
+            driving: true
+          })
+          entry.constraintIds.push(perp2Id)
+        } else {
+          const equalityId = `corner_${corner.id}_nonref_eq`
+          actions.addConstraint({
+            id: equalityId,
+            type: 'p2p_coincident',
+            p1_id: nonRefPrevId,
+            p2_id: nonRefNextId,
+            driving: true
+          })
+          entry.constraintIds.push(equalityId)
+        }
       }
 
       set(state => ({

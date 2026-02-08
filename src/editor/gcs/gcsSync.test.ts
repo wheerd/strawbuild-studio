@@ -122,7 +122,8 @@ function makePerimeter(id: string, storeyId: string, cornerIds: string[] = [], w
     id: id as PerimeterId,
     storeyId: storeyId as StoreyId,
     cornerIds: cornerIds as Perimeter['cornerIds'],
-    wallIds: wallIds as Perimeter['wallIds']
+    wallIds: wallIds as Perimeter['wallIds'],
+    referenceSide: 'inside' as Perimeter['referenceSide']
   } as Perimeter
 
   // Also register in the mock so getPerimeterById returns it
@@ -544,6 +545,15 @@ describe('GcsSyncService', () => {
       outsideY: number
     ): void {
       mockCornerGeometries[cornerId] = {
+        id: cornerId as PerimeterCornerId,
+        perimeterId: 'p1' as PerimeterId,
+        previousWallId: 'outwall_w1' as PerimeterWallId,
+        nextWallId: 'outwall_w2' as PerimeterWallId,
+        referencePoint: newVec2(insideX, insideY),
+        constructedByWall: 'previous',
+        interiorAngle: 90,
+        exteriorAngle: 270,
+        polygon: { points: [] },
         insidePoint: newVec2(insideX, insideY),
         outsidePoint: newVec2(outsideX, outsideY)
       } as PerimeterCornerWithGeometry
@@ -551,9 +561,20 @@ describe('GcsSyncService', () => {
 
     it('updates GCS point positions when a tracked corner referencePoint changes', async () => {
       // Perimeter is tracked in GCS registry
-      mockPerimeterRegistry['p1' as PerimeterId] = { pointIds: ['corner_c1_in', 'corner_c1_out'] }
+      mockPerimeterRegistry['p1' as PerimeterId] = {
+        pointIds: ['corner_outcorner_c1_ref', 'corner_outcorner_c1_nonref_prev', 'corner_outcorner_c1_nonref_next']
+      }
 
-      // Register the corner geometry that getPerimeterCornerById will return
+      // Register perimeter in mock so getPerimeterById can find it
+      mockPerimetersById['p1' as PerimeterId] = {
+        id: 'p1' as PerimeterId,
+        storeyId: 'storey_1' as StoreyId,
+        cornerIds: ['outcorner_c1' as PerimeterCornerId],
+        wallIds: ['outwall_w1' as PerimeterWallId],
+        referenceSide: 'inside' as Perimeter['referenceSide']
+      } as Perimeter
+
+      // Register corner geometry that getPerimeterCornerById will return
       registerCornerGeometry('outcorner_c1', 100, 200, 110, 210)
 
       await importGcsSync()
@@ -562,9 +583,10 @@ describe('GcsSyncService', () => {
       const curr = { ...prev, referencePoint: newVec2(100, 200) }
       capturedCornerCallback!(curr, prev)
 
-      expect(mockUpdatePointPosition).toHaveBeenCalledTimes(2)
-      expect(mockUpdatePointPosition).toHaveBeenCalledWith('corner_outcorner_c1_in', 100, 200)
-      expect(mockUpdatePointPosition).toHaveBeenCalledWith('corner_outcorner_c1_out', 110, 210)
+      expect(mockUpdatePointPosition).toHaveBeenCalledTimes(3)
+      expect(mockUpdatePointPosition).toHaveBeenCalledWith('corner_outcorner_c1_ref', 100, 200)
+      expect(mockUpdatePointPosition).toHaveBeenCalledWith('corner_outcorner_c1_nonref_prev', 110, 210)
+      expect(mockUpdatePointPosition).toHaveBeenCalledWith('corner_outcorner_c1_nonref_next', 110, 210)
     })
 
     it('does not update positions for untracked perimeters', async () => {

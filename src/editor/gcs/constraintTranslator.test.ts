@@ -8,10 +8,7 @@ import {
   buildingConstraintKey,
   getReferencedCornerIds,
   getReferencedWallIds,
-  nodeInsidePointId,
-  nodeSidePointId,
-  translateBuildingConstraint,
-  wallInsideLineId
+  translateBuildingConstraint
 } from './constraintTranslator'
 
 // --- Test IDs ---
@@ -41,30 +38,6 @@ function makeContext(overrides: Partial<TranslationContext> = {}): TranslationCo
     ...overrides
   }
 }
-
-// --- ID helper tests ---
-
-describe('nodeSidePointId', () => {
-  it('maps left to outside', () => {
-    expect(nodeSidePointId(cornerA, 'left')).toBe('corner_outcorner_aaa_out')
-  })
-
-  it('maps right to inside', () => {
-    expect(nodeSidePointId(cornerA, 'right')).toBe('corner_outcorner_aaa_in')
-  })
-})
-
-describe('nodeInsidePointId', () => {
-  it('always returns inside point', () => {
-    expect(nodeInsidePointId(cornerA)).toBe('corner_outcorner_aaa_in')
-  })
-})
-
-describe('wallInsideLineId', () => {
-  it('returns inside line ID', () => {
-    expect(wallInsideLineId(wallA)).toBe('wall_outwall_aaa_in')
-  })
-})
 
 // --- Key derivation tests ---
 
@@ -142,8 +115,8 @@ describe('translateBuildingConstraint', () => {
       expect(result[0]).toEqual({
         id: 'bc_wallLength_test',
         type: 'p2p_distance',
-        p1_id: `corner_${cornerA}_out`,
-        p2_id: `corner_${cornerB}_out`,
+        p1_id: `corner_${cornerA}_nonref_next`,
+        p2_id: `corner_${cornerB}_nonref_prev`,
         distance: 5000,
         driving: true
       })
@@ -157,8 +130,8 @@ describe('translateBuildingConstraint', () => {
       expect(result).toHaveLength(1)
       expect(result[0]).toMatchObject({
         type: 'p2p_distance',
-        p1_id: `corner_${cornerA}_in`,
-        p2_id: `corner_${cornerB}_in`,
+        p1_id: `corner_${cornerA}_ref`,
+        p2_id: `corner_${cornerB}_ref`,
         distance: 3000
       })
     })
@@ -186,9 +159,9 @@ describe('translateBuildingConstraint', () => {
       expect(result[0]).toEqual({
         id: 'bc_col_test',
         type: 'point_on_line_ppp',
-        p_id: `corner_${cornerB}_in`,
-        lp1_id: `corner_${cornerA}_in`,
-        lp2_id: `corner_${cornerC}_in`,
+        p_id: `corner_${cornerB}_ref`,
+        lp1_id: `corner_${cornerA}_ref`,
+        lp2_id: `corner_${cornerC}_ref`,
         driving: true
       })
     })
@@ -200,9 +173,9 @@ describe('translateBuildingConstraint', () => {
 
       expect(result).toHaveLength(1)
       expect(result[0]).toMatchObject({
-        p_id: `corner_${cornerB}_out`,
-        lp1_id: `corner_${cornerA}_out`,
-        lp2_id: `corner_${cornerC}_out`
+        p_id: `corner_${cornerB}_ref`,
+        lp1_id: `corner_${cornerA}_ref`,
+        lp2_id: `corner_${cornerC}_ref`
       })
     })
 
@@ -225,8 +198,8 @@ describe('translateBuildingConstraint', () => {
       expect(result[0]).toEqual({
         id: 'bc_par_test_par',
         type: 'parallel',
-        l1_id: `wall_${wallA}_in`,
-        l2_id: `wall_${wallB}_in`,
+        l1_id: `wall_${wallA}_ref`,
+        l2_id: `wall_${wallB}_ref`,
         driving: true
       })
     })
@@ -235,7 +208,7 @@ describe('translateBuildingConstraint', () => {
       const c: ConstraintInput = { type: 'parallel', wallA, wallB, distance: 1000 }
       const ctx = makeContext({
         getLineStartPointId: (lineId: string) => {
-          if (lineId === `wall_${wallA}_in`) return `corner_${cornerA}_in`
+          if (lineId === `wall_${wallA}_ref`) return `corner_${cornerA}_ref`
           return undefined
         }
       })
@@ -246,8 +219,8 @@ describe('translateBuildingConstraint', () => {
       expect(result[1]).toEqual({
         id: 'bc_par_dist_test_dist',
         type: 'p2l_distance',
-        p_id: `corner_${cornerA}_in`,
-        l_id: `wall_${wallB}_in`,
+        p_id: `corner_${cornerA}_ref`,
+        l_id: `wall_${wallB}_ref`,
         distance: 1000,
         driving: true
       })
@@ -275,8 +248,8 @@ describe('translateBuildingConstraint', () => {
       expect(result[0]).toEqual({
         id: 'bc_perp_test',
         type: 'perpendicular_ll',
-        l1_id: `wall_${wallA}_in`,
-        l2_id: `wall_${wallB}_in`,
+        l1_id: `wall_${wallA}_ref`,
+        l2_id: `wall_${wallB}_ref`,
         driving: true
       })
     })
@@ -290,7 +263,7 @@ describe('translateBuildingConstraint', () => {
   })
 
   describe('cornerAngle', () => {
-    it('translates to l2l_angle_pppp using inside points', () => {
+    it('translates to l2l_angle_ll using inside points', () => {
       const c: ConstraintInput = { type: 'cornerAngle', corner: cornerB, angle: Math.PI / 2 }
       const ctx = makeContext()
       const result = translateBuildingConstraint(c, 'ang_test', ctx)
@@ -298,11 +271,9 @@ describe('translateBuildingConstraint', () => {
       expect(result).toHaveLength(1)
       expect(result[0]).toEqual({
         id: 'bc_ang_test',
-        type: 'l2l_angle_pppp',
-        l1p1_id: `corner_${cornerB}_in`,
-        l1p2_id: `corner_${cornerA}_in`,
-        l2p1_id: `corner_${cornerB}_in`,
-        l2p2_id: `corner_${cornerC}_in`,
+        type: 'l2l_angle_ll',
+        l1_id: `wall_${wallA}_ref`,
+        l2_id: `wall_${wallB}_ref`,
         angle: Math.PI / 2,
         driving: true
       })
@@ -317,7 +288,7 @@ describe('translateBuildingConstraint', () => {
   })
 
   describe('horizontalWall', () => {
-    it('translates to horizontal_pp using inside points', () => {
+    it('translates to horizontal_l using inside points', () => {
       const c: ConstraintInput = { type: 'horizontalWall', wall: wallA }
       const ctx = makeContext()
       const result = translateBuildingConstraint(c, 'h_test', ctx)
@@ -325,23 +296,15 @@ describe('translateBuildingConstraint', () => {
       expect(result).toHaveLength(1)
       expect(result[0]).toEqual({
         id: 'bc_h_test',
-        type: 'horizontal_pp',
-        p1_id: `corner_${cornerA}_in`,
-        p2_id: `corner_${cornerB}_in`,
+        type: 'horizontal_l',
+        l_id: `wall_${wallA}_ref`,
         driving: true
       })
-    })
-
-    it('returns empty array if wall corners cannot be resolved', () => {
-      const c: ConstraintInput = { type: 'horizontalWall', wall: 'outwall_unknown' as PerimeterWallId }
-      const ctx = makeContext()
-      const result = translateBuildingConstraint(c, 'h_test2', ctx)
-      expect(result).toHaveLength(0)
     })
   })
 
   describe('verticalWall', () => {
-    it('translates to vertical_pp using inside points', () => {
+    it('translates to vertical_l using inside points', () => {
       const c: ConstraintInput = { type: 'verticalWall', wall: wallA }
       const ctx = makeContext()
       const result = translateBuildingConstraint(c, 'v_test', ctx)
@@ -349,9 +312,8 @@ describe('translateBuildingConstraint', () => {
       expect(result).toHaveLength(1)
       expect(result[0]).toEqual({
         id: 'bc_v_test',
-        type: 'vertical_pp',
-        p1_id: `corner_${cornerA}_in`,
-        p2_id: `corner_${cornerB}_in`,
+        type: 'vertical_l',
+        l_id: `wall_${wallA}_ref`,
         driving: true
       })
     })

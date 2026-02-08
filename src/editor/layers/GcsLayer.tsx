@@ -19,10 +19,10 @@ export function GcsLayer(): React.JSX.Element {
             y1={p1.y}
             x2={p2.x}
             y2={p2.y}
-            stroke="currentColor"
+            stroke={line.id.endsWith('_ref') ? 'var(--color-primary)' : 'var(--color-foreground)'}
             strokeWidth={2 / zoom}
             strokeLinecap="round"
-            className="stroke-border-contrast pointer-events-none"
+            className="pointer-events-none"
           />
         )
       })}
@@ -36,8 +36,8 @@ export function GcsLayer(): React.JSX.Element {
                 cx={point.x}
                 cy={point.y}
                 r={point.fixed ? 6 / zoom : 8 / zoom}
-                fill={point.fixed ? 'hsl(var(--primary))' : 'hsl(var(--accent))'}
-                stroke="currentColor"
+                fill={id.endsWith('_ref') ? 'var(--color-primary)' : 'var(--color-accent)'}
+                stroke="var(--color-border)"
                 strokeWidth={2 / zoom}
                 className={point.fixed ? 'cursor-not-allowed' : 'cursor-move'}
                 data-point-id={id}

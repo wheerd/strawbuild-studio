@@ -54,9 +54,12 @@ function setupWallCornerMocks(): void {
       { id: PerimeterWallId; startCornerId: PerimeterCornerId; endCornerId: PerimeterCornerId }
     > = {
       [wallA]: { id: wallA, startCornerId: cornerA, endCornerId: cornerB },
-      [wallB]: { id: wallB, startCornerId: cornerB, endCornerId: cornerC }
+      [wallB]: { id: wallB, startCornerId: cornerB, endCornerId: cornerC },
+      [wallC]: { id: wallC, startCornerId: cornerC, endCornerId: cornerD },
+      [wallD]: { id: wallD, startCornerId: cornerD, endCornerId: cornerA }
     }
     const wall = walls[wallId]
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     if (!wall) throw new Error(`Wall "${wallId}" not found`)
     return wall
   })
@@ -69,44 +72,171 @@ function setupWallCornerMocks(): void {
 function setupGeometry(): void {
   const actions = getGcsActions()
 
-  // Add corner points (inside + outside for each corner)
-  actions.addPoint(`corner_${cornerA}_in`, 0, 0)
-  actions.addPoint(`corner_${cornerA}_out`, 0, -500)
-  actions.addPoint(`corner_${cornerB}_in`, 5000, 0)
-  actions.addPoint(`corner_${cornerB}_out`, 5000, -500)
-  actions.addPoint(`corner_${cornerC}_in`, 5000, 3000)
-  actions.addPoint(`corner_${cornerC}_out`, 5500, 3000)
+  // Add corner points (ref + nonref_prev + nonref_next for each corner)
+  actions.addPoint(`corner_${cornerA}_ref`, 0, 0)
+  actions.addPoint(`corner_${cornerA}_nonref_prev`, 0, -500)
+  actions.addPoint(`corner_${cornerA}_nonref_next`, -500, 0)
+  actions.addPoint(`corner_${cornerB}_ref`, 5000, 0)
+  actions.addPoint(`corner_${cornerB}_nonref_prev`, 5000, -500)
+  actions.addPoint(`corner_${cornerB}_nonref_next`, 5500, 0)
+  actions.addPoint(`corner_${cornerC}_ref`, 5000, 3000)
+  actions.addPoint(`corner_${cornerC}_nonref_prev`, 5500, 3000)
+  actions.addPoint(`corner_${cornerC}_nonref_next`, 5000, 3500)
+  actions.addPoint(`corner_${cornerD}_ref`, 0, 3000)
+  actions.addPoint(`corner_${cornerD}_nonref_prev`, -500, 3000)
+  actions.addPoint(`corner_${cornerD}_nonref_next`, 0, 3500)
 
-  // Add wall lines (inside + outside for each wall)
-  actions.addLine(`wall_${wallA}_in`, `corner_${cornerA}_in`, `corner_${cornerB}_in`)
-  actions.addLine(`wall_${wallA}_out`, `corner_${cornerA}_out`, `corner_${cornerB}_out`)
-  actions.addLine(`wall_${wallB}_in`, `corner_${cornerB}_in`, `corner_${cornerC}_in`)
-  actions.addLine(`wall_${wallB}_out`, `corner_${cornerB}_out`, `corner_${cornerC}_out`)
+  // Add wall lines (ref + nonref for each wall)
+  actions.addLine(`wall_${wallA}_ref`, `corner_${cornerA}_ref`, `corner_${cornerB}_ref`)
+  actions.addLine(`wall_${wallA}_nonref`, `corner_${cornerA}_nonref_next`, `corner_${cornerB}_nonref_prev`)
+  actions.addLine(`wall_${wallB}_ref`, `corner_${cornerB}_ref`, `corner_${cornerC}_ref`)
+  actions.addLine(`wall_${wallB}_nonref`, `corner_${cornerB}_nonref_next`, `corner_${cornerC}_nonref_prev`)
 }
 
 /** Helper to configure mock model store to return rectangle perimeter data. */
 function setupRectangleMocks(perimeterId: PerimeterId): void {
-  mockGetPerimeterCornersById.mockImplementation((id: PerimeterId) => {
-    if (id !== perimeterId) return []
+  mockGetPerimeterCornersById.mockImplementation((mockId: PerimeterId) => {
+    if (mockId !== perimeterId) return []
     return [
-      { id: cornerA, insidePoint: [0, 0], outsidePoint: [0, -420] },
-      { id: cornerB, insidePoint: [5000, 0], outsidePoint: [5000, -420] },
-      { id: cornerC, insidePoint: [5000, 3000], outsidePoint: [5420, 3000] },
-      { id: cornerD, insidePoint: [0, 3000], outsidePoint: [-420, 3000] }
+      {
+        id: cornerA,
+        perimeterId: mockId,
+        previousWallId: wallD,
+        nextWallId: wallA,
+        constructedByWall: 'next',
+        referencePoint: [0, 0],
+        insidePoint: [0, 0],
+        outsidePoint: [-420, 0],
+        interiorAngle: 90,
+        exteriorAngle: 270,
+        polygon: []
+      },
+      {
+        id: cornerB,
+        perimeterId: mockId,
+        previousWallId: wallA,
+        nextWallId: wallB,
+        constructedByWall: 'next',
+        referencePoint: [5000, 0],
+        insidePoint: [5000, 0],
+        outsidePoint: [5000, -420],
+        interiorAngle: 90,
+        exteriorAngle: 270,
+        polygon: []
+      },
+      {
+        id: cornerC,
+        perimeterId: mockId,
+        previousWallId: wallB,
+        nextWallId: wallC,
+        constructedByWall: 'next',
+        referencePoint: [5000, 3000],
+        insidePoint: [5000, 3000],
+        outsidePoint: [5420, 3000],
+        interiorAngle: 90,
+        exteriorAngle: 270,
+        polygon: []
+      },
+      {
+        id: cornerD,
+        perimeterId: mockId,
+        previousWallId: wallC,
+        nextWallId: wallD,
+        constructedByWall: 'next',
+        referencePoint: [0, 3000],
+        insidePoint: [0, 3000],
+        outsidePoint: [0, 3420],
+        interiorAngle: 90,
+        exteriorAngle: 270,
+        polygon: []
+      }
     ]
   })
-  mockGetPerimeterWallsById.mockImplementation((id: PerimeterId) => {
-    if (id !== perimeterId) return []
+  mockGetPerimeterWallsById.mockImplementation((mockId: PerimeterId) => {
+    if (mockId !== perimeterId) return []
     return [
-      { id: wallA, startCornerId: cornerA, endCornerId: cornerB, thickness: 420 },
-      { id: wallB, startCornerId: cornerB, endCornerId: cornerC, thickness: 420 },
-      { id: wallC, startCornerId: cornerC, endCornerId: cornerD, thickness: 420 },
-      { id: wallD, startCornerId: cornerD, endCornerId: cornerA, thickness: 420 }
+      {
+        id: wallA,
+        perimeterId: mockId,
+        startCornerId: cornerA,
+        endCornerId: cornerB,
+        entityIds: [],
+        thickness: 420,
+        wallAssemblyId: 'wall_assembly_1',
+        insideLength: 5000,
+        outsideLength: 5000,
+        wallLength: 5000,
+        direction: [1, 0],
+        outsideDirection: [0, -1],
+        insideLine: { start: [0, 0], end: [5000, 0] },
+        outsideLine: { start: [-420, 0], end: [5000, -420] },
+        polygon: { points: [] }
+      },
+      {
+        id: wallB,
+        perimeterId: mockId,
+        startCornerId: cornerB,
+        endCornerId: cornerC,
+        entityIds: [],
+        thickness: 420,
+        wallAssemblyId: 'wall_assembly_1',
+        insideLength: 3000,
+        outsideLength: 3000,
+        wallLength: 3000,
+        direction: [0, 1],
+        outsideDirection: [1, 0],
+        insideLine: { start: [5000, 0], end: [5000, 3000] },
+        outsideLine: { start: [5000, -420], end: [5420, 3000] },
+        polygon: { points: [] }
+      },
+      {
+        id: wallC,
+        perimeterId: mockId,
+        startCornerId: cornerC,
+        endCornerId: cornerD,
+        entityIds: [],
+        thickness: 420,
+        wallAssemblyId: 'wall_assembly_1',
+        insideLength: 5000,
+        outsideLength: 5000,
+        wallLength: 5000,
+        direction: [-1, 0],
+        outsideDirection: [0, 1],
+        insideLine: { start: [5000, 3000], end: [0, 3000] },
+        outsideLine: { start: [5420, 3000], end: [0, 3420] },
+        polygon: { points: [] }
+      },
+      {
+        id: wallD,
+        perimeterId: mockId,
+        startCornerId: cornerD,
+        endCornerId: cornerA,
+        entityIds: [],
+        thickness: 420,
+        wallAssemblyId: 'wall_assembly_1',
+        insideLength: 3000,
+        outsideLength: 3000,
+        wallLength: 3000,
+        direction: [0, -1],
+        outsideDirection: [-1, 0],
+        insideLine: { start: [0, 3000], end: [0, 0] },
+        outsideLine: { start: [0, 3420], end: [-420, 0] },
+        polygon: { points: [] }
+      }
     ]
   })
-  mockGetPerimeterById.mockImplementation((id: PerimeterId) => {
-    if (id !== perimeterId) return undefined
-    return { id: perimeterId, cornerIds: [cornerA, cornerB, cornerC, cornerD] }
+  mockGetPerimeterById.mockImplementation((mockId: PerimeterId) => {
+    if (mockId !== perimeterId) return undefined
+    return {
+      id: mockId,
+      storeyId: 'storey_1',
+      wallIds: [wallA, wallB, wallC, wallD],
+      cornerIds: [cornerA, cornerB, cornerC, cornerD],
+      roomIds: [],
+      wallNodeIds: [],
+      intermediateWallIds: [],
+      referenceSide: 'inside'
+    }
   })
 }
 
@@ -117,7 +247,13 @@ describe('GCS store building constraints', () => {
     mockGetPerimeterWallsById.mockReturnValue([])
     mockGetPerimeterById.mockReturnValue({ cornerIds: [] })
     mockGetPerimeterWallById.mockReturnValue(undefined)
-    mockGetPerimeterCornerById.mockReturnValue(undefined)
+    mockGetPerimeterCornerById.mockImplementation((cornerId: PerimeterCornerId) => ({
+      id: cornerId,
+      perimeterId: perimeterA,
+      previousWallId: wallA,
+      nextWallId: wallB,
+      referencePoint: [0, 0]
+    }))
     setupGeometry()
     setupWallCornerMocks()
   })
@@ -336,21 +472,29 @@ describe('GCS store perimeter geometry', () => {
   })
 
   describe('addPerimeterGeometry', () => {
-    it('creates points for each corner (inside + outside)', () => {
+    it('creates 3 points for each corner (ref + nonref_prev + nonref_next)', () => {
       setupRectangleMocks(perimeterA)
       const actions = getGcsActions()
 
       actions.addPerimeterGeometry(perimeterA)
 
       const state = getGcsState()
-      expect(state.points[`corner_${cornerA}_in`]).toBeDefined()
-      expect(state.points[`corner_${cornerA}_out`]).toBeDefined()
-      expect(state.points[`corner_${cornerB}_in`]).toBeDefined()
-      expect(state.points[`corner_${cornerB}_out`]).toBeDefined()
-      expect(state.points[`corner_${cornerC}_in`]).toBeDefined()
-      expect(state.points[`corner_${cornerC}_out`]).toBeDefined()
-      expect(state.points[`corner_${cornerD}_in`]).toBeDefined()
-      expect(state.points[`corner_${cornerD}_out`]).toBeDefined()
+      // Check corner A points
+      expect(state.points[`corner_${cornerA}_ref`]).toBeDefined()
+      expect(state.points[`corner_${cornerA}_nonref_prev`]).toBeDefined()
+      expect(state.points[`corner_${cornerA}_nonref_next`]).toBeDefined()
+      // Check corner B points
+      expect(state.points[`corner_${cornerB}_ref`]).toBeDefined()
+      expect(state.points[`corner_${cornerB}_nonref_prev`]).toBeDefined()
+      expect(state.points[`corner_${cornerB}_nonref_next`]).toBeDefined()
+      // Check corner C points
+      expect(state.points[`corner_${cornerC}_ref`]).toBeDefined()
+      expect(state.points[`corner_${cornerC}_nonref_prev`]).toBeDefined()
+      expect(state.points[`corner_${cornerC}_nonref_next`]).toBeDefined()
+      // Check corner D points
+      expect(state.points[`corner_${cornerD}_ref`]).toBeDefined()
+      expect(state.points[`corner_${cornerD}_nonref_prev`]).toBeDefined()
+      expect(state.points[`corner_${cornerD}_nonref_next`]).toBeDefined()
     })
 
     it('seeds point positions from model store geometry', () => {
@@ -360,37 +504,185 @@ describe('GCS store perimeter geometry', () => {
       actions.addPerimeterGeometry(perimeterA)
 
       const state = getGcsState()
-      expect(state.points[`corner_${cornerA}_in`].x).toBe(0)
-      expect(state.points[`corner_${cornerA}_in`].y).toBe(0)
-      expect(state.points[`corner_${cornerA}_out`].x).toBe(0)
-      expect(state.points[`corner_${cornerA}_out`].y).toBe(-420)
+      expect(state.points[`corner_${cornerA}_ref`].x).toBe(0)
+      expect(state.points[`corner_${cornerA}_ref`].y).toBe(0)
+      // The non-ref points have thickness offsets applied
+      // Corner A's outsidePoint is [-420, 0] (x offset only, wall is horizontal)
+      expect(state.points[`corner_${cornerA}_nonref_prev`].x).toBe(-420)
+      expect(state.points[`corner_${cornerA}_nonref_prev`].y).toBe(0)
     })
 
-    it('creates lines for each wall (inside + outside)', () => {
+    it('creates 2 lines for each wall (ref + nonref)', () => {
       setupRectangleMocks(perimeterA)
       const actions = getGcsActions()
 
       actions.addPerimeterGeometry(perimeterA)
 
       const state = getGcsState()
-      expect(state.lines.find(l => l.id === `wall_${wallA}_in`)).toBeDefined()
-      expect(state.lines.find(l => l.id === `wall_${wallA}_out`)).toBeDefined()
-      expect(state.lines.find(l => l.id === `wall_${wallB}_in`)).toBeDefined()
-      expect(state.lines.find(l => l.id === `wall_${wallB}_out`)).toBeDefined()
+      expect(state.lines.find(l => l.id === `wall_${wallA}_ref`)).toBeDefined()
+      expect(state.lines.find(l => l.id === `wall_${wallA}_nonref`)).toBeDefined()
+      expect(state.lines.find(l => l.id === `wall_${wallB}_ref`)).toBeDefined()
+      expect(state.lines.find(l => l.id === `wall_${wallB}_nonref`)).toBeDefined()
     })
 
-    it('creates parallel and thickness constraints for each wall', () => {
+    it('creates p2p_coincident constraints for non-colinear corners', () => {
       setupRectangleMocks(perimeterA)
       const actions = getGcsActions()
 
       actions.addPerimeterGeometry(perimeterA)
 
       const state = getGcsState()
-      // 4 walls × 2 constraints each = 8 structural constraints
-      expect(state.constraints[`parallel_${wallA}`]).toBeDefined()
-      expect(state.constraints[`parallel_${wallA}`].type).toBe('parallel')
-      expect(state.constraints[`thickness_${wallA}`]).toBeDefined()
-      expect(state.constraints[`thickness_${wallA}`].type).toBe('p2l_distance')
+      // For rectangle (all 90° interior angles), each corner gets 1 p2p_coincident constraint
+      expect(state.constraints[`corner_${cornerA}_nonref_eq`]).toBeDefined()
+      expect(state.constraints[`corner_${cornerA}_nonref_eq`].type).toBe('p2p_coincident')
+      expect(state.constraints[`corner_${cornerB}_nonref_eq`]).toBeDefined()
+      expect(state.constraints[`corner_${cornerB}_nonref_eq`].type).toBe('p2p_coincident')
+    })
+
+    it('creates perpendicular_pppp constraints for colinear corners', () => {
+      setupRectangleMocks(perimeterA)
+      const actions = getGcsActions()
+
+      // Override corner B to be colinear (180° interior angle)
+      mockGetPerimeterCornersById.mockImplementation((mockId: PerimeterId) => {
+        if (mockId !== perimeterA) return []
+        return [
+          {
+            id: cornerA,
+            perimeterId: mockId,
+            previousWallId: wallD,
+            nextWallId: wallA,
+            constructedByWall: 'next',
+            referencePoint: [0, 0],
+            insidePoint: [0, 0],
+            outsidePoint: [-420, 0],
+            interiorAngle: 90,
+            exteriorAngle: 270,
+            polygon: []
+          },
+          {
+            id: cornerB,
+            perimeterId: mockId,
+            previousWallId: wallA,
+            nextWallId: wallB,
+            constructedByWall: 'next',
+            referencePoint: [5000, 0],
+            insidePoint: [5000, 0],
+            outsidePoint: [5000, -420],
+            interiorAngle: 180,
+            exteriorAngle: 180,
+            polygon: []
+          },
+          {
+            id: cornerC,
+            perimeterId: mockId,
+            previousWallId: wallB,
+            nextWallId: wallC,
+            constructedByWall: 'next',
+            referencePoint: [10000, 0],
+            insidePoint: [10000, 0],
+            outsidePoint: [10420, 0],
+            interiorAngle: 90,
+            exteriorAngle: 270,
+            polygon: []
+          },
+          {
+            id: cornerD,
+            perimeterId: mockId,
+            previousWallId: wallC,
+            nextWallId: wallD,
+            constructedByWall: 'next',
+            referencePoint: [0, 3000],
+            insidePoint: [0, 3000],
+            outsidePoint: [0, 3420],
+            interiorAngle: 90,
+            exteriorAngle: 270,
+            polygon: []
+          }
+        ]
+      })
+      mockGetPerimeterWallsById.mockImplementation((mockId: PerimeterId) => {
+        if (mockId !== perimeterA) return []
+        return [
+          {
+            id: wallA,
+            perimeterId: mockId,
+            startCornerId: cornerA,
+            endCornerId: cornerB,
+            entityIds: [],
+            thickness: 420,
+            wallAssemblyId: 'wall_assembly_1',
+            insideLength: 5000,
+            outsideLength: 5000,
+            wallLength: 5000,
+            direction: [1, 0],
+            outsideDirection: [0, -1],
+            insideLine: { start: [0, 0], end: [5000, 0] },
+            outsideLine: { start: [-420, 0], end: [5000, -420] },
+            polygon: { points: [] }
+          },
+          {
+            id: wallB,
+            perimeterId: mockId,
+            startCornerId: cornerB,
+            endCornerId: cornerC,
+            entityIds: [],
+            thickness: 420,
+            wallAssemblyId: 'wall_assembly_1',
+            insideLength: 5000,
+            outsideLength: 5000,
+            wallLength: 5000,
+            direction: [1, 0],
+            outsideDirection: [0, -1],
+            insideLine: { start: [5000, 0], end: [10000, 0] },
+            outsideLine: { start: [5000, -420], end: [10420, 0] },
+            polygon: { points: [] }
+          },
+          {
+            id: wallC,
+            perimeterId: mockId,
+            startCornerId: cornerC,
+            endCornerId: cornerD,
+            entityIds: [],
+            thickness: 420,
+            wallAssemblyId: 'wall_assembly_1',
+            insideLength: 3000,
+            outsideLength: 3000,
+            wallLength: 3000,
+            direction: [-1, 0],
+            outsideDirection: [0, 1],
+            insideLine: { start: [10000, 0], end: [0, 3000] },
+            outsideLine: { start: [10420, 0], end: [0, 3420] },
+            polygon: { points: [] }
+          },
+          {
+            id: wallD,
+            perimeterId: mockId,
+            startCornerId: cornerD,
+            endCornerId: cornerA,
+            entityIds: [],
+            thickness: 420,
+            wallAssemblyId: 'wall_assembly_1',
+            insideLength: 3000,
+            outsideLength: 3000,
+            wallLength: 3000,
+            direction: [0, -1],
+            outsideDirection: [-1, 0],
+            insideLine: { start: [0, 3000], end: [0, 0] },
+            outsideLine: { start: [0, 3420], end: [-420, 0] },
+            polygon: { points: [] }
+          }
+        ]
+      })
+
+      actions.addPerimeterGeometry(perimeterA)
+
+      const state = getGcsState()
+      // Colinear corner B should have 2 perpendicular_pppp constraints
+      expect(state.constraints[`corner_${cornerB}_nonref_perp1`]).toBeDefined()
+      expect(state.constraints[`corner_${cornerB}_nonref_perp1`].type).toBe('perpendicular_pppp')
+      expect(state.constraints[`corner_${cornerB}_nonref_perp2`]).toBeDefined()
+      expect(state.constraints[`corner_${cornerB}_nonref_perp2`].type).toBe('perpendicular_pppp')
     })
 
     it('registers the perimeter in perimeterRegistry', () => {
@@ -402,9 +694,11 @@ describe('GCS store perimeter geometry', () => {
       const state = getGcsState()
       const entry = state.perimeterRegistry[perimeterA]
       expect(entry).toBeDefined()
-      expect(entry.pointIds).toHaveLength(8) // 4 corners × 2 (in + out)
-      expect(entry.lineIds).toHaveLength(8) // 4 walls × 2 (in + out)
-      expect(entry.constraintIds).toHaveLength(8) // 4 walls × 2 (parallel + thickness)
+      expect(entry.pointIds).toHaveLength(12)
+      expect(entry.lineIds).toHaveLength(8)
+      // 4 corners × 1 p2p_coincident constraint each = 4 structural constraints
+      // 4 walls × 2 constraint each = 8
+      expect(entry.constraintIds).toHaveLength(12)
     })
 
     it('handles upsert — removes old data before re-adding', () => {
@@ -422,7 +716,7 @@ describe('GCS store perimeter geometry', () => {
 
       const state = getGcsState()
       // Should still have exactly the right number of points (not doubled)
-      expect(Object.keys(state.points)).toHaveLength(8)
+      expect(Object.keys(state.points)).toHaveLength(12)
       // Building constraints are NOT cascade-removed by the GCS store;
       // that responsibility belongs to gcsSync's constraint subscription.
       expect(Object.keys(state.buildingConstraints)).toHaveLength(1)
@@ -500,12 +794,37 @@ describe('GCS store perimeter geometry', () => {
       const originalImpl = mockGetPerimeterCornersById.getMockImplementation()!
       const originalWallImpl = mockGetPerimeterWallsById.getMockImplementation()!
       const originalPerimImpl = mockGetPerimeterById.getMockImplementation()!
+      const originalWallByIdImpl = mockGetPerimeterWallById.getMockImplementation()!
 
       mockGetPerimeterCornersById.mockImplementation((id: PerimeterId) => {
         if (id === perimeterB) {
           return [
-            { id: cornerE, insidePoint: [10000, 0], outsidePoint: [10000, -420] },
-            { id: cornerF, insidePoint: [15000, 0], outsidePoint: [15000, -420] }
+            {
+              id: cornerE,
+              perimeterId: id,
+              previousWallId: wallF,
+              nextWallId: wallE,
+              constructedByWall: 'next',
+              referencePoint: [10000, 0],
+              insidePoint: [10000, 0],
+              outsidePoint: [10000, -420],
+              interiorAngle: 90,
+              exteriorAngle: 270,
+              polygon: []
+            },
+            {
+              id: cornerF,
+              perimeterId: id,
+              previousWallId: wallE,
+              nextWallId: wallF,
+              constructedByWall: 'next',
+              referencePoint: [15000, 0],
+              insidePoint: [15000, 0],
+              outsidePoint: [15000, -420],
+              interiorAngle: 90,
+              exteriorAngle: 270,
+              polygon: []
+            }
           ]
         }
         return originalImpl(id)
@@ -513,17 +832,56 @@ describe('GCS store perimeter geometry', () => {
       mockGetPerimeterWallsById.mockImplementation((id: PerimeterId) => {
         if (id === perimeterB) {
           return [
-            { id: wallE, startCornerId: cornerE, endCornerId: cornerF, thickness: 420 },
-            { id: wallF, startCornerId: cornerF, endCornerId: cornerE, thickness: 420 }
+            {
+              id: wallE,
+              perimeterId: id,
+              startCornerId: cornerE,
+              endCornerId: cornerF,
+              entityIds: [],
+              thickness: 420,
+              wallAssemblyId: 'wall_assembly_1'
+            },
+            {
+              id: wallF,
+              perimeterId: id,
+              startCornerId: cornerF,
+              endCornerId: cornerE,
+              entityIds: [],
+              thickness: 420,
+              wallAssemblyId: 'wall_assembly_1'
+            }
           ]
         }
         return originalWallImpl(id)
       })
       mockGetPerimeterById.mockImplementation((id: PerimeterId) => {
         if (id === perimeterB) {
-          return { id: perimeterB, cornerIds: [cornerE, cornerF] }
+          return {
+            id: perimeterB,
+            storeyId: 'storey_1',
+            wallIds: [wallE, wallF],
+            cornerIds: [cornerE, cornerF],
+            roomIds: [],
+            wallNodeIds: [],
+            intermediateWallIds: [],
+            referenceSide: 'inside'
+          }
         }
         return originalPerimImpl(id)
+      })
+      mockGetPerimeterWallById.mockImplementation((wallId: PerimeterWallId) => {
+        if (wallId === wallE || wallId === wallF) {
+          const walls: Record<
+            string,
+            { id: PerimeterWallId; startCornerId: PerimeterCornerId; endCornerId: PerimeterCornerId }
+          > = {
+            [wallE]: { id: wallE, startCornerId: cornerE, endCornerId: cornerF },
+            [wallF]: { id: wallF, startCornerId: cornerF, endCornerId: cornerE }
+          }
+          return walls[wallId]
+        }
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+        return originalWallByIdImpl!(wallId)
       })
 
       const actions = getGcsActions()
@@ -536,11 +894,11 @@ describe('GCS store perimeter geometry', () => {
       const state = getGcsState()
       // PerimeterB should still be intact
       expect(state.perimeterRegistry[perimeterB]).toBeDefined()
-      expect(state.points[`corner_${cornerE}_in`]).toBeDefined()
-      expect(state.lines.find(l => l.id === `wall_${wallE}_in`)).toBeDefined()
+      expect(state.points[`corner_${cornerE}_ref`]).toBeDefined()
+      expect(state.lines.find(l => l.id === `wall_${wallE}_ref`)).toBeDefined()
       // PerimeterA should be gone
       expect(state.perimeterRegistry[perimeterA]).toBeUndefined()
-      expect(state.points[`corner_${cornerA}_in`]).toBeUndefined()
+      expect(state.points[`corner_${cornerA}_ref`]).toBeUndefined()
     })
   })
 

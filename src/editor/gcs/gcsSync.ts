@@ -7,8 +7,16 @@ import {
   subscribeToModelChanges,
   subscribeToPerimeters
 } from '@/building/store'
+import { scaleAddVec2 } from '@/shared/geometry'
 
-import { buildingConstraintKey, getReferencedCornerIds, getReferencedWallIds } from './constraintTranslator'
+import {
+  buildingConstraintKey,
+  getReferencedCornerIds,
+  getReferencedWallIds,
+  nodeNonRefSidePointForNextWall,
+  nodeNonRefSidePointForPrevWall,
+  nodeRefSidePointId
+} from './constraintTranslator'
 import { getGcsActions, getGcsState } from './store'
 
 class GcsSyncService {
@@ -185,19 +193,47 @@ class GcsSyncService {
     const cornerId = current.id
     const perimeterId = current.perimeterId
     const { perimeterRegistry } = getGcsState()
+    const { getPerimeterCornerById, getPerimeterById, getPerimeterWallById } = getModelActions()
+    const { updatePointPosition } = getGcsActions()
 
     // Only update if this corner's perimeter is currently tracked
     if (!(perimeterId in perimeterRegistry)) return
 
     // Read the fresh computed geometry (insidePoint/outsidePoint derived from referencePoint)
-    const modelActions = getModelActions()
-    const cornerWithGeometry = modelActions.getPerimeterCornerById(cornerId)
+    const corner = getPerimeterCornerById(cornerId)
+    const perimeter = getPerimeterById(corner.perimeterId)
 
-    const gcsActions = getGcsActions()
-    const inId = `corner_${cornerId}_in`
-    const outId = `corner_${cornerId}_out`
-    gcsActions.updatePointPosition(inId, cornerWithGeometry.insidePoint[0], cornerWithGeometry.insidePoint[1])
-    gcsActions.updatePointPosition(outId, cornerWithGeometry.outsidePoint[0], cornerWithGeometry.outsidePoint[1])
+    const refPointId = nodeRefSidePointId(corner.id)
+    const nonRefPrevId = nodeNonRefSidePointForPrevWall(corner.id)
+    const nonRefNextId = nodeNonRefSidePointForNextWall(corner.id)
+
+    const isRefInside = perimeter.referenceSide === 'inside'
+    const refPos = isRefInside ? corner.insidePoint : corner.outsidePoint
+    const nonRefPos = isRefInside ? corner.outsidePoint : corner.insidePoint
+
+    updatePointPosition(refPointId, refPos[0], refPos[1])
+
+    if (corner.interiorAngle !== 180) {
+      updatePointPosition(nonRefPrevId, nonRefPos[0], nonRefPos[1])
+      updatePointPosition(nonRefNextId, nonRefPos[0], nonRefPos[1])
+    } else {
+      const prevWall = getPerimeterWallById(corner.previousWallId)
+      const nextWall = getPerimeterWallById(corner.nextWallId)
+
+      const prevPos = scaleAddVec2(
+        refPos,
+        prevWall.outsideDirection,
+        isRefInside ? prevWall.thickness : -prevWall.thickness
+      )
+      updatePointPosition(nonRefPrevId, prevPos[0], prevPos[1])
+
+      const nextPos = scaleAddVec2(
+        refPos,
+        nextWall.outsideDirection,
+        isRefInside ? nextWall.thickness : -nextWall.thickness
+      )
+      updatePointPosition(nonRefNextId, nextPos[0], nextPos[1])
+    }
   }
 }
 

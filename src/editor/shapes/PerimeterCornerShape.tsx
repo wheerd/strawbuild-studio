@@ -11,15 +11,13 @@ import { useWallAssemblyById } from '@/construction/config/store'
 import { Arrow } from '@/editor/components/Arrow'
 import { ConstraintBadge } from '@/editor/components/ConstraintBadge'
 import { useSelectionStore } from '@/editor/hooks/useSelectionStore'
-import { useZoom } from '@/editor/hooks/useViewportStore'
-import { type Vec2, direction, midpoint, perpendicular, scaleAddVec2, scaleVec2 } from '@/shared/geometry'
+import { direction, midpoint, perpendicular, scaleAddVec2, scaleVec2 } from '@/shared/geometry'
 import { MATERIAL_COLORS } from '@/shared/theme/colors'
 import { polygonToSvgPath } from '@/shared/utils/svg'
 
 export function PerimeterCornerShape({ cornerId }: { cornerId: PerimeterCornerId }): React.JSX.Element {
   const select = useSelectionStore()
   const isSelected = select.isCurrentSelection(cornerId)
-  const zoom = useZoom()
   const modelActions = useModelActions()
 
   const corner = usePerimeterCornerById(cornerId)
@@ -53,9 +51,9 @@ export function PerimeterCornerShape({ cornerId }: { cornerId: PerimeterCornerId
   const cornerConstraints = useConstraintsForEntity(cornerId)
 
   // Find colinear constraints for this corner
-  const colinearConstraints = useMemo(
+  const colinearConstraint = useMemo(
     () =>
-      cornerConstraints.filter(
+      cornerConstraints.find(
         (c): c is ColinearCornerConstraint => c.type === 'colinearCorner' && c.corner === cornerId
       ),
     [cornerConstraints, cornerId]
@@ -75,8 +73,8 @@ export function PerimeterCornerShape({ cornerId }: { cornerId: PerimeterCornerId
   const isNearPerpendicular =
     !perpendicularConstraint && (Math.abs(corner.interiorAngle - 90) <= 5 || Math.abs(corner.exteriorAngle - 90) <= 5)
 
-  // Whether to show perpendicular badge
   const showPerpendicularBadge = perpendicularConstraint != null || (isSelected && isNearPerpendicular)
+  const showColinearBadge = colinearConstraint != null || (isSelected && isNearStraight)
 
   // --- Perpendicular constraint handlers ---
   const handleAddPerpendicular = useCallback(() => {
@@ -90,6 +88,19 @@ export function PerimeterCornerShape({ cornerId }: { cornerId: PerimeterCornerId
     if (!perpendicularConstraint) return
     modelActions.removeBuildingConstraint(perpendicularConstraint.id)
   }, [modelActions, perpendicularConstraint])
+
+  // --- Colinear constraint handlers ---
+  const handleAddColinear = useCallback(() => {
+    modelActions.addBuildingConstraint({
+      type: 'colinearCorner',
+      corner: cornerId
+    })
+  }, [modelActions, cornerId])
+
+  const handleRemoveColinear = useCallback(() => {
+    if (!colinearConstraint) return
+    modelActions.removeBuildingConstraint(colinearConstraint.id)
+  }, [modelActions, colinearConstraint])
 
   return (
     <g
@@ -134,16 +145,25 @@ export function PerimeterCornerShape({ cornerId }: { cornerId: PerimeterCornerId
       {/* Corner ownership indicator - arrow when selected */}
       {isSelected && <Arrow color="var(--color-white)" strokeWidth={30} arrowStart={arrowStart} arrowEnd={arrowEnd} />}
 
-      {/* Colinear constraint indicators */}
-      {colinearConstraints.map(c => (
-        <ColinearBadge key={c.id} point={corner.insidePoint} zoom={zoom} />
-      ))}
+      {/* Perpendicular constraint badge on the outside of the corner */}
+      {showColinearBadge && (
+        <ConstraintBadge
+          label={'\u2550'}
+          offset={160}
+          startPoint={corner.outsidePoint}
+          endPoint={corner.outsidePoint}
+          outsideDirection={outsideDirection}
+          locked={colinearConstraint != null}
+          onClick={isSelected ? (colinearConstraint ? handleRemoveColinear : handleAddColinear) : undefined}
+          tooltipKey="colinear"
+        />
+      )}
 
       {/* Perpendicular constraint badge on the outside of the corner */}
       {showPerpendicularBadge && (
         <ConstraintBadge
           label={'\u27C2'}
-          offset={50}
+          offset={80}
           startPoint={corner.outsidePoint}
           endPoint={corner.outsidePoint}
           outsideDirection={outsideDirection}
@@ -155,23 +175,5 @@ export function PerimeterCornerShape({ cornerId }: { cornerId: PerimeterCornerId
         />
       )}
     </g>
-  )
-}
-
-// --- Sub-components and helpers ---
-
-function ColinearBadge({ point, zoom }: { point: Vec2; zoom: number }): React.JSX.Element {
-  const r = 4 / zoom
-  return (
-    <circle
-      cx={point[0]}
-      cy={point[1]}
-      r={r}
-      fill="none"
-      stroke="var(--color-muted-foreground)"
-      strokeWidth={1.5 / zoom}
-      opacity={0.8}
-      pointerEvents="none"
-    />
   )
 }

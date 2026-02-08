@@ -16,6 +16,7 @@ export default defineConfig({
       'toolbar:groups.*',
       'inspector:perimeterCorner.cannotDelete*',
       'inspector:perimeterWall.cannotDelete*',
+      'inspector:constraint.*',
       'config:*.defaults.*',
       'config:*.presets.*',
       'config:*.types.*',

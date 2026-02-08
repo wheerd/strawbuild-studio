@@ -1,4 +1,4 @@
-import type { PerimeterReferenceSide, PerimeterWallWithGeometry, PerimeterWithGeometry } from '@/building/model'
+import type { PerimeterWallWithGeometry, PerimeterWithGeometry } from '@/building/model'
 import { type SelectableId, isPerimeterId, isPerimeterWallId } from '@/building/model/ids'
 import type { StoreActions } from '@/building/store/types'
 import { type WrappedGcs, gcsService } from '@/editor/gcs/service'
@@ -17,7 +17,6 @@ export interface PerimeterWallEntityContext {
   wall: PerimeterWallWithGeometry
   wallIndex: number // Index of the wall in the perimeter
   startPoint: Vec2
-  referenceSide: PerimeterReferenceSide
   gcs: WrappedGcs
 }
 
@@ -48,16 +47,16 @@ export class PerimeterWallMovementBehavior implements MovementBehavior<
       throw new Error(`Could not find wall index for ${entityId}`)
     }
 
-    const gcs = gcsService.getGcs()
+    const fixedCornerIds = perimeter.cornerIds.filter(c => c !== wall.startCornerId && c !== wall.endCornerId)
+    const gcs = gcsService.getGcs(fixedCornerIds)
 
     // Set up GCS for wall drag (adds temp point constrained to wall line)
-    const startPoint = gcs.startWallDrag(wall.id, perimeter.referenceSide)
+    const startPoint = gcs.startWallDrag(wall.id)
 
     return {
       perimeter,
       wall,
       wallIndex,
-      referenceSide: perimeter.referenceSide,
       startPoint,
       gcs
     }
@@ -67,11 +66,11 @@ export class PerimeterWallMovementBehavior implements MovementBehavior<
     pointerState: PointerMovementState,
     context: MovementContext<PerimeterWallEntityContext>
   ): PerimeterWallMovementState {
-    const { perimeter, referenceSide, gcs } = context.entity
+    const { perimeter, gcs } = context.entity
 
     return {
       movementDelta: pointerState.delta,
-      newBoundary: gcs.getPerimeterBoundary(perimeter.id, referenceSide)
+      newBoundary: gcs.getPerimeterBoundary(perimeter.id)
     }
   }
 
@@ -79,14 +78,14 @@ export class PerimeterWallMovementBehavior implements MovementBehavior<
     pointerState: PointerMovementState,
     context: MovementContext<PerimeterWallEntityContext>
   ): PerimeterWallMovementState {
-    const { perimeter, referenceSide, gcs, startPoint } = context.entity
+    const { perimeter, gcs, startPoint } = context.entity
 
     // Move the temp point by the pointer delta from the wall midpoint
     const targetPosition = addVec2(startPoint, pointerState.delta)
 
     gcs.updateDrag(targetPosition[0], targetPosition[1])
 
-    const newBoundary = gcs.getPerimeterBoundary(perimeter.id, referenceSide)
+    const newBoundary = gcs.getPerimeterBoundary(perimeter.id)
 
     // Compute the effective movement delta from the solved drag point (wall midpoint)
     const solvedDragPos = gcs.getDragPointPosition()
@@ -112,17 +111,17 @@ export class PerimeterWallMovementBehavior implements MovementBehavior<
   }
 
   applyRelativeMovement(deltaDifference: Vec2, context: MovementContext<PerimeterWallEntityContext>): boolean {
-    const { perimeter, wall, referenceSide, gcs } = context.entity
+    const { perimeter, wall, gcs } = context.entity
 
     // Start a new wall drag cycle on the same GCS instance
-    const dragPos = gcs.startWallDrag(wall.id, referenceSide)
+    const dragPos = gcs.startWallDrag(wall.id)
 
     const targetX = dragPos[0] + deltaDifference[0]
     const targetY = dragPos[1] + deltaDifference[1]
 
     gcs.updateDrag(targetX, targetY)
 
-    const newBoundary = gcs.getPerimeterBoundary(perimeter.id, referenceSide)
+    const newBoundary = gcs.getPerimeterBoundary(perimeter.id)
 
     gcs.endDrag()
 

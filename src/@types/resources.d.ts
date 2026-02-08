@@ -1038,6 +1038,10 @@ interface Resources {
   },
   "inspector": {
     "constraint": {
+      "colinear": {
+        "active": "Colinear constraint (click to remove)",
+        "suggestion": "Click to add colinear constraint"
+      },
       "horizontal": {
         "active": "Horizontal constraint (click to remove)",
         "suggestion": "Click to add horizontal constraint"

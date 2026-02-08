@@ -1,10 +1,15 @@
-import type { SketchPoint } from '@salusoft89/planegcs'
+import type { Constraint, SketchPoint } from '@salusoft89/planegcs'
 
 import type { PerimeterCornerId, PerimeterId } from '@/building/model'
 import { polygonEdges } from '@/construction/helpers'
+import {
+  nodeNonRefSidePointForNextWall,
+  nodeNonRefSidePointForPrevWall,
+  nodeRefSidePointId
+} from '@/editor/gcs/constraintTranslator'
 import { crossVec2, direction, newVec2, segmentsIntersect, wouldClosingPolygonSelfIntersect } from '@/shared/geometry'
 
-const MIN_WALL_LENGTH = 50
+const MIN_WALL_LENGTH_SQ = 50 * 50
 const COLLINEARITY_THRESHOLD = 1e-4
 
 export interface ValidationResult {
@@ -14,7 +19,8 @@ export interface ValidationResult {
 
 export function validateSolution(
   points: Record<string, SketchPoint>,
-  cornerOrderMap: Map<PerimeterId, PerimeterCornerId[]>
+  cornerOrderMap: Map<PerimeterId, PerimeterCornerId[]>,
+  constraints: Record<string, Constraint>
 ): ValidationResult {
   if (!checkMinWallLength(points, cornerOrderMap)) {
     return { valid: false, reason: 'Minimum wall length violation' }
@@ -28,7 +34,7 @@ export function validateSolution(
     return { valid: false, reason: 'Wall side consistency violation' }
   }
 
-  if (!checkColinearity(points, cornerOrderMap)) {
+  if (!checkColinearity(points, cornerOrderMap, constraints)) {
     return { valid: false, reason: 'Colinear corner detected' }
   }
 
@@ -44,12 +50,22 @@ function checkMinWallLength(
       const currentId = cornerIds[i]
       const nextId = cornerIds[(i + 1) % cornerIds.length]
 
-      const currentPt = points[`corner_${currentId}_in`]
-      const nextPt = points[`corner_${nextId}_in`]
+      const refCurrentPt = points[nodeRefSidePointId(currentId)]
+      const refNextPt = points[nodeRefSidePointId(nextId)]
 
-      const distance = Math.sqrt(Math.pow(currentPt.x - nextPt.x, 2) + Math.pow(currentPt.y - nextPt.y, 2))
+      const refDistance = Math.pow(refCurrentPt.x - refNextPt.x, 2) + Math.pow(refCurrentPt.y - refNextPt.y, 2)
 
-      if (distance < MIN_WALL_LENGTH) {
+      if (refDistance < MIN_WALL_LENGTH_SQ) {
+        return false
+      }
+
+      const nonrefCurrentPt = points[nodeNonRefSidePointForNextWall(currentId)]
+      const nonrefNextPt = points[nodeNonRefSidePointForPrevWall(nextId)]
+
+      const nonrefDistance =
+        Math.pow(nonrefCurrentPt.x - nonrefNextPt.x, 2) + Math.pow(nonrefCurrentPt.y - nonrefNextPt.y, 2)
+
+      if (nonrefDistance < MIN_WALL_LENGTH_SQ) {
         return false
       }
     }
@@ -63,7 +79,7 @@ function checkSelfIntersection(
   cornerOrderMap: Map<PerimeterId, PerimeterCornerId[]>
 ): boolean {
   for (const cornerIds of cornerOrderMap.values()) {
-    const innerPoints = cornerIds.map(id => points[`corner_${id}_in`])
+    const innerPoints = cornerIds.map(id => points[nodeRefSidePointId(id)])
 
     if (innerPoints.length < 3) {
       continue
@@ -86,18 +102,18 @@ function checkWallConsistency(
   cornerOrderMap: Map<PerimeterId, PerimeterCornerId[]>
 ): boolean {
   for (const cornerIds of cornerOrderMap.values()) {
-    const innerPoints = cornerIds.map(id => points[`corner_${id}_in`])
-    const outerPoints = cornerIds.map(id => points[`corner_${id}_out`])
+    const refPoints = cornerIds.map(id => points[nodeRefSidePointId(id)])
+    const nonRefPoints = cornerIds.map(id => points[nodeNonRefSidePointForNextWall(id)])
 
-    if (innerPoints.length < 3 || outerPoints.length < 3) {
+    if (refPoints.length < 3 || nonRefPoints.length < 3) {
       continue
     }
 
     const innerPolygon = {
-      points: innerPoints.map(pt => newVec2(pt.x, pt.y))
+      points: refPoints.map(pt => newVec2(pt.x, pt.y))
     }
     const outerPolygon = {
-      points: outerPoints.map(pt => newVec2(pt.x, pt.y))
+      points: nonRefPoints.map(pt => newVec2(pt.x, pt.y))
     }
 
     const innerLines = [...polygonEdges(innerPolygon)]
@@ -113,17 +129,24 @@ function checkWallConsistency(
 
 function checkColinearity(
   points: Record<string, SketchPoint>,
-  cornerOrderMap: Map<PerimeterId, PerimeterCornerId[]>
+  cornerOrderMap: Map<PerimeterId, PerimeterCornerId[]>,
+  constraints: Record<string, Constraint>
 ): boolean {
   for (const cornerIds of cornerOrderMap.values()) {
     for (let i = 0; i < cornerIds.length; i++) {
-      const prevId = cornerIds[(i - 1 + cornerIds.length) % cornerIds.length]
       const currentId = cornerIds[i]
+
+      const constraintId = `bc_colinearCorner_${currentId}`
+      if (constraintId in constraints) {
+        continue
+      }
+
+      const prevId = cornerIds[(i - 1 + cornerIds.length) % cornerIds.length]
       const nextId = cornerIds[(i + 1) % cornerIds.length]
 
-      const prevPt = points[`corner_${prevId}_in`]
-      const currPt = points[`corner_${currentId}_in`]
-      const nextPt = points[`corner_${nextId}_in`]
+      const prevPt = points[nodeRefSidePointId(prevId)]
+      const currPt = points[nodeRefSidePointId(currentId)]
+      const nextPt = points[nodeRefSidePointId(nextId)]
 
       const vecToNext = direction(newVec2(currPt.x, currPt.y), newVec2(nextPt.x, nextPt.y))
       const vecFromPrev = direction(newVec2(currPt.x, currPt.y), newVec2(prevPt.x, prevPt.y))

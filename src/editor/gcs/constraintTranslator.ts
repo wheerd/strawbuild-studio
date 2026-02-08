@@ -15,27 +15,41 @@ function sortedPair(a: string, b: string): [string, string] {
 const BC_PREFIX = 'bc_'
 
 /**
- * Get the GCS point ID for a corner on a given side.
- *
- * For a clockwise perimeter, 'left' is the outside face and 'right' is the inside face.
+ * Get the GCS point ID for a corner on the reference side.
+ * This is a single point shared by both adjacent walls.
  */
-export function nodeSidePointId(cornerId: PerimeterCornerId, side: 'left' | 'right'): string {
-  const suffix = side === 'left' ? 'out' : 'in'
-  return `corner_${cornerId}_${suffix}`
+export function nodeRefSidePointId(cornerId: PerimeterCornerId): string {
+  return `corner_${cornerId}_ref`
 }
 
 /**
- * Get the GCS point ID for a corner on the inside face.
+ * Get the GCS point ID for a corner on the non-reference side,
+ * specifically for the previous wall (wall ending at this corner).
  */
-export function nodeInsidePointId(cornerId: PerimeterCornerId): string {
-  return `corner_${cornerId}_in`
+export function nodeNonRefSidePointForPrevWall(cornerId: PerimeterCornerId): string {
+  return `corner_${cornerId}_nonref_prev`
 }
 
 /**
- * Get the GCS line ID for the inside face of a wall.
+ * Get the GCS point ID for a corner on the non-reference side,
+ * specifically for the next wall (wall starting at this corner).
  */
-export function wallInsideLineId(wallId: WallId): string {
-  return `wall_${wallId}_in`
+export function nodeNonRefSidePointForNextWall(cornerId: PerimeterCornerId): string {
+  return `corner_${cornerId}_nonref_next`
+}
+
+/**
+ * Get the GCS line ID for the reference side of a wall.
+ */
+export function wallRefLineId(wallId: WallId): string {
+  return `wall_${wallId}_ref`
+}
+
+/**
+ * Get the GCS line ID for the non-reference side of a wall.
+ */
+export function wallNonRefLineId(wallId: WallId): string {
+  return `wall_${wallId}_nonref`
 }
 
 // --- Key derivation ---
@@ -102,12 +116,21 @@ export function translateBuildingConstraint(
     case 'wallLength': {
       const corners = context.getWallCornerIds(constraint.wall)
       if (!corners) return []
+
+      // Determine if constraint side matches perimeter's reference side
+      const refConstraintSide = context.getReferenceSide(corners.startCornerId)
+      const isRefSide = constraint.side === refConstraintSide
+
       return [
         {
           id: prefix,
           type: 'p2p_distance',
-          p1_id: nodeSidePointId(corners.startCornerId, constraint.side),
-          p2_id: nodeSidePointId(corners.endCornerId, constraint.side),
+          p1_id: isRefSide
+            ? nodeRefSidePointId(corners.startCornerId)
+            : nodeNonRefSidePointForNextWall(corners.startCornerId),
+          p2_id: isRefSide
+            ? nodeRefSidePointId(corners.endCornerId)
+            : nodeNonRefSidePointForPrevWall(corners.endCornerId),
           distance: constraint.length,
           driving: true
         }
@@ -116,7 +139,7 @@ export function translateBuildingConstraint(
 
     case 'colinearCorner': {
       // The middle point (the corner itself) must lie on the line defined by
-      // the adjacent corners on the same face.
+      // the adjacent corners on the reference side.
       const adjWalls = context.getCornerAdjacentWallIds(constraint.corner)
       if (!adjWalls) return []
       const prevCorners = context.getWallCornerIds(adjWalls.previousWallId)
@@ -124,14 +147,13 @@ export function translateBuildingConstraint(
       if (!prevCorners || !nextCorners) return []
       // Previous wall's start corner and next wall's end corner are the line endpoints.
       // The corner itself is the point that must be on the line.
-      const side = context.getReferenceSide(constraint.corner)
       return [
         {
           id: prefix,
           type: 'point_on_line_ppp',
-          p_id: nodeSidePointId(constraint.corner, side),
-          lp1_id: nodeSidePointId(prevCorners.startCornerId, side),
-          lp2_id: nodeSidePointId(nextCorners.endCornerId, side),
+          p_id: nodeRefSidePointId(constraint.corner),
+          lp1_id: nodeRefSidePointId(prevCorners.startCornerId),
+          lp2_id: nodeRefSidePointId(nextCorners.endCornerId),
           driving: true
         }
       ]
@@ -142,14 +164,14 @@ export function translateBuildingConstraint(
         {
           id: `${prefix}_par`,
           type: 'parallel',
-          l1_id: wallInsideLineId(constraint.wallA),
-          l2_id: wallInsideLineId(constraint.wallB),
+          l1_id: wallRefLineId(constraint.wallA),
+          l2_id: wallRefLineId(constraint.wallB),
           driving: true
         }
       ]
 
       if (constraint.distance != null) {
-        const lineAId = wallInsideLineId(constraint.wallA)
+        const lineAId = wallRefLineId(constraint.wallA)
         const pointId = context.getLineStartPointId(lineAId)
 
         if (pointId) {
@@ -157,7 +179,7 @@ export function translateBuildingConstraint(
             id: `${prefix}_dist`,
             type: 'p2l_distance',
             p_id: pointId,
-            l_id: wallInsideLineId(constraint.wallB),
+            l_id: wallRefLineId(constraint.wallB),
             distance: constraint.distance,
             driving: true
           })
@@ -174,29 +196,22 @@ export function translateBuildingConstraint(
         {
           id: prefix,
           type: 'perpendicular_ll',
-          l1_id: wallInsideLineId(adjWalls.previousWallId),
-          l2_id: wallInsideLineId(adjWalls.nextWallId),
+          l1_id: wallRefLineId(adjWalls.previousWallId),
+          l2_id: wallRefLineId(adjWalls.nextWallId),
           driving: true
         }
       ]
     }
 
     case 'cornerAngle': {
-      // Angle between the two walls meeting at this corner.
-      // Lines are defined by the inside-face points of the corner and its neighbors.
       const adjWalls = context.getCornerAdjacentWallIds(constraint.corner)
       if (!adjWalls) return []
-      const prevCorners = context.getWallCornerIds(adjWalls.previousWallId)
-      const nextCorners = context.getWallCornerIds(adjWalls.nextWallId)
-      if (!prevCorners || !nextCorners) return []
       return [
         {
           id: prefix,
-          type: 'l2l_angle_pppp',
-          l1p1_id: nodeInsidePointId(constraint.corner),
-          l1p2_id: nodeInsidePointId(prevCorners.startCornerId),
-          l2p1_id: nodeInsidePointId(constraint.corner),
-          l2p2_id: nodeInsidePointId(nextCorners.endCornerId),
+          type: 'l2l_angle_ll',
+          l1_id: wallRefLineId(adjWalls.previousWallId),
+          l2_id: wallRefLineId(adjWalls.nextWallId),
           angle: constraint.angle,
           driving: true
         }
@@ -204,28 +219,22 @@ export function translateBuildingConstraint(
     }
 
     case 'horizontalWall': {
-      const corners = context.getWallCornerIds(constraint.wall)
-      if (!corners) return []
       return [
         {
           id: prefix,
-          type: 'horizontal_pp',
-          p1_id: nodeInsidePointId(corners.startCornerId),
-          p2_id: nodeInsidePointId(corners.endCornerId),
+          type: 'horizontal_l',
+          l_id: wallRefLineId(constraint.wall),
           driving: true
         }
       ]
     }
 
     case 'verticalWall': {
-      const corners = context.getWallCornerIds(constraint.wall)
-      if (!corners) return []
       return [
         {
           id: prefix,
-          type: 'vertical_pp',
-          p1_id: nodeInsidePointId(corners.startCornerId),
-          p2_id: nodeInsidePointId(corners.endCornerId),
+          type: 'vertical_l',
+          l_id: wallRefLineId(constraint.wall),
           driving: true
         }
       ]

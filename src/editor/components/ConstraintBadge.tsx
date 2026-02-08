@@ -14,7 +14,7 @@ interface ConstraintBadgeProps {
   /** Click handler — when provided the badge becomes interactive. */
   onClick?: () => void
   /** Translation key suffix for the tooltip (e.g. 'horizontal', 'vertical', 'perpendicular'). */
-  tooltipKey?: 'horizontal' | 'vertical' | 'perpendicular'
+  tooltipKey?: 'horizontal' | 'vertical' | 'perpendicular' | 'colinear'
 }
 
 export function ConstraintBadge({
