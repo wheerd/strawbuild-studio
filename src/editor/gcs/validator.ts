@@ -136,7 +136,7 @@ function checkColinearity(
     for (let i = 0; i < cornerIds.length; i++) {
       const currentId = cornerIds[i]
 
-      const constraintId = `bc_colinearCorner_${currentId}`
+      const constraintId = `bc_constraint_colinearCorner_${currentId}`
       if (constraintId in constraints) {
         continue
       }

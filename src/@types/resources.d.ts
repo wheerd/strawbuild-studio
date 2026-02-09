@@ -1042,6 +1042,7 @@ interface Resources {
         "active": "Colinear constraint (click to remove)",
         "suggestion": "Click to add colinear constraint"
       },
+      "conflict": "Conflict with other constraints",
       "horizontal": {
         "active": "Horizontal constraint (click to remove)",
         "suggestion": "Click to add horizontal constraint"
@@ -1050,6 +1051,7 @@ interface Resources {
         "active": "Perpendicular constraint (click to remove)",
         "suggestion": "Click to add perpendicular constraint"
       },
+      "redundant": "Redundant constraint (not needed)",
       "vertical": {
         "active": "Vertical constraint (click to remove)",
         "suggestion": "Click to add vertical constraint"

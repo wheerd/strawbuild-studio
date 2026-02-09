@@ -117,13 +117,16 @@ export class PerimeterCornerMovementBehavior implements MovementBehavior<CornerE
 
   commitMovement(movementState: CornerMovementState, context: MovementContext<CornerEntityContext>): boolean {
     context.entity.gcs.endDrag()
-    return context.store.updatePerimeterBoundary(context.entity.corner.perimeterId, movementState.newBoundary)
+    const updated = context.store.updatePerimeterBoundary(context.entity.corner.perimeterId, movementState.newBoundary)
+    if (updated) {
+      context.entity.gcs.syncConstraintStatus()
+    }
+    return updated
   }
 
   applyRelativeMovement(deltaDifference: Vec2, context: MovementContext<CornerEntityContext>): boolean {
     const { corner, gcs } = context.entity
 
-    // Start a new drag cycle on the same GCS instance
     const dragPos = gcs.startCornerDrag(corner.id)
 
     const targetX = dragPos[0] + deltaDifference[0]
@@ -135,7 +138,12 @@ export class PerimeterCornerMovementBehavior implements MovementBehavior<CornerE
 
     gcs.endDrag()
 
-    return context.store.updatePerimeterBoundary(corner.perimeterId, newBoundary)
+    const updated = context.store.updatePerimeterBoundary(corner.perimeterId, newBoundary)
+    if (updated) {
+      gcs.syncConstraintStatus()
+    }
+
+    return updated
   }
 
   private getSnapLines(corners: PerimeterCornerWithGeometry[], cornerIndex: number): LineSegment2D[] {

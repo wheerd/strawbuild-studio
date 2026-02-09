@@ -1,7 +1,14 @@
 import { type Constraint, type SketchLine, type SketchPoint } from '@salusoft89/planegcs'
 import { create } from 'zustand'
+import { useShallow } from 'zustand/react/shallow'
 
-import type { ConstraintInput, PerimeterCornerId, PerimeterId, WallId } from '@/building/model'
+import type {
+  Constraint as BuildingConstraint,
+  ConstraintId,
+  PerimeterCornerId,
+  PerimeterId,
+  WallId
+} from '@/building/model'
 import type { PerimeterCornerWithGeometry } from '@/building/model/perimeters'
 import { getModelActions } from '@/building/store'
 import { referenceSideToConstraintSide } from '@/editor/gcs/constraintGenerator'
@@ -9,7 +16,6 @@ import { scaleAddVec2 } from '@/shared/geometry/2d'
 
 import {
   type TranslationContext,
-  buildingConstraintKey,
   getReferencedCornerIds,
   getReferencedWallIds,
   nodeNonRefSidePointForNextWall,
@@ -29,8 +35,10 @@ interface GcsStoreState {
   points: Record<string, SketchPoint>
   lines: SketchLine[]
   constraints: Record<string, Constraint>
-  buildingConstraints: Record<string, ConstraintInput>
+  buildingConstraints: Record<string, BuildingConstraint>
   perimeterRegistry: Record<PerimeterId, PerimeterRegistryEntry>
+  conflictingConstraintIds: Set<string>
+  redundantConstraintIds: Set<string>
 }
 
 interface GcsStoreActions {
@@ -47,8 +55,9 @@ interface GcsStoreActions {
   removeLines: (ids: string[]) => void
   removeConstraints: (ids: string[]) => void
 
-  addBuildingConstraint: (constraint: ConstraintInput) => string
-  removeBuildingConstraint: (key: string) => void
+  addBuildingConstraint: (constraint: BuildingConstraint) => string
+  removeBuildingConstraint: (id: ConstraintId) => void
+  setConstraintStatus: (conflicting: string[], redundant: string[]) => void
 }
 
 type GcsStore = GcsStoreState & { actions: GcsStoreActions }
@@ -62,6 +71,8 @@ const useGcsStore = create<GcsStore>()((set, get) => ({
   drag: null,
   cornerOrderMap: new Map(),
   perimeterRegistry: {},
+  conflictingConstraintIds: new Set(),
+  redundantConstraintIds: new Set(),
 
   actions: {
     addPoint: (id, x, y, fixed = false) => {
@@ -122,12 +133,11 @@ const useGcsStore = create<GcsStore>()((set, get) => ({
 
     addBuildingConstraint: constraint => {
       const state = get()
-      const key = buildingConstraintKey(constraint)
 
       // Check for duplicate
-      if (key in state.buildingConstraints) {
-        console.warn(`Building constraint with key "${key}" already exists, skipping.`)
-        return key
+      if (constraint.id in state.buildingConstraints) {
+        console.warn(`Building constraint with id "${constraint.id}" already exists, skipping.`)
+        return constraint.id
       }
 
       // Validate that all referenced corners exist as GCS points
@@ -178,7 +188,7 @@ const useGcsStore = create<GcsStore>()((set, get) => ({
         }
       }
 
-      const translated = translateBuildingConstraint(constraint, key, context)
+      const translated = translateBuildingConstraint(constraint, constraint.id, context)
 
       set(state => {
         const newConstraints = { ...state.constraints }
@@ -186,23 +196,23 @@ const useGcsStore = create<GcsStore>()((set, get) => ({
           newConstraints[c.id] = c
         }
         return {
-          buildingConstraints: { ...state.buildingConstraints, [key]: constraint },
+          buildingConstraints: { ...state.buildingConstraints, [constraint.id]: constraint },
           constraints: newConstraints
         }
       })
 
-      return key
+      return constraint.id
     },
 
-    removeBuildingConstraint: key => {
+    removeBuildingConstraint: id => {
       const state = get()
 
-      if (!(key in state.buildingConstraints)) {
-        console.warn(`Building constraint with key "${key}" not found, skipping removal.`)
+      if (!(id in state.buildingConstraints)) {
+        console.warn(`Building constraint with key "${id}" not found, skipping removal.`)
         return
       }
 
-      const idsToRemove = new Set(translatedConstraintIds(key))
+      const idsToRemove = new Set(translatedConstraintIds(id))
 
       set(state => {
         const newConstraints = { ...state.constraints }
@@ -210,7 +220,7 @@ const useGcsStore = create<GcsStore>()((set, get) => ({
           delete newConstraints[id]
         }
 
-        const { [key]: _, ...remainingBuildingConstraints } = state.buildingConstraints
+        const { [id]: _, ...remainingBuildingConstraints } = state.buildingConstraints
         return {
           buildingConstraints: remainingBuildingConstraints,
           constraints: newConstraints
@@ -383,15 +393,13 @@ const useGcsStore = create<GcsStore>()((set, get) => ({
     removePerimeterGeometry: perimeterId => {
       const state = get()
       const { actions } = state
-      const entry = state.perimeterRegistry[perimeterId]
 
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-      if (!entry) {
+      if (!(perimeterId in state.perimeterRegistry)) {
         console.warn(`Perimeter "${perimeterId}" not found in GCS registry, skipping removal.`)
         return
       }
 
-      // Remove structural constraints, lines, and points
+      const entry = state.perimeterRegistry[perimeterId]
       actions.removeConstraints(entry.constraintIds)
       actions.removeLines(entry.lineIds)
       actions.removePoints(entry.pointIds)
@@ -403,6 +411,13 @@ const useGcsStore = create<GcsStore>()((set, get) => ({
           drag: null
         }
       })
+    },
+
+    setConstraintStatus: (conflicting, redundant) => {
+      set(() => ({
+        conflictingConstraintIds: new Set(conflicting),
+        redundantConstraintIds: new Set(redundant)
+      }))
     }
   }
 }))
@@ -415,6 +430,39 @@ export const useGcsPerimeterRegistry = (): GcsStoreState['perimeterRegistry'] =>
   useGcsStore(state => state.perimeterRegistry)
 export const useGcsActions = (): GcsStoreActions => useGcsStore(state => state.actions)
 
-// Non-hook getters for use outside React components (e.g. in tests or imperative code)
+export const useConstraintStatus = (
+  constraintId: ConstraintId | undefined
+): {
+  conflicting: boolean
+  redundant: boolean
+} => {
+  return useGcsStore(
+    useShallow(state => {
+      if (!constraintId) {
+        return { conflicting: false, redundant: false }
+      }
+      const possibleIds = translatedConstraintIds(constraintId)
+      return {
+        conflicting: possibleIds.some(id => state.conflictingConstraintIds.has(id)),
+        redundant: possibleIds.some(id => state.redundantConstraintIds.has(id))
+      }
+    })
+  )
+}
+
+export const useAllConstraintStatus = (): {
+  conflictingCount: number
+  redundantCount: number
+  conflictingIds: string[]
+  redundantIds: string[]
+} => {
+  return useGcsStore(state => ({
+    conflictingCount: state.conflictingConstraintIds.size,
+    redundantCount: state.redundantConstraintIds.size,
+    conflictingIds: Array.from(state.conflictingConstraintIds),
+    redundantIds: Array.from(state.redundantConstraintIds)
+  }))
+}
+
 export const getGcsActions = (): GcsStoreActions => useGcsStore.getState().actions
 export const getGcsState = (): GcsStoreState => useGcsStore.getState()

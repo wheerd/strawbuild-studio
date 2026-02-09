@@ -16,6 +16,7 @@ import {
 import { useWallAssemblyById } from '@/construction/config/store'
 import { ConstraintBadge } from '@/editor/components/ConstraintBadge'
 import { gcsService } from '@/editor/gcs/service'
+import { useConstraintStatus } from '@/editor/gcs/store'
 import { useSelectionStore } from '@/editor/hooks/useSelectionStore'
 import { useViewportActions } from '@/editor/hooks/useViewportStore'
 import { activateLengthInput } from '@/editor/services/length-input'
@@ -90,13 +91,18 @@ export function PerimeterWallShape({ wallId }: { wallId: PerimeterWallId }): Rea
 
   // Determine if the wall is close to horizontal or vertical (for suggesting constraints)
   const suggestedHVType = useMemo<'horizontalWall' | 'verticalWall' | null>(() => {
-    if (hvConstraint) return null // Already has an H/V constraint
+    if (hvConstraint) return null
     const dx = wall.direction[0]
     const dy = wall.direction[1]
     if (Math.abs(dy) < SUGGESTION_SIN_TOLERANCE) return 'horizontalWall'
     if (Math.abs(dx) < SUGGESTION_SIN_TOLERANCE) return 'verticalWall'
     return null
   }, [hvConstraint, wall.direction])
+
+  // Get constraint status for each constraint
+  const hvStatus = useConstraintStatus(hvConstraint?.id)
+  const insideDistanceStatus = useConstraintStatus(insideDistanceConstraint?.id)
+  const outsideDistanceStatus = useConstraintStatus(outsideDistanceConstraint?.id)
 
   const showInsideIndicator = isSelected || insideDistanceConstraint != null
   const showOutsideIndicator = isSelected || outsideDistanceConstraint != null
@@ -108,8 +114,25 @@ export function PerimeterWallShape({ wallId }: { wallId: PerimeterWallId }): Rea
     ? `${formatLength(outsideDistanceConstraint.length)} \uD83D\uDD12`
     : formatLength(wall.outsideLength)
 
-  const constraintColor = 'var(--color-primary)'
   const defaultColor = 'var(--color-foreground)'
+
+  const getBadgeStatus = (status: { conflicting: boolean; redundant: boolean }) => {
+    if (status.conflicting) return 'conflicting'
+    if (status.redundant) return 'redundant'
+    return 'normal'
+  }
+
+  const insideIndicatorColor = useMemo(() => {
+    if (insideDistanceStatus.conflicting) return 'var(--color-red-600)'
+    if (insideDistanceStatus.redundant) return 'var(--color-orange-600)'
+    return 'var(--color-primary)'
+  }, [insideDistanceStatus])
+
+  const outsideIndicatorColor = useMemo(() => {
+    if (outsideDistanceStatus.conflicting) return 'var(--color-red-600)'
+    if (outsideDistanceStatus.redundant) return 'var(--color-orange-600)'
+    return 'var(--color-primary)'
+  }, [outsideDistanceStatus])
 
   // --- H/V constraint handlers ---
   const handleAddHVConstraint = useCallback(() => {
@@ -206,7 +229,7 @@ export function PerimeterWallShape({ wallId }: { wallId: PerimeterWallId }): Rea
             endPoint={endCorner.insidePoint}
             label={insideLabel}
             offset={-60}
-            color={insideDistanceConstraint ? constraintColor : defaultColor}
+            color={insideDistanceConstraint ? insideIndicatorColor : defaultColor}
             fontSize={60}
             strokeWidth={5}
             onClick={() => {
@@ -226,7 +249,7 @@ export function PerimeterWallShape({ wallId }: { wallId: PerimeterWallId }): Rea
             endPoint={endCorner.insidePoint}
             label={insideLabel}
             offset={-60}
-            color={insideDistanceConstraint ? constraintColor : defaultColor}
+            color={insideDistanceConstraint ? insideIndicatorColor : defaultColor}
             fontSize={60}
             strokeWidth={5}
           />
@@ -240,7 +263,7 @@ export function PerimeterWallShape({ wallId }: { wallId: PerimeterWallId }): Rea
             endPoint={endCorner.outsidePoint}
             label={outsideLabel}
             offset={60}
-            color={outsideDistanceConstraint ? constraintColor : defaultColor}
+            color={outsideDistanceConstraint ? outsideIndicatorColor : defaultColor}
             fontSize={60}
             strokeWidth={5}
             onClick={() => {
@@ -260,7 +283,7 @@ export function PerimeterWallShape({ wallId }: { wallId: PerimeterWallId }): Rea
             endPoint={endCorner.outsidePoint}
             label={outsideLabel}
             offset={60}
-            color={outsideDistanceConstraint ? constraintColor : defaultColor}
+            color={outsideDistanceConstraint ? outsideIndicatorColor : defaultColor}
             fontSize={60}
             strokeWidth={5}
           />
@@ -277,6 +300,7 @@ export function PerimeterWallShape({ wallId }: { wallId: PerimeterWallId }): Rea
           locked={hvConstraint != null}
           onClick={isSelected ? (hvConstraint ? handleRemoveHVConstraint : handleAddHVConstraint) : undefined}
           tooltipKey={hvTooltipKey}
+          status={getBadgeStatus(hvStatus)}
         />
       )}
     </g>

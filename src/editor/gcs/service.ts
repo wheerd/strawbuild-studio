@@ -12,7 +12,7 @@ import type { PerimeterCornerId, PerimeterId, PerimeterWallId } from '@/building
 import { getModelActions } from '@/building/store'
 import { nodeRefSidePointId, wallRefLineId } from '@/editor/gcs/constraintTranslator'
 import { createGcs } from '@/editor/gcs/gcsInstance'
-import { getGcsState } from '@/editor/gcs/store'
+import { getGcsActions, getGcsState } from '@/editor/gcs/store'
 import { validateSolution } from '@/editor/gcs/validator'
 import { type Vec2, midpoint, newVec2 } from '@/shared/geometry'
 
@@ -165,6 +165,10 @@ interface DragState {
 class GcsService {
   private solveTimeout: NodeJS.Timeout | undefined
 
+  constructor() {
+    this.triggerSolve()
+  }
+
   triggerSolve() {
     if (this.solveTimeout) {
       clearTimeout(this.solveTimeout)
@@ -177,6 +181,7 @@ class GcsService {
           updatePerimeterBoundary(perimeterId, gcs.getPerimeterBoundary(perimeterId))
         }
       }
+      gcs.syncConstraintStatus()
       this.solveTimeout = undefined
     }, 100)
   }
@@ -301,6 +306,13 @@ export class WrappedGcs {
 
   public solve() {
     return this.gcs.solve(Algorithm.DogLeg) === SolveStatus.Success && this.applySolution()
+  }
+
+  syncConstraintStatus(): void {
+    const conflictingIds = this.gcs.get_gcs_conflicting_constraints()
+    const redundantIds = this.gcs.get_gcs_redundant_constraints()
+
+    getGcsActions().setConstraintStatus(conflictingIds, redundantIds)
   }
 
   /**

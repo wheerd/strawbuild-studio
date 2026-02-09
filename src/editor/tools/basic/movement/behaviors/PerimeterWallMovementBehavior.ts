@@ -107,13 +107,16 @@ export class PerimeterWallMovementBehavior implements MovementBehavior<
     context: MovementContext<PerimeterWallEntityContext>
   ): boolean {
     context.entity.gcs.endDrag()
-    return context.store.updatePerimeterBoundary(context.entity.perimeter.id, movementState.newBoundary)
+    const updated = context.store.updatePerimeterBoundary(context.entity.perimeter.id, movementState.newBoundary)
+    if (updated) {
+      context.entity.gcs.syncConstraintStatus()
+    }
+    return updated
   }
 
   applyRelativeMovement(deltaDifference: Vec2, context: MovementContext<PerimeterWallEntityContext>): boolean {
     const { perimeter, wall, gcs } = context.entity
 
-    // Start a new wall drag cycle on the same GCS instance
     const dragPos = gcs.startWallDrag(wall.id)
 
     const targetX = dragPos[0] + deltaDifference[0]
@@ -125,6 +128,11 @@ export class PerimeterWallMovementBehavior implements MovementBehavior<
 
     gcs.endDrag()
 
-    return context.store.updatePerimeterBoundary(perimeter.id, newBoundary)
+    const updated = context.store.updatePerimeterBoundary(perimeter.id, newBoundary)
+    if (updated) {
+      gcs.syncConstraintStatus()
+    }
+
+    return updated
   }
 }

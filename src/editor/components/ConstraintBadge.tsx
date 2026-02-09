@@ -1,3 +1,4 @@
+import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import type { Vec2 } from '@/shared/geometry'
@@ -15,6 +16,7 @@ interface ConstraintBadgeProps {
   onClick?: () => void
   /** Translation key suffix for the tooltip (e.g. 'horizontal', 'vertical', 'perpendicular'). */
   tooltipKey?: 'horizontal' | 'vertical' | 'perpendicular' | 'colinear'
+  status?: 'conflicting' | 'redundant' | 'normal'
 }
 
 export function ConstraintBadge({
@@ -25,7 +27,8 @@ export function ConstraintBadge({
   offset,
   locked,
   onClick,
-  tooltipKey
+  tooltipKey,
+  status = 'normal'
 }: ConstraintBadgeProps): React.JSX.Element {
   const { t } = useTranslation('inspector')
   const fontSize = 60
@@ -44,21 +47,43 @@ export function ConstraintBadge({
   const rectWidth = showLock ? rectHeight * 2 : rectHeight * 1.4
   const cornerRadius = rectHeight * 0.3
 
-  // Locked: primary background, primary-foreground text. Hover inverts.
-  // Unlocked (suggestion): muted background, muted-foreground text. Hover highlights.
-  const rectClasses =
-    showLock && isInteractive
+  const rectClasses = useMemo(() => {
+    if (status === 'conflicting') {
+      return 'fill-red-600 hover:fill-red-600/80'
+    }
+    if (status === 'redundant') {
+      return 'fill-orange-600 hover:fill-orange-500'
+    }
+    return showLock && isInteractive
       ? 'fill-primary group-hover:fill-primary/90'
       : 'fill-muted group-hover:fill-accent stroke-border'
-  const textClasses =
-    showLock && isInteractive ? 'fill-primary-foreground' : 'fill-muted-foreground group-hover:fill-accent-foreground'
+  }, [status, showLock, isInteractive])
 
-  // Build tooltip from translation key + locked/suggested state
-  const tooltip = tooltipKey
+  const textClasses = useMemo(() => {
+    if (status === 'conflicting') {
+      return 'fill-destructive-foreground'
+    }
+    if (status === 'redundant') {
+      return 'fill-foreground'
+    }
+    return showLock && isInteractive
+      ? 'fill-primary-foreground'
+      : 'fill-muted-foreground group-hover:fill-accent-foreground'
+  }, [status, showLock, isInteractive])
+
+  const baseTooltip = tooltipKey
     ? showLock
       ? t($ => $.constraint[tooltipKey].active)
       : t($ => $.constraint[tooltipKey].suggestion)
     : undefined
+
+  const statusTooltip = useMemo(() => {
+    if (status === 'conflicting') return 'Constraint conflicts with other constraints'
+    if (status === 'redundant') return 'Redundant constraint (not needed)'
+    return undefined
+  }, [status])
+
+  const tooltip = [baseTooltip, statusTooltip].filter(Boolean).join('. ')
 
   return (
     <g

@@ -11,6 +11,7 @@ import { useWallAssemblyById } from '@/construction/config/store'
 import { Arrow } from '@/editor/components/Arrow'
 import { ConstraintBadge } from '@/editor/components/ConstraintBadge'
 import { gcsService } from '@/editor/gcs/service'
+import { useConstraintStatus } from '@/editor/gcs/store'
 import { useSelectionStore } from '@/editor/hooks/useSelectionStore'
 import { direction, midpoint, perpendicular, scaleAddVec2, scaleVec2 } from '@/shared/geometry'
 import { MATERIAL_COLORS } from '@/shared/theme/colors'
@@ -74,8 +75,18 @@ export function PerimeterCornerShape({ cornerId }: { cornerId: PerimeterCornerId
   const isNearPerpendicular =
     !perpendicularConstraint && (Math.abs(corner.interiorAngle - 90) <= 5 || Math.abs(corner.exteriorAngle - 90) <= 5)
 
+  // Get constraint status for each constraint
+  const perpendicularStatus = useConstraintStatus(perpendicularConstraint?.id)
+  const colinearStatus = useConstraintStatus(colinearConstraint?.id)
+
   const showPerpendicularBadge = perpendicularConstraint != null || (isSelected && isNearPerpendicular)
   const showColinearBadge = colinearConstraint != null || (isSelected && isNearStraight)
+
+  const getBadgeStatus = (status: { conflicting: boolean; redundant: boolean }) => {
+    if (status.conflicting) return 'conflicting'
+    if (status.redundant) return 'redundant'
+    return 'normal'
+  }
 
   // --- Perpendicular constraint handlers ---
   const handleAddPerpendicular = useCallback(() => {
@@ -161,6 +172,7 @@ export function PerimeterCornerShape({ cornerId }: { cornerId: PerimeterCornerId
           locked={colinearConstraint != null}
           onClick={isSelected ? (colinearConstraint ? handleRemoveColinear : handleAddColinear) : undefined}
           tooltipKey="colinear"
+          status={getBadgeStatus(colinearStatus)}
         />
       )}
 
@@ -177,6 +189,7 @@ export function PerimeterCornerShape({ cornerId }: { cornerId: PerimeterCornerId
             isSelected ? (perpendicularConstraint ? handleRemovePerpendicular : handleAddPerpendicular) : undefined
           }
           tooltipKey="perpendicular"
+          status={getBadgeStatus(perpendicularStatus)}
         />
       )}
     </g>
