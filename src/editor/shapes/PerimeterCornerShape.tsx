@@ -10,6 +10,7 @@ import {
 import { useWallAssemblyById } from '@/construction/config/store'
 import { Arrow } from '@/editor/components/Arrow'
 import { ConstraintBadge } from '@/editor/components/ConstraintBadge'
+import { gcsService } from '@/editor/gcs/service'
 import { useSelectionStore } from '@/editor/hooks/useSelectionStore'
 import { direction, midpoint, perpendicular, scaleAddVec2, scaleVec2 } from '@/shared/geometry'
 import { MATERIAL_COLORS } from '@/shared/theme/colors'
@@ -82,11 +83,13 @@ export function PerimeterCornerShape({ cornerId }: { cornerId: PerimeterCornerId
       type: 'perpendicularCorner',
       corner: cornerId
     })
+    gcsService.triggerSolve()
   }, [modelActions, cornerId])
 
   const handleRemovePerpendicular = useCallback(() => {
     if (!perpendicularConstraint) return
     modelActions.removeBuildingConstraint(perpendicularConstraint.id)
+    gcsService.triggerSolve()
   }, [modelActions, perpendicularConstraint])
 
   // --- Colinear constraint handlers ---
@@ -95,11 +98,13 @@ export function PerimeterCornerShape({ cornerId }: { cornerId: PerimeterCornerId
       type: 'colinearCorner',
       corner: cornerId
     })
+    gcsService.triggerSolve()
   }, [modelActions, cornerId])
 
   const handleRemoveColinear = useCallback(() => {
     if (!colinearConstraint) return
     modelActions.removeBuildingConstraint(colinearConstraint.id)
+    gcsService.triggerSolve()
   }, [modelActions, colinearConstraint])
 
   return (

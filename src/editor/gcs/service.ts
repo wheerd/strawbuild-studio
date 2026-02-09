@@ -163,6 +163,24 @@ interface DragState {
 }
 
 class GcsService {
+  private solveTimeout: NodeJS.Timeout | undefined
+
+  triggerSolve() {
+    if (this.solveTimeout) {
+      clearTimeout(this.solveTimeout)
+    }
+    this.solveTimeout = setTimeout(() => {
+      const { updatePerimeterBoundary } = getModelActions()
+      const gcs = this.getGcs()
+      if (gcs.solve()) {
+        for (const perimeterId of Object.keys(getGcsState().perimeterRegistry) as PerimeterId[]) {
+          updatePerimeterBoundary(perimeterId, gcs.getPerimeterBoundary(perimeterId))
+        }
+      }
+      this.solveTimeout = undefined
+    }, 100)
+  }
+
   getGcs(fixedNodeIds?: PerimeterCornerId[]): WrappedGcs {
     const gcsState = getGcsState()
     const modelActions = getModelActions()
@@ -279,6 +297,10 @@ export class WrappedGcs {
         this.installDragConstraints(this.dragState.pointId, mouseX, mouseY)
       }
     }
+  }
+
+  public solve() {
+    return this.gcs.solve(Algorithm.DogLeg) === SolveStatus.Success && this.applySolution()
   }
 
   /**

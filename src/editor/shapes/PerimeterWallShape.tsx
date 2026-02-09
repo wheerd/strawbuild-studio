@@ -15,6 +15,7 @@ import {
 } from '@/building/store'
 import { useWallAssemblyById } from '@/construction/config/store'
 import { ConstraintBadge } from '@/editor/components/ConstraintBadge'
+import { gcsService } from '@/editor/gcs/service'
 import { useSelectionStore } from '@/editor/hooks/useSelectionStore'
 import { useViewportActions } from '@/editor/hooks/useViewportStore'
 import { activateLengthInput } from '@/editor/services/length-input'
@@ -117,11 +118,13 @@ export function PerimeterWallShape({ wallId }: { wallId: PerimeterWallId }): Rea
       type: suggestedHVType,
       wall: wallId
     })
+    gcsService.triggerSolve()
   }, [suggestedHVType, modelActions, wallId])
 
   const handleRemoveHVConstraint = useCallback(() => {
     if (!hvConstraint) return
     modelActions.removeBuildingConstraint(hvConstraint.id)
+    gcsService.triggerSolve()
   }, [hvConstraint, modelActions])
 
   // --- Distance constraint handlers ---
@@ -154,10 +157,12 @@ export function PerimeterWallShape({ wallId }: { wallId: PerimeterWallId }): Rea
             wall: wallId,
             length: enteredValue
           })
+          gcsService.triggerSolve()
         },
         onCancel: () => {
           if (existingConstraint) {
             modelActions.removeBuildingConstraint(existingConstraint.id)
+            gcsService.triggerSolve()
           }
         }
       })
