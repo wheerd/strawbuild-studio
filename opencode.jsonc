@@ -1,130 +1,25 @@
 {
   "$schema": "https://opencode.ai/config.json",
   "autoupdate": true,
-  "plugin": ["opencode-openai-codex-auth", "opencode-anthropic-auth@0.0.7"],
+  "plugin": [],
   "permission": {
     "edit": "allow",
     "bash": {
       "git *": "ask",
-      "git status": "allow",
-      "git diff": "allow",
+      "git status*": "allow",
+      "git diff*": "allow",
       "rm -rf *": "ask",
       "pnpm *": "ask",
       "npm": "deny",
-      "pnpm test": "allow",
-      "pnpm test *": "allow",
-      "pnpm lint": "allow",
-      "pnpm lint:format": "allow",
+      "pnpm test*": "allow",
+      "pnpm lint*": "allow",
       "pnpm format:check": "allow",
       "pnpm dev": "allow",
       "pnpm build": "allow",
-      "pnpm typecheck": "allow",
-      "pnpm i18n:interface": "allow",
+      "pnpm typecheck*": "allow",
+      "pnpm i18n:*": "allow",
       "npx tsc *": "allow",
       "rg *": "allow"
-    }
-  },
-  "provider": {
-    "openai": {
-      "options": {
-        "reasoningEffort": "medium",
-        "reasoningSummary": "auto",
-        "textVerbosity": "medium",
-        "include": ["reasoning.encrypted_content"],
-        "store": false
-      },
-      "models": {
-        "gpt-5-codex-low": {
-          "name": "GPT 5 Codex Low (OAuth)",
-          "options": {
-            "reasoningEffort": "low",
-            "reasoningSummary": "auto",
-            "textVerbosity": "medium",
-            "include": ["reasoning.encrypted_content"],
-            "store": false
-          }
-        },
-        "gpt-5-codex-medium": {
-          "name": "GPT 5 Codex Medium (OAuth)",
-          "options": {
-            "reasoningEffort": "medium",
-            "reasoningSummary": "auto",
-            "textVerbosity": "medium",
-            "include": ["reasoning.encrypted_content"],
-            "store": false
-          }
-        },
-        "gpt-5-codex-high": {
-          "name": "GPT 5 Codex High (OAuth)",
-          "options": {
-            "reasoningEffort": "high",
-            "reasoningSummary": "detailed",
-            "textVerbosity": "medium",
-            "include": ["reasoning.encrypted_content"],
-            "store": false
-          }
-        },
-        "gpt-5-minimal": {
-          "name": "GPT 5 Minimal (OAuth)",
-          "options": {
-            "reasoningEffort": "minimal",
-            "reasoningSummary": "auto",
-            "textVerbosity": "low",
-            "include": ["reasoning.encrypted_content"],
-            "store": false
-          }
-        },
-        "gpt-5-low": {
-          "name": "GPT 5 Low (OAuth)",
-          "options": {
-            "reasoningEffort": "low",
-            "reasoningSummary": "auto",
-            "textVerbosity": "low",
-            "include": ["reasoning.encrypted_content"],
-            "store": false
-          }
-        },
-        "gpt-5-medium": {
-          "name": "GPT 5 Medium (OAuth)",
-          "options": {
-            "reasoningEffort": "medium",
-            "reasoningSummary": "auto",
-            "textVerbosity": "medium",
-            "include": ["reasoning.encrypted_content"],
-            "store": false
-          }
-        },
-        "gpt-5-high": {
-          "name": "GPT 5 High (OAuth)",
-          "options": {
-            "reasoningEffort": "high",
-            "reasoningSummary": "detailed",
-            "textVerbosity": "high",
-            "include": ["reasoning.encrypted_content"],
-            "store": false
-          }
-        },
-        "gpt-5-mini": {
-          "name": "GPT 5 Mini (OAuth)",
-          "options": {
-            "reasoningEffort": "low",
-            "reasoningSummary": "auto",
-            "textVerbosity": "low",
-            "include": ["reasoning.encrypted_content"],
-            "store": false
-          }
-        },
-        "gpt-5-nano": {
-          "name": "GPT 5 Nano (OAuth)",
-          "options": {
-            "reasoningEffort": "minimal",
-            "reasoningSummary": "auto",
-            "textVerbosity": "low",
-            "include": ["reasoning.encrypted_content"],
-            "store": false
-          }
-        }
-      }
     }
   }
 }
