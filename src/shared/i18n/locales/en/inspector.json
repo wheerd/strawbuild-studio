@@ -2,6 +2,8 @@
   "constraint": {
     "conflict": "Conflict with other constraints",
     "redundant": "Redundant constraint (not needed)",
+    "conflictStatus": "{{count}} conflicting constraint(s)",
+    "redundantStatus": "{{count}} redundant constraint(s)",
     "colinear": {
       "active": "Colinear constraint (click to remove)",
       "suggestion": "Click to add colinear constraint"

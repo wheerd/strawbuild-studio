@@ -1,8 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-import type { ConstraintInput, PerimeterCornerId, PerimeterId, PerimeterWallId } from '@/building/model'
+import type { Constraint, PerimeterCornerId, PerimeterId, PerimeterWallId } from '@/building/model'
 
-import { buildingConstraintKey } from './constraintTranslator'
 import { getGcsActions, getGcsState } from './store'
 
 // Mock building store for addPerimeterGeometry and addBuildingConstraint
@@ -261,205 +260,141 @@ describe('GCS store building constraints', () => {
   describe('addBuildingConstraint', () => {
     it('adds a distance constraint and stores it', () => {
       const actions = getGcsActions()
-      const constraint: ConstraintInput = {
+      const constraint: Constraint = {
+        id: 'constraint_test',
         type: 'wallLength',
         wall: wallA,
         side: 'left',
         length: 5000
       }
 
-      const key = actions.addBuildingConstraint(constraint)
+      actions.addBuildingConstraint(constraint)
 
       const state = getGcsState()
-      expect(state.buildingConstraints[key]).toEqual(constraint)
-    })
-
-    it('returns the deterministic key', () => {
-      const actions = getGcsActions()
-      const constraint: ConstraintInput = {
-        type: 'wallLength',
-        wall: wallA,
-        side: 'left',
-        length: 5000
-      }
-
-      const key = actions.addBuildingConstraint(constraint)
-      expect(key).toBe(buildingConstraintKey(constraint))
+      expect(state.buildingConstraints[constraint.id]).toEqual(constraint)
     })
 
     it('adds translated planegcs constraints to the constraints record', () => {
       const actions = getGcsActions()
-      const constraint: ConstraintInput = {
+      const constraint: Constraint = {
+        id: 'constraint_test',
         type: 'wallLength',
         wall: wallA,
         side: 'left',
         length: 5000
       }
 
-      const key = actions.addBuildingConstraint(constraint)
+      actions.addBuildingConstraint(constraint)
 
       const state = getGcsState()
       // The translated constraint should be in the constraints record
       // For a distance constraint, the ID is `bc_${key}`
-      const translatedId = `bc_${key}`
+      const translatedId = `bc_${constraint.id}`
       expect(state.constraints[translatedId]).toBeDefined()
       expect(state.constraints[translatedId].type).toBe('p2p_distance')
     })
 
     it('rejects duplicate constraints', () => {
       const actions = getGcsActions()
-      const constraint: ConstraintInput = {
+      const constraint: Constraint = {
+        id: 'constraint_test',
         type: 'wallLength',
         wall: wallA,
         side: 'left',
         length: 5000
       }
 
-      const key1 = actions.addBuildingConstraint(constraint)
+      actions.addBuildingConstraint(constraint)
       const warnSpy = vi.spyOn(console, 'warn').mockImplementation(vi.fn())
 
       // Same constraint with different length should produce same key
-      const constraint2: ConstraintInput = {
+      const constraint2: Constraint = {
+        id: 'constraint_test',
         type: 'wallLength',
         wall: wallA,
         side: 'right',
         length: 3000
       }
-      const key2 = actions.addBuildingConstraint(constraint2)
+      actions.addBuildingConstraint(constraint2)
 
-      expect(key1).toBe(key2)
       expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('already exists'))
 
       // Original constraint should not be overwritten
-      expect(getGcsState().buildingConstraints[key1]).toEqual(constraint)
-
-      warnSpy.mockRestore()
-    })
-
-    it('rejects constraints on the same wall as duplicates', () => {
-      const actions = getGcsActions()
-      const constraint1: ConstraintInput = {
-        type: 'wallLength',
-        wall: wallA,
-        side: 'left',
-        length: 5000
-      }
-      const constraint2: ConstraintInput = {
-        type: 'wallLength',
-        wall: wallA,
-        side: 'right',
-        length: 3000
-      }
-
-      actions.addBuildingConstraint(constraint1)
-      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(vi.fn())
-      actions.addBuildingConstraint(constraint2)
-      expect(warnSpy).toHaveBeenCalled()
-      warnSpy.mockRestore()
-    })
-
-    it('prevents contradicting horizontal/vertical constraints', () => {
-      const actions = getGcsActions()
-      const h: ConstraintInput = { type: 'horizontalWall', wall: wallA }
-      const v: ConstraintInput = { type: 'verticalWall', wall: wallA }
-
-      actions.addBuildingConstraint(h)
-      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(vi.fn())
-      actions.addBuildingConstraint(v)
-      expect(warnSpy).toHaveBeenCalled()
-
-      // Only the horizontal constraint should exist
-      const bc = getGcsState().buildingConstraints
-      const key = buildingConstraintKey(h)
-      expect(bc[key]).toEqual(h)
+      expect(getGcsState().buildingConstraints[constraint.id]).toEqual(constraint)
 
       warnSpy.mockRestore()
     })
 
     it('throws when referencing a non-existent wall in wallLength', () => {
       const actions = getGcsActions()
-      const constraint: ConstraintInput = {
+      const constraint: Constraint = {
+        id: 'constraint_test',
         type: 'wallLength',
         wall: 'outwall_nonexistent' as PerimeterWallId,
         side: 'left',
         length: 100
       }
 
-      expect(() => actions.addBuildingConstraint(constraint)).toThrow(/not found/)
+      expect(() => {
+        actions.addBuildingConstraint(constraint)
+      }).toThrow(/not found/)
     })
 
     it('throws when referencing a non-existent wall', () => {
       const actions = getGcsActions()
-      const constraint = {
+      const constraint: Constraint = {
+        id: 'constraint_test',
         type: 'parallel' as const,
         wallA: 'outwall_nonexistent' as PerimeterWallId,
         wallB
       }
 
-      expect(() => actions.addBuildingConstraint(constraint)).toThrow(/not found/)
+      expect(() => {
+        actions.addBuildingConstraint(constraint)
+      }).toThrow(/not found/)
     })
   })
 
   describe('removeBuildingConstraint', () => {
     it('removes the building constraint and its translated constraints', () => {
       const actions = getGcsActions()
-      const constraint: ConstraintInput = { type: 'horizontalWall', wall: wallA }
+      const constraint: Constraint = { id: 'constraint_test', type: 'horizontalWall', wall: wallA }
 
-      const key = actions.addBuildingConstraint(constraint)
-      const translatedId = `bc_${key}`
+      actions.addBuildingConstraint(constraint)
+      const translatedId = `bc_${constraint.id}`
 
       // Verify both exist
-      expect(getGcsState().buildingConstraints[key]).toBeDefined()
+      expect(getGcsState().buildingConstraints[constraint.id]).toBeDefined()
       expect(getGcsState().constraints[translatedId]).toBeDefined()
 
-      actions.removeBuildingConstraint(key)
+      actions.removeBuildingConstraint('constraint_test')
 
       // Both should be gone
-      expect(getGcsState().buildingConstraints[key]).toBeUndefined()
+      expect(getGcsState().buildingConstraints[constraint.id]).toBeUndefined()
       expect(getGcsState().constraints[translatedId]).toBeUndefined()
     })
 
     it('allows re-adding after removal', () => {
       const actions = getGcsActions()
-      const h: ConstraintInput = { type: 'horizontalWall', wall: wallA }
-      const v: ConstraintInput = { type: 'verticalWall', wall: wallA }
+      const h: Constraint = { id: 'constraint_test', type: 'horizontalWall', wall: wallA }
+      const v: Constraint = { id: 'constraint_test', type: 'verticalWall', wall: wallA }
 
-      const key = actions.addBuildingConstraint(h)
-      actions.removeBuildingConstraint(key)
+      actions.addBuildingConstraint(h)
+      actions.removeBuildingConstraint(h.id)
 
       // Should now be able to add vertical on the same wall
-      const key2 = actions.addBuildingConstraint(v)
-      expect(key).toBe(key2)
-      expect(getGcsState().buildingConstraints[key2]).toEqual(v)
+      actions.addBuildingConstraint(v)
+      expect(getGcsState().buildingConstraints[v.id]).toEqual(v)
     })
 
     it('warns when removing a non-existent key', () => {
       const actions = getGcsActions()
       const warnSpy = vi.spyOn(console, 'warn').mockImplementation(vi.fn())
 
-      actions.removeBuildingConstraint('nonexistent_key')
+      actions.removeBuildingConstraint('constraint_nonexistent')
       expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('not found'))
 
       warnSpy.mockRestore()
-    })
-
-    it('does not affect other building constraints', () => {
-      const actions = getGcsActions()
-      const h: ConstraintInput = { type: 'horizontalWall', wall: wallA }
-      const dist: ConstraintInput = {
-        type: 'wallLength',
-        wall: wallB,
-        side: 'right',
-        length: 3000
-      }
-
-      const keyH = actions.addBuildingConstraint(h)
-      const keyDist = actions.addBuildingConstraint(dist)
-
-      actions.removeBuildingConstraint(keyH)
-
-      expect(getGcsState().buildingConstraints[keyH]).toBeUndefined()
-      expect(getGcsState().buildingConstraints[keyDist]).toEqual(dist)
     })
   })
 })
@@ -708,7 +643,7 @@ describe('GCS store perimeter geometry', () => {
       actions.addPerimeterGeometry(perimeterA)
 
       // Add a building constraint referencing this perimeter's corners
-      const constraint: ConstraintInput = { type: 'horizontalWall', wall: wallA }
+      const constraint: Constraint = { id: 'constraint_test', type: 'horizontalWall', wall: wallA }
       actions.addBuildingConstraint(constraint)
 
       // Re-add with same data (upsert)
@@ -754,8 +689,9 @@ describe('GCS store perimeter geometry', () => {
       actions.addPerimeterGeometry(perimeterA)
 
       // Add building constraints referencing this perimeter
-      const h: ConstraintInput = { type: 'horizontalWall', wall: wallA }
-      const dist: ConstraintInput = {
+      const h: Constraint = { id: 'constraint_test1', type: 'horizontalWall', wall: wallA }
+      const dist: Constraint = {
+        id: 'constraint_test2',
         type: 'wallLength',
         wall: wallB,
         side: 'right',

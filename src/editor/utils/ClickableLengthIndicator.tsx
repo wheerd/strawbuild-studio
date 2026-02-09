@@ -1,5 +1,6 @@
 import { useMemo, useRef, useState } from 'react'
 
+import { useViewportState } from '@/editor/hooks/useViewportStore'
 import {
   type Length,
   type Vec2,
@@ -26,21 +27,29 @@ interface ClickableLengthIndicatorProps {
   onClick: (currentMeasurement: Length) => void
 }
 
+const BASE_FONT_SIZE = 60
+const BASE_STROKE_WIDTH = 5
+
 export function ClickableLengthIndicator({
   startPoint,
   endPoint,
   label,
   offset = 50,
   color,
-  fontSize = 40,
-  strokeWidth = 10,
+  fontSize = BASE_FONT_SIZE,
+  strokeWidth = BASE_STROKE_WIDTH,
   onClick
 }: ClickableLengthIndicatorProps): React.JSX.Element {
   const { formatLength } = useFormatters()
   const textRef = useRef<SVGTextElement>(null)
   const [isHovered, setIsHovered] = useState(false)
+  const { zoom } = useViewportState()
 
-  // Calculate the measurement vector and length
+  const clampedScale = 0.2 / Math.max(0.02, Math.min(0.4, zoom))
+  const scaledFontSize = fontSize * clampedScale
+  let scaledOffset = offset * clampedScale
+  const scaledStrokeWidth = strokeWidth * clampedScale
+
   const measurementVector = subVec2(endPoint, startPoint)
   const measurementLength = distVec2(startPoint, endPoint)
   let dir = normVec2(measurementVector)
@@ -53,42 +62,45 @@ export function ClickableLengthIndicator({
   if (angleDegrees > 90) {
     ;[endPoint, startPoint] = [startPoint, endPoint]
     dir = scaleVec2(dir, -1)
-    offset = -offset
+    scaledOffset = -scaledOffset
     angleDegrees -= 180
   } else if (angleDegrees < -90) {
     ;[endPoint, startPoint] = [startPoint, endPoint]
     dir = scaleVec2(dir, -1)
-    offset = -offset
+    scaledOffset = -scaledOffset
     angleDegrees += 180
   }
 
   // Auto-generate label if not provided
   const displayLabel = label ?? formatLength(measurementLength)
+  const lines = displayLabel.split('\n')
+  const lineCount = lines.length
+  const longestLineLength = lines.reduce((max, line) => Math.max(max, line.length), 0)
 
   // Calculate optimal font size (max 1/3 of line width)
   const maxTextWidth = measurementLength / 3
-  const estimatedTextWidth = displayLabel.length * fontSize * 0.6 // Rough estimate
-  const scaledFontSize =
-    estimatedTextWidth > maxTextWidth ? Math.max(12, fontSize * (maxTextWidth / estimatedTextWidth)) : fontSize
+  const estimatedTextWidth = longestLineLength * scaledFontSize * 0.6
+  const calculatedFontSize =
+    estimatedTextWidth > maxTextWidth
+      ? Math.max(12, scaledFontSize * (maxTextWidth / estimatedTextWidth))
+      : scaledFontSize
 
   const textSize: { width: number; height: number } = useMemo(() => {
     if (textRef.current) {
       return textRef.current.getBBox()
     }
-    // Fallback estimate if ref not available yet
-    return { width: displayLabel.length * scaledFontSize * 0.6, height: scaledFontSize }
-  }, [textRef.current, displayLabel, scaledFontSize])
+    return { width: longestLineLength * calculatedFontSize * 0.6, height: lineCount * calculatedFontSize }
+  }, [textRef.current, displayLabel, calculatedFontSize])
 
-  // Fixed line widths and sizes
-  const connectionStrokeWidth = strokeWidth / 2
+  const connectionStrokeWidth = scaledStrokeWidth / 2
   const actualEndMarkerSize = textSize.height
 
   // Get the perpendicular vector for offset
   const perpendicular = measurementLength > 0 ? perpendicularCCW(dir) : ZERO_VEC2
 
   // Calculate offset positions
-  const offsetStartPoint = scaleAddVec2(startPoint, perpendicular, offset)
-  const offsetEndPoint = scaleAddVec2(endPoint, perpendicular, offset)
+  const offsetStartPoint = scaleAddVec2(startPoint, perpendicular, scaledOffset)
+  const offsetEndPoint = scaleAddVec2(endPoint, perpendicular, scaledOffset)
 
   const lineMidpoint = midpoint(offsetStartPoint, offsetEndPoint)
 
@@ -109,7 +121,6 @@ export function ClickableLengthIndicator({
   const handleMouseEnter = () => {
     setIsHovered(true)
   }
-
   const handleMouseLeave = () => {
     setIsHovered(false)
   }
@@ -122,7 +133,7 @@ export function ClickableLengthIndicator({
     `${offsetEndPoint[0] - endMarkerDirection[0]},${offsetEndPoint[1] - endMarkerDirection[1]}`
   ].join(' ')
 
-  const displayStrokeWidth = isHovered ? strokeWidth + 2 : strokeWidth
+  const displayStrokeWidth = isHovered ? scaledStrokeWidth * 1.2 : scaledStrokeWidth
 
   return (
     <g
@@ -205,7 +216,7 @@ export function ClickableLengthIndicator({
         <text
           ref={textRef}
           y={0}
-          fontSize={scaledFontSize}
+          fontSize={calculatedFontSize}
           fontFamily="Arial"
           fontWeight="bold"
           fill={displayColor}

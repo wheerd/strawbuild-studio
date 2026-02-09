@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 
+import { useZoom } from '@/editor/hooks/useViewportStore'
 import type { Vec2 } from '@/shared/geometry'
 import { midpoint } from '@/shared/geometry'
 
@@ -10,11 +11,8 @@ interface ConstraintBadgeProps {
   endPoint: Vec2
   outsideDirection: Vec2
   offset: number
-  /** Whether the constraint is locked (active). When false, shows as a suggestion without the lock icon. */
   locked?: boolean
-  /** Click handler — when provided the badge becomes interactive. */
   onClick?: () => void
-  /** Translation key suffix for the tooltip (e.g. 'horizontal', 'vertical', 'perpendicular'). */
   tooltipKey?: 'horizontal' | 'vertical' | 'perpendicular' | 'colinear'
   status?: 'conflicting' | 'redundant' | 'normal'
 }
@@ -31,32 +29,47 @@ export function ConstraintBadge({
   status = 'normal'
 }: ConstraintBadgeProps): React.JSX.Element {
   const { t } = useTranslation('inspector')
+  const zoom = useZoom()
   const fontSize = 60
+
+  const clampedScale = 0.2 / Math.max(0.02, Math.min(0.4, zoom))
+  const scaledFontSize = fontSize * clampedScale
+  const scaledOffset = offset * clampedScale
+
   const mid = midpoint(startPoint, endPoint)
-  const badgeX = mid[0] + outsideDirection[0] * offset
-  const badgeY = mid[1] + outsideDirection[1] * offset
+  const badgeX = mid[0] + outsideDirection[0] * scaledOffset
+  const badgeY = mid[1] + outsideDirection[1] * scaledOffset
 
   const isInteractive = onClick != null
 
-  // Show lock icon when locked is true or undefined (backward compat)
   const showLock = locked !== false
-  const displayText = showLock ? `\uD83D\uDD12${label}` : label
 
-  // Compute rounded-rect dimensions (roughly 2:1 width:height ratio to accommodate lock + label)
-  const rectHeight = fontSize * 1.6
-  const rectWidth = showLock ? rectHeight * 2 : rectHeight * 1.4
+  const rectHeight = scaledFontSize * 1.6
   const cornerRadius = rectHeight * 0.3
+  const rectWidth = 2 * cornerRadius + scaledFontSize * 1.8
+
+  const iconSize = scaledFontSize * 0.8
+  const lockX = badgeX - rectWidth / 2 + iconSize * 0.5
+  const lockY = badgeY + iconSize / 2
+
+  const showAlert = status !== 'normal'
+  const alertSize = scaledFontSize
+  const alertX = badgeX - alertSize / 2
+  const alertY = badgeY + (outsideDirection[1] < 0 ? alertSize : -alertSize)
+
+  const iconHref = showLock ? '#icon-lock' : '#icon-lock-open'
+  const borderSize = (scaledFontSize / 5).toFixed(0)
 
   const rectClasses = useMemo(() => {
     if (status === 'conflicting') {
-      return 'fill-red-600 hover:fill-red-600/80'
+      return 'fill-red-600 hover:fill-red-600/90'
     }
     if (status === 'redundant') {
-      return 'fill-orange-600 hover:fill-orange-500'
+      return 'fill-amber-500 hover:fill-amber-500/90'
     }
     return showLock && isInteractive
       ? 'fill-primary group-hover:fill-primary/90'
-      : 'fill-muted group-hover:fill-accent stroke-border'
+      : `fill-muted group-hover:fill-accent stroke-border stroke-${borderSize}`
   }, [status, showLock, isInteractive])
 
   const textClasses = useMemo(() => {
@@ -70,6 +83,28 @@ export function ConstraintBadge({
       ? 'fill-primary-foreground'
       : 'fill-muted-foreground group-hover:fill-accent-foreground'
   }, [status, showLock, isInteractive])
+
+  const lockIconClass = useMemo(() => {
+    if (status === 'conflicting') {
+      return 'text-destructive-foreground'
+    }
+    if (status === 'redundant') {
+      return 'text-foreground'
+    }
+    return showLock && isInteractive
+      ? 'text-primary-foreground'
+      : 'text-muted-foreground group-hover:text-accent-foreground'
+  }, [status, showLock, isInteractive])
+
+  const alertIconClass = useMemo(() => {
+    if (status === 'conflicting') {
+      return 'text-red-600'
+    }
+    if (status === 'redundant') {
+      return 'text-amber-500'
+    }
+    return 'text-foreground'
+  }, [status])
 
   const baseTooltip = tooltipKey
     ? showLock
@@ -100,18 +135,38 @@ export function ConstraintBadge({
         ry={cornerRadius}
         className={rectClasses}
       />
+      <use
+        href={iconHref}
+        x={0}
+        y={0}
+        width={iconSize}
+        height={iconSize}
+        className={lockIconClass}
+        transform={`translate(${lockX} ${lockY}) scale(1, -1)`}
+      />
+      {showAlert && (
+        <use
+          href="#icon-warning"
+          x={0}
+          y={0}
+          width={alertSize}
+          height={alertSize}
+          className={alertIconClass}
+          transform={`translate(${alertX} ${alertY}) scale(1, -1)`}
+        />
+      )}
       <text
         x={0}
         y={0}
-        textAnchor="middle"
+        textAnchor="end"
         dominantBaseline="central"
         className={textClasses}
-        fontSize={fontSize}
+        fontSize={scaledFontSize}
         fontWeight="bold"
         fontFamily="sans-serif"
-        transform={`translate(${badgeX} ${badgeY}) scale(1, -1)`}
+        transform={`translate(${badgeX + rectWidth / 2 - cornerRadius} ${badgeY}) scale(1, -1)`}
       >
-        {displayText}
+        {label}
       </text>
     </g>
   )

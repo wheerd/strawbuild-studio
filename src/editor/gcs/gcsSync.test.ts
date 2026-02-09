@@ -312,10 +312,7 @@ describe('GcsSyncService', () => {
       capturedConstraintCallback!(constraint, undefined)
 
       expect(mockGcsAddBuildingConstraint).toHaveBeenCalledTimes(1)
-      // Should strip `id` field
-      const calledWith = mockGcsAddBuildingConstraint.mock.calls[0][0]
-      expect(calledWith).toEqual({ type: 'horizontalWall', wall: 'outwall_w1' })
-      expect(calledWith).not.toHaveProperty('id')
+      expect(mockGcsAddBuildingConstraint).toHaveBeenCalledWith(constraint)
     })
 
     it('removes constraint from GCS store when a constraint is removed from model store', async () => {
@@ -343,7 +340,7 @@ describe('GcsSyncService', () => {
       expect(mockGcsRemoveBuildingConstraint).toHaveBeenCalledTimes(1)
       expect(mockGcsAddBuildingConstraint).toHaveBeenCalledTimes(1)
       const calledWith = mockGcsAddBuildingConstraint.mock.calls[0][0]
-      expect(calledWith).toEqual({ type: 'verticalWall', wall: 'outwall_w1' })
+      expect(calledWith).toEqual(curr)
     })
 
     it('warns but does not throw when GCS geometry does not exist yet', async () => {
@@ -405,10 +402,7 @@ describe('GcsSyncService', () => {
       // addPerimeterGeometry should be called first, then addBuildingConstraint for the matching constraint
       expect(mockAddPerimeterGeometry).toHaveBeenCalledWith('p1')
       expect(mockGcsAddBuildingConstraint).toHaveBeenCalledTimes(1)
-      expect(mockGcsAddBuildingConstraint).toHaveBeenCalledWith({
-        type: 'horizontalWall',
-        wall: 'outwall_w1'
-      })
+      expect(mockGcsAddBuildingConstraint).toHaveBeenCalledWith(constraint)
     })
 
     it('does not sync constraints that do not reference the perimeter', async () => {
@@ -448,10 +442,7 @@ describe('GcsSyncService', () => {
 
       expect(mockAddPerimeterGeometry).toHaveBeenCalledWith('p1')
       expect(mockGcsAddBuildingConstraint).toHaveBeenCalledTimes(1)
-      expect(mockGcsAddBuildingConstraint).toHaveBeenCalledWith({
-        type: 'horizontalWall',
-        wall: 'outwall_w2'
-      })
+      expect(mockGcsAddBuildingConstraint).toHaveBeenCalledWith(constraint)
     })
 
     it('syncs constraints during active storey change', async () => {
@@ -471,10 +462,7 @@ describe('GcsSyncService', () => {
 
       expect(mockAddPerimeterGeometry).toHaveBeenCalledWith('p3')
       expect(mockGcsAddBuildingConstraint).toHaveBeenCalledTimes(1)
-      expect(mockGcsAddBuildingConstraint).toHaveBeenCalledWith({
-        type: 'horizontalWall',
-        wall: 'outwall_w1'
-      })
+      expect(mockGcsAddBuildingConstraint).toHaveBeenCalledWith(constraint)
     })
 
     it('warns but does not throw when constraint sync fails for cross-perimeter constraint', async () => {

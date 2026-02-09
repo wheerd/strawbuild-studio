@@ -1,3 +1,4 @@
+import type { GcsWrapper } from '@salusoft89/planegcs'
 import '@testing-library/jest-dom/vitest'
 import { cleanup } from '@testing-library/react'
 import { keyFromSelector } from 'i18next'
@@ -7,6 +8,7 @@ import { afterEach, beforeAll, vi } from 'vitest'
 
 import { newVec2 } from '@/shared/geometry/2d'
 import { loadManifoldModule } from '@/shared/geometry/manifoldInstance'
+import { partial } from '@/test/helpers'
 
 vi.mock('@/shared/utils/version', () => ({
   VERSION_INFO: {
@@ -138,6 +140,17 @@ vi.mock('@/shared/geometry/clipperInstance', () => {
     pathDToPoints: vi.fn((path: ClipperPath) => path.points.map(([x, y]) => newVec2(x, y)))
   }
 })
+
+vi.mock('@/editor/gcs/gcsInstance', () => ({
+  createGcs: () =>
+    partial<GcsWrapper>({
+      clear_data: vi.fn(),
+      push_primitives_and_params: vi.fn(),
+      solve: vi.fn(),
+      get_gcs_conflicting_constraints: vi.fn(),
+      get_gcs_redundant_constraints: vi.fn()
+    })
+}))
 
 vi.mock('react-i18next', () => ({
   useTranslation: vi.fn(() => ({

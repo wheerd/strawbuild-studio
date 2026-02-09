@@ -55,7 +55,7 @@ interface GcsStoreActions {
   removeLines: (ids: string[]) => void
   removeConstraints: (ids: string[]) => void
 
-  addBuildingConstraint: (constraint: BuildingConstraint) => string
+  addBuildingConstraint: (constraint: BuildingConstraint) => void
   removeBuildingConstraint: (id: ConstraintId) => void
   setConstraintStatus: (conflicting: string[], redundant: string[]) => void
 }
@@ -200,8 +200,6 @@ const useGcsStore = create<GcsStore>()((set, get) => ({
           constraints: newConstraints
         }
       })
-
-      return constraint.id
     },
 
     removeBuildingConstraint: id => {
@@ -453,15 +451,13 @@ export const useConstraintStatus = (
 export const useAllConstraintStatus = (): {
   conflictingCount: number
   redundantCount: number
-  conflictingIds: string[]
-  redundantIds: string[]
 } => {
-  return useGcsStore(state => ({
-    conflictingCount: state.conflictingConstraintIds.size,
-    redundantCount: state.redundantConstraintIds.size,
-    conflictingIds: Array.from(state.conflictingConstraintIds),
-    redundantIds: Array.from(state.redundantConstraintIds)
-  }))
+  return useGcsStore(
+    useShallow(state => ({
+      conflictingCount: state.conflictingConstraintIds.size,
+      redundantCount: state.redundantConstraintIds.size
+    }))
+  )
 }
 
 export const getGcsActions = (): GcsStoreActions => useGcsStore.getState().actions

@@ -114,8 +114,6 @@ export function PerimeterWallShape({ wallId }: { wallId: PerimeterWallId }): Rea
     ? `${formatLength(outsideDistanceConstraint.length)} \uD83D\uDD12`
     : formatLength(wall.outsideLength)
 
-  const defaultColor = 'var(--color-foreground)'
-
   const getBadgeStatus = (status: { conflicting: boolean; redundant: boolean }) => {
     if (status.conflicting) return 'conflicting'
     if (status.redundant) return 'redundant'
@@ -124,15 +122,15 @@ export function PerimeterWallShape({ wallId }: { wallId: PerimeterWallId }): Rea
 
   const insideIndicatorColor = useMemo(() => {
     if (insideDistanceStatus.conflicting) return 'var(--color-red-600)'
-    if (insideDistanceStatus.redundant) return 'var(--color-orange-600)'
-    return 'var(--color-primary)'
-  }, [insideDistanceStatus])
+    if (insideDistanceStatus.redundant) return 'var(--color-amber-500)'
+    return isSelected ? 'var(--color-foreground)' : 'var(--color-muted-foreground)'
+  }, [insideDistanceStatus, isSelected])
 
   const outsideIndicatorColor = useMemo(() => {
     if (outsideDistanceStatus.conflicting) return 'var(--color-red-600)'
-    if (outsideDistanceStatus.redundant) return 'var(--color-orange-600)'
-    return 'var(--color-primary)'
-  }, [outsideDistanceStatus])
+    if (outsideDistanceStatus.redundant) return 'var(--color-amber-500)'
+    return isSelected ? 'var(--color-foreground)' : 'var(--color-muted-foreground)'
+  }, [outsideDistanceStatus, isSelected])
 
   // --- H/V constraint handlers ---
   const handleAddHVConstraint = useCallback(() => {
@@ -229,7 +227,7 @@ export function PerimeterWallShape({ wallId }: { wallId: PerimeterWallId }): Rea
             endPoint={endCorner.insidePoint}
             label={insideLabel}
             offset={-60}
-            color={insideDistanceConstraint ? insideIndicatorColor : defaultColor}
+            color={insideIndicatorColor}
             fontSize={60}
             strokeWidth={5}
             onClick={() => {
@@ -249,7 +247,7 @@ export function PerimeterWallShape({ wallId }: { wallId: PerimeterWallId }): Rea
             endPoint={endCorner.insidePoint}
             label={insideLabel}
             offset={-60}
-            color={insideDistanceConstraint ? insideIndicatorColor : defaultColor}
+            color={insideIndicatorColor}
             fontSize={60}
             strokeWidth={5}
           />
@@ -263,7 +261,7 @@ export function PerimeterWallShape({ wallId }: { wallId: PerimeterWallId }): Rea
             endPoint={endCorner.outsidePoint}
             label={outsideLabel}
             offset={60}
-            color={outsideDistanceConstraint ? outsideIndicatorColor : defaultColor}
+            color={outsideIndicatorColor}
             fontSize={60}
             strokeWidth={5}
             onClick={() => {
@@ -283,7 +281,7 @@ export function PerimeterWallShape({ wallId }: { wallId: PerimeterWallId }): Rea
             endPoint={endCorner.outsidePoint}
             label={outsideLabel}
             offset={60}
-            color={outsideDistanceConstraint ? outsideIndicatorColor : defaultColor}
+            color={outsideIndicatorColor}
             fontSize={60}
             strokeWidth={5}
           />
