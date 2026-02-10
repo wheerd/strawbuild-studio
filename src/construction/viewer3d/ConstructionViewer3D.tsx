@@ -14,6 +14,7 @@ import { getRoofOffsetMapsDebug } from '@/construction/derived'
 import type { ConstructionModel } from '@/construction/model'
 import { matAppToThree, toThreeTransform } from '@/construction/viewer3d/utils/geometry'
 import { type SketchUpErrorCode, SketchUpExportError } from '@/exporters/sketchup'
+import { isDebug } from '@/shared/hooks/useDebug'
 
 import ConstructionElement3D from './components/ConstructionElement3D'
 import ConstructionGroup3D from './components/ConstructionGroup3D'
@@ -45,9 +46,6 @@ function ConstructionViewer3D({ model, containerSize }: ConstructionViewer3DProp
   const exportFnRef = useRef<((format: ExportFormat) => void) | null>(null)
   const [exportError, setExportError] = useState<ExportError | null>(null)
 
-  const canDebug = process.env.NODE_ENV !== 'production'
-  const params = new URLSearchParams(window.location.search)
-  const debug = canDebug && params.has('debug')
   const offsetMap = useMemo(() => {
     return getRoofOffsetMapsDebug().get(activeStoreyId)?.map
   }, [activeStoreyId])
@@ -146,7 +144,7 @@ function ConstructionViewer3D({ model, containerSize }: ConstructionViewer3DProp
             )
           )}
 
-          {debug && offsetMap && <OffsetMapDebug3D storeyId={activeStoreyId} map={offsetMap} />}
+          {isDebug && offsetMap && <OffsetMapDebug3D storeyId={activeStoreyId} map={offsetMap} />}
         </group>
 
         <OrbitControls target={[centerX, centerZ, -centerY]} makeDefault />

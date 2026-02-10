@@ -1,60 +1,64 @@
 import { type Length } from '@/shared/geometry'
 
-import type { NodeId, WallId } from './ids'
+import type { ConstraintId, PerimeterCornerId, WallId } from './ids'
 
 export type Constraint =
-  | DistanceConstraint
-  | ColinearConstraint
+  | WallLengthConstraint
+  | ColinearCornerConstraint
   | ParallelConstraint
-  | PerpendicularConstraint
-  | AngleConstraint
-  | HorizontalConstraint
-  | VerticalConstraint
+  | PerpendicularCornerConstraint
+  | CornerAngleConstraint
+  | HorizontalWallConstraint
+  | VerticalWallConstraint
 
-export interface DistanceConstraint {
-  type: 'distance'
+export interface WallLengthConstraint {
+  id: ConstraintId
+  type: 'wallLength'
   side: 'left' | 'right'
-  nodeA: NodeId
-  nodeB: NodeId
+  wall: WallId
   length: Length
 }
 
 export interface ParallelConstraint {
+  id: ConstraintId
   type: 'parallel'
   wallA: WallId
   wallB: WallId
   distance?: Length
 }
 
-export interface ColinearConstraint {
-  type: 'colinear'
-  nodeA: NodeId
-  nodeB: NodeId
-  nodeC: NodeId
+export interface ColinearCornerConstraint {
+  id: ConstraintId
+  type: 'colinearCorner'
+  corner: PerimeterCornerId
 }
 
-export interface PerpendicularConstraint {
-  type: 'perpendicular'
-  wallA: WallId
-  wallB: WallId
+export interface PerpendicularCornerConstraint {
+  id: ConstraintId
+  type: 'perpendicularCorner'
+  corner: PerimeterCornerId
 }
 
-export interface AngleConstraint {
-  type: 'angle'
-  pivot: NodeId
-  nodeA: NodeId
-  nodeB: NodeId
+export interface CornerAngleConstraint {
+  id: ConstraintId
+  type: 'cornerAngle'
+  corner: PerimeterCornerId
   angle: number // radians
 }
 
-export interface HorizontalConstraint {
-  type: 'horizontal'
-  nodeA: NodeId
-  nodeB: NodeId
+export interface HorizontalWallConstraint {
+  id: ConstraintId
+  type: 'horizontalWall'
+  wall: WallId
 }
 
-export interface VerticalConstraint {
-  type: 'vertical'
-  nodeA: NodeId
-  nodeB: NodeId
+export interface VerticalWallConstraint {
+  id: ConstraintId
+  type: 'verticalWall'
+  wall: WallId
 }
+
+/** A constraint without the `id` field, used when adding constraints to the store. */
+export type ConstraintInput = {
+  [K in Constraint['type']]: Omit<Extract<Constraint, { type: K }>, 'id'>
+}[Constraint['type']]

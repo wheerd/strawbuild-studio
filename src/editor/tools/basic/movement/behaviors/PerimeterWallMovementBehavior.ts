@@ -1,7 +1,7 @@
 import type { PerimeterWallWithGeometry, PerimeterWithGeometry } from '@/building/model'
-import type { SelectableId } from '@/building/model/ids'
-import { isPerimeterId, isPerimeterWallId } from '@/building/model/ids'
+import { type SelectableId, isPerimeterId, isPerimeterWallId } from '@/building/model/ids'
 import type { StoreActions } from '@/building/store/types'
+import { type WrappedGcs, gcsService } from '@/editor/gcs/service'
 import type {
   MovementBehavior,
   MovementContext,
@@ -9,19 +9,20 @@ import type {
   PointerMovementState
 } from '@/editor/tools/basic/movement/MovementBehavior'
 import { PerimeterWallMovementPreview } from '@/editor/tools/basic/movement/previews/PerimeterWallMovementPreview'
-import { type Vec2, addVec2, dotVec2, scaleVec2 } from '@/shared/geometry'
-import { wouldClosingPolygonSelfIntersect } from '@/shared/geometry/polygon'
+import { type Vec2, addVec2, subVec2 } from '@/shared/geometry'
 
 // Perimeter wall movement needs access to the wall to update the boundary
 export interface PerimeterWallEntityContext {
   perimeter: PerimeterWithGeometry
   wall: PerimeterWallWithGeometry
-  wallIndex: number // Index of the wall in the wall
+  wallIndex: number // Index of the wall in the perimeter
+  startPoint: Vec2
+  gcs: WrappedGcs
 }
 
-// Perimeter wall movement state - projected delta along perpendicular
+// Perimeter wall movement state
 export interface PerimeterWallMovementState extends MovementState {
-  movementDelta: Vec2 // The projected delta (perpendicular to wall)
+  movementDelta: Vec2
   newBoundary: Vec2[]
 }
 
@@ -46,84 +47,92 @@ export class PerimeterWallMovementBehavior implements MovementBehavior<
       throw new Error(`Could not find wall index for ${entityId}`)
     }
 
-    return { perimeter, wall, wallIndex }
+    const fixedCornerIds = perimeter.cornerIds.filter(c => c !== wall.startCornerId && c !== wall.endCornerId)
+    const gcs = gcsService.getGcs(fixedCornerIds)
+
+    // Set up GCS for wall drag (adds temp point constrained to wall line)
+    const startPoint = gcs.startWallDrag(wall.id)
+
+    return {
+      perimeter,
+      wall,
+      wallIndex,
+      startPoint,
+      gcs
+    }
   }
 
   initializeState(
     pointerState: PointerMovementState,
     context: MovementContext<PerimeterWallEntityContext>
   ): PerimeterWallMovementState {
-    const { perimeter, wall, wallIndex } = context.entity
-    const projectedDistance = dotVec2(pointerState.delta, wall.outsideDirection)
-    const projectedDelta = scaleVec2(wall.outsideDirection, projectedDistance)
+    const { perimeter, gcs } = context.entity
 
-    const referencePolygon =
-      perimeter.referenceSide === 'inside' ? perimeter.innerPolygon.points : perimeter.outerPolygon.points
-    const newBoundary = [...referencePolygon]
-    newBoundary[wallIndex] = addVec2(referencePolygon[wallIndex], projectedDelta)
-    newBoundary[(wallIndex + 1) % referencePolygon.length] = addVec2(
-      referencePolygon[(wallIndex + 1) % referencePolygon.length],
-      projectedDelta
-    )
-    return { movementDelta: projectedDelta, newBoundary }
+    return {
+      movementDelta: pointerState.delta,
+      newBoundary: gcs.getPerimeterBoundary(perimeter.id)
+    }
   }
 
   constrainAndSnap(
     pointerState: PointerMovementState,
     context: MovementContext<PerimeterWallEntityContext>
   ): PerimeterWallMovementState {
-    const { perimeter, wall, wallIndex } = context.entity
-    const projectedDistance = dotVec2(pointerState.delta, wall.outsideDirection)
-    const projectedDelta = scaleVec2(wall.outsideDirection, projectedDistance)
+    const { perimeter, gcs, startPoint } = context.entity
 
-    const referencePolygon =
-      perimeter.referenceSide === 'inside' ? perimeter.innerPolygon.points : perimeter.outerPolygon.points
-    const newBoundary = [...referencePolygon]
-    newBoundary[wallIndex] = addVec2(referencePolygon[wallIndex], projectedDelta)
-    newBoundary[(wallIndex + 1) % referencePolygon.length] = addVec2(
-      referencePolygon[(wallIndex + 1) % referencePolygon.length],
-      projectedDelta
-    )
-    return { movementDelta: projectedDelta, newBoundary }
+    // Move the temp point by the pointer delta from the wall midpoint
+    const targetPosition = addVec2(startPoint, pointerState.delta)
+
+    gcs.updateDrag(targetPosition[0], targetPosition[1])
+
+    const newBoundary = gcs.getPerimeterBoundary(perimeter.id)
+
+    // Compute the effective movement delta from the solved drag point (wall midpoint)
+    const solvedDragPos = gcs.getDragPointPosition()
+    const movementDelta = subVec2(solvedDragPos, startPoint)
+
+    return { movementDelta, newBoundary }
   }
 
   validatePosition(
-    movementState: PerimeterWallMovementState,
+    _movementState: PerimeterWallMovementState,
     _context: MovementContext<PerimeterWallEntityContext>
   ): boolean {
-    return !wouldClosingPolygonSelfIntersect({ points: movementState.newBoundary })
+    // The GCS solver's internal validator already checks all geometric validity.
+    return true
   }
 
   commitMovement(
     movementState: PerimeterWallMovementState,
     context: MovementContext<PerimeterWallEntityContext>
   ): boolean {
-    return context.store.updatePerimeterBoundary(context.entity.perimeter.id, movementState.newBoundary)
+    context.entity.gcs.endDrag()
+    const updated = context.store.updatePerimeterBoundary(context.entity.perimeter.id, movementState.newBoundary)
+    if (updated) {
+      context.entity.gcs.syncConstraintStatus()
+    }
+    return updated
   }
 
   applyRelativeMovement(deltaDifference: Vec2, context: MovementContext<PerimeterWallEntityContext>): boolean {
-    const { perimeter, wall, wallIndex } = context.entity
+    const { perimeter, wall, gcs } = context.entity
 
-    // Project delta difference onto wall's perpendicular direction
-    const projectedDistance = dotVec2(deltaDifference, wall.outsideDirection)
-    const projectedDelta = scaleVec2(wall.outsideDirection, projectedDistance)
+    const dragPos = gcs.startWallDrag(wall.id)
 
-    // Create new boundary by moving both wall endpoints by the projected delta
-    const referencePolygon =
-      perimeter.referenceSide === 'inside' ? perimeter.innerPolygon.points : perimeter.outerPolygon.points
-    const newBoundary = [...referencePolygon]
-    newBoundary[wallIndex] = addVec2(referencePolygon[wallIndex], projectedDelta)
-    newBoundary[(wallIndex + 1) % referencePolygon.length] = addVec2(
-      referencePolygon[(wallIndex + 1) % referencePolygon.length],
-      projectedDelta
-    )
+    const targetX = dragPos[0] + deltaDifference[0]
+    const targetY = dragPos[1] + deltaDifference[1]
 
-    // Validate the new boundary
-    if (wouldClosingPolygonSelfIntersect({ points: newBoundary })) {
-      return false
+    gcs.updateDrag(targetX, targetY)
+
+    const newBoundary = gcs.getPerimeterBoundary(perimeter.id)
+
+    gcs.endDrag()
+
+    const updated = context.store.updatePerimeterBoundary(perimeter.id, newBoundary)
+    if (updated) {
+      gcs.syncConstraintStatus()
     }
 
-    // Commit the movement
-    return context.store.updatePerimeterBoundary(perimeter.id, newBoundary)
+    return updated
   }
 }

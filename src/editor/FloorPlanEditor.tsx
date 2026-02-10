@@ -9,6 +9,7 @@ import { useWelcomeModal } from '@/shared/hooks/useWelcomeModal'
 
 import { MainToolbar } from './MainToolbar'
 import { SidePanel } from './SidePanel'
+import { ConstraintStatusOverlay } from './components/ConstraintStatusOverlay'
 import { ViewModeToggle } from './components/ViewModeToggle'
 import { useAutoFitOnHydration } from './hooks/useAutoFitOnHydration'
 import { FloorPlanStage } from './layers/FloorPlanStage'
@@ -155,6 +156,7 @@ export function FloorPlanEditor(): React.JSX.Element {
             <ErrorBoundary FallbackComponent={FeatureErrorFallback}>
               <ViewModeToggle />
               <FloorPlanStage width={dimensions.width} height={dimensions.height} />
+              <ConstraintStatusOverlay />
               <StatusBar />
               <LengthInputComponent />
             </ErrorBoundary>

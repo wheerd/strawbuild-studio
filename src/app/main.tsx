@@ -6,6 +6,7 @@ import { ErrorBoundary } from 'react-error-boundary'
 import { TooltipProvider } from '@/components/ui/tooltip'
 import { injectMaterialCSS } from '@/construction/materials/materialCSS'
 import { getAllMaterials, subscribeToMaterials } from '@/construction/materials/store'
+import { ensureGcsModule } from '@/editor/gcs/gcsInstance.ts'
 import { ErrorFallback } from '@/shared/components/ErrorBoundary'
 import { ensureClipperModule } from '@/shared/geometry/clipperInstance'
 import { ensureManifoldModule } from '@/shared/geometry/manifoldInstance'
@@ -22,7 +23,7 @@ function removeInitialLoadingScreen() {
 
 async function bootstrap() {
   // Load both geometry modules in parallel
-  await Promise.all([ensureClipperModule(), ensureManifoldModule()])
+  await Promise.all([ensureClipperModule(), ensureManifoldModule(), ensureGcsModule()])
 
   // Initialize material CSS styles
   injectMaterialCSS(getAllMaterials())

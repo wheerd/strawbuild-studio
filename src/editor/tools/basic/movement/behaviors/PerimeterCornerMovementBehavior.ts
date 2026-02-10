@@ -1,7 +1,7 @@
 import type { PerimeterCornerWithGeometry } from '@/building/model'
-import type { SelectableId } from '@/building/model/ids'
-import { isPerimeterCornerId } from '@/building/model/ids'
+import { type SelectableId, isPerimeterCornerId } from '@/building/model/ids'
 import type { StoreActions } from '@/building/store/types'
+import { type WrappedGcs, gcsService } from '@/editor/gcs/service'
 import type { SnapResult, SnappingContext } from '@/editor/services/snapping/types'
 import type {
   MovementBehavior,
@@ -10,7 +10,7 @@ import type {
   PointerMovementState
 } from '@/editor/tools/basic/movement/MovementBehavior'
 import { PerimeterCornerMovementPreview } from '@/editor/tools/basic/movement/previews/PerimeterCornerMovementPreview'
-import { type LineSegment2D, type Vec2, addVec2, wouldClosingPolygonSelfIntersect } from '@/shared/geometry'
+import { type LineSegment2D, type Vec2, addVec2, subVec2 } from '@/shared/geometry'
 
 // Corner movement needs access to the wall to update the boundary
 export interface CornerEntityContext {
@@ -18,6 +18,7 @@ export interface CornerEntityContext {
   corners: PerimeterCornerWithGeometry[]
   cornerIndex: number // Index of the boundary point that corresponds to this corner
   snapContext: SnappingContext
+  gcs: WrappedGcs
 }
 
 // Corner movement state
@@ -52,18 +53,30 @@ export class PerimeterCornerMovementBehavior implements MovementBehavior<CornerE
       referenceLineSegments: snapLines
     }
 
-    return { corners, corner, cornerIndex, snapContext }
+    const fixedCornerIds = perimeter.cornerIds.filter(c => c !== entityId)
+    const gcs = gcsService.getGcs(fixedCornerIds)
+
+    return {
+      corners,
+      corner,
+      cornerIndex,
+      snapContext,
+      gcs
+    }
   }
 
   initializeState(
     pointerState: PointerMovementState,
     context: MovementContext<CornerEntityContext>
   ): CornerMovementState {
-    const { corners, corner } = context.entity
+    const { corner, gcs } = context.entity
+
+    gcs.startCornerDrag(corner.id)
+
     return {
       position: corner.referencePoint,
       movementDelta: pointerState.delta,
-      newBoundary: corners.map(c => c.referencePoint)
+      newBoundary: gcs.getPerimeterBoundary(corner.perimeterId)
     }
   }
 
@@ -71,52 +84,66 @@ export class PerimeterCornerMovementBehavior implements MovementBehavior<CornerE
     pointerState: PointerMovementState,
     context: MovementContext<CornerEntityContext>
   ): CornerMovementState {
-    const { corner, corners, cornerIndex, snapContext } = context.entity
+    const { corner, snapContext, gcs } = context.entity
 
     const newPosition = addVec2(corner.referencePoint, pointerState.delta)
 
     const snapResult = context.snappingService.findSnapResult(newPosition, snapContext)
     const finalPosition = snapResult?.position ?? newPosition
 
-    const newBoundary = corners.map(c => c.referencePoint)
-    newBoundary[cornerIndex] = finalPosition
+    // Feed the target position to the GCS solver
+    gcs.updateDrag(finalPosition[0], finalPosition[1])
+
+    // Read solved positions to build the boundary
+    const newBoundary = gcs.getPerimeterBoundary(corner.perimeterId)
+
+    // The actual solved position of the dragged corner
+    const solvedPosition = gcs.getCornerPosition(corner.id)
 
     return {
-      position: finalPosition,
-      movementDelta: pointerState.delta,
+      position: solvedPosition,
+      movementDelta: subVec2(solvedPosition, corner.referencePoint),
       snapResult: snapResult ?? undefined,
       newBoundary
     }
   }
 
-  validatePosition(movementState: CornerMovementState, _context: MovementContext<CornerEntityContext>): boolean {
-    const { newBoundary } = movementState
-
-    if (newBoundary.length < 3) return false
-
-    return !wouldClosingPolygonSelfIntersect({ points: newBoundary })
+  validatePosition(_movementState: CornerMovementState, _context: MovementContext<CornerEntityContext>): boolean {
+    // The GCS solver's internal validator already checks self-intersection,
+    // min wall length, wall consistency, and colinearity.
+    // If we got a boundary back from the solver, it's valid.
+    return true
   }
 
   commitMovement(movementState: CornerMovementState, context: MovementContext<CornerEntityContext>): boolean {
-    return context.store.updatePerimeterBoundary(context.entity.corner.perimeterId, movementState.newBoundary)
+    context.entity.gcs.endDrag()
+    const updated = context.store.updatePerimeterBoundary(context.entity.corner.perimeterId, movementState.newBoundary)
+    if (updated) {
+      context.entity.gcs.syncConstraintStatus()
+    }
+    return updated
   }
 
   applyRelativeMovement(deltaDifference: Vec2, context: MovementContext<CornerEntityContext>): boolean {
-    const { corner, corners, cornerIndex } = context.entity
+    const { corner, gcs } = context.entity
 
-    const newPosition = addVec2(corner.referencePoint, deltaDifference)
+    const dragPos = gcs.startCornerDrag(corner.id)
 
-    // Create new boundary with updated corner position
-    const newBoundary = corners.map(c => c.referencePoint)
-    newBoundary[cornerIndex] = newPosition
+    const targetX = dragPos[0] + deltaDifference[0]
+    const targetY = dragPos[1] + deltaDifference[1]
 
-    // Validate the new boundary
-    if (wouldClosingPolygonSelfIntersect({ points: newBoundary })) {
-      return false
+    gcs.updateDrag(targetX, targetY)
+
+    const newBoundary = gcs.getPerimeterBoundary(corner.perimeterId)
+
+    gcs.endDrag()
+
+    const updated = context.store.updatePerimeterBoundary(corner.perimeterId, newBoundary)
+    if (updated) {
+      gcs.syncConstraintStatus()
     }
 
-    // Commit the movement
-    return context.store.updatePerimeterBoundary(corner.perimeterId, newBoundary)
+    return updated
   }
 
   private getSnapLines(corners: PerimeterCornerWithGeometry[], cornerIndex: number): LineSegment2D[] {

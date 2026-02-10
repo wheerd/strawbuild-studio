@@ -1,7 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 
+// Side-effect import: initializes the GCS sync service that subscribes to model store changes
+import '@/editor/gcs/gcsSync'
 import { usePointerPositionActions } from '@/editor/hooks/usePointerPosition'
 import { usePanX, usePanY, useViewportActions, useZoom } from '@/editor/hooks/useViewportStore'
+import { GcsLayer } from '@/editor/layers/GcsLayer'
 import { GridLayer } from '@/editor/layers/GridLayer'
 import { SelectionOverlay } from '@/editor/layers/SelectionOverlay'
 import { ToolOverlayLayer } from '@/editor/layers/ToolOverlayLayer'
@@ -10,6 +13,7 @@ import { useSvgMouseTransform } from '@/editor/tools/system/hooks/useSvgMouseTra
 import { handleEditorEvent } from '@/editor/tools/system/store'
 import { EditorSvgPatterns } from '@/editor/utils/patterns'
 import type { Vec2 } from '@/shared/geometry'
+import { isDebug } from '@/shared/hooks/useDebug'
 
 import { FloorLayer } from './FloorLayer'
 import { PerimeterLayer } from './PerimeterLayer'
@@ -31,6 +35,7 @@ export function FloorPlanStage({ width, height }: FloorPlanStageProps): React.JS
   const { setStageDimensions, zoomBy, panBy, setPan, stageToWorld } = useViewportActions()
   const pointerActions = usePointerPositionActions()
   const cursor = useToolCursor()
+  const showDebugGcsLayer = isDebug
 
   // Local state for panning (non-tool related)
   const [dragStart, setDragStart] = useState<Vec2 | null>(null)
@@ -265,6 +270,7 @@ export function FloorPlanStage({ width, height }: FloorPlanStageProps): React.JS
           <PerimeterLayer />
           <RoofLayer />
           <PlanImageLayer placement="over" />
+          {showDebugGcsLayer && <GcsLayer />}
           <SelectionOverlay />
           <ToolOverlayLayer />
         </g>

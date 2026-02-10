@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest'
 
 import type {
+  Constraint,
   OpeningWithGeometry,
   PerimeterCornerId,
   PerimeterCornerWithGeometry,
@@ -82,6 +83,14 @@ const walls = [
   })
 ]
 
+const constraints = [
+  partial<Constraint>({
+    id: 'constraint_1',
+    type: 'horizontalWall',
+    wall: 'outwall_1'
+  })
+]
+
 const mockActions = partial<StoreActions>({
   getStoreysOrderedByLevel: vi.fn(() => [mockStorey]),
   getStoreyAbove: vi.fn(() => null),
@@ -98,6 +107,7 @@ const mockActions = partial<StoreActions>({
       wallIds: walls.map(w => w.id)
     })
   ]),
+  getAllBuildingConstraints: vi.fn(() => constraints),
   getFloorAreasByStorey: vi.fn(() => []),
   getFloorOpeningsByStorey: vi.fn(() => []),
   getRoofsByStorey: vi.fn(() => []),

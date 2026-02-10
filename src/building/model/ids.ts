@@ -16,6 +16,7 @@ const FLOOR_OPENING_ID_PREFIX = 'flooropening_'
 const ROOF_ID_PREFIX = 'roof_'
 const ROOF_OVERHANG_ID_PREFIX = 'roofoverhang_'
 const ROOM_ID_PREFIX = 'room_'
+const CONSTRAINT_ID_PREFIX = 'constraint_'
 const WALL_NODE_ID_PREFIX = 'wallnode_'
 const INTERMEDIATE_WALL_ID_PREFIX = 'intermediate_'
 
@@ -61,6 +62,7 @@ export type SelectableId =
   | WallPostId
   | RoofId
   | RoofOverhangId
+  | ConstraintId
 // | RoomId
 // | WallNodeId
 // | IntermediateWallId
@@ -85,6 +87,7 @@ export const createPerimeterCornerId = (): PerimeterCornerId => createId(PERIMET
 export const createOpeningId = (): OpeningId => createId(OPENING_ID_PREFIX)
 export const createWallPostId = (): WallPostId => createId(POST_ID_PREFIX)
 export const createRoofOverhangId = (): RoofOverhangId => createId(ROOF_OVERHANG_ID_PREFIX)
+export const createConstraintId = (key: string): ConstraintId => `${CONSTRAINT_ID_PREFIX}${key}`
 export const createRoomId = (): RoomId => createId(ROOM_ID_PREFIX)
 export const createWallNodeId = (): WallNodeId => createId(WALL_NODE_ID_PREFIX)
 export const createIntermediateWallId = (): IntermediateWallId => createId(INTERMEDIATE_WALL_ID_PREFIX)
@@ -112,6 +115,7 @@ export const isPerimeterCornerId = (id: string): id is PerimeterCornerId => id.s
 export const isOpeningId = (id: string): id is OpeningId => id.startsWith(OPENING_ID_PREFIX)
 export const isWallPostId = (id: string): id is WallPostId => id.startsWith(POST_ID_PREFIX)
 export const isRoofOverhangId = (id: string): id is RoofOverhangId => id.startsWith(ROOF_OVERHANG_ID_PREFIX)
+export const isConstraintId = (id: string): id is ConstraintId => id.startsWith(CONSTRAINT_ID_PREFIX)
 export const isRoomId = (id: string): id is RoomId => id.startsWith(ROOF_ID_PREFIX)
 export const isWallNodeId = (id: string): id is WallNodeId => id.startsWith(WALL_NODE_ID_PREFIX)
 export const isIntermediateWallId = (id: string): id is IntermediateWallId => id.startsWith(INTERMEDIATE_WALL_ID_PREFIX)
@@ -138,6 +142,9 @@ export type EntityType =
   | 'roof'
   | 'roof-overhang'
 
+export type ConstraintId = `${typeof CONSTRAINT_ID_PREFIX}${string}`
+
 export type WallId = PerimeterWallId | IntermediateWallId
 export type NodeId = PerimeterCornerId | WallNodeId
+export type ConstraintEntityId = NodeId | WallId
 export type WallEntityId = OpeningId | WallPostId

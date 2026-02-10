@@ -64,26 +64,24 @@
   },
   "modulesList": {
     "actions": {
-      "viewInPlan": "View in plan",
       "backToSummary": "Back to summary",
-      "jumpToDetails": "Jump to details"
+      "jumpToDetails": "Jump to details",
+      "viewInPlan": "View in plan"
     },
     "noModules": "No modules",
+    "summary": "Summary",
     "tableHeaders": {
-      "description": "Specific Type",
+      "area": "Area",
+      "differentParts": "Different Parts",
       "dimensions": "Dimensions",
       "label": "Label",
       "quantity": "Quantity",
-      "type": "Type",
-      "area": "Area",
-      "totalArea": "Total Area",
       "specificType": "Specific Type",
+      "totalArea": "Total Area",
       "totalQuantity": "Total Quantity",
-      "differentParts": "Different Parts",
+      "type": "Type",
       "view": "View"
-    },
-    "summary": "Summary",
-    "title": "Modules"
+    }
   },
   "moduleTypes": {
     "double": "Double",

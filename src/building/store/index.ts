@@ -1,16 +1,18 @@
 import isDeepEqual from 'fast-deep-equal'
 import { useCallback, useMemo } from 'react'
-import { debounce } from 'throttle-debounce'
 import { temporal } from 'zundo'
 import { create } from 'zustand'
 import { persist, subscribeWithSelector } from 'zustand/middleware'
 import { immer } from 'zustand/middleware/immer'
 
 import type {
+  Constraint,
   FloorArea,
   FloorOpening,
   OpeningWithGeometry,
   Perimeter,
+  PerimeterCorner,
+  PerimeterCornerGeometry,
   PerimeterCornerWithGeometry,
   PerimeterWall,
   PerimeterWallWithGeometry,
@@ -21,6 +23,8 @@ import type {
   WallPostWithGeometry
 } from '@/building/model'
 import {
+  type ConstraintEntityId,
+  type ConstraintId,
   type FloorAreaId,
   type FloorOpeningId,
   type OpeningId,
@@ -32,6 +36,7 @@ import {
   type SelectableId,
   type StoreyId,
   type WallPostId,
+  isConstraintId,
   isFloorAreaId,
   isFloorOpeningId,
   isOpeningId,
@@ -47,6 +52,7 @@ import { subscribeRecords } from '@/shared/utils/subscription'
 
 import { CURRENT_VERSION, applyMigrations } from './migrations'
 import { getPersistenceActions } from './persistenceStore'
+import { createConstraintsSlice } from './slices/constraintsSlice'
 import { createFloorsSlice } from './slices/floorsSlice'
 import { createPerimetersSlice } from './slices/perimeterSlice'
 import { createRoofsSlice } from './slices/roofsSlice'
@@ -92,6 +98,7 @@ const useModelStore = create<Store>()(
           const floorsSlice = immer(createFloorsSlice)(set, get, store)
           const roofsSlice = immer(createRoofsSlice)(set, get, store)
           const timestampsSlice = immer(createTimestampsSlice)(set, get, store)
+          const constraintsSlice = immer(createConstraintsSlice)(set, get, store)
 
           return {
             ...storeysSlice,
@@ -99,12 +106,14 @@ const useModelStore = create<Store>()(
             ...floorsSlice,
             ...roofsSlice,
             ...timestampsSlice,
+            ...constraintsSlice,
             actions: {
               ...storeysSlice.actions,
               ...perimetersSlice.actions,
               ...floorsSlice.actions,
               ...roofsSlice.actions,
               ...timestampsSlice.actions,
+              ...constraintsSlice.actions,
               reset: () => {
                 set(store.getInitialState())
               }
@@ -115,7 +124,24 @@ const useModelStore = create<Store>()(
           // Undo/redo configuration
           limit: 50,
           equality: (pastState, currentState) => isDeepEqual(pastState, currentState),
-          handleSet: set => debounce(500, set, { atBegin: false })
+          handleSet: handleSet => {
+            let timeoutId: ReturnType<typeof setTimeout> | undefined
+            let firstPastState: Parameters<typeof handleSet>[0]
+            return (...args: Parameters<typeof handleSet>) => {
+              // Capture pastState from the first call in a burst
+              if (timeoutId === undefined) {
+                firstPastState = args[0]
+              }
+              clearTimeout(timeoutId)
+              timeoutId = setTimeout(() => {
+                timeoutId = undefined
+                // Use pastState from the first call (the true "before" state)
+                // but keep the remaining args from the last call
+                args[0] = firstPastState
+                handleSet(...args)
+              }, 500)
+            }
+          }
         }
       ),
       {
@@ -171,6 +197,7 @@ const emptyGeometry = {}
 export const useModelEntityById = (
   id: SelectableId | null
 ):
+  | Constraint
   | PerimeterWithGeometry
   | PerimeterWallWithGeometry
   | PerimeterCornerWithGeometry
@@ -193,6 +220,7 @@ export const useModelEntityById = (
       if (isFloorOpeningId(id)) return state.floorOpenings[id]
       if (isRoofId(id)) return state.roofs[id]
       if (isRoofOverhangId(id)) return state.roofOverhangs[id]
+      if (isConstraintId(id)) return state.buildingConstraints[id] ?? null
       assertUnreachable(id, `Unsupported entity: ${id}`)
     },
     [id]
@@ -222,6 +250,7 @@ export const useModelEntityById = (
       if (isFloorOpeningId(id)) return state.actions.getFloorOpeningById
       if (isRoofId(id)) return state.actions.getRoofById
       if (isRoofOverhangId(id)) return state.actions.getRoofOverhangById
+      if (isConstraintId(id)) return state.actions.getBuildingConstraintById
       assertUnreachable(id, `Unsupported entity: ${id}`)
     },
     [id]
@@ -378,6 +407,19 @@ export const useRoofOverhangsByRoof = (roofId: RoofId): RoofOverhang[] => {
   return useMemo(() => getRoofOverhangsByRoof(roofId), [overhangs, roofs, roofId])
 }
 
+export const useBuildingConstraints = (): Record<ConstraintId, Constraint> =>
+  useModelStore(state => state.buildingConstraints)
+
+export const useConstraintsForEntity = (entityId: ConstraintEntityId): Constraint[] => {
+  const buildingConstraints = useModelStore(state => state.buildingConstraints)
+  const reverseIndex = useModelStore(state => state._constraintsByEntity)
+  const getConstraintsForEntity = useModelStore(state => state.actions.getConstraintsForEntity)
+  return useMemo(() => getConstraintsForEntity(entityId), [buildingConstraints, reverseIndex, entityId])
+}
+
+export const usePerimeterCornerGeometries = (): Record<PerimeterCornerId, PerimeterCornerGeometry> =>
+  useModelStore(state => state._perimeterCornerGeometry)
+
 export const useModelActions = (): StoreActions => useModelStore(state => state.actions)
 
 // Non-reactive actions-only accessor for tools and services
@@ -403,11 +445,17 @@ export const subscribeToPerimeters = (cb: (current?: Perimeter, previous?: Perim
 export const subscribeToWalls = (cb: (current?: PerimeterWall, previous?: PerimeterWall) => void) =>
   subscribeRecords(useModelStore, s => s.perimeterWalls, cb)
 
+export const subscribeToCorners = (cb: (current?: PerimeterCorner, previous?: PerimeterCorner) => void) =>
+  subscribeRecords(useModelStore, s => s.perimeterCorners, cb)
+
 export const subscribeToFloorOpenings = (cb: (current?: FloorOpening, previous?: FloorOpening) => void) =>
   subscribeRecords(useModelStore, s => s.floorOpenings, cb)
 
 export const subscribeToStoreys = (cb: (current?: Storey, previous?: Storey) => void) =>
   subscribeRecords(useModelStore, s => s.storeys, cb)
+
+export const subscribeToConstraints = (cb: (current?: Constraint, previous?: Constraint) => void) =>
+  subscribeRecords(useModelStore, s => s.buildingConstraints, cb)
 
 export const subscribeToModelChanges = useModelStore.subscribe
 

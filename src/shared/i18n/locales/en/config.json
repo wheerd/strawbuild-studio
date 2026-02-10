@@ -306,9 +306,6 @@
       "padding": "Padding",
       "plankMaterial": "Planking Material",
       "plankThickness": "Planking Thickness",
-      "postsHaveFullHeight": "Posts have full height",
-      "postsSupportHeader": "Posts support header",
-      "replacesWallPosts": "Replaces Wall Posts",
       "sillMaterial": "Sill Material",
       "sillThickness": "Sill Thickness",
       "thresholdAssembly": "Assembly",
@@ -317,10 +314,6 @@
     },
     "placeholders": {
       "name": "Opening assembly name"
-    },
-    "postTypes": {
-      "double": "Double",
-      "full": "Full"
     },
     "resetConfirm": "Are you sure you want to reset default opening assemblies? This will restore the original default assemblies but keep any custom assemblies you've created. This action cannot be undone.",
     "resetTitle": "Reset Opening Assemblies",

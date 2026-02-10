@@ -533,7 +533,7 @@ const normaliseOrientation = (polygon: Polygon2D, clockwise: boolean): Polygon2D
   }
 }
 
-function segmentsIntersect(p1: Vec2, q1: Vec2, p2: Vec2, q2: Vec2): boolean {
+export function segmentsIntersect(p1: Vec2, q1: Vec2, p2: Vec2, q2: Vec2): boolean {
   const o1 = orientation(p1, q1, p2)
   const o2 = orientation(p1, q1, q2)
   const o3 = orientation(p2, q2, p1)
