@@ -280,7 +280,7 @@ export function PerimeterCornerShape({ cornerId }: { cornerId: PerimeterCornerId
         {/* Perpendicular constraint badge on the outside of the corner */}
         {showPerpendicularBadge && (
           <ConstraintBadge
-            label={'\u27C2'}
+            label="⊥"
             offset={80}
             startPoint={corner.outsidePoint}
             endPoint={corner.outsidePoint}

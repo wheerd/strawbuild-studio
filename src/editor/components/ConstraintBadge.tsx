@@ -74,14 +74,14 @@ export function ConstraintBadge({
 
   const textClasses = useMemo(() => {
     if (status === 'conflicting') {
-      return 'fill-destructive-foreground'
+      return 'font-mono fill-destructive-foreground'
     }
     if (status === 'redundant') {
-      return 'fill-foreground'
+      return 'font-mono fill-foreground'
     }
     return showLock && isInteractive
-      ? 'fill-primary-foreground'
-      : 'fill-muted-foreground group-hover:fill-accent-foreground'
+      ? 'font-mono fill-primary-foreground'
+      : 'font-mono fill-muted-foreground group-hover:fill-accent-foreground'
   }, [status, showLock, isInteractive])
 
   const lockIconClass = useMemo(() => {
