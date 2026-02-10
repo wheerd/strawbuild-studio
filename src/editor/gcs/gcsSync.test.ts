@@ -7,23 +7,18 @@ import type {
   PerimeterCorner,
   PerimeterCornerWithGeometry,
   PerimeterId,
-  PerimeterWallId,
-  StoreyId
+  PerimeterWallId
 } from '@/building/model'
 import type { PerimeterCornerId } from '@/building/model/ids'
 import { newVec2 } from '@/shared/geometry'
 
 // --- Mock state ---
 
-let mockActiveStoreyId: StoreyId = 'storey_1' as StoreyId
-const mockPerimetersByStorey: Record<StoreyId, Perimeter[]> = {}
 const mockPerimeterRegistry: Record<PerimeterId, unknown> = {}
 const mockPerimetersById: Record<PerimeterId, Perimeter> = {}
 const mockBuildingConstraints: Record<ConstraintId, Constraint> = {}
 
 // Captured subscription callbacks
-let capturedStoreySelector: ((state: unknown) => unknown) | null = null
-let capturedStoreyListener: ((newVal: unknown, oldVal: unknown) => void) | null = null
 let capturedPerimeterCallback: ((current?: Perimeter, previous?: Perimeter) => void) | null = null
 let capturedConstraintCallback: ((current?: Constraint, previous?: Constraint) => void) | null = null
 let capturedCornerCallback: ((current?: PerimeterCorner, previous?: PerimeterCorner) => void) | null = null
@@ -41,20 +36,11 @@ const mockCornerGeometries: Record<string, PerimeterCornerWithGeometry> = {}
 // Mock building store
 vi.mock('@/building/store', () => ({
   getModelActions: () => ({
-    getActiveStoreyId: () => mockActiveStoreyId,
-    getPerimetersByStorey: (storeyId: StoreyId) => mockPerimetersByStorey[storeyId] ?? [],
+    getAllPerimeters: () => Object.values(mockPerimetersById),
     getPerimeterById: (perimeterId: PerimeterId) => mockPerimetersById[perimeterId],
     getPerimeterCornerById: (cornerId: string) => mockCornerGeometries[cornerId],
     getAllBuildingConstraints: () => Object.values(mockBuildingConstraints)
   }),
-  subscribeToModelChanges: (
-    selector: (state: unknown) => unknown,
-    listener: (newVal: unknown, oldVal: unknown) => void
-  ) => {
-    capturedStoreySelector = selector
-    capturedStoreyListener = listener
-    return vi.fn() // unsubscribe
-  },
   subscribeToPerimeters: (cb: (current?: Perimeter, previous?: Perimeter) => void) => {
     capturedPerimeterCallback = cb
     return vi.fn() // unsubscribe
@@ -86,17 +72,11 @@ vi.mock('./store', () => ({
 // Reset state before each test
 beforeEach(() => {
   vi.resetAllMocks()
-  capturedStoreySelector = null
-  capturedStoreyListener = null
   capturedPerimeterCallback = null
   capturedConstraintCallback = null
   capturedCornerCallback = null
-  mockActiveStoreyId = 'storey_1' as StoreyId
 
   // Clear mutable objects
-  for (const key of Object.keys(mockPerimetersByStorey) as StoreyId[]) {
-    delete mockPerimetersByStorey[key]
-  }
   for (const key of Object.keys(mockPerimeterRegistry) as PerimeterId[]) {
     delete mockPerimeterRegistry[key]
   }
@@ -117,13 +97,16 @@ function importGcsSync(): Promise<void> {
   return import('./gcsSync') as unknown as Promise<void>
 }
 
-function makePerimeter(id: string, storeyId: string, cornerIds: string[] = [], wallIds: string[] = []): Perimeter {
+function makePerimeter(id: string, cornerIds: string[] = [], wallIds: string[] = []): Perimeter {
   const perimeter = {
     id: id as PerimeterId,
-    storeyId: storeyId as StoreyId,
+    storeyId: 'storey_1' as const,
     cornerIds: cornerIds as Perimeter['cornerIds'],
     wallIds: wallIds as Perimeter['wallIds'],
-    referenceSide: 'inside' as Perimeter['referenceSide']
+    referenceSide: 'inside' as Perimeter['referenceSide'],
+    roomIds: [] as Perimeter['roomIds'],
+    wallNodeIds: [] as Perimeter['wallNodeIds'],
+    intermediateWallIds: [] as Perimeter['intermediateWallIds']
   } as Perimeter
 
   // Also register in the mock so getPerimeterById returns it
@@ -138,39 +121,34 @@ describe('GcsSyncService', () => {
       await importGcsSync()
 
       // All subscription callbacks should have been captured
-      expect(capturedStoreyListener).toBeTypeOf('function')
       expect(capturedPerimeterCallback).toBeTypeOf('function')
       expect(capturedConstraintCallback).toBeTypeOf('function')
       expect(capturedCornerCallback).toBeTypeOf('function')
     })
 
-    it('captures a storey selector that selects activeStoreyId', async () => {
+    it('initializes all existing perimeters on import', async () => {
+      // Set up some perimeters before importing
+      makePerimeter('p1', ['outcorner_c1'], ['outwall_w1'])
+      makePerimeter('p2', ['outcorner_c2'], ['outwall_w2'])
+
       await importGcsSync()
 
-      expect(capturedStoreySelector).toBeTypeOf('function')
-      const result = capturedStoreySelector!({ activeStoreyId: 'test_storey' })
-      expect(result).toBe('test_storey')
+      // Should have added geometry for both perimeters
+      expect(mockAddPerimeterGeometry).toHaveBeenCalledWith('p1')
+      expect(mockAddPerimeterGeometry).toHaveBeenCalledWith('p2')
+      expect(mockAddPerimeterGeometry).toHaveBeenCalledTimes(2)
     })
   })
 
   describe('perimeter addition', () => {
-    it('calls addPerimeterGeometry when a perimeter is added to the active storey', async () => {
+    it('calls addPerimeterGeometry when a perimeter is added', async () => {
       await importGcsSync()
 
-      const perimeter = makePerimeter('p1', 'storey_1')
+      const perimeter = makePerimeter('p1')
       capturedPerimeterCallback!(perimeter, undefined)
 
       expect(mockAddPerimeterGeometry).toHaveBeenCalledWith('p1')
       expect(mockAddPerimeterGeometry).toHaveBeenCalledTimes(1)
-    })
-
-    it('ignores perimeters added to a non-active storey', async () => {
-      await importGcsSync()
-
-      const perimeter = makePerimeter('p1', 'storey_other')
-      capturedPerimeterCallback!(perimeter, undefined)
-
-      expect(mockAddPerimeterGeometry).not.toHaveBeenCalled()
     })
   })
 
@@ -181,7 +159,7 @@ describe('GcsSyncService', () => {
 
       await importGcsSync()
 
-      const perimeter = makePerimeter('p1', 'storey_1')
+      const perimeter = makePerimeter('p1')
       capturedPerimeterCallback!(undefined, perimeter)
 
       expect(mockRemovePerimeterGeometry).toHaveBeenCalledWith('p1')
@@ -192,7 +170,7 @@ describe('GcsSyncService', () => {
       // Registry is empty — perimeter is not tracked
       await importGcsSync()
 
-      const perimeter = makePerimeter('p1', 'storey_1')
+      const perimeter = makePerimeter('p1')
       capturedPerimeterCallback!(undefined, perimeter)
 
       expect(mockRemovePerimeterGeometry).not.toHaveBeenCalled()
@@ -200,101 +178,15 @@ describe('GcsSyncService', () => {
   })
 
   describe('perimeter update', () => {
-    it('calls addPerimeterGeometry (upsert) when a perimeter in active storey is updated', async () => {
+    it('calls addPerimeterGeometry (upsert) when a perimeter is updated', async () => {
       await importGcsSync()
 
-      const prev = makePerimeter('p1', 'storey_1', ['c1', 'c2'])
-      const curr = makePerimeter('p1', 'storey_1', ['c1', 'c2', 'c3'])
+      const prev = makePerimeter('p1', ['c1', 'c2'])
+      const curr = makePerimeter('p1', ['c1', 'c2', 'c3'])
       capturedPerimeterCallback!(curr, prev)
 
       expect(mockAddPerimeterGeometry).toHaveBeenCalledWith('p1')
       expect(mockAddPerimeterGeometry).toHaveBeenCalledTimes(1)
-    })
-
-    it('removes perimeter if updated storeyId moves it away from active storey', async () => {
-      // Perimeter is currently tracked
-      mockPerimeterRegistry['p1' as PerimeterId] = { pointIds: [] }
-
-      await importGcsSync()
-
-      const prev = makePerimeter('p1', 'storey_1')
-      const curr = makePerimeter('p1', 'storey_other')
-      capturedPerimeterCallback!(curr, prev)
-
-      expect(mockRemovePerimeterGeometry).toHaveBeenCalledWith('p1')
-      expect(mockAddPerimeterGeometry).not.toHaveBeenCalled()
-    })
-
-    it('does not remove untracked perimeter when storey changes away', async () => {
-      // Registry is empty
-      await importGcsSync()
-
-      const prev = makePerimeter('p1', 'storey_1')
-      const curr = makePerimeter('p1', 'storey_other')
-      capturedPerimeterCallback!(curr, prev)
-
-      expect(mockRemovePerimeterGeometry).not.toHaveBeenCalled()
-      expect(mockAddPerimeterGeometry).not.toHaveBeenCalled()
-    })
-  })
-
-  describe('active storey change', () => {
-    it('removes all tracked perimeters and adds perimeters of the new storey', async () => {
-      // Two perimeters currently tracked in registry
-      mockPerimeterRegistry['p1' as PerimeterId] = { pointIds: [] }
-      mockPerimeterRegistry['p2' as PerimeterId] = { pointIds: [] }
-
-      // New storey has two different perimeters
-      const newStoreyId = 'storey_2' as StoreyId
-      mockPerimetersByStorey[newStoreyId] = [makePerimeter('p3', 'storey_2'), makePerimeter('p4', 'storey_2')]
-
-      await importGcsSync()
-
-      // Simulate active storey change
-      capturedStoreyListener!(newStoreyId, 'storey_1')
-
-      // Should have removed both old perimeters
-      expect(mockRemovePerimeterGeometry).toHaveBeenCalledWith('p1')
-      expect(mockRemovePerimeterGeometry).toHaveBeenCalledWith('p2')
-      expect(mockRemovePerimeterGeometry).toHaveBeenCalledTimes(2)
-
-      // Should have added both new perimeters
-      expect(mockAddPerimeterGeometry).toHaveBeenCalledWith('p3')
-      expect(mockAddPerimeterGeometry).toHaveBeenCalledWith('p4')
-      expect(mockAddPerimeterGeometry).toHaveBeenCalledTimes(2)
-    })
-
-    it('does nothing if new storey has no perimeters and registry is empty', async () => {
-      const newStoreyId = 'storey_empty' as StoreyId
-
-      await importGcsSync()
-
-      capturedStoreyListener!(newStoreyId, 'storey_1')
-
-      expect(mockRemovePerimeterGeometry).not.toHaveBeenCalled()
-      expect(mockAddPerimeterGeometry).not.toHaveBeenCalled()
-    })
-
-    it('updates internal activeStoreyId so subsequent perimeter additions use new storey', async () => {
-      const newStoreyId = 'storey_2' as StoreyId
-      mockPerimetersByStorey[newStoreyId] = []
-
-      await importGcsSync()
-
-      // Switch to storey_2
-      capturedStoreyListener!(newStoreyId, 'storey_1')
-      mockAddPerimeterGeometry.mockClear()
-
-      // Now a perimeter added to storey_2 should be picked up
-      const perimeter = makePerimeter('p5', 'storey_2')
-      capturedPerimeterCallback!(perimeter, undefined)
-      expect(mockAddPerimeterGeometry).toHaveBeenCalledWith('p5')
-
-      // But a perimeter added to storey_1 (old) should be ignored
-      mockAddPerimeterGeometry.mockClear()
-      const oldPerimeter = makePerimeter('p6', 'storey_1')
-      capturedPerimeterCallback!(oldPerimeter, undefined)
-      expect(mockAddPerimeterGeometry).not.toHaveBeenCalled()
     })
   })
 
@@ -387,7 +279,7 @@ describe('GcsSyncService', () => {
 
     it('syncs building constraints referencing a perimeter after adding it', async () => {
       // Set up a perimeter with proper wall IDs
-      const perimeter = makePerimeter('p1', 'storey_1', ['outcorner_c1', 'outcorner_c2'], ['outwall_w1'])
+      const perimeter = makePerimeter('p1', ['outcorner_c1', 'outcorner_c2'], ['outwall_w1'])
       mockPerimetersById['p1' as PerimeterId] = perimeter
 
       // Set up a model-store constraint that references the perimeter's wall
@@ -395,6 +287,10 @@ describe('GcsSyncService', () => {
       mockBuildingConstraints[constraint.id] = constraint
 
       await importGcsSync()
+
+      // Clear the mock from initialization so we only test the callback
+      mockAddPerimeterGeometry.mockClear()
+      mockGcsAddBuildingConstraint.mockClear()
 
       // Trigger perimeter addition
       capturedPerimeterCallback!(perimeter, undefined)
@@ -407,7 +303,7 @@ describe('GcsSyncService', () => {
 
     it('does not sync constraints that do not reference the perimeter', async () => {
       // Perimeter with walls w1
-      const perimeter = makePerimeter('p1', 'storey_1', ['outcorner_c1', 'outcorner_c2'], ['outwall_w1'])
+      const perimeter = makePerimeter('p1', ['outcorner_c1', 'outcorner_c2'], ['outwall_w1'])
       mockPerimetersById['p1' as PerimeterId] = perimeter
 
       // Constraint referencing a wall from a different perimeter
@@ -424,19 +320,18 @@ describe('GcsSyncService', () => {
     })
 
     it('syncs constraints after perimeter upsert (update)', async () => {
-      const prev = makePerimeter('p1', 'storey_1', ['outcorner_c1', 'outcorner_c2'], ['outwall_w1'])
-      const curr = makePerimeter(
-        'p1',
-        'storey_1',
-        ['outcorner_c1', 'outcorner_c2', 'outcorner_c3'],
-        ['outwall_w1', 'outwall_w2']
-      )
+      const prev = makePerimeter('p1', ['outcorner_c1', 'outcorner_c2'], ['outwall_w1'])
+      const curr = makePerimeter('p1', ['outcorner_c1', 'outcorner_c2', 'outcorner_c3'], ['outwall_w1', 'outwall_w2'])
       mockPerimetersById['p1' as PerimeterId] = curr
 
       const constraint = makeWallConstraint('1', 'outwall_w2')
       mockBuildingConstraints[constraint.id] = constraint
 
       await importGcsSync()
+
+      // Clear the mock from initialization
+      mockAddPerimeterGeometry.mockClear()
+      mockGcsAddBuildingConstraint.mockClear()
 
       capturedPerimeterCallback!(curr, prev)
 
@@ -445,28 +340,8 @@ describe('GcsSyncService', () => {
       expect(mockGcsAddBuildingConstraint).toHaveBeenCalledWith(constraint)
     })
 
-    it('syncs constraints during active storey change', async () => {
-      mockPerimeterRegistry['p_old' as PerimeterId] = { pointIds: [] }
-
-      const newStoreyId = 'storey_2' as StoreyId
-      const perimeter = makePerimeter('p3', 'storey_2', ['outcorner_c1', 'outcorner_c2'], ['outwall_w1'])
-      mockPerimetersByStorey[newStoreyId] = [perimeter]
-      mockPerimetersById['p3' as PerimeterId] = perimeter
-
-      const constraint = makeWallConstraint('1', 'outwall_w1')
-      mockBuildingConstraints[constraint.id] = constraint
-
-      await importGcsSync()
-
-      capturedStoreyListener!(newStoreyId, 'storey_1')
-
-      expect(mockAddPerimeterGeometry).toHaveBeenCalledWith('p3')
-      expect(mockGcsAddBuildingConstraint).toHaveBeenCalledTimes(1)
-      expect(mockGcsAddBuildingConstraint).toHaveBeenCalledWith(constraint)
-    })
-
     it('warns but does not throw when constraint sync fails for cross-perimeter constraint', async () => {
-      const perimeter = makePerimeter('p1', 'storey_1', ['outcorner_c1', 'outcorner_c2'], ['outwall_w1'])
+      const perimeter = makePerimeter('p1', ['outcorner_c1', 'outcorner_c2'], ['outwall_w1'])
       mockPerimetersById['p1' as PerimeterId] = perimeter
 
       // Constraint references w1 from this perimeter — but addBuildingConstraint will fail
@@ -482,6 +357,10 @@ describe('GcsSyncService', () => {
 
       await importGcsSync()
 
+      // Clear the mock from initialization
+      mockAddPerimeterGeometry.mockClear()
+      mockGcsAddBuildingConstraint.mockClear()
+
       // Should not throw
       expect(() => {
         capturedPerimeterCallback!(perimeter, undefined)
@@ -495,21 +374,6 @@ describe('GcsSyncService', () => {
       )
 
       warnSpy.mockRestore()
-    })
-
-    it('does not sync constraints when perimeter is added to non-active storey', async () => {
-      const perimeter = makePerimeter('p1', 'storey_other', ['outcorner_c1', 'outcorner_c2'], ['outwall_w1'])
-      mockPerimetersById['p1' as PerimeterId] = perimeter
-
-      const constraint = makeWallConstraint('1', 'outwall_w1')
-      mockBuildingConstraints[constraint.id] = constraint
-
-      await importGcsSync()
-
-      capturedPerimeterCallback!(perimeter, undefined)
-
-      expect(mockAddPerimeterGeometry).not.toHaveBeenCalled()
-      expect(mockGcsAddBuildingConstraint).not.toHaveBeenCalled()
     })
   })
 
@@ -556,10 +420,13 @@ describe('GcsSyncService', () => {
       // Register perimeter in mock so getPerimeterById can find it
       mockPerimetersById['p1' as PerimeterId] = {
         id: 'p1' as PerimeterId,
-        storeyId: 'storey_1' as StoreyId,
+        storeyId: 'storey_1' as const,
         cornerIds: ['outcorner_c1' as PerimeterCornerId],
         wallIds: ['outwall_w1' as PerimeterWallId],
-        referenceSide: 'inside' as Perimeter['referenceSide']
+        referenceSide: 'inside' as Perimeter['referenceSide'],
+        roomIds: [] as Perimeter['roomIds'],
+        wallNodeIds: [] as Perimeter['wallNodeIds'],
+        intermediateWallIds: [] as Perimeter['intermediateWallIds']
       } as Perimeter
 
       // Register corner geometry that getPerimeterCornerById will return

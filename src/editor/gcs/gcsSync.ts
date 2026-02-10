@@ -1,12 +1,6 @@
-import type { Constraint, Perimeter, PerimeterCorner, PerimeterId, StoreyId } from '@/building/model'
+import type { Constraint, Perimeter, PerimeterCorner, PerimeterId } from '@/building/model'
 import type { PerimeterCornerId, PerimeterWallId } from '@/building/model/ids'
-import {
-  getModelActions,
-  subscribeToConstraints,
-  subscribeToCorners,
-  subscribeToModelChanges,
-  subscribeToPerimeters
-} from '@/building/store'
+import { getModelActions, subscribeToConstraints, subscribeToCorners, subscribeToPerimeters } from '@/building/store'
 import { scaleAddVec2 } from '@/shared/geometry'
 
 import {
@@ -19,22 +13,12 @@ import {
 import { getGcsActions, getGcsState } from './store'
 
 class GcsSyncService {
-  private activeStoreyId: StoreyId
-
   constructor() {
-    this.activeStoreyId = getModelActions().getActiveStoreyId()
     this.setupSubscriptions()
+    this.initializeAllPerimeters()
   }
 
   private setupSubscriptions(): void {
-    // Subscribe to active storey changes
-    subscribeToModelChanges(
-      s => s.activeStoreyId,
-      (newStoreyId, _oldStoreyId) => {
-        this.handleActiveStoreyChange(newStoreyId)
-      }
-    )
-
     // Subscribe to perimeter record changes (add/remove/update).
     // Must be registered BEFORE the constraint subscription so that
     // GCS geometry (points, lines) exists before constraints reference it.
@@ -55,21 +39,13 @@ class GcsSyncService {
     })
   }
 
-  private handleActiveStoreyChange(newStoreyId: StoreyId): void {
-    this.activeStoreyId = newStoreyId
-
+  private initializeAllPerimeters(): void {
     const gcsActions = getGcsActions()
-    const { perimeterRegistry } = getGcsState()
-
-    // Remove all currently tracked perimeters
-    for (const perimeterId of Object.keys(perimeterRegistry) as PerimeterId[]) {
-      gcsActions.removePerimeterGeometry(perimeterId)
-    }
-
-    // Add all perimeters belonging to the new active storey
     const modelActions = getModelActions()
-    const perimeters = modelActions.getPerimetersByStorey(newStoreyId)
-    for (const perimeter of perimeters) {
+
+    // Add all perimeters from all storeys
+    const allPerimeters = modelActions.getAllPerimeters()
+    for (const perimeter of allPerimeters) {
       gcsActions.addPerimeterGeometry(perimeter.id)
       this.syncConstraintsForPerimeter(perimeter.id)
     }
@@ -87,21 +63,14 @@ class GcsSyncService {
         gcsActions.removePerimeterGeometry(perimeterId)
       }
     } else if (current && !previous) {
-      // Perimeter added — only if it belongs to the active storey
-      if (current.storeyId === this.activeStoreyId) {
-        gcsActions.addPerimeterGeometry(perimeterId)
-        this.syncConstraintsForPerimeter(perimeterId)
-      }
+      // Perimeter added — always add geometry and sync constraints
+      gcsActions.addPerimeterGeometry(perimeterId)
+      this.syncConstraintsForPerimeter(perimeterId)
     } else if (current && previous) {
       // Perimeter updated (e.g. corner removed → cornerIds/wallIds changed)
-      if (current.storeyId === this.activeStoreyId) {
-        // addPerimeterGeometry handles upsert (removes old data first)
-        gcsActions.addPerimeterGeometry(perimeterId)
-        this.syncConstraintsForPerimeter(perimeterId)
-      } else if (perimeterId in getGcsState().perimeterRegistry) {
-        // Storey changed away from active — remove it
-        gcsActions.removePerimeterGeometry(perimeterId)
-      }
+      // addPerimeterGeometry handles upsert (removes old data first)
+      gcsActions.addPerimeterGeometry(perimeterId)
+      this.syncConstraintsForPerimeter(perimeterId)
     }
   }
 
