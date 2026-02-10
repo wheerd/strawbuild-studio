@@ -13,7 +13,7 @@ import type { PerimeterCornerWithGeometry } from '@/building/model/perimeters'
 import type { OpeningWithGeometry, WallPostWithGeometry } from '@/building/model/wallEntities'
 import { getModelActions } from '@/building/store'
 import { referenceSideToConstraintSide } from '@/editor/gcs/constraintGenerator'
-import { midpoint, scaleAddVec2 } from '@/shared/geometry/2d'
+import { type Vec2, midpoint, scaleAddVec2 } from '@/shared/geometry/2d'
 
 import {
   type TranslationContext,
@@ -49,11 +49,11 @@ interface GcsStoreActions {
   addPerimeterGeometry: (perimeterId: PerimeterId) => void
   removePerimeterGeometry: (perimeterId: PerimeterId) => void
 
-  addPoint: (id: string, x: number, y: number, fixed?: boolean) => void
+  addPoint: (id: string, pos: Vec2, fixed?: boolean) => void
   addLine: (id: string, p1Id: string, p2Id: string) => void
   addConstraint: (constraint: Constraint) => void
 
-  updatePointPosition: (id: string, x: number, y: number) => void
+  updatePointPosition: (id: string, pos: Vec2) => void
 
   removePoints: (ids: string[]) => void
   removeLines: (ids: string[]) => void
@@ -79,9 +79,9 @@ const useGcsStore = create<GcsStore>()((set, get) => ({
   redundantConstraintIds: new Set(),
 
   actions: {
-    addPoint: (id, x, y, fixed = false) => {
+    addPoint: (id, pos, fixed = false) => {
       set(state => ({
-        points: { ...state.points, [id]: { id, type: 'point', x, y, fixed } }
+        points: { ...state.points, [id]: { id, type: 'point', x: pos[0], y: pos[1], fixed } }
       }))
     },
 
@@ -97,9 +97,9 @@ const useGcsStore = create<GcsStore>()((set, get) => ({
       }))
     },
 
-    updatePointPosition: (id, x, y) => {
+    updatePointPosition: (id, pos) => {
       set(state => ({
-        points: { ...state.points, [id]: { ...state.points[id], x, y } }
+        points: { ...state.points, [id]: { ...state.points[id], x: pos[0], y: pos[1] } }
       }))
     },
 
@@ -276,12 +276,12 @@ const useGcsStore = create<GcsStore>()((set, get) => ({
         const endNonRef = wallEntityPointId(entity.id, 'end', false)
 
         // Add all 6 points (start/center/end for ref and nonref sides)
-        actions.addPoint(startRef, ref.start[0], ref.start[1], false)
-        actions.addPoint(centerRef, ref.center[0], ref.center[1], false)
-        actions.addPoint(endRef, ref.end[0], ref.end[1], false)
-        actions.addPoint(startNonRef, nonref.start[0], nonref.start[1], false)
-        actions.addPoint(centerNonRef, nonref.center[0], nonref.center[1], false)
-        actions.addPoint(endNonRef, nonref.end[0], nonref.end[1], false)
+        actions.addPoint(startRef, ref.start, false)
+        actions.addPoint(centerRef, ref.center, false)
+        actions.addPoint(endRef, ref.end, false)
+        actions.addPoint(startNonRef, nonref.start, false)
+        actions.addPoint(centerNonRef, nonref.center, false)
+        actions.addPoint(endNonRef, nonref.end, false)
 
         entry.pointIds.push(startRef, centerRef, endRef, startNonRef, centerNonRef, endNonRef)
 
@@ -377,11 +377,11 @@ const useGcsStore = create<GcsStore>()((set, get) => ({
         const nonRefPos = isRefInside ? corner.outsidePoint : corner.insidePoint
 
         // Add reference side point
-        actions.addPoint(refPointId, refPos[0], refPos[1], false)
+        actions.addPoint(refPointId, refPos, false)
 
         if (corner.interiorAngle !== 180) {
-          actions.addPoint(nonRefPrevId, nonRefPos[0], nonRefPos[1], false)
-          actions.addPoint(nonRefNextId, nonRefPos[0], nonRefPos[1], false)
+          actions.addPoint(nonRefPrevId, nonRefPos, false)
+          actions.addPoint(nonRefNextId, nonRefPos, false)
         } else {
           // Add non-reference side points with wall-specific thickness offsets
           const prevWall = walls.find(w => w.endCornerId === corner.id)
@@ -393,7 +393,7 @@ const useGcsStore = create<GcsStore>()((set, get) => ({
               prevWall.outsideDirection,
               isRefInside ? prevWall.thickness : -prevWall.thickness
             )
-            actions.addPoint(nonRefPrevId, prevPos[0], prevPos[1], false)
+            actions.addPoint(nonRefPrevId, prevPos, false)
           }
 
           if (nextWall) {
@@ -402,7 +402,7 @@ const useGcsStore = create<GcsStore>()((set, get) => ({
               nextWall.outsideDirection,
               isRefInside ? nextWall.thickness : -nextWall.thickness
             )
-            actions.addPoint(nonRefNextId, nextPos[0], nextPos[1], false)
+            actions.addPoint(nonRefNextId, nextPos, false)
           }
         }
 

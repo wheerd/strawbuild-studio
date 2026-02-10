@@ -181,11 +181,11 @@ class GcsSyncService {
     const refPos = isRefInside ? corner.insidePoint : corner.outsidePoint
     const nonRefPos = isRefInside ? corner.outsidePoint : corner.insidePoint
 
-    updatePointPosition(refPointId, refPos[0], refPos[1])
+    updatePointPosition(refPointId, refPos)
 
     if (corner.interiorAngle !== 180) {
-      updatePointPosition(nonRefPrevId, nonRefPos[0], nonRefPos[1])
-      updatePointPosition(nonRefNextId, nonRefPos[0], nonRefPos[1])
+      updatePointPosition(nonRefPrevId, nonRefPos)
+      updatePointPosition(nonRefNextId, nonRefPos)
     } else {
       const prevWall = getPerimeterWallById(corner.previousWallId)
       const nextWall = getPerimeterWallById(corner.nextWallId)
@@ -195,14 +195,14 @@ class GcsSyncService {
         prevWall.outsideDirection,
         isRefInside ? prevWall.thickness : -prevWall.thickness
       )
-      updatePointPosition(nonRefPrevId, prevPos[0], prevPos[1])
+      updatePointPosition(nonRefPrevId, prevPos)
 
       const nextPos = scaleAddVec2(
         refPos,
         nextWall.outsideDirection,
         isRefInside ? nextWall.thickness : -nextWall.thickness
       )
-      updatePointPosition(nonRefNextId, nextPos[0], nextPos[1])
+      updatePointPosition(nonRefNextId, nextPos)
     }
   }
 
@@ -282,12 +282,12 @@ class GcsSyncService {
           end: current.insideLine.end
         }
 
-    updatePointPosition(wallEntityPointId(id, 'start', true), ref.start[0], ref.start[1])
-    updatePointPosition(wallEntityPointId(id, 'center', true), ref.center[0], ref.center[1])
-    updatePointPosition(wallEntityPointId(id, 'end', true), ref.end[0], ref.end[1])
-    updatePointPosition(wallEntityPointId(id, 'start', false), nonref.start[0], nonref.start[1])
-    updatePointPosition(wallEntityPointId(id, 'center', false), nonref.center[0], nonref.center[1])
-    updatePointPosition(wallEntityPointId(id, 'end', false), nonref.end[0], nonref.end[1])
+    updatePointPosition(wallEntityPointId(id, 'start', true), ref.start)
+    updatePointPosition(wallEntityPointId(id, 'center', true), ref.center)
+    updatePointPosition(wallEntityPointId(id, 'end', true), ref.end)
+    updatePointPosition(wallEntityPointId(id, 'start', false), nonref.start)
+    updatePointPosition(wallEntityPointId(id, 'center', false), nonref.center)
+    updatePointPosition(wallEntityPointId(id, 'end', false), nonref.end)
   }
 }
 

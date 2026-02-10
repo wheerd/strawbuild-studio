@@ -20,10 +20,13 @@ const mockPerimetersById: Record<PerimeterId, Perimeter> = {}
 const mockBuildingConstraints: Record<ConstraintId, Constraint> = {}
 
 // Captured subscription callbacks
-let capturedPerimeterCallback: ((current?: Perimeter, previous?: Perimeter) => void) | null = null
-let capturedConstraintCallback: ((current?: Constraint, previous?: Constraint) => void) | null = null
-let capturedCornerCallback: ((current?: PerimeterCorner, previous?: PerimeterCorner) => void) | null = null
-let capturedWallCallback: ((current?: PerimeterWall, previous?: PerimeterWall) => void) | null = null
+let capturedPerimeterCallback: ((id: PerimeterId, current?: Perimeter, previous?: Perimeter) => void) | null = null
+let capturedConstraintCallback: ((id: ConstraintId, current?: Constraint, previous?: Constraint) => void) | null = null
+let capturedCornerCallback:
+  | ((id: PerimeterCornerId, current?: PerimeterCorner, previous?: PerimeterCorner) => void)
+  | null = null
+let capturedWallCallback: ((id: PerimeterWallId, current?: PerimeterWall, previous?: PerimeterWall) => void) | null =
+  null
 
 // Mock GCS actions
 const mockAddPerimeterGeometry = vi.fn()
@@ -43,22 +46,26 @@ vi.mock('@/building/store', () => ({
     getPerimeterCornerById: (cornerId: string) => mockCornerGeometries[cornerId],
     getAllBuildingConstraints: () => Object.values(mockBuildingConstraints)
   }),
-  subscribeToPerimeters: (cb: (current?: Perimeter, previous?: Perimeter) => void) => {
+  subscribeToPerimeters: (cb: (id: string, current?: Perimeter, previous?: Perimeter) => void) => {
     capturedPerimeterCallback = cb
     return vi.fn() // unsubscribe
   },
-  subscribeToConstraints: (cb: (current?: Constraint, previous?: Constraint) => void) => {
+  subscribeToConstraints: (cb: (id: string, current?: Constraint, previous?: Constraint) => void) => {
     capturedConstraintCallback = cb
     return vi.fn() // unsubscribe
   },
-  subscribeToCorners: (cb: (current?: PerimeterCorner, previous?: PerimeterCorner) => void) => {
+  subscribeToCorners: (cb: (id: string, current?: PerimeterCorner, previous?: PerimeterCorner) => void) => {
     capturedCornerCallback = cb
     return vi.fn() // unsubscribe
   },
-  subscribeToWalls: (cb: (current?: PerimeterWall, previous?: PerimeterWall) => void) => {
+  subscribeToWalls: (cb: (id: string, current?: PerimeterWall, previous?: PerimeterWall) => void) => {
     capturedWallCallback = cb
     return vi.fn() // unsubscribe
-  }
+  },
+  subscribeToWallOpenings: () => vi.fn(),
+  subscribeToWallPosts: () => vi.fn(),
+  subscribeToOpeningGeometry: () => vi.fn(),
+  subscribeToWallPostGeometry: () => vi.fn()
 }))
 
 // Mock GCS store
@@ -152,7 +159,7 @@ describe('GcsSyncService', () => {
       await importGcsSync()
 
       const perimeter = makePerimeter('p1')
-      capturedPerimeterCallback!(perimeter, undefined)
+      capturedPerimeterCallback!('p1' as PerimeterId, perimeter, undefined)
 
       expect(mockAddPerimeterGeometry).toHaveBeenCalledWith('p1')
       expect(mockAddPerimeterGeometry).toHaveBeenCalledTimes(1)
@@ -167,7 +174,7 @@ describe('GcsSyncService', () => {
       await importGcsSync()
 
       const perimeter = makePerimeter('p1')
-      capturedPerimeterCallback!(undefined, perimeter)
+      capturedPerimeterCallback!(perimeter.id, undefined, perimeter)
 
       expect(mockRemovePerimeterGeometry).toHaveBeenCalledWith('p1')
       expect(mockRemovePerimeterGeometry).toHaveBeenCalledTimes(1)
@@ -178,7 +185,7 @@ describe('GcsSyncService', () => {
       await importGcsSync()
 
       const perimeter = makePerimeter('p1')
-      capturedPerimeterCallback!(undefined, perimeter)
+      capturedPerimeterCallback!(perimeter.id, undefined, perimeter)
 
       expect(mockRemovePerimeterGeometry).not.toHaveBeenCalled()
     })
@@ -190,7 +197,7 @@ describe('GcsSyncService', () => {
 
       const prev = makePerimeter('p1', ['c1', 'c2'])
       const curr = makePerimeter('p1', ['c1', 'c2', 'c3'])
-      capturedPerimeterCallback!(curr, prev)
+      capturedPerimeterCallback!('p1' as PerimeterId, curr, prev)
 
       expect(mockAddPerimeterGeometry).toHaveBeenCalledWith('p1')
       expect(mockAddPerimeterGeometry).toHaveBeenCalledTimes(1)
@@ -208,7 +215,7 @@ describe('GcsSyncService', () => {
       await importGcsSync()
 
       const constraint = makeConstraint('1', 'outwall_w1')
-      capturedConstraintCallback!(constraint, undefined)
+      capturedConstraintCallback!('constraint_1' as ConstraintId, constraint, undefined)
 
       expect(mockGcsAddBuildingConstraint).toHaveBeenCalledTimes(1)
       expect(mockGcsAddBuildingConstraint).toHaveBeenCalledWith(constraint)
@@ -218,7 +225,7 @@ describe('GcsSyncService', () => {
       await importGcsSync()
 
       const constraint = makeConstraint('1', 'outwall_w1')
-      capturedConstraintCallback!(undefined, constraint)
+      capturedConstraintCallback!('constraint_1' as ConstraintId, undefined, constraint)
 
       expect(mockGcsRemoveBuildingConstraint).toHaveBeenCalledTimes(1)
       // The key is derived from the constraint input (buildingConstraintKey)
@@ -234,7 +241,7 @@ describe('GcsSyncService', () => {
         type: 'verticalWall',
         wall: 'outwall_w1' as PerimeterWallId
       }
-      capturedConstraintCallback!(curr, prev)
+      capturedConstraintCallback!('constraint_1' as ConstraintId, curr, prev)
 
       expect(mockGcsRemoveBuildingConstraint).toHaveBeenCalledTimes(1)
       expect(mockGcsAddBuildingConstraint).toHaveBeenCalledTimes(1)
@@ -254,7 +261,7 @@ describe('GcsSyncService', () => {
 
       // Should not throw
       expect(() => {
-        capturedConstraintCallback!(constraint, undefined)
+        capturedConstraintCallback!('constraint_1' as ConstraintId, constraint, undefined)
       }).not.toThrow()
 
       // Should have logged a warning
@@ -270,7 +277,7 @@ describe('GcsSyncService', () => {
     it('does nothing when both current and previous are undefined', async () => {
       await importGcsSync()
 
-      capturedConstraintCallback!(undefined, undefined)
+      capturedConstraintCallback!('some_id' as ConstraintId, undefined, undefined)
 
       expect(mockGcsAddBuildingConstraint).not.toHaveBeenCalled()
       expect(mockGcsRemoveBuildingConstraint).not.toHaveBeenCalled()
@@ -300,7 +307,7 @@ describe('GcsSyncService', () => {
       mockGcsAddBuildingConstraint.mockClear()
 
       // Trigger perimeter addition
-      capturedPerimeterCallback!(perimeter, undefined)
+      capturedPerimeterCallback!('p1' as PerimeterId, perimeter, undefined)
 
       // addPerimeterGeometry should be called first, then addBuildingConstraint for the matching constraint
       expect(mockAddPerimeterGeometry).toHaveBeenCalledWith('p1')
@@ -319,7 +326,7 @@ describe('GcsSyncService', () => {
 
       await importGcsSync()
 
-      capturedPerimeterCallback!(perimeter, undefined)
+      capturedPerimeterCallback!('p1' as PerimeterId, perimeter, undefined)
 
       expect(mockAddPerimeterGeometry).toHaveBeenCalledWith('p1')
       // Should NOT have synced the unrelated constraint
@@ -340,7 +347,7 @@ describe('GcsSyncService', () => {
       mockAddPerimeterGeometry.mockClear()
       mockGcsAddBuildingConstraint.mockClear()
 
-      capturedPerimeterCallback!(curr, prev)
+      capturedPerimeterCallback!('p1' as PerimeterId, curr, prev)
 
       expect(mockAddPerimeterGeometry).toHaveBeenCalledWith('p1')
       expect(mockGcsAddBuildingConstraint).toHaveBeenCalledTimes(1)
@@ -370,7 +377,7 @@ describe('GcsSyncService', () => {
 
       // Should not throw
       expect(() => {
-        capturedPerimeterCallback!(perimeter, undefined)
+        capturedPerimeterCallback!('p1' as PerimeterId, perimeter, undefined)
       }).not.toThrow()
 
       // Should have attempted to add the constraint and warned
@@ -443,12 +450,12 @@ describe('GcsSyncService', () => {
 
       const prev = makeCorner('outcorner_c1', 'p1')
       const curr = { ...prev, referencePoint: newVec2(100, 200) }
-      capturedCornerCallback!(curr, prev)
+      capturedCornerCallback!('outcorner_c1' as PerimeterCornerId, curr, prev)
 
       expect(mockUpdatePointPosition).toHaveBeenCalledTimes(3)
-      expect(mockUpdatePointPosition).toHaveBeenCalledWith('corner_outcorner_c1_ref', 100, 200)
-      expect(mockUpdatePointPosition).toHaveBeenCalledWith('corner_outcorner_c1_nonref_prev', 110, 210)
-      expect(mockUpdatePointPosition).toHaveBeenCalledWith('corner_outcorner_c1_nonref_next', 110, 210)
+      expect(mockUpdatePointPosition).toHaveBeenCalledWith('corner_outcorner_c1_ref', newVec2(100, 200))
+      expect(mockUpdatePointPosition).toHaveBeenCalledWith('corner_outcorner_c1_nonref_prev', newVec2(110, 210))
+      expect(mockUpdatePointPosition).toHaveBeenCalledWith('corner_outcorner_c1_nonref_next', newVec2(110, 210))
     })
 
     it('does not update positions for untracked perimeters', async () => {
@@ -457,7 +464,7 @@ describe('GcsSyncService', () => {
 
       const prev = makeCorner('outcorner_c1', 'p_untracked')
       const curr = { ...prev, referencePoint: newVec2(50, 60) }
-      capturedCornerCallback!(curr, prev)
+      capturedCornerCallback!('outcorner_c1' as PerimeterCornerId, curr, prev)
 
       expect(mockUpdatePointPosition).not.toHaveBeenCalled()
     })
@@ -468,7 +475,7 @@ describe('GcsSyncService', () => {
       await importGcsSync()
 
       const curr = makeCorner('outcorner_c1', 'p1')
-      capturedCornerCallback!(curr, undefined)
+      capturedCornerCallback!('outcorner_c1' as PerimeterCornerId, curr, undefined)
 
       expect(mockUpdatePointPosition).not.toHaveBeenCalled()
     })
@@ -479,7 +486,7 @@ describe('GcsSyncService', () => {
       await importGcsSync()
 
       const prev = makeCorner('outcorner_c1', 'p1')
-      capturedCornerCallback!(undefined, prev)
+      capturedCornerCallback!('outcorner_c1' as PerimeterCornerId, undefined, prev)
 
       expect(mockUpdatePointPosition).not.toHaveBeenCalled()
     })
@@ -522,7 +529,7 @@ describe('GcsSyncService', () => {
       // Simulate wall thickness change
       const prevWall = makeWall('outwall_w1', 'p1', 400)
       const currWall = makeWall('outwall_w1', 'p1', 500)
-      capturedWallCallback!(currWall, prevWall)
+      capturedWallCallback!('outwall_w1' as PerimeterWallId, currWall, prevWall)
 
       // Should have called addPerimeterGeometry to rebuild perimeter with new thickness
       expect(mockAddPerimeterGeometry).toHaveBeenCalledWith('p1')
@@ -552,7 +559,7 @@ describe('GcsSyncService', () => {
       // Simulate wall update without thickness change
       const prevWall = makeWall('outwall_w1', 'p1', 400)
       const currWall = makeWall('outwall_w1', 'p1', 400)
-      capturedWallCallback!(currWall, prevWall)
+      capturedWallCallback!('outwall_w1' as PerimeterWallId, currWall, prevWall)
 
       // Should NOT have called addPerimeterGeometry since thickness didn't change
       expect(mockAddPerimeterGeometry).not.toHaveBeenCalled()
@@ -569,7 +576,7 @@ describe('GcsSyncService', () => {
 
       // Simulate wall addition
       const wall = makeWall('outwall_w1', 'p1', 400)
-      capturedWallCallback!(wall, undefined)
+      capturedWallCallback!('outwall_w1' as PerimeterWallId, wall, undefined)
 
       // Should NOT have called addPerimeterGeometry - perimeter subscription handles additions
       expect(mockAddPerimeterGeometry).not.toHaveBeenCalled()
@@ -586,7 +593,7 @@ describe('GcsSyncService', () => {
 
       // Simulate wall removal
       const wall = makeWall('outwall_w1', 'p1', 400)
-      capturedWallCallback!(undefined, wall)
+      capturedWallCallback!('outwall_w1' as PerimeterWallId, undefined, wall)
 
       // Should NOT have called addPerimeterGeometry - perimeter subscription handles removals
       expect(mockAddPerimeterGeometry).not.toHaveBeenCalled()
@@ -602,7 +609,7 @@ describe('GcsSyncService', () => {
       // Simulate wall thickness change for untracked perimeter
       const prevWall = makeWall('outwall_w1', 'p_untracked', 400)
       const currWall = makeWall('outwall_w1', 'p_untracked', 500)
-      capturedWallCallback!(currWall, prevWall)
+      capturedWallCallback!('outwall_w1' as PerimeterWallId, currWall, prevWall)
 
       // Should NOT have called addPerimeterGeometry
       expect(mockAddPerimeterGeometry).not.toHaveBeenCalled()
