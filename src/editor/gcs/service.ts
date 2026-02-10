@@ -73,7 +73,12 @@ function findColinearChains(
     if (!wallLine) continue
 
     const prevWall = cornerAdjacencyMap.get(wallLine.p1_id)?.prevWall
-    if (!prevWall || !wallsWithHV.has(prevWall)) continue
+    if (
+      !prevWall ||
+      !wallsWithHV.has(prevWall) ||
+      wallToConstraintType.get(wallId) !== wallToConstraintType.get(prevWall)
+    )
+      continue
 
     const prevWallLine = wallMap.get(prevWall)
     if (!prevWallLine) continue

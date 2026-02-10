@@ -1,6 +1,12 @@
-import type { Constraint, Perimeter, PerimeterCorner, PerimeterId } from '@/building/model'
+import type { Constraint, Perimeter, PerimeterCorner, PerimeterId, PerimeterWall } from '@/building/model'
 import type { PerimeterCornerId, PerimeterWallId } from '@/building/model/ids'
-import { getModelActions, subscribeToConstraints, subscribeToCorners, subscribeToPerimeters } from '@/building/store'
+import {
+  getModelActions,
+  subscribeToConstraints,
+  subscribeToCorners,
+  subscribeToPerimeters,
+  subscribeToWalls
+} from '@/building/store'
 import { scaleAddVec2 } from '@/shared/geometry'
 
 import {
@@ -36,6 +42,12 @@ class GcsSyncService {
     // This catches position changes that don't alter the Perimeter record itself.
     subscribeToCorners((current, previous) => {
       this.handleCornerChange(current, previous)
+    })
+
+    // Subscribe to wall data changes (e.g. thickness changes).
+    // Thickness changes affect GCS point positions and thickness constraints.
+    subscribeToWalls((current, previous) => {
+      this.handleWallChange(current, previous)
     })
   }
 
@@ -190,6 +202,25 @@ class GcsSyncService {
       )
       updatePointPosition(nonRefNextId, nextPos[0], nextPos[1])
     }
+  }
+
+  private handleWallChange(current?: PerimeterWall, previous?: PerimeterWall): void {
+    // Only handle updates — additions/removals are covered by the perimeter subscription
+    if (!current || !previous) return
+
+    // Only care about thickness changes
+    if (current.thickness === previous.thickness) return
+
+    const { perimeterId } = current
+    const { perimeterRegistry } = getGcsState()
+
+    // Only update if this wall's perimeter is currently tracked
+    if (!(perimeterId in perimeterRegistry)) return
+
+    // Rebuild the perimeter geometry to update points and thickness constraints
+    // addPerimeterGeometry handles upsert (removes old data first)
+    const gcsActions = getGcsActions()
+    gcsActions.addPerimeterGeometry(perimeterId)
   }
 }
 

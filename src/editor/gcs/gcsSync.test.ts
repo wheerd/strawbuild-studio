@@ -7,6 +7,7 @@ import type {
   PerimeterCorner,
   PerimeterCornerWithGeometry,
   PerimeterId,
+  PerimeterWall,
   PerimeterWallId
 } from '@/building/model'
 import type { PerimeterCornerId } from '@/building/model/ids'
@@ -22,6 +23,7 @@ const mockBuildingConstraints: Record<ConstraintId, Constraint> = {}
 let capturedPerimeterCallback: ((current?: Perimeter, previous?: Perimeter) => void) | null = null
 let capturedConstraintCallback: ((current?: Constraint, previous?: Constraint) => void) | null = null
 let capturedCornerCallback: ((current?: PerimeterCorner, previous?: PerimeterCorner) => void) | null = null
+let capturedWallCallback: ((current?: PerimeterWall, previous?: PerimeterWall) => void) | null = null
 
 // Mock GCS actions
 const mockAddPerimeterGeometry = vi.fn()
@@ -52,6 +54,10 @@ vi.mock('@/building/store', () => ({
   subscribeToCorners: (cb: (current?: PerimeterCorner, previous?: PerimeterCorner) => void) => {
     capturedCornerCallback = cb
     return vi.fn() // unsubscribe
+  },
+  subscribeToWalls: (cb: (current?: PerimeterWall, previous?: PerimeterWall) => void) => {
+    capturedWallCallback = cb
+    return vi.fn() // unsubscribe
   }
 }))
 
@@ -75,6 +81,7 @@ beforeEach(() => {
   capturedPerimeterCallback = null
   capturedConstraintCallback = null
   capturedCornerCallback = null
+  capturedWallCallback = null
 
   // Clear mutable objects
   for (const key of Object.keys(mockPerimeterRegistry) as PerimeterId[]) {
@@ -475,6 +482,130 @@ describe('GcsSyncService', () => {
       capturedCornerCallback!(undefined, prev)
 
       expect(mockUpdatePointPosition).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('wall thickness sync', () => {
+    function makeWall(id: string, perimeterId: string, thickness: number): PerimeterWall {
+      return {
+        id: id as PerimeterWallId,
+        perimeterId: perimeterId as PerimeterId,
+        startCornerId: 'outcorner_c1' as PerimeterCornerId,
+        endCornerId: 'outcorner_c2' as PerimeterCornerId,
+        entityIds: [] as PerimeterWall['entityIds'],
+        thickness,
+        wallAssemblyId: 'assembly_1' as PerimeterWall['wallAssemblyId']
+      } as PerimeterWall
+    }
+
+    it('rebuilds perimeter geometry when wall thickness changes', async () => {
+      // Perimeter is tracked in GCS registry
+      mockPerimeterRegistry['p1' as PerimeterId] = { pointIds: [], lineIds: [], constraintIds: [] }
+
+      // Register perimeter in mock so getPerimeterById can find it
+      mockPerimetersById['p1' as PerimeterId] = {
+        id: 'p1' as PerimeterId,
+        storeyId: 'storey_1' as const,
+        cornerIds: ['outcorner_c1' as PerimeterCornerId, 'outcorner_c2' as PerimeterCornerId],
+        wallIds: ['outwall_w1' as PerimeterWallId],
+        referenceSide: 'inside' as Perimeter['referenceSide'],
+        roomIds: [] as Perimeter['roomIds'],
+        wallNodeIds: [] as Perimeter['wallNodeIds'],
+        intermediateWallIds: [] as Perimeter['intermediateWallIds']
+      } as Perimeter
+
+      await importGcsSync()
+
+      // Clear mock from initialization
+      mockAddPerimeterGeometry.mockClear()
+
+      // Simulate wall thickness change
+      const prevWall = makeWall('outwall_w1', 'p1', 400)
+      const currWall = makeWall('outwall_w1', 'p1', 500)
+      capturedWallCallback!(currWall, prevWall)
+
+      // Should have called addPerimeterGeometry to rebuild perimeter with new thickness
+      expect(mockAddPerimeterGeometry).toHaveBeenCalledWith('p1')
+      expect(mockAddPerimeterGeometry).toHaveBeenCalledTimes(1)
+    })
+
+    it('does nothing when wall thickness does not change', async () => {
+      // Perimeter is tracked in GCS registry
+      mockPerimeterRegistry['p1' as PerimeterId] = { pointIds: [], lineIds: [], constraintIds: [] }
+
+      mockPerimetersById['p1' as PerimeterId] = {
+        id: 'p1' as PerimeterId,
+        storeyId: 'storey_1' as const,
+        cornerIds: ['outcorner_c1' as PerimeterCornerId],
+        wallIds: ['outwall_w1' as PerimeterWallId],
+        referenceSide: 'inside' as Perimeter['referenceSide'],
+        roomIds: [] as Perimeter['roomIds'],
+        wallNodeIds: [] as Perimeter['wallNodeIds'],
+        intermediateWallIds: [] as Perimeter['intermediateWallIds']
+      } as Perimeter
+
+      await importGcsSync()
+
+      // Clear mock from initialization
+      mockAddPerimeterGeometry.mockClear()
+
+      // Simulate wall update without thickness change
+      const prevWall = makeWall('outwall_w1', 'p1', 400)
+      const currWall = makeWall('outwall_w1', 'p1', 400)
+      capturedWallCallback!(currWall, prevWall)
+
+      // Should NOT have called addPerimeterGeometry since thickness didn't change
+      expect(mockAddPerimeterGeometry).not.toHaveBeenCalled()
+    })
+
+    it('does nothing when wall is added (no previous)', async () => {
+      // Perimeter is tracked in GCS registry
+      mockPerimeterRegistry['p1' as PerimeterId] = { pointIds: [], lineIds: [], constraintIds: [] }
+
+      await importGcsSync()
+
+      // Clear mock from initialization
+      mockAddPerimeterGeometry.mockClear()
+
+      // Simulate wall addition
+      const wall = makeWall('outwall_w1', 'p1', 400)
+      capturedWallCallback!(wall, undefined)
+
+      // Should NOT have called addPerimeterGeometry - perimeter subscription handles additions
+      expect(mockAddPerimeterGeometry).not.toHaveBeenCalled()
+    })
+
+    it('does nothing when wall is removed (no current)', async () => {
+      // Perimeter is tracked in GCS registry
+      mockPerimeterRegistry['p1' as PerimeterId] = { pointIds: [], lineIds: [], constraintIds: [] }
+
+      await importGcsSync()
+
+      // Clear mock from initialization
+      mockAddPerimeterGeometry.mockClear()
+
+      // Simulate wall removal
+      const wall = makeWall('outwall_w1', 'p1', 400)
+      capturedWallCallback!(undefined, wall)
+
+      // Should NOT have called addPerimeterGeometry - perimeter subscription handles removals
+      expect(mockAddPerimeterGeometry).not.toHaveBeenCalled()
+    })
+
+    it('does nothing for untracked perimeters', async () => {
+      // Registry is empty — perimeter not tracked
+      await importGcsSync()
+
+      // Clear mock from initialization
+      mockAddPerimeterGeometry.mockClear()
+
+      // Simulate wall thickness change for untracked perimeter
+      const prevWall = makeWall('outwall_w1', 'p_untracked', 400)
+      const currWall = makeWall('outwall_w1', 'p_untracked', 500)
+      capturedWallCallback!(currWall, prevWall)
+
+      // Should NOT have called addPerimeterGeometry
+      expect(mockAddPerimeterGeometry).not.toHaveBeenCalled()
     })
   })
 })
