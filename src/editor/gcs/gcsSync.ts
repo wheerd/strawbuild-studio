@@ -126,7 +126,7 @@ class GcsSyncService {
 
     // Find all model-store constraints that reference any of these entities
     const allConstraints = modelActions.getAllBuildingConstraints()
-    for (const constraint of Object.values(allConstraints)) {
+    for (const constraint of allConstraints) {
       const referencedCorners = getReferencedCornerIds(constraint)
       const referencedWalls = getReferencedWallIds(constraint)
 

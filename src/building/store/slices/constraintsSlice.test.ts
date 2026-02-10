@@ -277,7 +277,7 @@ describe('constraintsSlice', () => {
     it('should return empty record when no constraints exist', () => {
       const result = store.actions.getAllBuildingConstraints()
 
-      expect(Object.keys(result)).toHaveLength(0)
+      expect(result).toHaveLength(0)
     })
 
     it('should return all constraints', () => {
@@ -289,7 +289,7 @@ describe('constraintsSlice', () => {
 
       const result = store.actions.getAllBuildingConstraints()
 
-      expect(Object.keys(result)).toHaveLength(2)
+      expect(result).toHaveLength(2)
     })
   })
 

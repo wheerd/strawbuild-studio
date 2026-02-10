@@ -17,7 +17,7 @@ export interface ConstraintsActions {
   removeBuildingConstraint: (id: ConstraintId) => void
   removeConstraintsReferencingEntity: (entityId: ConstraintEntityId) => void
   getBuildingConstraintById: (id: ConstraintId) => Constraint | null
-  getAllBuildingConstraints: () => Record<ConstraintId, Constraint>
+  getAllBuildingConstraints: () => Constraint[]
   getConstraintsForEntity: (entityId: ConstraintEntityId) => Constraint[]
 }
 
@@ -390,7 +390,7 @@ export const createConstraintsSlice: StateCreator<
     },
 
     getAllBuildingConstraints: () => {
-      return get().buildingConstraints
+      return Object.values(get().buildingConstraints)
     },
 
     getConstraintsForEntity: (entityId: ConstraintEntityId) => {

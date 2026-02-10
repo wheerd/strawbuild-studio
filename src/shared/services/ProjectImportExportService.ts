@@ -1,11 +1,14 @@
-import type { OpeningParams, Storey, WallPostParams } from '@/building/model'
+import type { Constraint, ConstraintInput, OpeningParams, Storey, WallPostParams } from '@/building/model'
 import {
   type FloorAssemblyId,
   type OpeningAssemblyId,
+  type PerimeterCornerId,
   type PerimeterId,
+  type PerimeterWallId,
   type RingBeamAssemblyId,
   type RoofAssemblyId,
-  type WallAssemblyId
+  type WallAssemblyId,
+  type WallId
 } from '@/building/model/ids'
 import { getModelActions } from '@/building/store'
 import { getConfigActions, getConfigState, setConfigState } from '@/construction/config/store'
@@ -46,12 +49,14 @@ export interface ExportedPerimeter {
 }
 
 export interface ExportedCorner {
+  id?: string
   insideX: number
   insideY: number
   constructedByWall: 'previous' | 'next'
 }
 
 export interface ExportedWall {
+  id?: string
   thickness: number
   wallAssemblyId: string
   baseRingBeamAssemblyId?: string
@@ -95,12 +100,32 @@ export interface ExportedRoof {
   referencePerimeter?: string
 }
 
+export interface ExportedConstraint {
+  type:
+    | 'wallLength'
+    | 'colinearCorner'
+    | 'parallel'
+    | 'perpendicularCorner'
+    | 'cornerAngle'
+    | 'horizontalWall'
+    | 'verticalWall'
+  wall?: string
+  side?: 'left' | 'right'
+  length?: number
+  wallA?: string
+  wallB?: string
+  distance?: number
+  corner?: string
+  angle?: number
+}
+
 export interface ExportData {
   version: string
   timestamp: string
   modelStore: {
     storeys: ExportedStorey[]
     minLevel: number
+    constraints?: ExportedConstraint[]
   }
   configStore: {
     defaultStrawMaterial?: MaterialId
@@ -147,7 +172,7 @@ export interface IProjectImportExportService {
   importFromString(content: string): Promise<ImportResult | ImportError>
 }
 
-const CURRENT_VERSION = '1.13.0'
+const CURRENT_VERSION = '1.14.0'
 const SUPPORTED_VERSIONS = [
   '1.0.0',
   '1.1.0',
@@ -162,7 +187,8 @@ const SUPPORTED_VERSIONS = [
   '1.10.0',
   '1.11.0',
   '1.12.0',
-  '1.13.0'
+  '1.13.0',
+  '1.14.0'
 ] as const
 
 const compareVersion = (version1: string, version2: string) => {
@@ -252,6 +278,7 @@ class ProjectImportExportServiceImpl implements IProjectImportExportService {
               perimeter.referenceSide === 'inside' ? perimeter.innerPolygon : perimeter.outerPolygon
             ),
             corners: corners.map(corner => ({
+              id: corner.id,
               insideX: corner.insidePoint[0],
               insideY: corner.insidePoint[1],
               constructedByWall: corner.constructedByWall
@@ -261,6 +288,7 @@ class ProjectImportExportServiceImpl implements IProjectImportExportService {
               const posts = modelActions.getWallPostsById(wall.id)
 
               return {
+                id: wall.id,
                 thickness: wall.thickness,
                 wallAssemblyId: wall.wallAssemblyId,
                 baseRingBeamAssemblyId: wall.baseRingBeamAssemblyId,
@@ -299,7 +327,45 @@ class ProjectImportExportServiceImpl implements IProjectImportExportService {
         }
       })
 
-      const result = this.exportToJSON({ storeys: exportedStoreys, minLevel }, getConfigState(), getMaterialsState())
+      const constraints = modelActions.getAllBuildingConstraints()
+      const exportedConstraints: ExportedConstraint[] = constraints.map((constraint: Constraint) => {
+        const exported: ExportedConstraint = { type: constraint.type }
+        switch (constraint.type) {
+          case 'wallLength':
+            exported.wall = constraint.wall
+            exported.side = constraint.side
+            exported.length = constraint.length
+            break
+          case 'parallel':
+            exported.wallA = constraint.wallA
+            exported.wallB = constraint.wallB
+            exported.distance = constraint.distance
+            break
+          case 'colinearCorner':
+            exported.corner = constraint.corner
+            break
+          case 'perpendicularCorner':
+            exported.corner = constraint.corner
+            break
+          case 'cornerAngle':
+            exported.corner = constraint.corner
+            exported.angle = constraint.angle
+            break
+          case 'horizontalWall':
+            exported.wall = constraint.wall
+            break
+          case 'verticalWall':
+            exported.wall = constraint.wall
+            break
+        }
+        return exported
+      })
+
+      const result = this.exportToJSON(
+        { storeys: exportedStoreys, minLevel, constraints: exportedConstraints },
+        getConfigState(),
+        getMaterialsState()
+      )
 
       if (result.success) {
         const content = JSON.stringify(result.data, null, 2)
@@ -350,8 +416,10 @@ class ProjectImportExportServiceImpl implements IProjectImportExportService {
       // 5. Process imported storeys
       const exportedStoreys = importResult.data.modelStore.storeys
 
-      // Create a mapping from old perimeter IDs to new perimeter IDs (for roof references)
+      // Create mappings from old IDs to new IDs (for constraint references)
       const perimeterIdMap = new Map<PerimeterId, PerimeterId>()
+      const wallIdMap = new Map<PerimeterWallId, PerimeterWallId>()
+      const cornerIdMap = new Map<PerimeterCornerId, PerimeterCornerId>()
 
       exportedStoreys.forEach((exportedStorey, index, list) => {
         let targetStorey: Storey
@@ -407,6 +475,22 @@ class ProjectImportExportServiceImpl implements IProjectImportExportService {
           if (exportedPerimeter.id) {
             perimeterIdMap.set(exportedPerimeter.id as PerimeterId, perimeter.id)
           }
+
+          // Map old corner IDs to new corner IDs
+          exportedPerimeter.corners.forEach((exportedCorner, cornerIndex) => {
+            if (exportedCorner.id && cornerIndex < perimeter.cornerIds.length) {
+              const newCornerId = perimeter.cornerIds[cornerIndex]
+              cornerIdMap.set(exportedCorner.id as PerimeterCornerId, newCornerId)
+            }
+          })
+
+          // Map old wall IDs to new wall IDs
+          exportedPerimeter.walls.forEach((exportedWall, wallIndex) => {
+            if (exportedWall.id && wallIndex < perimeter.wallIds.length) {
+              const newWallId = perimeter.wallIds[wallIndex]
+              wallIdMap.set(exportedWall.id as PerimeterWallId, newWallId)
+            }
+          })
 
           // 7. Update wall properties - auto-recomputes geometry
           exportedPerimeter.walls.forEach((exportedWall, wallIndex) => {
@@ -551,6 +635,95 @@ class ProjectImportExportServiceImpl implements IProjectImportExportService {
         modelActions.adjustAllLevels(minLevel)
       }
 
+      // 10. Apply constraints with ID remapping
+      if (importResult.data.modelStore.constraints) {
+        for (const exportedConstraint of importResult.data.modelStore.constraints) {
+          try {
+            let constraintInput: ConstraintInput | undefined
+            switch (exportedConstraint.type) {
+              case 'wallLength': {
+                const wallId = wallIdMap.get(exportedConstraint.wall as PerimeterWallId)
+                const side = exportedConstraint.side
+                const length = exportedConstraint.length
+                if (!wallId || !side || length === undefined) continue
+                constraintInput = {
+                  type: 'wallLength',
+                  wall: wallId as WallId,
+                  side,
+                  length
+                }
+                break
+              }
+              case 'parallel': {
+                const wallAId = wallIdMap.get(exportedConstraint.wallA as PerimeterWallId)
+                const wallBId = wallIdMap.get(exportedConstraint.wallB as PerimeterWallId)
+                if (!wallAId || !wallBId) continue
+                constraintInput = {
+                  type: 'parallel',
+                  wallA: wallAId as WallId,
+                  wallB: wallBId as WallId,
+                  distance: exportedConstraint.distance
+                }
+                break
+              }
+              case 'colinearCorner': {
+                const cornerId = cornerIdMap.get(exportedConstraint.corner as PerimeterCornerId)
+                if (!cornerId) continue
+                constraintInput = {
+                  type: 'colinearCorner',
+                  corner: cornerId
+                }
+                break
+              }
+              case 'perpendicularCorner': {
+                const cornerId = cornerIdMap.get(exportedConstraint.corner as PerimeterCornerId)
+                if (!cornerId) continue
+                constraintInput = {
+                  type: 'perpendicularCorner',
+                  corner: cornerId
+                }
+                break
+              }
+              case 'cornerAngle': {
+                const cornerId = cornerIdMap.get(exportedConstraint.corner as PerimeterCornerId)
+                const angle = exportedConstraint.angle
+                if (!cornerId || angle === undefined) continue
+                constraintInput = {
+                  type: 'cornerAngle',
+                  corner: cornerId,
+                  angle
+                }
+                break
+              }
+              case 'horizontalWall': {
+                const wallId = wallIdMap.get(exportedConstraint.wall as PerimeterWallId)
+                if (!wallId) continue
+                constraintInput = {
+                  type: 'horizontalWall',
+                  wall: wallId as WallId
+                }
+                break
+              }
+              case 'verticalWall': {
+                const wallId = wallIdMap.get(exportedConstraint.wall as PerimeterWallId)
+                if (!wallId) continue
+                constraintInput = {
+                  type: 'verticalWall',
+                  wall: wallId as WallId
+                }
+                break
+              }
+              default:
+                continue
+            }
+
+            modelActions.addBuildingConstraint(constraintInput)
+          } catch (error) {
+            console.error('Failed to apply constraint:', exportedConstraint, error)
+          }
+        }
+      }
+
       return Promise.resolve({ success: true, data: importResult.data })
     } catch (error) {
       console.error(error)
@@ -625,6 +798,30 @@ class ProjectImportExportServiceImpl implements IProjectImportExportService {
     const modelStore = obj.modelStore as Record<string, unknown>
     if (!Array.isArray(modelStore.storeys) || typeof modelStore.minLevel !== 'number') {
       return false
+    }
+
+    if (modelStore.constraints !== undefined && modelStore.constraints !== null) {
+      if (!Array.isArray(modelStore.constraints)) {
+        return false
+      }
+      const validConstraintTypes: string[] = [
+        'wallLength',
+        'colinearCorner',
+        'parallel',
+        'perpendicularCorner',
+        'cornerAngle',
+        'horizontalWall',
+        'verticalWall'
+      ]
+      for (const constraint of modelStore.constraints) {
+        if (!constraint || typeof constraint !== 'object') {
+          return false
+        }
+        const constraintRecord = constraint as Record<string, unknown>
+        if (typeof constraintRecord.type !== 'string' || !validConstraintTypes.includes(constraintRecord.type)) {
+          return false
+        }
+      }
     }
 
     const isValidPolygon = (polygon: unknown): polygon is ExportedFloorPolygon => {

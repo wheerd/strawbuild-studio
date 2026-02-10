@@ -45,7 +45,7 @@ vi.mock('@/building/store', () => ({
     getPerimetersByStorey: (storeyId: StoreyId) => mockPerimetersByStorey[storeyId] ?? [],
     getPerimeterById: (perimeterId: PerimeterId) => mockPerimetersById[perimeterId],
     getPerimeterCornerById: (cornerId: string) => mockCornerGeometries[cornerId],
-    getAllBuildingConstraints: () => mockBuildingConstraints
+    getAllBuildingConstraints: () => Object.values(mockBuildingConstraints)
   }),
   subscribeToModelChanges: (
     selector: (state: unknown) => unknown,
