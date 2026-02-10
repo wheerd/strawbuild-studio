@@ -64,26 +64,24 @@
   },
   "modulesList": {
     "actions": {
-      "viewInPlan": "In Plan anzeigen",
       "backToSummary": "Zurück zur Übersicht",
-      "jumpToDetails": "Zu Details springen"
+      "jumpToDetails": "Zu Details springen",
+      "viewInPlan": "In Plan anzeigen"
     },
     "noModules": "Keine Module",
+    "summary": "Zusammenfassung",
     "tableHeaders": {
-      "description": "Spezifischer Typ",
+      "area": "Fläche",
+      "differentParts": "Verschiedene Teile",
       "dimensions": "Abmessungen",
       "label": "Bezeichnung",
       "quantity": "Menge",
-      "type": "Typ",
-      "area": "Fläche",
-      "totalArea": "Gesamtfläche",
       "specificType": "Spezifischer Typ",
+      "totalArea": "Gesamtfläche",
       "totalQuantity": "Gesamtanzahl",
-      "differentParts": "Verschiedene Teile",
+      "type": "Typ",
       "view": "Ansicht"
-    },
-    "summary": "Zusammenfassung",
-    "title": "Module"
+    }
   },
   "moduleTypes": {
     "double": "Doppelrahmen",

@@ -305,7 +305,11 @@ export class WrappedGcs {
   }
 
   public solve() {
-    return this.gcs.solve(Algorithm.DogLeg) === SolveStatus.Success && this.applySolution()
+    const solveStatus = this.gcs.solve(Algorithm.DogLeg)
+    if (solveStatus !== SolveStatus.Success) {
+      console.warn(`Solving GCS failed: ${solveStatus}`)
+    }
+    return solveStatus === SolveStatus.Success && this.applySolution()
   }
 
   syncConstraintStatus(): void {

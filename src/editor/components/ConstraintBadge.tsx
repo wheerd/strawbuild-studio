@@ -13,7 +13,7 @@ interface ConstraintBadgeProps {
   offset: number
   locked?: boolean
   onClick?: () => void
-  tooltipKey?: 'horizontal' | 'vertical' | 'perpendicular' | 'colinear'
+  tooltipKey?: 'horizontal' | 'vertical' | 'perpendicular' | 'colinear' | 'angle'
   status?: 'conflicting' | 'redundant' | 'normal'
 }
 
@@ -44,11 +44,11 @@ export function ConstraintBadge({
 
   const showLock = locked !== false
 
+  const iconSize = scaledFontSize * 0.8
   const rectHeight = scaledFontSize * 1.6
   const cornerRadius = rectHeight * 0.3
-  const rectWidth = 2 * cornerRadius + scaledFontSize * 1.8
+  const rectWidth = 3 * cornerRadius + iconSize + scaledFontSize * label.length * 0.6
 
-  const iconSize = scaledFontSize * 0.8
   const lockX = badgeX - rectWidth / 2 + iconSize * 0.5
   const lockY = badgeY + iconSize / 2
 
@@ -58,7 +58,7 @@ export function ConstraintBadge({
   const alertY = badgeY + (outsideDirection[1] < 0 ? alertSize : -alertSize)
 
   const iconHref = showLock ? '#icon-lock' : '#icon-lock-open'
-  const borderSize = (scaledFontSize / 5).toFixed(0)
+  const borderSize = (scaledFontSize / 8).toFixed(0)
 
   const rectClasses = useMemo(() => {
     if (status === 'conflicting') {
@@ -69,7 +69,7 @@ export function ConstraintBadge({
     }
     return showLock && isInteractive
       ? 'fill-primary group-hover:fill-primary/90'
-      : `fill-muted group-hover:fill-accent stroke-border stroke-${borderSize}`
+      : `fill-muted group-hover:fill-accent stroke-border`
   }, [status, showLock, isInteractive])
 
   const textClasses = useMemo(() => {
@@ -134,6 +134,7 @@ export function ConstraintBadge({
         rx={cornerRadius}
         ry={cornerRadius}
         className={rectClasses}
+        strokeWidth={borderSize}
       />
       <use
         href={iconHref}

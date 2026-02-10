@@ -1,5 +1,9 @@
 {
   "constraint": {
+    "angle": {
+      "active": "Winkelbeschränkung",
+      "suggestion": "Winkelbeschränkung hinzufügen"
+    },
     "colinear": {
       "active": "Kolineare Beschränkung (Klicken zum Entfernen)",
       "suggestion": "Klicken, um kolineare Beschränkung hinzuzufügen"

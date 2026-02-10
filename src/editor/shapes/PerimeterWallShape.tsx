@@ -197,11 +197,11 @@ export function PerimeterWallShape({ wallId }: { wallId: PerimeterWallId }): Rea
   // H/V badge label
   const hvLabel = hvConstraint
     ? hvConstraint.type === 'horizontalWall'
-      ? '\u2015'
-      : '\u007c'
+      ? '―'
+      : '\u2223'
     : suggestedHVType === 'horizontalWall'
-      ? '\u2015'
-      : '\u007c'
+      ? '―'
+      : '\u2223'
 
   // Map constraint type to tooltip key (display concept, not type discriminant)
   const hvTooltipKey = hvConstraint

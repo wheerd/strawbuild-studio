@@ -1,5 +1,9 @@
 {
   "constraint": {
+    "angle": {
+      "active": "Angle constraint",
+      "suggestion": "Add angle constraint"
+    },
     "conflict": "Conflict with other constraints",
     "redundant": "Redundant constraint (not needed)",
     "conflictStatus": "{{count}} conflicting constraint(s)",

@@ -383,9 +383,6 @@ interface Resources {
         "padding": "Padding",
         "plankMaterial": "Planking Material",
         "plankThickness": "Planking Thickness",
-        "postsHaveFullHeight": "Posts have full height",
-        "postsSupportHeader": "Posts support header",
-        "replacesWallPosts": "Replaces Wall Posts",
         "sillMaterial": "Sill Material",
         "sillThickness": "Sill Thickness",
         "thresholdAssembly": "Assembly",
@@ -394,10 +391,6 @@ interface Resources {
       },
       "placeholders": {
         "name": "Opening assembly name"
-      },
-      "postTypes": {
-        "double": "Double",
-        "full": "Full"
       },
       "resetConfirm": "Are you sure you want to reset default opening assemblies? This will restore the original default assemblies but keep any custom assemblies you've created. This action cannot be undone.",
       "resetTitle": "Reset Opening Assemblies",
@@ -690,7 +683,6 @@ interface Resources {
       "summary": "Summary",
       "tableHeaders": {
         "area": "Area",
-        "description": "Specific Type",
         "differentParts": "Different Parts",
         "dimensions": "Dimensions",
         "label": "Label",
@@ -700,8 +692,7 @@ interface Resources {
         "totalQuantity": "Total Quantity",
         "type": "Type",
         "view": "View"
-      },
-      "title": "Modules"
+      }
     },
     "partCutModal": {
       "partCutDiagram": "Part Cut Diagram",
@@ -1038,6 +1029,10 @@ interface Resources {
   },
   "inspector": {
     "constraint": {
+      "angle": {
+        "active": "Angle constraint",
+        "suggestion": "Add angle constraint"
+      },
       "colinear": {
         "active": "Colinear constraint (click to remove)",
         "suggestion": "Click to add colinear constraint"

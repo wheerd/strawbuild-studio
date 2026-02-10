@@ -306,9 +306,6 @@
       "padding": "Baufuge",
       "plankMaterial": "Beplankungsmaterial",
       "plankThickness": "Beplankungsdicke",
-      "postsHaveFullHeight": "Ständer haben volle Höhe",
-      "postsSupportHeader": "Ständer stützen Sturz",
-      "replacesWallPosts": "Ersetzt Wandständer",
       "sillMaterial": "Schwellenmaterial",
       "sillThickness": "Schwellendicke",
       "thresholdAssembly": "Aufbau",
@@ -317,10 +314,6 @@
     },
     "placeholders": {
       "name": "Name der Öffnungsaufbau"
-    },
-    "postTypes": {
-      "double": "Doppelt",
-      "full": "Massiv"
     },
     "resetConfirm": "Möchtest du die Standard-Öffnungsaufbauten wirklich zurücksetzen? Dies stellt die ursprünglichen Standardaufbauten wieder her, behält aber alle benutzerdefinierten Aufbauten bei. Diese Aktion kann nicht rückgängig gemacht werden.",
     "resetTitle": "Öffnungsaufbauten zurücksetzen",
