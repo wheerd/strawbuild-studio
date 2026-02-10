@@ -1,6 +1,6 @@
 import type { Constraint } from '@salusoft89/planegcs'
 
-import type { ConstraintInput, PerimeterCornerId, PerimeterWallId, WallId } from '@/building/model'
+import type { ConstraintInput, PerimeterCornerId, PerimeterWallId, WallEntityId, WallId } from '@/building/model'
 import { isPerimeterCornerId, isPerimeterWallId } from '@/building/model'
 
 // --- ID helpers ---
@@ -52,6 +52,10 @@ export function wallNonRefLineId(wallId: WallId): string {
   return `wall_${wallId}_nonref`
 }
 
+export function wallEntityPointId(entityId: WallEntityId, side: 'start' | 'center' | 'end', refSide = true): string {
+  return `${entityId}_${side}_${refSide ? 'ref' : 'nonref'}`
+}
+
 // --- Key derivation ---
 
 /**
@@ -80,6 +84,12 @@ export function buildingConstraintKey(constraint: ConstraintInput): string {
       return `hv_${constraint.wall}`
     case 'verticalWall':
       return `hv_${constraint.wall}`
+    case 'wallEntityAbsolute':
+      return `we_${constraint.entity}_${constraint.node}`
+    case 'wallEntityRelative': {
+      const [a, b] = sortedPair(constraint.entityA, constraint.entityA)
+      return `we_${a}_${b}`
+    }
   }
 }
 
@@ -239,6 +249,47 @@ export function translateBuildingConstraint(
         }
       ]
     }
+
+    case 'wallEntityAbsolute': {
+      const wall = context.getWallCornerIds(constraint.wall)
+      if (!wall || !isPerimeterCornerId(constraint.node)) return []
+
+      const isRefSide = context.getReferenceSide(wall.startCornerId) === constraint.side
+      const entityPointId = wallEntityPointId(constraint.entity, constraint.entitySide, isRefSide)
+      const nodePointId = isRefSide
+        ? nodeRefSidePointId(constraint.node)
+        : nodeNonRefSidePointForNextWall(constraint.node)
+
+      return [
+        {
+          id: prefix,
+          type: 'p2p_distance',
+          p1_id: nodePointId,
+          p2_id: entityPointId,
+          distance: constraint.distance,
+          driving: true
+        }
+      ]
+    }
+
+    case 'wallEntityRelative': {
+      const wall = context.getWallCornerIds(constraint.wall)
+      if (!wall) return []
+
+      const entityAPointId = wallEntityPointId(constraint.entityA, constraint.entityASide, true)
+      const entityBPointId = wallEntityPointId(constraint.entityB, constraint.entityBSide, true)
+
+      return [
+        {
+          id: prefix,
+          type: 'p2p_distance',
+          p1_id: entityAPointId,
+          p2_id: entityBPointId,
+          distance: constraint.distance,
+          driving: true
+        }
+      ]
+    }
   }
 }
 
@@ -261,10 +312,9 @@ export function getReferencedCornerIds(constraint: ConstraintInput): PerimeterCo
     case 'perpendicularCorner':
     case 'cornerAngle':
       return isPerimeterCornerId(constraint.corner) ? [constraint.corner] : []
-    case 'wallLength':
-    case 'horizontalWall':
-    case 'verticalWall':
-    case 'parallel':
+    case 'wallEntityAbsolute':
+      return isPerimeterCornerId(constraint.node) ? [constraint.node] : []
+    default:
       return []
   }
 }
@@ -277,6 +327,8 @@ export function getReferencedWallIds(constraint: ConstraintInput): PerimeterWall
     case 'wallLength':
     case 'horizontalWall':
     case 'verticalWall':
+    case 'wallEntityRelative':
+    case 'wallEntityAbsolute':
       return isPerimeterWallId(constraint.wall) ? [constraint.wall] : []
     case 'parallel': {
       const result: PerimeterWallId[] = []
@@ -284,9 +336,29 @@ export function getReferencedWallIds(constraint: ConstraintInput): PerimeterWall
       if (isPerimeterWallId(constraint.wallB)) result.push(constraint.wallB)
       return result
     }
-    case 'colinearCorner':
-    case 'perpendicularCorner':
-    case 'cornerAngle':
+    default:
       return []
   }
+}
+
+/**
+ * Extract all WallEntityIds referenced by a building constraint.
+ */
+export function getReferencedWallEntityIds(constraint: ConstraintInput): WallEntityId[] {
+  switch (constraint.type) {
+    case 'wallEntityAbsolute':
+      return [constraint.entity]
+    case 'wallEntityRelative':
+      return [constraint.entityA, constraint.entityB]
+    default:
+      return []
+  }
+}
+
+/**
+ * Get GCS constraint ID for wall entity width constraint.
+ * Only creates a constraint for the reference side (nonref is implied).
+ */
+export function wallEntityWidthConstraintId(entityId: WallEntityId): string {
+  return `bc_we_${entityId}_width`
 }

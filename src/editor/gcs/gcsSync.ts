@@ -1,20 +1,27 @@
 import type { Constraint, Perimeter, PerimeterCorner, PerimeterId, PerimeterWall } from '@/building/model'
-import type { PerimeterCornerId, PerimeterWallId } from '@/building/model/ids'
+import type { PerimeterCornerId, PerimeterWallId, WallEntityId } from '@/building/model/ids'
+import type { WallEntityGeometry } from '@/building/model/wallEntities'
 import {
   getModelActions,
   subscribeToConstraints,
   subscribeToCorners,
+  subscribeToOpeningGeometry,
   subscribeToPerimeters,
+  subscribeToWallOpenings,
+  subscribeToWallPostGeometry,
+  subscribeToWallPosts,
   subscribeToWalls
 } from '@/building/store'
-import { scaleAddVec2 } from '@/shared/geometry'
+import { midpoint, scaleAddVec2 } from '@/shared/geometry/2d'
 
 import {
   getReferencedCornerIds,
   getReferencedWallIds,
   nodeNonRefSidePointForNextWall,
   nodeNonRefSidePointForPrevWall,
-  nodeRefSidePointId
+  nodeRefSidePointId,
+  wallEntityPointId,
+  wallEntityWidthConstraintId
 } from './constraintTranslator'
 import { getGcsActions, getGcsState } from './store'
 
@@ -25,30 +32,38 @@ class GcsSyncService {
   }
 
   private setupSubscriptions(): void {
-    // Subscribe to perimeter record changes (add/remove/update).
-    // Must be registered BEFORE the constraint subscription so that
-    // GCS geometry (points, lines) exists before constraints reference it.
-    subscribeToPerimeters((current, previous) => {
-      this.handlePerimeterChange(current, previous)
+    subscribeToPerimeters((id, current, previous) => {
+      this.handlePerimeterChange(id, current, previous)
     })
 
-    // Subscribe to building constraint changes in the model store
-    // and propagate them to the GCS store.
-    subscribeToConstraints((current, previous) => {
+    subscribeToConstraints((_id, current, previous) => {
       this.handleConstraintChange(current, previous)
     })
 
-    // Subscribe to corner data changes (e.g. referencePoint updates from boundary moves).
-    // This catches position changes that don't alter the Perimeter record itself.
-    subscribeToCorners((current, previous) => {
+    subscribeToCorners((_id, current, previous) => {
       this.handleCornerChange(current, previous)
     })
 
-    // Subscribe to wall data changes (e.g. thickness changes).
-    // Thickness changes affect GCS point positions and thickness constraints.
-    subscribeToWalls((current, previous) => {
+    subscribeToWalls((_id, current, previous) => {
       this.handleWallChange(current, previous)
     })
+
+    subscribeToWallOpenings((id, current, previous) => {
+      if (!current || !previous) return
+      if (current.width !== previous.width) {
+        this.updateEntityWidthConstraint(id, current.width)
+      }
+    })
+
+    subscribeToWallPosts((id, current, previous) => {
+      if (!current || !previous) return
+      if (current.width !== previous.width) {
+        this.updateEntityWidthConstraint(id, current.width)
+      }
+    })
+
+    subscribeToOpeningGeometry(this.handleWallEntityGeometryChange.bind(this))
+    subscribeToWallPostGeometry(this.handleWallEntityGeometryChange.bind(this))
   }
 
   private initializeAllPerimeters(): void {
@@ -63,10 +78,7 @@ class GcsSyncService {
     }
   }
 
-  private handlePerimeterChange(current?: Perimeter, previous?: Perimeter): void {
-    const perimeterId = current?.id ?? previous?.id
-    if (!perimeterId) return
-
+  private handlePerimeterChange(perimeterId: PerimeterId, current?: Perimeter, previous?: Perimeter): void {
     const gcsActions = getGcsActions()
 
     if (!current && previous) {
@@ -130,25 +142,15 @@ class GcsSyncService {
   private handleConstraintChange(current?: Constraint, previous?: Constraint): void {
     const gcsActions = getGcsActions()
 
-    if (current && !previous) {
-      // Constraint added — push to GCS store.
-      // If geometry doesn't exist yet (e.g. during redo), syncConstraintsForPerimeter
-      // will handle it when the perimeter subscription fires.
+    if (previous) {
+      gcsActions.removeBuildingConstraint(previous.id)
+    }
+
+    if (current) {
       try {
         gcsActions.addBuildingConstraint({ ...current })
       } catch (e) {
         console.warn(`Failed to add building constraint to GCS store (will be synced by perimeter):`, e)
-      }
-    } else if (!current && previous) {
-      // Constraint removed — remove from GCS store
-      gcsActions.removeBuildingConstraint(previous.id)
-    } else if (current && previous) {
-      // Constraint updated — remove old, add new
-      gcsActions.removeBuildingConstraint(previous.id)
-      try {
-        gcsActions.addBuildingConstraint({ ...current })
-      } catch (e) {
-        console.warn(`Failed to add updated building constraint to GCS store (will be synced by perimeter):`, e)
       }
     }
   }
@@ -169,7 +171,7 @@ class GcsSyncService {
 
     // Read the fresh computed geometry (insidePoint/outsidePoint derived from referencePoint)
     const corner = getPerimeterCornerById(cornerId)
-    const perimeter = getPerimeterById(corner.perimeterId)
+    const perimeter = getPerimeterById(perimeterId)
 
     const refPointId = nodeRefSidePointId(corner.id)
     const nonRefPrevId = nodeNonRefSidePointForPrevWall(corner.id)
@@ -221,6 +223,71 @@ class GcsSyncService {
     // addPerimeterGeometry handles upsert (removes old data first)
     const gcsActions = getGcsActions()
     gcsActions.addPerimeterGeometry(perimeterId)
+  }
+
+  private updateEntityWidthConstraint(entityId: WallEntityId, width: number): void {
+    const gcsActions = getGcsActions()
+    const refStart = wallEntityPointId(entityId, 'start', true)
+    const refEnd = wallEntityPointId(entityId, 'end', true)
+    const constraintId = wallEntityWidthConstraintId(entityId)
+
+    gcsActions.removeConstraints([constraintId])
+    gcsActions.addConstraint({
+      id: constraintId,
+      type: 'p2p_distance',
+      p1_id: refStart,
+      p2_id: refEnd,
+      distance: width,
+      driving: true
+    })
+  }
+
+  private handleWallEntityGeometryChange(
+    id: WallEntityId,
+    current?: WallEntityGeometry,
+    previous?: WallEntityGeometry
+  ): void {
+    const { updatePointPosition } = getGcsActions()
+    if (!current || !previous) return
+    const { getWallEntityById } = getModelActions()
+
+    const entity = getWallEntityById(id)
+    const perimeter = getModelActions().getPerimeterById(entity.perimeterId)
+    const isRefInside = perimeter.referenceSide === 'inside'
+
+    const insideCenter = midpoint(current.insideLine.start, current.insideLine.end)
+    const outsideCenter = midpoint(current.outsideLine.start, current.outsideLine.end)
+
+    const ref = isRefInside
+      ? {
+          start: current.insideLine.start,
+          center: insideCenter,
+          end: current.insideLine.end
+        }
+      : {
+          start: current.outsideLine.start,
+          center: outsideCenter,
+          end: current.outsideLine.end
+        }
+
+    const nonref = isRefInside
+      ? {
+          start: current.outsideLine.start,
+          center: outsideCenter,
+          end: current.outsideLine.end
+        }
+      : {
+          start: current.insideLine.start,
+          center: insideCenter,
+          end: current.insideLine.end
+        }
+
+    updatePointPosition(wallEntityPointId(id, 'start', true), ref.start[0], ref.start[1])
+    updatePointPosition(wallEntityPointId(id, 'center', true), ref.center[0], ref.center[1])
+    updatePointPosition(wallEntityPointId(id, 'end', true), ref.end[0], ref.end[1])
+    updatePointPosition(wallEntityPointId(id, 'start', false), nonref.start[0], nonref.start[1])
+    updatePointPosition(wallEntityPointId(id, 'center', false), nonref.center[0], nonref.center[1])
+    updatePointPosition(wallEntityPointId(id, 'end', false), nonref.end[0], nonref.end[1])
   }
 }
 

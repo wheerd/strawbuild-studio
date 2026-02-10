@@ -78,13 +78,12 @@ export class RoofHeightLineCacheService {
   private setupSubscriptions(): void {
     const { getPerimeterById, getAllRoofs } = getModelActions()
 
-    subscribeToRoofs((current, previous) => {
+    subscribeToRoofs((_id, current, previous) => {
       const storeyId = current?.storeyId ?? previous?.storeyId
       if (storeyId) this.invalidateStorey(storeyId)
     })
 
-    subscribeToRoofAssemblies((current, previous) => {
-      const assemblyId = current?.id ?? previous?.id
+    subscribeToRoofAssemblies(assemblyId => {
       for (const roof of getAllRoofs()) {
         if (roof.assemblyId === assemblyId) {
           this.invalidateStorey(roof.storeyId)
