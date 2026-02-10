@@ -4,14 +4,13 @@
       "active": "Angle constraint",
       "suggestion": "Add angle constraint"
     },
-    "conflict": "Conflict with other constraints",
-    "redundant": "Redundant constraint (not needed)",
-    "conflictStatus": "{{count}} conflicting constraint(s)",
-    "redundantStatus": "{{count}} redundant constraint(s)",
     "colinear": {
       "active": "Colinear constraint (click to remove)",
       "suggestion": "Click to add colinear constraint"
     },
+    "conflict": "Conflict with other constraints",
+    "conflictStatus_one": "One conflicting constraint",
+    "conflictStatus_other": "{{count}} conflicting constraints",
     "horizontal": {
       "active": "Horizontal constraint (click to remove)",
       "suggestion": "Click to add horizontal constraint"
@@ -20,6 +19,9 @@
       "active": "Perpendicular constraint (click to remove)",
       "suggestion": "Click to add perpendicular constraint"
     },
+    "redundant": "Redundant constraint (not needed)",
+    "redundantStatus_one": "One redundant constraint",
+    "redundantStatus_other": "{{count}} redundant constraints",
     "vertical": {
       "active": "Vertical constraint (click to remove)",
       "suggestion": "Click to add vertical constraint"

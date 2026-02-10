@@ -1,7 +1,11 @@
 import * as Label from '@radix-ui/react-label'
 import { useTranslation } from 'react-i18next'
 
+import { Checkbox } from '@/components/ui/checkbox'
+import { Select } from '@/components/ui/select'
+import { Switch } from '@/components/ui/switch'
 import { MaterialSelectWithEdit } from '@/construction/materials/components/MaterialSelectWithEdit'
+import type { MaterialId } from '@/construction/materials/material'
 import type { PostOpeningConfig } from '@/construction/openings/types'
 import { LengthField } from '@/shared/components/LengthField/LengthField'
 
@@ -98,6 +102,50 @@ function PostsOpeningConfigForm({
 
       <div className="grid grid-cols-[auto_1fr_auto_1fr] items-center gap-2 gap-x-3">
         <Label.Root>
+          <span className="text-base font-medium">{t($ => $.common.type)}</span>
+        </Label.Root>
+        <Select.Root
+          value={posts.type}
+          onValueChange={value => {
+            if (value === 'full') {
+              updatePosts({
+                type: 'full',
+                width: posts.width,
+                material: posts.material
+              })
+            } else {
+              updatePosts({
+                type: 'double',
+                width: posts.width,
+                thickness: 'thickness' in posts ? posts.thickness : 120,
+                infillMaterial: 'infillMaterial' in posts ? posts.infillMaterial : ('' as MaterialId),
+                material: posts.material
+              })
+            }
+          }}
+        >
+          <Select.Trigger />
+          <Select.Content>
+            <Select.Item value="full">{t($ => $.openings.postTypes.full)}</Select.Item>
+            <Select.Item value="double">{t($ => $.openings.postTypes.double)}</Select.Item>
+          </Select.Content>
+        </Select.Root>
+
+        <div className="col-span-2">
+          <Label.Root>
+            <div className="flex items-center gap-1">
+              <Checkbox
+                checked={config.replacePosts}
+                onCheckedChange={value => {
+                  onUpdate({ replacePosts: value === true })
+                }}
+              />
+              <span className="text-base font-medium">{t($ => $.openings.labels.replacesWallPosts)}</span>
+            </div>
+          </Label.Root>
+        </div>
+
+        <Label.Root>
           <span className="text-base font-medium">{t($ => $.common.width)}</span>
         </Label.Root>
         <LengthField
@@ -149,6 +197,21 @@ function PostsOpeningConfigForm({
             />
           </>
         )}
+
+        <div className="col-span-2">
+          <Label.Root>
+            <div className="flex items-center gap-2">
+              <span className="text-base font-medium">{t($ => $.openings.labels.postsHaveFullHeight)}</span>
+              <Switch
+                checked={config.postsSupportHeader ?? false}
+                onCheckedChange={value => {
+                  onUpdate({ postsSupportHeader: value })
+                }}
+              />
+              <span className="text-base font-medium">{t($ => $.openings.labels.postsSupportHeader)}</span>
+            </div>
+          </Label.Root>
+        </div>
       </div>
     </div>
   )

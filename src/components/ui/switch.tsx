@@ -11,12 +11,11 @@ const switchVariants = cva(
       size: {
         sm: 'h-4 w-7',
         base: 'h-5 w-9',
-        lg: 'h-6 w-11',
-        default: 'h-6 w-11'
+        lg: 'h-6 w-11'
       }
     },
     defaultVariants: {
-      size: 'default'
+      size: 'base'
     }
   }
 )
@@ -28,12 +27,11 @@ const thumbVariants = cva(
       size: {
         sm: 'h-3 w-3 data-[state=checked]:translate-x-3',
         base: 'h-4 w-4 data-[state=checked]:translate-x-4',
-        lg: 'h-5 w-5 data-[state=checked]:translate-x-5',
-        default: 'h-5 w-5 data-[state=checked]:translate-x-5'
+        lg: 'h-5 w-5 data-[state=checked]:translate-x-5'
       }
     },
     defaultVariants: {
-      size: 'default'
+      size: 'base'
     }
   }
 )

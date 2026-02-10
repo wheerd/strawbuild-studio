@@ -8,6 +8,8 @@
       "active": "Kolineare Beschränkung (Klicken zum Entfernen)",
       "suggestion": "Klicken, um kolineare Beschränkung hinzuzufügen"
     },
+    "conflictStatus_one": "Eine widersprüchliche Beschränkung",
+    "conflictStatus_other": "{{count}} widersprüchliche Beschränkungen",
     "horizontal": {
       "active": "Horizontale Beschränkung (Klicken zum Entfernen)",
       "suggestion": "Klicken, um horizontale Beschränkung hinzuzufügen"
@@ -16,6 +18,8 @@
       "active": "Rechtwinklige Beschränkung (Klicken zum Entfernen)",
       "suggestion": "Klicken, um rechtwinklige Beschränkung hinzuzufügen"
     },
+    "redundantStatus_one": "Eine redundante Beschränkung",
+    "redundantStatus_other": "{{count}} redundante Beschränkungen",
     "vertical": {
       "active": "Vertikale Beschränkung (Klicken zum Entfernen)",
       "suggestion": "Klicken, um vertikale Beschränkung hinzuzufügen"

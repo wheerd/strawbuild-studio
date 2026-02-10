@@ -383,6 +383,9 @@ interface Resources {
         "padding": "Padding",
         "plankMaterial": "Planking Material",
         "plankThickness": "Planking Thickness",
+        "postsHaveFullHeight": "Posts have full height",
+        "postsSupportHeader": "Posts support header",
+        "replacesWallPosts": "Replaces Wall Posts",
         "sillMaterial": "Sill Material",
         "sillThickness": "Sill Thickness",
         "thresholdAssembly": "Assembly",
@@ -391,6 +394,10 @@ interface Resources {
       },
       "placeholders": {
         "name": "Opening assembly name"
+      },
+      "postTypes": {
+        "double": "Double",
+        "full": "Full"
       },
       "resetConfirm": "Are you sure you want to reset default opening assemblies? This will restore the original default assemblies but keep any custom assemblies you've created. This action cannot be undone.",
       "resetTitle": "Reset Opening Assemblies",
@@ -1038,7 +1045,8 @@ interface Resources {
         "suggestion": "Click to add colinear constraint"
       },
       "conflict": "Conflict with other constraints",
-      "conflictStatus": "{{count}} conflicting constraint(s)",
+      "conflictStatus_one": "One conflicting constraint",
+      "conflictStatus_other": "{{count}} conflicting constraints",
       "horizontal": {
         "active": "Horizontal constraint (click to remove)",
         "suggestion": "Click to add horizontal constraint"
@@ -1048,7 +1056,8 @@ interface Resources {
         "suggestion": "Click to add perpendicular constraint"
       },
       "redundant": "Redundant constraint (not needed)",
-      "redundantStatus": "{{count}} redundant constraint(s)",
+      "redundantStatus_one": "One redundant constraint",
+      "redundantStatus_other": "{{count}} redundant constraints",
       "vertical": {
         "active": "Vertical constraint (click to remove)",
         "suggestion": "Click to add vertical constraint"
