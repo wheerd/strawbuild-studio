@@ -637,8 +637,8 @@ describe('GCS store perimeter geometry', () => {
       expect(entry.pointIds).toHaveLength(20)
       expect(entry.lineIds).toHaveLength(8)
       // 4 corners × 1 p2p_coincident constraint each = 4 structural constraints
-      // 4 walls × 3 constraints (parallel, thickness, proj_start_on_line, proj_end_on_line) = 16
-      expect(entry.constraintIds).toHaveLength(20)
+      // 4 walls × 6 constraints (parallel, thickness, proj_start_on_line, proj_end_on_line, proj_start_perp, proj_end_perp) = 24
+      expect(entry.constraintIds).toHaveLength(28)
     })
 
     it('handles upsert — removes old data before re-adding', () => {

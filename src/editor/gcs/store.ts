@@ -38,6 +38,7 @@ interface PerimeterRegistryEntry {
 
 interface GcsStoreState {
   points: Record<string, SketchPoint>
+  tmpPoints?: Record<string, SketchPoint>
   lines: SketchLine[]
   constraints: Record<string, Constraint>
   buildingConstraints: Record<string, BuildingConstraint>
@@ -63,6 +64,8 @@ interface GcsStoreActions {
   addBuildingConstraint: (constraint: BuildingConstraint) => void
   removeBuildingConstraint: (id: ConstraintId) => void
   setConstraintStatus: (conflicting: string[], redundant: string[]) => void
+
+  setTmpPoints: (tmpPoints?: Record<string, SketchPoint>) => void
 }
 
 type GcsStore = GcsStoreState & { actions: GcsStoreActions }
@@ -410,6 +413,15 @@ const useGcsStore = create<GcsStore>()((set, get) => ({
           p_id: startNonRefProj,
           l_id: refLineId
         })
+        const projStartPerpId = `${wall.id}_proj_start_perp`
+        actions.addConstraint({
+          id: projStartPerpId,
+          type: 'perpendicular_pppp',
+          l1p1_id: startNonRefProj,
+          l1p2_id: startNonRef,
+          l2p1_id: startRef,
+          l2p2_id: endRef
+        })
 
         const projEndOnLineId = `${wall.id}_proj_end_on_line`
         actions.addConstraint({
@@ -417,6 +429,15 @@ const useGcsStore = create<GcsStore>()((set, get) => ({
           type: 'point_on_line_pl',
           p_id: endNonRefProj,
           l_id: refLineId
+        })
+        const projEndPerpId = `${wall.id}_proj_end_perp`
+        actions.addConstraint({
+          id: projEndPerpId,
+          type: 'perpendicular_pppp',
+          l1p1_id: endNonRefProj,
+          l1p2_id: endNonRef,
+          l2p1_id: startRef,
+          l2p2_id: endRef
         })
 
         const parallelId = `${wall.id}_parallel`
@@ -435,7 +456,14 @@ const useGcsStore = create<GcsStore>()((set, get) => ({
           l_id: refLineId,
           distance: wall.thickness
         })
-        entry.constraintIds.push(parallelId, thicknessId, projStartOnLineId, projEndOnLineId)
+        entry.constraintIds.push(
+          parallelId,
+          thicknessId,
+          projStartOnLineId,
+          projEndOnLineId,
+          projStartPerpId,
+          projEndPerpId
+        )
 
         for (const opening of modelActions.getWallOpeningsById(wall.id)) {
           addWallEntityGeometry(opening, isRefInside, entry)
@@ -531,11 +559,15 @@ const useGcsStore = create<GcsStore>()((set, get) => ({
         conflictingConstraintIds: new Set(conflicting),
         redundantConstraintIds: new Set(redundant)
       }))
+    },
+
+    setTmpPoints(tmpPoints) {
+      set(() => ({ tmpPoints }))
     }
   }
 }))
 
-export const useGcsPoints = (): GcsStoreState['points'] => useGcsStore(state => state.points)
+export const useGcsPoints = (): GcsStoreState['points'] => useGcsStore(state => state.tmpPoints ?? state.points)
 export const useGcsLines = (): GcsStoreState['lines'] => useGcsStore(state => state.lines)
 export const useGcsBuildingConstraints = (): GcsStoreState['buildingConstraints'] =>
   useGcsStore(state => state.buildingConstraints)

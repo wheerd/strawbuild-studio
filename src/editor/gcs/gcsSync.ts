@@ -228,19 +228,15 @@ class GcsSyncService {
     // Only handle updates — additions/removals are covered by the perimeter subscription
     if (!current || !previous) return
 
-    // Only care about thickness changes
-    if (current.thickness === previous.thickness) return
+    // Only handle thickness or wall entity changes
+    if (
+      current.thickness === previous.thickness &&
+      current.entityIds.length === previous.entityIds.length &&
+      current.entityIds.every(id => previous.entityIds.includes(id))
+    )
+      return
 
-    const { perimeterId } = current
-    const { perimeterRegistry } = getGcsState()
-
-    // Only update if this wall's perimeter is currently tracked
-    if (!(perimeterId in perimeterRegistry)) return
-
-    // Rebuild the perimeter geometry to update points and thickness constraints
-    // addPerimeterGeometry handles upsert (removes old data first)
-    const gcsActions = getGcsActions()
-    gcsActions.addPerimeterGeometry(perimeterId)
+    getGcsActions().addPerimeterGeometry(current.perimeterId)
   }
 
   private updateEntityWidthConstraint(entityId: WallEntityId, width: number): void {

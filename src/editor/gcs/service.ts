@@ -8,13 +8,14 @@ import {
   SolveStatus
 } from '@salusoft89/planegcs'
 
-import type { PerimeterCornerId, PerimeterId, PerimeterWallId } from '@/building/model'
+import type { EntityId, PerimeterCornerId, PerimeterId, PerimeterWallId } from '@/building/model'
+import { isOpeningId, isWallPostId } from '@/building/model/ids'
 import { getModelActions } from '@/building/store'
-import { nodeRefSidePointId, wallRefLineId } from '@/editor/gcs/constraintTranslator'
+import { nodeRefSidePointId, wallEntityPointId, wallRefLineId } from '@/editor/gcs/constraintTranslator'
 import { createGcs } from '@/editor/gcs/gcsInstance'
 import { getGcsActions, getGcsState } from '@/editor/gcs/store'
 import { validateSolution } from '@/editor/gcs/validator'
-import { type Vec2, midpoint, newVec2 } from '@/shared/geometry'
+import { type Length, type Vec2, midpoint, newVec2, projectVec2 } from '@/shared/geometry'
 
 const DRAG_TEMP_POINT_ID = 'drag_wall_temp_point'
 
@@ -184,8 +185,10 @@ class GcsService {
       if (gcs.solve()) {
         for (const perimeterId of Object.keys(getGcsState().perimeterRegistry) as PerimeterId[]) {
           updatePerimeterBoundary(perimeterId, gcs.getPerimeterBoundary(perimeterId))
+          gcs.applyWallEntityOffsets(perimeterId)
         }
       }
+      getGcsActions().setTmpPoints()
       gcs.syncConstraintStatus()
       this.solveTimeout = undefined
     }, 100)
@@ -253,8 +256,8 @@ export class WrappedGcs {
   startCornerDrag(cornerId: PerimeterCornerId): Vec2 {
     const pointId = nodeRefSidePointId(cornerId)
     const pos = this.findPointPosition(pointId)
-    this.startDrag(pointId, pos.x, pos.y)
-    return newVec2(pos.x, pos.y)
+    this.startDrag(pointId, pos)
+    return pos
   }
 
   /**
@@ -272,7 +275,7 @@ export class WrappedGcs {
 
     const p1 = this.findPointPosition(line.p1_id)
     const p2 = this.findPointPosition(line.p2_id)
-    const wallMid = midpoint(newVec2(p1.x, p1.y), newVec2(p2.x, p2.y))
+    const wallMid = midpoint(p1, p2)
 
     this.addTemporaryPrimitives(
       [{ id: DRAG_TEMP_POINT_ID, type: 'point', x: wallMid[0], y: wallMid[1], fixed: false }],
@@ -286,7 +289,7 @@ export class WrappedGcs {
       ]
     )
 
-    this.startDrag(DRAG_TEMP_POINT_ID, wallMid[0], wallMid[1])
+    this.startDrag(DRAG_TEMP_POINT_ID, wallMid)
     return wallMid
   }
 
@@ -304,7 +307,7 @@ export class WrappedGcs {
 
     if (gcs.solve(Algorithm.DogLeg) === SolveStatus.Success) {
       if (!this.applySolution()) {
-        this.installDragConstraints(this.dragState.pointId, mouseX, mouseY)
+        this.installDragConstraints(this.dragState.pointId, newVec2(mouseX, mouseY))
       }
     }
   }
@@ -332,6 +335,7 @@ export class WrappedGcs {
     this.tempPoints = []
     this.tempPrimitives = []
     this.resetGcs()
+    getGcsActions().setTmpPoints()
   }
 
   /**
@@ -342,11 +346,7 @@ export class WrappedGcs {
     if (!cornerIds) {
       throw new Error(`Perimeter "${perimeterId}" not found in corner order map`)
     }
-    return cornerIds.map(cornerId => {
-      const pointId = nodeRefSidePointId(cornerId)
-      const pos = this.findPointPosition(pointId)
-      return newVec2(pos.x, pos.y)
-    })
+    return cornerIds.map(cornerId => this.findPointPosition(nodeRefSidePointId(cornerId)))
   }
 
   /**
@@ -354,8 +354,36 @@ export class WrappedGcs {
    */
   getCornerPosition(cornerId: PerimeterCornerId): Vec2 {
     const pointId = nodeRefSidePointId(cornerId)
-    const pos = this.findPointPosition(pointId)
-    return newVec2(pos.x, pos.y)
+    return this.findPointPosition(pointId)
+  }
+
+  applyWallEntityOffsets(perimeterId: PerimeterId) {
+    const modelActions = getModelActions()
+    const perimeter = modelActions.getPerimeterById(perimeterId)
+    const walls = modelActions.getPerimeterWallsById(perimeterId)
+
+    const isInsideRef = perimeter.referenceSide === 'inside'
+
+    const entityOffsets = new Map<EntityId, Length>()
+    for (const wall of walls) {
+      const wallStartPoint = isInsideRef ? wall.insideLine.start : wall.outsideLine.start
+
+      for (const entityId of wall.entityIds) {
+        const pointId = wallEntityPointId(entityId, 'center')
+        const centerPoint = this.findPointPosition(pointId)
+
+        const signedOffset = projectVec2(wallStartPoint, centerPoint, wall.direction)
+        entityOffsets.set(entityId, signedOffset)
+      }
+    }
+
+    for (const [entityId, centerOffsetFromWallStart] of entityOffsets) {
+      if (isOpeningId(entityId)) {
+        modelActions.updateWallOpening(entityId, { centerOffsetFromWallStart })
+      } else if (isWallPostId(entityId)) {
+        modelActions.updateWallPost(entityId, { centerOffsetFromWallStart })
+      }
+    }
   }
 
   /**
@@ -366,18 +394,17 @@ export class WrappedGcs {
     if (!this.dragState) {
       throw new Error('No active drag')
     }
-    const pos = this.findPointPosition(this.dragState.pointId)
-    return newVec2(pos.x, pos.y)
+    return this.findPointPosition(this.dragState.pointId)
   }
 
   // --- Private implementation ---
 
-  private findPointPosition(pointId: string): { x: number; y: number } {
+  private findPointPosition(pointId: string): Vec2 {
     const point = this.points.find(p => p.id === pointId) ?? this.tempPoints.find(p => p.id === pointId)
     if (!point) {
       throw new Error(`GCS point "${pointId}" not found`)
     }
-    return { x: point.x, y: point.y }
+    return newVec2(point.x, point.y)
   }
 
   private resetGcs(): void {
@@ -392,7 +419,7 @@ export class WrappedGcs {
     this.resetGcs()
   }
 
-  private installDragConstraints(pointId: string, mouseX: number, mouseY: number): void {
+  private installDragConstraints(pointId: string, mousePos: Vec2): void {
     const constraintXId = `drag_${pointId}_x_${Date.now()}`
     const constraintYId = `drag_${pointId}_y_${Date.now()}`
 
@@ -400,7 +427,7 @@ export class WrappedGcs {
       type: 'equal',
       id: constraintXId,
       param1: { o_id: pointId, prop: 'x' },
-      param2: mouseX,
+      param2: mousePos[0],
       temporary: true,
       driving: true
     })
@@ -409,7 +436,7 @@ export class WrappedGcs {
       type: 'equal',
       id: constraintYId,
       param1: { o_id: pointId, prop: 'y' },
-      param2: mouseY,
+      param2: mousePos[1],
       temporary: true,
       driving: true
     })
@@ -420,9 +447,9 @@ export class WrappedGcs {
     this.dragState = { pointId, constraintXId, constraintYId, paramXPos, paramYPos }
   }
 
-  private startDrag(pointId: string, mouseX: number, mouseY: number): void {
+  private startDrag(pointId: string, mousePos: Vec2): void {
     this.resetGcs()
-    this.installDragConstraints(pointId, mouseX, mouseY)
+    this.installDragConstraints(pointId, mousePos)
   }
 
   private applySolution(): boolean {
@@ -446,7 +473,10 @@ export class WrappedGcs {
     const newTempPoints = updatePoints(this.tempPoints)
 
     const pointsMap = Object.fromEntries(newPoints.map(p => [p.id, p]))
-    const validation = validateSolution(pointsMap, this.cornerOrderMap, this.constraints)
+    const linesMap = Object.fromEntries(this.lines.map(l => [l.id, l]))
+    const validation = validateSolution(pointsMap, this.cornerOrderMap, this.constraints, linesMap)
+
+    getGcsActions().setTmpPoints(pointsMap)
 
     if (validation.valid) {
       this.points = newPoints

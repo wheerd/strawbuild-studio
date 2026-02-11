@@ -644,21 +644,5 @@ describe('GcsSyncService', () => {
       // Should NOT have called addPerimeterGeometry - perimeter subscription handles removals
       expect(mockAddPerimeterGeometry).not.toHaveBeenCalled()
     })
-
-    it('does nothing for untracked perimeters', async () => {
-      // Registry is empty — perimeter not tracked
-      await importGcsSync()
-
-      // Clear mock from initialization
-      mockAddPerimeterGeometry.mockClear()
-
-      // Simulate wall thickness change for untracked perimeter
-      const prevWall = makeWall('outwall_w1', 'p_untracked', 400)
-      const currWall = makeWall('outwall_w1', 'p_untracked', 500)
-      capturedWallCallback!('outwall_w1' as PerimeterWallId, currWall, prevWall)
-
-      // Should NOT have called addPerimeterGeometry
-      expect(mockAddPerimeterGeometry).not.toHaveBeenCalled()
-    })
   })
 })

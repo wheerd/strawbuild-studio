@@ -1,13 +1,36 @@
-import type { Constraint, SketchPoint } from '@salusoft89/planegcs'
+import type {
+  Constraint,
+  P2PDistance,
+  PointOnLine_PL as PointOnLine,
+  SketchLine,
+  SketchPoint
+} from '@salusoft89/planegcs'
 
-import type { PerimeterCornerId, PerimeterId } from '@/building/model'
+import {
+  type PerimeterCornerId,
+  type PerimeterId,
+  type PerimeterWallId,
+  type WallEntityId,
+  isWallPostId
+} from '@/building/model'
+import { getModelActions } from '@/building/store'
 import { polygonEdges } from '@/construction/helpers'
 import {
   nodeNonRefSidePointForNextWall,
   nodeNonRefSidePointForPrevWall,
-  nodeRefSidePointId
+  nodeRefSidePointId,
+  wallNonRefSideProjectedPoint
 } from '@/editor/gcs/constraintTranslator'
-import { crossVec2, direction, newVec2, segmentsIntersect, wouldClosingPolygonSelfIntersect } from '@/shared/geometry'
+import {
+  type Length,
+  crossVec2,
+  direction,
+  distVec2,
+  newVec2,
+  projectVec2,
+  segmentsIntersect,
+  wouldClosingPolygonSelfIntersect
+} from '@/shared/geometry'
 
 const MIN_WALL_LENGTH_SQ = 50 * 50
 const COLLINEARITY_THRESHOLD = 1e-4
@@ -17,10 +40,104 @@ export interface ValidationResult {
   reason?: string
 }
 
+interface WallEntityContext {
+  startOffset: Length
+  length: Length
+  endOffset: Length
+  entities: { entityId: WallEntityId; offset: Length; width: Length }[]
+}
+
+function checkEntityPositions(
+  points: Record<string, SketchPoint>,
+  constraints: Record<string, Constraint>,
+  linesMap: Record<string, SketchLine>
+): boolean {
+  const wallEntities: Record<PerimeterWallId, WallEntityContext> = {}
+
+  for (const point of Object.values(points)) {
+    if (!point.id.endsWith('_center_ref')) continue
+    const entityId = point.id.substring(0, point.id.length - '_center_ref'.length) as WallEntityId
+
+    const wallConstraint = constraints[`${entityId}_center_on_ref`] as PointOnLine
+    const wallLineId = wallConstraint.l_id
+    const wallId = wallLineId.substring(5, wallLineId.length - 4) as PerimeterWallId
+    const wallLine = linesMap[wallLineId]
+
+    const widthConstraint = constraints[`${entityId}_width_ref`] as P2PDistance
+    const width = widthConstraint.distance as number
+
+    const startPoint1 = points[wallLine.p1_id]
+    const startPoint2 = points[wallNonRefSideProjectedPoint(wallId, 'start')]
+    const startPos1 = newVec2(startPoint1.x, startPoint1.y)
+    const startPos2 = newVec2(startPoint2.x, startPoint2.y)
+
+    const endPoint1 = points[wallLine.p2_id]
+    const endPoint2 = points[wallNonRefSideProjectedPoint(wallId, 'end')]
+    const endPos1 = newVec2(endPoint1.x, endPoint1.y)
+    const endPos2 = newVec2(endPoint2.x, endPoint2.y)
+
+    const wallDir = direction(startPos1, endPos1)
+
+    const basePos = projectVec2(startPos1, startPos2, wallDir) > 0 ? startPos2 : startPos1
+    const endPos = projectVec2(endPos1, endPos2, wallDir) > 0 ? endPos1 : endPos2
+
+    const centerPos = newVec2(point.x, point.y)
+    const offset = projectVec2(basePos, centerPos, wallDir)
+
+    if (!(wallId in wallEntities)) {
+      const startCornerId = wallLine.p1_id.substring(7, wallLine.p1_id.length - 4) as PerimeterCornerId
+      const startCorner = getModelActions().getPerimeterCornerById(startCornerId)
+      const startCornerOffset =
+        startCorner.constructedByWall === 'next'
+          ? Math.min(projectVec2(basePos, startPos1, wallDir), projectVec2(basePos, startPos2, wallDir))
+          : 0
+
+      const endCornerId = wallLine.p2_id.substring(7, wallLine.p2_id.length - 4) as PerimeterCornerId
+      const endCorner = getModelActions().getPerimeterCornerById(endCornerId)
+      const endCornerOffset =
+        endCorner.constructedByWall === 'previous'
+          ? Math.max(projectVec2(endPos, endPos1, wallDir), projectVec2(endPos, endPos2, wallDir))
+          : 0
+
+      wallEntities[wallId] = {
+        startOffset: startCornerOffset,
+        endOffset: endCornerOffset,
+        length: distVec2(basePos, endPos),
+        entities: []
+      }
+    }
+    wallEntities[wallId].entities.push({ offset, width, entityId })
+  }
+
+  for (const context of Object.values(wallEntities)) {
+    const { startOffset, endOffset, length, entities } = context
+    entities.sort((a, b) => a.offset - b.offset)
+
+    for (let i = 0; i < entities.length; i++) {
+      const entity = entities[i]
+      const entityStartOffset = entity.offset - entity.width / 2
+      const entityEndOffset = entity.offset + entity.width / 2
+
+      const minOffset = isWallPostId(entity.entityId) ? startOffset : 0
+      const maxOffset = length + (isWallPostId(entity.entityId) ? endOffset : 0)
+
+      if (entityStartOffset < minOffset || entityEndOffset > maxOffset) return false
+
+      if (i > 0) {
+        const prevEntity = entities[i - 1]
+        if (prevEntity.offset + prevEntity.width / 2 > entityStartOffset) return false
+      }
+    }
+  }
+
+  return true
+}
+
 export function validateSolution(
   points: Record<string, SketchPoint>,
   cornerOrderMap: Map<PerimeterId, PerimeterCornerId[]>,
-  constraints: Record<string, Constraint>
+  constraints: Record<string, Constraint>,
+  linesMap: Record<string, SketchLine>
 ): ValidationResult {
   if (!checkMinWallLength(points, cornerOrderMap)) {
     return { valid: false, reason: 'Minimum wall length violation' }
@@ -36,6 +153,10 @@ export function validateSolution(
 
   if (!checkColinearity(points, cornerOrderMap, constraints)) {
     return { valid: false, reason: 'Colinear corner detected' }
+  }
+
+  if (!checkEntityPositions(points, constraints, linesMap)) {
+    return { valid: false, reason: 'Wall entity position violation' }
   }
 
   return { valid: true }
