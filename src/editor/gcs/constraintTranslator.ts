@@ -38,6 +38,10 @@ export function nodeNonRefSidePointForNextWall(cornerId: PerimeterCornerId): str
   return `corner_${cornerId}_nonref_next`
 }
 
+export function wallNonRefSideProjectedPoint(wallId: PerimeterWallId, side: 'start' | 'end'): string {
+  return `${wallId}_${side}_proj`
+}
+
 /**
  * Get the GCS line ID for the reference side of a wall.
  */
@@ -52,8 +56,8 @@ export function wallNonRefLineId(wallId: WallId): string {
   return `wall_${wallId}_nonref`
 }
 
-export function wallEntityPointId(entityId: WallEntityId, side: 'start' | 'center' | 'end', refSide = true): string {
-  return `${entityId}_${side}_${refSide ? 'ref' : 'nonref'}`
+export function wallEntityPointId(entityId: WallEntityId, side: 'start' | 'center' | 'end'): string {
+  return `${entityId}_${side}_ref`
 }
 
 // --- Key derivation ---
@@ -252,13 +256,13 @@ export function translateBuildingConstraint(
 
     case 'wallEntityAbsolute': {
       const wall = context.getWallCornerIds(constraint.wall)
-      if (!wall || !isPerimeterCornerId(constraint.node)) return []
+      if (!wall || !isPerimeterCornerId(constraint.node) || !isPerimeterWallId(constraint.wall)) return []
 
-      const isRefSide = context.getReferenceSide(wall.startCornerId) === constraint.side
-      const entityPointId = wallEntityPointId(constraint.entity, constraint.entitySide, isRefSide)
+      const isRefSide = context.getReferenceSide(constraint.node) === constraint.side
+      const entityPointId = wallEntityPointId(constraint.entity, constraint.entitySide)
       const nodePointId = isRefSide
         ? nodeRefSidePointId(constraint.node)
-        : nodeNonRefSidePointForNextWall(constraint.node)
+        : wallNonRefSideProjectedPoint(constraint.wall, constraint.node === wall.startCornerId ? 'start' : 'end')
 
       return [
         {
@@ -276,8 +280,8 @@ export function translateBuildingConstraint(
       const wall = context.getWallCornerIds(constraint.wall)
       if (!wall) return []
 
-      const entityAPointId = wallEntityPointId(constraint.entityA, constraint.entityASide, true)
-      const entityBPointId = wallEntityPointId(constraint.entityB, constraint.entityBSide, true)
+      const entityAPointId = wallEntityPointId(constraint.entityA, constraint.entityASide)
+      const entityBPointId = wallEntityPointId(constraint.entityB, constraint.entityBSide)
 
       return [
         {

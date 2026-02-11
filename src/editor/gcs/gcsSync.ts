@@ -12,7 +12,7 @@ import {
   subscribeToWallPosts,
   subscribeToWalls
 } from '@/building/store'
-import { midpoint, scaleAddVec2 } from '@/shared/geometry/2d'
+import { midpoint, projectVec2, scaleAddVec2 } from '@/shared/geometry/2d'
 
 import {
   getReferencedCornerIds,
@@ -21,7 +21,8 @@ import {
   nodeNonRefSidePointForPrevWall,
   nodeRefSidePointId,
   wallEntityPointId,
-  wallEntityWidthConstraintId
+  wallEntityWidthConstraintId,
+  wallNonRefSideProjectedPoint
 } from './constraintTranslator'
 import { getGcsActions, getGcsState } from './store'
 
@@ -183,13 +184,13 @@ class GcsSyncService {
 
     updatePointPosition(refPointId, refPos)
 
+    const prevWall = getPerimeterWallById(corner.previousWallId)
+    const nextWall = getPerimeterWallById(corner.nextWallId)
+
     if (corner.interiorAngle !== 180) {
       updatePointPosition(nonRefPrevId, nonRefPos)
       updatePointPosition(nonRefNextId, nonRefPos)
     } else {
-      const prevWall = getPerimeterWallById(corner.previousWallId)
-      const nextWall = getPerimeterWallById(corner.nextWallId)
-
       const prevPos = scaleAddVec2(
         refPos,
         prevWall.outsideDirection,
@@ -204,6 +205,23 @@ class GcsSyncService {
       )
       updatePointPosition(nonRefNextId, nextPos)
     }
+
+    const nonRefPoint = isRefInside ? corner.outsidePoint : corner.insidePoint
+    const prevRefLine = isRefInside ? prevWall.insideLine : prevWall.outsideLine
+    const prevProjected = scaleAddVec2(
+      prevRefLine.start,
+      prevWall.direction,
+      projectVec2(prevRefLine.start, nonRefPoint, prevWall.direction)
+    )
+    updatePointPosition(wallNonRefSideProjectedPoint(prevWall.id, 'end'), prevProjected)
+
+    const nextRefLine = isRefInside ? nextWall.insideLine : nextWall.outsideLine
+    const nextProjected = scaleAddVec2(
+      nextRefLine.start,
+      nextWall.direction,
+      projectVec2(nextRefLine.start, nonRefPoint, nextWall.direction)
+    )
+    updatePointPosition(wallNonRefSideProjectedPoint(nextWall.id, 'start'), nextProjected)
   }
 
   private handleWallChange(current?: PerimeterWall, previous?: PerimeterWall): void {
@@ -227,8 +245,8 @@ class GcsSyncService {
 
   private updateEntityWidthConstraint(entityId: WallEntityId, width: number): void {
     const gcsActions = getGcsActions()
-    const refStart = wallEntityPointId(entityId, 'start', true)
-    const refEnd = wallEntityPointId(entityId, 'end', true)
+    const refStart = wallEntityPointId(entityId, 'start')
+    const refEnd = wallEntityPointId(entityId, 'end')
     const constraintId = wallEntityWidthConstraintId(entityId)
 
     gcsActions.removeConstraints([constraintId])
@@ -270,24 +288,9 @@ class GcsSyncService {
           end: current.outsideLine.end
         }
 
-    const nonref = isRefInside
-      ? {
-          start: current.outsideLine.start,
-          center: outsideCenter,
-          end: current.outsideLine.end
-        }
-      : {
-          start: current.insideLine.start,
-          center: insideCenter,
-          end: current.insideLine.end
-        }
-
-    updatePointPosition(wallEntityPointId(id, 'start', true), ref.start)
-    updatePointPosition(wallEntityPointId(id, 'center', true), ref.center)
-    updatePointPosition(wallEntityPointId(id, 'end', true), ref.end)
-    updatePointPosition(wallEntityPointId(id, 'start', false), nonref.start)
-    updatePointPosition(wallEntityPointId(id, 'center', false), nonref.center)
-    updatePointPosition(wallEntityPointId(id, 'end', false), nonref.end)
+    updatePointPosition(wallEntityPointId(id, 'start'), ref.start)
+    updatePointPosition(wallEntityPointId(id, 'center'), ref.center)
+    updatePointPosition(wallEntityPointId(id, 'end'), ref.end)
   }
 }
 

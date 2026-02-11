@@ -19,7 +19,13 @@ export function GcsLayer(): React.JSX.Element {
             y1={p1.y}
             x2={p2.x}
             y2={p2.y}
-            stroke={line.id.endsWith('_ref') ? 'var(--color-primary)' : 'var(--color-foreground)'}
+            stroke={
+              line.id.endsWith('_ref')
+                ? 'var(--color-primary)'
+                : line.id.endsWith('_proj')
+                  ? 'var(--color-muted-foreground)'
+                  : 'var(--color-foreground)'
+            }
             strokeWidth={2 / zoom}
             strokeLinecap="round"
             className="pointer-events-none"

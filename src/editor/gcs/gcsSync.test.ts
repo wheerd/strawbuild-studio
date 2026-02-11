@@ -38,12 +38,16 @@ const mockUpdatePointPosition = vi.fn()
 // Mock corner geometry lookup
 const mockCornerGeometries: Record<string, PerimeterCornerWithGeometry> = {}
 
+// Mock wall data
+const mockWalls: Record<string, PerimeterWall> = {}
+
 // Mock building store
 vi.mock('@/building/store', () => ({
   getModelActions: () => ({
     getAllPerimeters: () => Object.values(mockPerimetersById),
     getPerimeterById: (perimeterId: PerimeterId) => mockPerimetersById[perimeterId],
     getPerimeterCornerById: (cornerId: string) => mockCornerGeometries[cornerId],
+    getPerimeterWallById: (wallId: string) => mockWalls[wallId],
     getAllBuildingConstraints: () => Object.values(mockBuildingConstraints)
   }),
   subscribeToPerimeters: (cb: (id: string, current?: Perimeter, previous?: Perimeter) => void) => {
@@ -102,6 +106,9 @@ beforeEach(() => {
   }
   for (const key of Object.keys(mockCornerGeometries)) {
     delete mockCornerGeometries[key]
+  }
+  for (const key of Object.keys(mockWalls)) {
+    delete mockWalls[key]
   }
 })
 
@@ -446,16 +453,55 @@ describe('GcsSyncService', () => {
       // Register corner geometry that getPerimeterCornerById will return
       registerCornerGeometry('outcorner_c1', 100, 200, 110, 210)
 
+      // Register wall data that getPerimeterWallById will return
+      mockWalls.outwall_w1 = {
+        id: 'outwall_w1' as PerimeterWallId,
+        perimeterId: 'p1' as PerimeterId,
+        startCornerId: 'outcorner_c99' as PerimeterCornerId,
+        endCornerId: 'outcorner_c1' as PerimeterCornerId,
+        entityIds: [],
+        thickness: 420,
+        wallAssemblyId: 'wa_1' as PerimeterWall['wallAssemblyId'],
+        insideLength: 5000,
+        outsideLength: 5000,
+        wallLength: 5000,
+        direction: [1, 0],
+        outsideDirection: [0, -1],
+        insideLine: { start: [0, 0], end: [100, 200] },
+        outsideLine: { start: [-420, 0], end: [-320, 200] },
+        polygon: { points: [] }
+      } as unknown as PerimeterWall
+
+      mockWalls.outwall_w2 = {
+        id: 'outwall_w2' as PerimeterWallId,
+        perimeterId: 'p1' as PerimeterId,
+        startCornerId: 'outcorner_c1' as PerimeterCornerId,
+        endCornerId: 'outcorner_c99' as PerimeterCornerId,
+        entityIds: [],
+        thickness: 420,
+        wallAssemblyId: 'wa_2' as PerimeterWall['wallAssemblyId'],
+        insideLength: 3000,
+        outsideLength: 3000,
+        wallLength: 3000,
+        direction: [0, 1],
+        outsideDirection: [1, 0],
+        insideLine: { start: [100, 200], end: [100, 500] },
+        outsideLine: { start: [110, 210], end: [110, 510] },
+        polygon: { points: [] }
+      } as unknown as PerimeterWall
+
       await importGcsSync()
 
       const prev = makeCorner('outcorner_c1', 'p1')
       const curr = { ...prev, referencePoint: newVec2(100, 200) }
       capturedCornerCallback!('outcorner_c1' as PerimeterCornerId, curr, prev)
 
-      expect(mockUpdatePointPosition).toHaveBeenCalledTimes(3)
+      expect(mockUpdatePointPosition).toHaveBeenCalledTimes(5)
       expect(mockUpdatePointPosition).toHaveBeenCalledWith('corner_outcorner_c1_ref', newVec2(100, 200))
       expect(mockUpdatePointPosition).toHaveBeenCalledWith('corner_outcorner_c1_nonref_prev', newVec2(110, 210))
       expect(mockUpdatePointPosition).toHaveBeenCalledWith('corner_outcorner_c1_nonref_next', newVec2(110, 210))
+      expect(mockUpdatePointPosition).toHaveBeenCalledWith('outwall_w1_end_proj', newVec2(110, 0))
+      expect(mockUpdatePointPosition).toHaveBeenCalledWith('outwall_w2_start_proj', newVec2(100, 210))
     })
 
     it('does not update positions for untracked perimeters', async () => {

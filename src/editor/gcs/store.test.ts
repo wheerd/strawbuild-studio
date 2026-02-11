@@ -632,11 +632,13 @@ describe('GCS store perimeter geometry', () => {
       const state = getGcsState()
       const entry = state.perimeterRegistry[perimeterA]
       expect(entry).toBeDefined()
-      expect(entry.pointIds).toHaveLength(12)
+      // 4 corners × 3 points = 12
+      // 4 walls × 2 projected points = 8
+      expect(entry.pointIds).toHaveLength(20)
       expect(entry.lineIds).toHaveLength(8)
       // 4 corners × 1 p2p_coincident constraint each = 4 structural constraints
-      // 4 walls × 2 constraint each = 8
-      expect(entry.constraintIds).toHaveLength(12)
+      // 4 walls × 3 constraints (parallel, thickness, proj_start_on_line, proj_end_on_line) = 16
+      expect(entry.constraintIds).toHaveLength(20)
     })
 
     it('handles upsert — removes old data before re-adding', () => {
@@ -654,7 +656,9 @@ describe('GCS store perimeter geometry', () => {
 
       const state = getGcsState()
       // Should still have exactly the right number of points (not doubled)
-      expect(Object.keys(state.points)).toHaveLength(12)
+      // 4 corners × 3 points = 12
+      // 4 walls × 2 projected points = 8
+      expect(Object.keys(state.points)).toHaveLength(20)
       // Building constraints are NOT cascade-removed by the GCS store;
       // that responsibility belongs to gcsSync's constraint subscription.
       expect(Object.keys(state.buildingConstraints)).toHaveLength(1)
@@ -778,7 +782,15 @@ describe('GCS store perimeter geometry', () => {
               endCornerId: cornerF,
               entityIds: [],
               thickness: 420,
-              wallAssemblyId: 'wall_assembly_1'
+              wallAssemblyId: 'wall_assembly_1',
+              insideLength: 5000,
+              outsideLength: 5000,
+              wallLength: 5000,
+              direction: [1, 0],
+              outsideDirection: [0, -1],
+              insideLine: { start: [10000, 0], end: [15000, 0] },
+              outsideLine: { start: [10000, -420], end: [15000, -420] },
+              polygon: { points: [] }
             },
             {
               id: wallF,
@@ -787,7 +799,15 @@ describe('GCS store perimeter geometry', () => {
               endCornerId: cornerE,
               entityIds: [],
               thickness: 420,
-              wallAssemblyId: 'wall_assembly_1'
+              wallAssemblyId: 'wall_assembly_1',
+              insideLength: 5000,
+              outsideLength: 5000,
+              wallLength: 5000,
+              direction: [-1, 0],
+              outsideDirection: [0, 1],
+              insideLine: { start: [15000, 0], end: [10000, 0] },
+              outsideLine: { start: [15000, -420], end: [10000, -420] },
+              polygon: { points: [] }
             }
           ]
         }
