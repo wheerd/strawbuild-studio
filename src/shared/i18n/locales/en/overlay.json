@@ -3,6 +3,10 @@
     "scrollToZoom": "Scroll to zoom",
     "uploadToBegin": "Upload an image to begin"
   },
+  "openings": {
+    "dimension": "H {{height, length}}",
+    "dimensionWithSillHeight": "H {{height, length}} SH {{sillHeight, length}}"
+  },
   "planControls": {
     "ariaLabel": "Plan Overlay",
     "confirmRemove": {

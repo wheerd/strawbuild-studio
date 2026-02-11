@@ -1,13 +1,14 @@
 import { useMemo } from 'react'
 
 import type {
+  Constraint,
   PerimeterCornerWithGeometry,
   WallEntity,
   WallEntityAbsoluteConstraint,
   WallEntityGeometry,
   WallEntityRelativeConstraint
 } from '@/building/model'
-import type { PerimeterCornerId } from '@/building/model/ids'
+import type { PerimeterCornerId, WallEntityId } from '@/building/model/ids'
 import { isOpeningId } from '@/building/model/ids'
 import {
   getModelActions,
@@ -23,7 +24,6 @@ import { useConstraintDisplayMode } from '@/editor/hooks/useConstraintDisplayMod
 import { useCurrentSelection } from '@/editor/hooks/useSelectionStore'
 import { viewportActions } from '@/editor/hooks/useViewportStore'
 import { activateLengthInput } from '@/editor/services/length-input'
-import { findCornerConstraintForEntity, findRelativeConstraint } from '@/editor/shapes/constraintHelpers'
 import { ClickableLengthIndicator } from '@/editor/utils/ClickableLengthIndicator'
 import { LengthIndicator } from '@/editor/utils/LengthIndicator'
 import { type Length, type Vec2, direction, midpoint, perpendicularCCW, scaleAddVec2 } from '@/shared/geometry'
@@ -356,4 +356,28 @@ function handleCornerDistanceClick(
       }
     }
   })
+}
+
+function findCornerConstraintForEntity(
+  constraints: readonly Constraint[],
+  cornerId: PerimeterCornerId,
+  entityId: WallEntityId
+): WallEntityAbsoluteConstraint | null {
+  const constraint = constraints.find(
+    (c): c is WallEntityAbsoluteConstraint =>
+      c.type === 'wallEntityAbsolute' && c.entity === entityId && c.node === cornerId
+  )
+  return constraint ?? null
+}
+
+function findRelativeConstraint(
+  constraints: readonly Constraint[],
+  entityAId: WallEntityId,
+  entityBId: WallEntityId
+): WallEntityRelativeConstraint | undefined {
+  return constraints.find(
+    (c): c is WallEntityRelativeConstraint =>
+      c.type === 'wallEntityRelative' &&
+      ((c.entityA === entityAId && c.entityB === entityBId) || (c.entityA === entityBId && c.entityB === entityAId))
+  )
 }

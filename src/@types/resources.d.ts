@@ -1252,6 +1252,10 @@ interface Resources {
       "scrollToZoom": "Scroll to zoom",
       "uploadToBegin": "Upload an image to begin"
     },
+    "openings": {
+      "dimension": "H {{height}}",
+      "dimensionWithSillHeight": "H {{height}} SH {{sillHeight}}"
+    },
     "planControls": {
       "ariaLabel": "Plan Overlay",
       "confirmRemove": {

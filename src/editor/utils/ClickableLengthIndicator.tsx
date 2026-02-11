@@ -217,7 +217,6 @@ export function ClickableLengthIndicator({
           ref={textRef}
           y={0}
           fontSize={calculatedFontSize}
-          fontFamily="Arial"
           fontWeight="bold"
           fill={displayColor}
           textAnchor="middle"

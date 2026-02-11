@@ -1,16 +1,32 @@
+import { useTranslation } from 'react-i18next'
+
 import type { OpeningId } from '@/building/model/ids'
 import { useWallOpeningById } from '@/building/store'
+import { useCurrentSelection } from '@/editor/hooks/useSelectionStore'
+import { useViewportState } from '@/editor/hooks/useViewportStore'
 import { EntityMeasurementsShape } from '@/editor/shapes/EntityMeasurementsShape'
-import { midpoint } from '@/shared/geometry'
+import { direction, midpoint, perpendicularCCW, scaleAddVec2 } from '@/shared/geometry'
 import { MATERIAL_COLORS } from '@/shared/theme/colors'
-import { polygonToSvgPath } from '@/shared/utils/svg'
+import { polygonToSvgPath, readableTextAngle } from '@/shared/utils/svg'
 
 export function OpeningShape({ openingId }: { openingId: OpeningId }): React.JSX.Element {
+  const { zoom } = useViewportState()
+  const { t } = useTranslation('overlay')
   const opening = useWallOpeningById(openingId)
+
+  const clampedScale = 0.2 / Math.max(0.02, Math.min(0.4, zoom))
+  const scaledFontSize = 40 * clampedScale
+  const scaledOffset = 60 * clampedScale
 
   const openingPath = polygonToSvgPath(opening.polygon)
   const centerLineStart = midpoint(opening.insideLine.start, opening.outsideLine.start)
   const centerLineEnd = midpoint(opening.insideLine.end, opening.outsideLine.end)
+
+  const isSelected = useCurrentSelection() === openingId
+  const dir = direction(opening.outsideLine.start, opening.outsideLine.end)
+  const perp = perpendicularCCW(dir)
+  const textPos = scaleAddVec2(midpoint(opening.outsideLine.start, opening.outsideLine.end), perp, scaledOffset)
+  const textAngle = readableTextAngle(dir)
 
   return (
     <g
@@ -38,6 +54,28 @@ export function OpeningShape({ openingId }: { openingId: OpeningId }): React.JSX
           strokeLinecap="butt"
         />
       )}
+
+      <g className="text" transform={`translate(${textPos[0]} ${textPos[1]}) rotate(${textAngle}) scale(1, -1)`}>
+        <text
+          x={0}
+          y={0}
+          fontSize={scaledFontSize}
+          fill={isSelected ? 'var(--color-foreground)' : 'var(--color-muted-foreground)'}
+          textAnchor="middle"
+          dominantBaseline="central"
+        >
+          {opening.sillHeight != null
+            ? t($ => $.openings.dimensionWithSillHeight, {
+                sillHeight: opening.sillHeight,
+                height: opening.height,
+                defaultValue: 'H {{height}} SH {{sillHeight}}'
+              })
+            : t($ => $.openings.dimension, {
+                height: opening.height,
+                defaultValue: 'H {{height}}'
+              })}
+        </text>
+      </g>
 
       <EntityMeasurementsShape entity={opening} />
     </g>

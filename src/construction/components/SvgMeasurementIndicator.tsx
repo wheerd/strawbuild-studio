@@ -204,7 +204,6 @@ export function SvgMeasurementIndicator({
         <text
           y={0}
           fontSize={actualFontSize}
-          fontFamily="Arial"
           fontWeight="bold"
           fill={color}
           textAnchor={

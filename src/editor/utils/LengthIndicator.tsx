@@ -172,7 +172,6 @@ export function LengthIndicator({
           ref={textRef}
           y={0}
           fontSize={calculatedFontSize}
-          fontFamily="Arial"
           fontWeight="bold"
           fill={actualColor}
           textAnchor="middle"
