@@ -5,7 +5,7 @@ import { useWallOpeningById } from '@/building/store'
 import { useCurrentSelection } from '@/editor/hooks/useSelectionStore'
 import { useViewportState } from '@/editor/hooks/useViewportStore'
 import { EntityMeasurementsShape } from '@/editor/shapes/EntityMeasurementsShape'
-import { direction, midpoint, perpendicularCCW, scaleAddVec2 } from '@/shared/geometry'
+import { direction, midpoint, perpendicularCW, scaleAddVec2 } from '@/shared/geometry'
 import { MATERIAL_COLORS } from '@/shared/theme/colors'
 import { polygonToSvgPath, readableTextAngle } from '@/shared/utils/svg'
 
@@ -23,9 +23,9 @@ export function OpeningShape({ openingId }: { openingId: OpeningId }): React.JSX
   const centerLineEnd = midpoint(opening.insideLine.end, opening.outsideLine.end)
 
   const isSelected = useCurrentSelection() === openingId
-  const dir = direction(opening.outsideLine.start, opening.outsideLine.end)
-  const perp = perpendicularCCW(dir)
-  const textPos = scaleAddVec2(midpoint(opening.outsideLine.start, opening.outsideLine.end), perp, scaledOffset)
+  const dir = direction(opening.insideLine.start, opening.insideLine.end)
+  const perp = perpendicularCW(dir)
+  const textPos = scaleAddVec2(midpoint(opening.insideLine.start, opening.insideLine.end), perp, scaledOffset)
   const textAngle = readableTextAngle(dir)
 
   return (

@@ -70,6 +70,7 @@ export function PerimeterWallShape({ wallId }: { wallId: PerimeterWallId }): Rea
   const fillColor = wallAssembly?.type === 'non-strawbale' ? MATERIAL_COLORS.other : MATERIAL_COLORS.strawbale
 
   const isSelected = select.isCurrentSelection(wall.id)
+  const subEntitySelected = select.isSelected(wall.id) && !isSelected
 
   const wallPath = polygonToSvgPath(wall.polygon)
 
@@ -226,7 +227,7 @@ export function PerimeterWallShape({ wallId }: { wallId: PerimeterWallId }): Rea
             startPoint={startCorner.insidePoint}
             endPoint={endCorner.insidePoint}
             label={insideLabel}
-            offset={-60}
+            offset={subEntitySelected ? -180 : -120}
             color={insideIndicatorColor}
             fontSize={60}
             strokeWidth={5}
@@ -246,7 +247,7 @@ export function PerimeterWallShape({ wallId }: { wallId: PerimeterWallId }): Rea
             startPoint={startCorner.insidePoint}
             endPoint={endCorner.insidePoint}
             label={insideLabel}
-            offset={-60}
+            offset={subEntitySelected ? -180 : -120}
             color={insideIndicatorColor}
             fontSize={60}
             strokeWidth={5}
@@ -260,7 +261,7 @@ export function PerimeterWallShape({ wallId }: { wallId: PerimeterWallId }): Rea
             startPoint={startCorner.outsidePoint}
             endPoint={endCorner.outsidePoint}
             label={outsideLabel}
-            offset={60}
+            offset={subEntitySelected ? 180 : 120}
             color={outsideIndicatorColor}
             fontSize={60}
             strokeWidth={5}
@@ -280,7 +281,7 @@ export function PerimeterWallShape({ wallId }: { wallId: PerimeterWallId }): Rea
             startPoint={startCorner.outsidePoint}
             endPoint={endCorner.outsidePoint}
             label={outsideLabel}
-            offset={60}
+            offset={subEntitySelected ? 180 : 120}
             color={outsideIndicatorColor}
             fontSize={60}
             strokeWidth={5}
@@ -291,7 +292,7 @@ export function PerimeterWallShape({ wallId }: { wallId: PerimeterWallId }): Rea
       {showHVBadge && (
         <ConstraintBadge
           label={hvLabel}
-          offset={160}
+          offset={subEntitySelected ? 280 : 220}
           startPoint={startCorner.outsidePoint}
           endPoint={endCorner.outsidePoint}
           outsideDirection={wall.outsideDirection}

@@ -67,6 +67,13 @@ export function EntityMeasurementsShape({ entity }: { entity: WallEntity & WallE
     () => (nextEntity ? findRelativeConstraint(constraints, entity.id, nextEntity.id) : undefined),
     [constraints, nextEntity]
   )
+  const otherRelativeConstraints = useMemo(
+    () =>
+      constraints.filter(
+        c => c.type === 'wallEntityRelative' && c.id !== prevEntityConstraint?.id && c.id !== nextEntityConstraint?.id
+      ) as WallEntityRelativeConstraint[],
+    [constraints, prevEntityConstraint, nextEntityConstraint]
+  )
 
   return (
     <>
@@ -78,6 +85,7 @@ export function EntityMeasurementsShape({ entity }: { entity: WallEntity & WallE
           mode="prev"
           useCenter={mode === 'center'}
           constraint={prevEntityConstraint}
+          dimensionLayer={1}
         />
       )}
 
@@ -89,8 +97,29 @@ export function EntityMeasurementsShape({ entity }: { entity: WallEntity & WallE
           mode="next"
           useCenter={mode === 'center'}
           constraint={nextEntityConstraint}
+          dimensionLayer={1}
         />
       )}
+
+      {otherRelativeConstraints.map(constraint => {
+        const constraintMode = constraint.entityA === entity.id ? 'next' : 'prev'
+        const otherEntityId = constraint.entityA === entity.id ? constraint.entityB : constraint.entityA
+        const otherEntity = allObstacles.find(e => e.id === otherEntityId)
+        return (
+          otherEntity && (
+            <ConstrainableEntityDistance
+              key={constraint.id}
+              entity={entity}
+              other={otherEntity}
+              isSelected={isSelected}
+              mode={constraintMode}
+              useCenter={mode === 'center'}
+              constraint={constraint}
+              dimensionLayer={5}
+            />
+          )
+        )
+      })}
 
       {(isSelected || startCornerConstraint?.side === 'right') && (
         <ConstrainableCornerDistance
@@ -101,6 +130,7 @@ export function EntityMeasurementsShape({ entity }: { entity: WallEntity & WallE
           inside
           isSelected={isSelected}
           constraint={startCornerConstraint ?? undefined}
+          dimensionLayer={previousEntity ? 2 : 1}
         />
       )}
 
@@ -113,6 +143,7 @@ export function EntityMeasurementsShape({ entity }: { entity: WallEntity & WallE
           inside={false}
           isSelected={isSelected}
           constraint={startCornerConstraint ?? undefined}
+          dimensionLayer={previousEntity ? 2 : 1}
         />
       )}
 
@@ -125,6 +156,7 @@ export function EntityMeasurementsShape({ entity }: { entity: WallEntity & WallE
           inside
           isSelected={isSelected}
           constraint={endCornerConstraint ?? undefined}
+          dimensionLayer={nextEntity ? 2 : 1}
         />
       )}
 
@@ -137,14 +169,15 @@ export function EntityMeasurementsShape({ entity }: { entity: WallEntity & WallE
           inside={false}
           isSelected={isSelected}
           constraint={endCornerConstraint ?? undefined}
+          dimensionLayer={nextEntity ? 2 : 1}
         />
       )}
 
       <LengthIndicator
-        startPoint={entity.insideLine.start}
-        endPoint={entity.insideLine.end}
+        startPoint={entity.outsideLine.start}
+        endPoint={entity.outsideLine.end}
         label={formatLength(entity.width)}
-        offset={-60}
+        offset={60}
         color={isSelected ? 'var(--color-foreground)' : 'var(--color-muted-foreground)'}
         fontSize={50}
         strokeWidth={4}
@@ -162,7 +195,8 @@ function ConstrainableCornerDistance({
   useCenter,
   constraint,
   entity,
-  corner
+  corner,
+  dimensionLayer
 }: {
   corner: PerimeterCornerWithGeometry
   entity: WallEntity & WallEntityGeometry
@@ -171,6 +205,7 @@ function ConstrainableCornerDistance({
   inside: boolean
   isSelected: boolean
   constraint?: WallEntityAbsoluteConstraint
+  dimensionLayer: number
 }) {
   const { formatLength } = useFormatters()
   const constraintStatus = useConstraintStatus(constraint?.id)
@@ -196,18 +231,28 @@ function ConstrainableCornerDistance({
   const endPoint = mode === 'next' ? cornerPoint : entityPoint
 
   const label = isConstrained ? `${formatLength(constraint.distance)} \uD83D\uDD12` : undefined
+  const offset = (inside ? -dimensionLayer : dimensionLayer) * 60
 
   return (
     <ClickableLengthIndicator
       startPoint={startPoint}
       endPoint={endPoint}
-      offset={inside ? -120 : 120}
+      offset={offset}
       fontSize={50}
       strokeWidth={4}
       color={color}
       label={label}
       onClick={measurement => {
-        handleCornerDistanceClick(entity, corner.id, entitySide, inside, constraint, measurement, startPoint, endPoint)
+        handleCornerDistanceClick(
+          entity,
+          corner.id,
+          entitySide,
+          inside,
+          isConstrained ? constraint : undefined,
+          measurement,
+          startPoint,
+          endPoint
+        )
       }}
     />
   )
@@ -219,7 +264,8 @@ function ConstrainableEntityDistance({
   useCenter,
   constraint,
   entity,
-  other
+  other,
+  dimensionLayer
 }: {
   other: WallEntity & WallEntityGeometry
   entity: WallEntity & WallEntityGeometry
@@ -227,6 +273,7 @@ function ConstrainableEntityDistance({
   useCenter: boolean
   isSelected: boolean
   constraint?: WallEntityRelativeConstraint
+  dimensionLayer: number
 }) {
   const { formatLength } = useFormatters()
   const constraintStatus = useConstraintStatus(constraint?.id)
@@ -238,9 +285,9 @@ function ConstrainableEntityDistance({
     return isSelected ? 'var(--color-foreground)' : 'var(--color-muted-foreground)'
   }, [constraintStatus, isSelected])
 
-  const startLine = mode === 'prev' ? other.insideLine : entity.insideLine
+  const startLine = mode === 'prev' ? other.outsideLine : entity.outsideLine
   const startPoint = useCenter ? midpoint(startLine.start, startLine.end) : startLine.end
-  const endLine = mode === 'next' ? other.insideLine : entity.insideLine
+  const endLine = mode === 'next' ? other.outsideLine : entity.outsideLine
   const endPoint = useCenter ? midpoint(endLine.start, endLine.end) : endLine.start
 
   const entitySide = useCenter ? 'center' : mode === 'prev' ? 'start' : 'end'
@@ -252,7 +299,7 @@ function ConstrainableEntityDistance({
     <ClickableLengthIndicator
       startPoint={startPoint}
       endPoint={endPoint}
-      offset={-60}
+      offset={dimensionLayer * 60}
       fontSize={50}
       strokeWidth={4}
       color={color}
