@@ -87,7 +87,7 @@ export function buildingConstraintKey(constraint: ConstraintInput): string {
     case 'wallEntityAbsolute':
       return `we_${constraint.entity}_${constraint.node}`
     case 'wallEntityRelative': {
-      const [a, b] = sortedPair(constraint.entityA, constraint.entityA)
+      const [a, b] = sortedPair(constraint.entityA, constraint.entityB)
       return `we_${a}_${b}`
     }
   }
