@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react'
+import { useMemo } from 'react'
 
 import type {
   Constraint,
@@ -6,10 +6,10 @@ import type {
   VerticalWallConstraint,
   WallLengthConstraint
 } from '@/building/model'
-import { type PerimeterWallId } from '@/building/model/ids'
+import type { PerimeterCornerId, PerimeterWallId } from '@/building/model/ids'
 import {
+  getModelActions,
   useConstraintsForEntity,
-  useModelActions,
   usePerimeterCornerById,
   usePerimeterWallById
 } from '@/building/store'
@@ -18,21 +18,17 @@ import { ConstraintBadge } from '@/editor/components/ConstraintBadge'
 import { gcsService } from '@/editor/gcs/service'
 import { useConstraintStatus } from '@/editor/gcs/store'
 import { useSelectionStore } from '@/editor/hooks/useSelectionStore'
-import { useViewportActions } from '@/editor/hooks/useViewportStore'
+import { viewportActions } from '@/editor/hooks/useViewportStore'
 import { activateLengthInput } from '@/editor/services/length-input'
 import { ClickableLengthIndicator } from '@/editor/utils/ClickableLengthIndicator'
 import { LengthIndicator } from '@/editor/utils/LengthIndicator'
-import { type Length, type Vec2, direction, midpoint, perpendicularCCW, scaleAddVec2 } from '@/shared/geometry'
+import { type Length, type Vec2, midpoint } from '@/shared/geometry'
 import { useFormatters } from '@/shared/i18n/useFormatters'
 import { MATERIAL_COLORS } from '@/shared/theme/colors'
 import { polygonToSvgPath } from '@/shared/utils/svg'
 
-/** Sine of 5 degrees — threshold for suggesting H/V constraints. */
 const SUGGESTION_SIN_TOLERANCE = Math.sin((5 * Math.PI) / 180)
 
-/**
- * Find a wallLength constraint for a given wall and side.
- */
 function findWallLengthConstraint(
   constraints: readonly Constraint[],
   wallId: PerimeterWallId,
@@ -43,9 +39,6 @@ function findWallLengthConstraint(
   )
 }
 
-/**
- * Find an H/V constraint for a given wall.
- */
 function findHVConstraint(
   constraints: readonly Constraint[],
   wallId: PerimeterWallId
@@ -56,147 +49,143 @@ function findHVConstraint(
   )
 }
 
-export function PerimeterWallShape({ wallId }: { wallId: PerimeterWallId }): React.JSX.Element {
-  const { formatLength } = useFormatters()
-  const select = useSelectionStore()
-  const modelActions = useModelActions()
-  const viewportActions = useViewportActions()
+function handleDistanceConstraintClick(
+  side: 'left' | 'right',
+  existingConstraint: WallLengthConstraint | undefined,
+  currentLength: Length,
+  indicatorStartPoint: Vec2,
+  indicatorEndPoint: Vec2,
+  wallId: PerimeterWallId
+) {
+  const { addBuildingConstraint, removeBuildingConstraint } = getModelActions()
+  const { worldToStage } = viewportActions()
 
-  const wall = usePerimeterWallById(wallId)
-  const startCorner = usePerimeterCornerById(wall.startCornerId)
-  const endCorner = usePerimeterCornerById(wall.endCornerId)
+  const mid = midpoint(indicatorStartPoint, indicatorEndPoint)
 
-  const wallAssembly = useWallAssemblyById(wall.wallAssemblyId)
-  const fillColor = wallAssembly?.type === 'non-strawbale' ? MATERIAL_COLORS.other : MATERIAL_COLORS.strawbale
+  const stagePos = worldToStage(mid)
+  const initialValue = existingConstraint ? existingConstraint.length : currentLength
 
-  const isSelected = select.isCurrentSelection(wall.id)
-  const subEntitySelected = select.isSelected(wall.id) && !isSelected
+  activateLengthInput({
+    showImmediately: true,
+    position: { x: stagePos[0], y: stagePos[1] },
+    initialValue,
+    placeholder: 'Enter length...',
+    onCommit: enteredValue => {
+      addBuildingConstraint({
+        type: 'wallLength',
+        side,
+        wall: wallId,
+        length: enteredValue
+      })
+      gcsService.triggerSolve()
+    },
+    onCancel: () => {
+      if (existingConstraint) {
+        removeBuildingConstraint(existingConstraint.id)
+        gcsService.triggerSolve()
+      }
+    }
+  })
+}
 
-  const wallPath = polygonToSvgPath(wall.polygon)
+function handleHVConstraintToggle(
+  wallId: PerimeterWallId,
+  hvConstraint: (HorizontalWallConstraint | VerticalWallConstraint) | undefined,
+  suggestedHVType: 'horizontalWall' | 'verticalWall' | null
+) {
+  const { addBuildingConstraint, removeBuildingConstraint } = getModelActions()
 
-  // Look up constraints referencing this wall
-  const wallConstraints = useConstraintsForEntity(wallId)
-
-  // Find distance constraints for inside ('right') and outside ('left') sides
-  const insideDistanceConstraint = useMemo(
-    () => findWallLengthConstraint(wallConstraints, wallId, 'right'),
-    [wallConstraints, wallId]
-  )
-  const outsideDistanceConstraint = useMemo(
-    () => findWallLengthConstraint(wallConstraints, wallId, 'left'),
-    [wallConstraints, wallId]
-  )
-
-  // Find H/V constraint for this wall
-  const hvConstraint = useMemo(() => findHVConstraint(wallConstraints, wallId), [wallConstraints, wallId])
-
-  // Determine if the wall is close to horizontal or vertical (for suggesting constraints)
-  const suggestedHVType = useMemo<'horizontalWall' | 'verticalWall' | null>(() => {
-    if (hvConstraint) return null
-    const dx = wall.direction[0]
-    const dy = wall.direction[1]
-    if (Math.abs(dy) < SUGGESTION_SIN_TOLERANCE) return 'horizontalWall'
-    if (Math.abs(dx) < SUGGESTION_SIN_TOLERANCE) return 'verticalWall'
-    return null
-  }, [hvConstraint, wall.direction])
-
-  // Get constraint status for each constraint
-  const hvStatus = useConstraintStatus(hvConstraint?.id)
-  const insideDistanceStatus = useConstraintStatus(insideDistanceConstraint?.id)
-  const outsideDistanceStatus = useConstraintStatus(outsideDistanceConstraint?.id)
-
-  const showInsideIndicator = isSelected || insideDistanceConstraint != null
-  const showOutsideIndicator = isSelected || outsideDistanceConstraint != null
-
-  const insideLabel = insideDistanceConstraint
-    ? `${formatLength(insideDistanceConstraint.length)} \uD83D\uDD12`
-    : formatLength(wall.insideLength)
-  const outsideLabel = outsideDistanceConstraint
-    ? `${formatLength(outsideDistanceConstraint.length)} \uD83D\uDD12`
-    : formatLength(wall.outsideLength)
-
-  const getBadgeStatus = (status: { conflicting: boolean; redundant: boolean }) => {
-    if (status.conflicting) return 'conflicting'
-    if (status.redundant) return 'redundant'
-    return 'normal'
-  }
-
-  const insideIndicatorColor = useMemo(() => {
-    if (insideDistanceStatus.conflicting) return 'var(--color-red-600)'
-    if (insideDistanceStatus.redundant) return 'var(--color-amber-500)'
-    return isSelected ? 'var(--color-foreground)' : 'var(--color-muted-foreground)'
-  }, [insideDistanceStatus, isSelected])
-
-  const outsideIndicatorColor = useMemo(() => {
-    if (outsideDistanceStatus.conflicting) return 'var(--color-red-600)'
-    if (outsideDistanceStatus.redundant) return 'var(--color-amber-500)'
-    return isSelected ? 'var(--color-foreground)' : 'var(--color-muted-foreground)'
-  }, [outsideDistanceStatus, isSelected])
-
-  // --- H/V constraint handlers ---
-  const handleAddHVConstraint = useCallback(() => {
-    if (!suggestedHVType) return
-    modelActions.addBuildingConstraint({
+  if (hvConstraint) {
+    removeBuildingConstraint(hvConstraint.id)
+    gcsService.triggerSolve()
+  } else if (suggestedHVType) {
+    addBuildingConstraint({
       type: suggestedHVType,
       wall: wallId
     })
     gcsService.triggerSolve()
-  }, [suggestedHVType, modelActions, wallId])
+  }
+}
 
-  const handleRemoveHVConstraint = useCallback(() => {
-    if (!hvConstraint) return
-    modelActions.removeBuildingConstraint(hvConstraint.id)
-    gcsService.triggerSolve()
-  }, [hvConstraint, modelActions])
+function WallLengthIndicator({
+  wallId,
+  side,
+  startPoint,
+  endPoint,
+  offset,
+  isSelected,
+  currentLength,
+  constraint
+}: {
+  wallId: PerimeterWallId
+  side: 'left' | 'right'
+  startPoint: Vec2
+  endPoint: Vec2
+  offset: number
+  isSelected: boolean
+  currentLength: Length
+  constraint?: WallLengthConstraint
+}) {
+  const { formatLength } = useFormatters()
 
-  // --- Distance constraint handlers ---
-  const handleDistanceClick = useCallback(
-    (
-      side: 'left' | 'right',
-      existingConstraint: WallLengthConstraint | undefined,
-      currentLength: Length,
-      indicatorStartPoint: Vec2,
-      indicatorEndPoint: Vec2,
-      indicatorOffset: number
-    ) => {
-      const mid = midpoint(indicatorStartPoint, indicatorEndPoint)
-      const dir = direction(indicatorStartPoint, indicatorEndPoint)
-      const perp = perpendicularCCW(dir)
-      const offsetMid = scaleAddVec2(mid, perp, indicatorOffset)
+  const constraintStatus = useConstraintStatus(constraint?.id)
 
-      const stagePos = viewportActions.worldToStage(offsetMid)
-      const initialValue = existingConstraint ? existingConstraint.length : currentLength
+  const color = useMemo(() => {
+    if (constraintStatus.conflicting) return 'var(--color-red-600)'
+    if (constraintStatus.redundant) return 'var(--color-amber-500)'
+    return isSelected ? 'var(--color-foreground)' : 'var(--color-muted-foreground)'
+  }, [constraintStatus, isSelected])
 
-      activateLengthInput({
-        showImmediately: true,
-        position: { x: stagePos[0] + 20, y: stagePos[1] - 30 },
-        initialValue,
-        placeholder: 'Enter length...',
-        onCommit: enteredValue => {
-          modelActions.addBuildingConstraint({
-            type: 'wallLength',
-            side,
-            wall: wallId,
-            length: enteredValue
-          })
-          gcsService.triggerSolve()
-        },
-        onCancel: () => {
-          if (existingConstraint) {
-            modelActions.removeBuildingConstraint(existingConstraint.id)
-            gcsService.triggerSolve()
-          }
-        }
-      })
-    },
-    [viewportActions, modelActions, wallId]
+  const label = constraint ? `${formatLength(constraint.length)} \uD83D\uDD12` : formatLength(currentLength)
+
+  return isSelected ? (
+    <ClickableLengthIndicator
+      startPoint={startPoint}
+      endPoint={endPoint}
+      label={label}
+      offset={offset}
+      color={color}
+      fontSize={60}
+      strokeWidth={5}
+      onClick={() => {
+        handleDistanceConstraintClick(side, constraint, currentLength, startPoint, endPoint, wallId)
+      }}
+    />
+  ) : (
+    <LengthIndicator
+      startPoint={startPoint}
+      endPoint={endPoint}
+      label={label}
+      offset={offset}
+      color={color}
+      fontSize={60}
+      strokeWidth={5}
+    />
   )
+}
 
-  // Whether to show H/V badge
-  const showHVBadge = hvConstraint != null || (isSelected && suggestedHVType != null)
+function HVConstraintBadge({
+  wall,
+  startCornerId,
+  endCornerId,
+  hvConstraint,
+  suggestedHVType,
+  subEntitySelected,
+  onClick
+}: {
+  wall: { outsideDirection: Vec2 }
+  startCornerId: PerimeterCornerId
+  endCornerId: PerimeterCornerId
+  hvConstraint: (HorizontalWallConstraint | VerticalWallConstraint) | undefined
+  suggestedHVType: 'horizontalWall' | 'verticalWall' | null
+  subEntitySelected: boolean
+  onClick: (() => void) | undefined
+}) {
+  const startCorner = usePerimeterCornerById(startCornerId)
+  const endCorner = usePerimeterCornerById(endCornerId)
+  const hvStatus = useConstraintStatus(hvConstraint?.id)
 
-  // H/V badge label
-  const hvLabel = hvConstraint
+  const label = hvConstraint
     ? hvConstraint.type === 'horizontalWall'
       ? '—'
       : '\u2223'
@@ -204,8 +193,7 @@ export function PerimeterWallShape({ wallId }: { wallId: PerimeterWallId }): Rea
       ? '—'
       : '\u2223'
 
-  // Map constraint type to tooltip key (display concept, not type discriminant)
-  const hvTooltipKey = hvConstraint
+  const tooltipKey = hvConstraint
     ? hvConstraint.type === 'horizontalWall'
       ? ('horizontal' as const)
       : ('vertical' as const)
@@ -215,91 +203,107 @@ export function PerimeterWallShape({ wallId }: { wallId: PerimeterWallId }): Rea
         ? ('vertical' as const)
         : undefined
 
+  const getBadgeStatus = (status: { conflicting: boolean; redundant: boolean }) => {
+    if (status.conflicting) return 'conflicting'
+    if (status.redundant) return 'redundant'
+    return 'normal'
+  }
+
+  return (
+    <ConstraintBadge
+      label={label}
+      offset={subEntitySelected ? 280 : 220}
+      startPoint={startCorner.outsidePoint}
+      endPoint={endCorner.outsidePoint}
+      outsideDirection={wall.outsideDirection}
+      locked={hvConstraint != null}
+      onClick={onClick}
+      tooltipKey={tooltipKey}
+      status={getBadgeStatus(hvStatus)}
+    />
+  )
+}
+
+export function PerimeterWallShape({ wallId }: { wallId: PerimeterWallId }): React.JSX.Element {
+  const { isCurrentSelection, isSelected } = useSelectionStore()
+
+  const wall = usePerimeterWallById(wallId)
+  const startCorner = usePerimeterCornerById(wall.startCornerId)
+  const endCorner = usePerimeterCornerById(wall.endCornerId)
+
+  const wallAssembly = useWallAssemblyById(wall.wallAssemblyId)
+  const fillColor = wallAssembly?.type === 'non-strawbale' ? MATERIAL_COLORS.other : MATERIAL_COLORS.strawbale
+
+  const selected = isCurrentSelection(wall.id)
+  const subEntitySelected = isSelected(wall.id) && !selected
+
+  const wallPath = polygonToSvgPath(wall.polygon)
+
+  const wallConstraints = useConstraintsForEntity(wallId)
+  const insideDistanceConstraint = useMemo(
+    () => findWallLengthConstraint(wallConstraints, wallId, 'right'),
+    [wallConstraints, wallId]
+  )
+  const outsideDistanceConstraint = useMemo(
+    () => findWallLengthConstraint(wallConstraints, wallId, 'left'),
+    [wallConstraints, wallId]
+  )
+  const hvConstraint = useMemo(() => findHVConstraint(wallConstraints, wallId), [wallConstraints, wallId])
+
+  const suggestedHVType = useMemo<'horizontalWall' | 'verticalWall' | null>(() => {
+    if (hvConstraint) return null
+    const dx = wall.direction[0]
+    const dy = wall.direction[1]
+    if (Math.abs(dy) < SUGGESTION_SIN_TOLERANCE) return 'horizontalWall'
+    if (Math.abs(dx) < SUGGESTION_SIN_TOLERANCE) return 'verticalWall'
+    return null
+  }, [hvConstraint, wall.direction])
+
   return (
     <g data-entity-id={wall.id} data-entity-type="perimeter-wall" data-parent-ids={JSON.stringify([wall.perimeterId])}>
-      {/* Main wall body - fill the area between inside and outside lines */}
       <path d={wallPath} fill={fillColor} className="stroke-border-contrast stroke-10" />
 
-      {/* Inside length indicator */}
-      {showInsideIndicator &&
-        (isSelected ? (
-          <ClickableLengthIndicator
-            startPoint={startCorner.insidePoint}
-            endPoint={endCorner.insidePoint}
-            label={insideLabel}
-            offset={subEntitySelected ? -180 : -120}
-            color={insideIndicatorColor}
-            fontSize={60}
-            strokeWidth={5}
-            onClick={() => {
-              handleDistanceClick(
-                'right',
-                insideDistanceConstraint,
-                wall.insideLength,
-                startCorner.insidePoint,
-                endCorner.insidePoint,
-                -60
-              )
-            }}
-          />
-        ) : (
-          <LengthIndicator
-            startPoint={startCorner.insidePoint}
-            endPoint={endCorner.insidePoint}
-            label={insideLabel}
-            offset={subEntitySelected ? -180 : -120}
-            color={insideIndicatorColor}
-            fontSize={60}
-            strokeWidth={5}
-          />
-        ))}
+      {(selected || insideDistanceConstraint != null) && (
+        <WallLengthIndicator
+          wallId={wallId}
+          side="right"
+          startPoint={startCorner.insidePoint}
+          endPoint={endCorner.insidePoint}
+          offset={subEntitySelected ? -180 : -120}
+          isSelected={selected}
+          currentLength={wall.insideLength}
+          constraint={insideDistanceConstraint}
+        />
+      )}
 
-      {/* Outside length indicator */}
-      {showOutsideIndicator &&
-        (isSelected ? (
-          <ClickableLengthIndicator
-            startPoint={startCorner.outsidePoint}
-            endPoint={endCorner.outsidePoint}
-            label={outsideLabel}
-            offset={subEntitySelected ? 180 : 120}
-            color={outsideIndicatorColor}
-            fontSize={60}
-            strokeWidth={5}
-            onClick={() => {
-              handleDistanceClick(
-                'left',
-                outsideDistanceConstraint,
-                wall.outsideLength,
-                startCorner.outsidePoint,
-                endCorner.outsidePoint,
-                60
-              )
-            }}
-          />
-        ) : (
-          <LengthIndicator
-            startPoint={startCorner.outsidePoint}
-            endPoint={endCorner.outsidePoint}
-            label={outsideLabel}
-            offset={subEntitySelected ? 180 : 120}
-            color={outsideIndicatorColor}
-            fontSize={60}
-            strokeWidth={5}
-          />
-        ))}
-
-      {/* H/V constraint badge on the outside of the wall */}
-      {showHVBadge && (
-        <ConstraintBadge
-          label={hvLabel}
-          offset={subEntitySelected ? 280 : 220}
+      {(selected || outsideDistanceConstraint != null) && (
+        <WallLengthIndicator
+          wallId={wallId}
+          side="left"
           startPoint={startCorner.outsidePoint}
           endPoint={endCorner.outsidePoint}
-          outsideDirection={wall.outsideDirection}
-          locked={hvConstraint != null}
-          onClick={isSelected ? (hvConstraint ? handleRemoveHVConstraint : handleAddHVConstraint) : undefined}
-          tooltipKey={hvTooltipKey}
-          status={getBadgeStatus(hvStatus)}
+          offset={subEntitySelected ? 180 : 120}
+          isSelected={selected}
+          currentLength={wall.outsideLength}
+          constraint={outsideDistanceConstraint}
+        />
+      )}
+
+      {(hvConstraint != null || (selected && suggestedHVType != null)) && (
+        <HVConstraintBadge
+          wall={wall}
+          startCornerId={wall.startCornerId}
+          endCornerId={wall.endCornerId}
+          hvConstraint={hvConstraint}
+          suggestedHVType={suggestedHVType}
+          subEntitySelected={subEntitySelected}
+          onClick={
+            selected
+              ? () => {
+                  handleHVConstraintToggle(wallId, hvConstraint, suggestedHVType)
+                }
+              : undefined
+          }
         />
       )}
     </g>
