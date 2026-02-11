@@ -20,6 +20,7 @@
     },
     "redundantStatus_one": "Eine redundante Beschränkung",
     "redundantStatus_other": "{{count}} redundante Beschränkungen",
+    "toggleWallEntitySideTitle": "Wechsel zwischen seitlicher und mittiger Bemaßung",
     "vertical": {
       "active": "Vertikale Beschränkung (Klicken zum Entfernen)",
       "suggestion": "Klicken, um vertikale Beschränkung hinzuzufügen"

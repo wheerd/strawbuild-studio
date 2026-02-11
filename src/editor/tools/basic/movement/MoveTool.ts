@@ -1,3 +1,4 @@
+import type { SelectableId } from '@/building/model/ids'
 import { getModelActions } from '@/building/store'
 import type { LengthInputConfig } from '@/editor/services/length-input'
 import { activateLengthInput, deactivateLengthInput } from '@/editor/services/length-input'
@@ -27,6 +28,11 @@ export class MoveTool extends BaseTool implements ToolImplementation {
   private static readonly MOVEMENT_THRESHOLD = 3 // pixels
 
   private toolState: {
+    // Phase 0: Hovering over an entity
+    hoveredBehavior: MovementBehavior<unknown, MovementState> | null
+    hoveredEntityId: SelectableId | null
+    canMoveHoveredEntity: boolean
+
     // Phase 1: Pointer down, waiting to see if user will drag
     isWaitingForMovement: boolean
     downPosition: Vec2 | null
@@ -42,6 +48,9 @@ export class MoveTool extends BaseTool implements ToolImplementation {
     // Last completed movement for length input modification
     lastMovement: LastMovementRecord | null
   } = {
+    hoveredBehavior: null,
+    hoveredEntityId: null,
+    canMoveHoveredEntity: true,
     isWaitingForMovement: false,
     downPosition: null,
     isMoving: false,
@@ -60,8 +69,13 @@ export class MoveTool extends BaseTool implements ToolImplementation {
     const behavior = getMovementBehavior(hitResult.entityType)
     if (!behavior) return false
 
-    // Get the entity and create context
+    // Check if entity can be moved
     const store = getModelActions()
+    if (behavior.canMove && !behavior.canMove(hitResult.entityId, store)) {
+      return false
+    }
+
+    // Get the entity and create context
     const entity = behavior.getEntity(hitResult.entityId, hitResult.parentIds, store)
 
     // Start waiting for movement - don't begin actual move yet
@@ -127,7 +141,11 @@ export class MoveTool extends BaseTool implements ToolImplementation {
       }
     }
 
-    if (!this.toolState.isMoving) return false
+    if (!this.toolState.isMoving) {
+      // Check hover state when not moving or waiting
+      this.updateHoverState(event.originalEvent)
+      return false
+    }
 
     const { behavior, context, pointerState } = this.toolState
     if (!behavior || !context || !pointerState) return false
@@ -286,6 +304,40 @@ export class MoveTool extends BaseTool implements ToolImplementation {
     }
   }
 
+  private updateHoverState(mouseEvent: MouseEvent): void {
+    const hitResult = findEditorEntityAt(mouseEvent)
+    if (!hitResult) {
+      this.toolState.hoveredBehavior = null
+      this.toolState.hoveredEntityId = null
+      this.toolState.canMoveHoveredEntity = true
+      this.triggerRender()
+      return
+    }
+
+    const behavior = getMovementBehavior(hitResult.entityType)
+    if (!behavior) {
+      this.toolState.hoveredBehavior = null
+      this.toolState.hoveredEntityId = null
+      this.toolState.canMoveHoveredEntity = true
+      this.triggerRender()
+      return
+    }
+
+    const canMove = behavior.canMove ? behavior.canMove(hitResult.entityId, getModelActions()) : true
+    const hasChanged =
+      this.toolState.hoveredBehavior !== behavior ||
+      this.toolState.hoveredEntityId !== hitResult.entityId ||
+      this.toolState.canMoveHoveredEntity !== canMove
+
+    this.toolState.hoveredBehavior = behavior
+    this.toolState.hoveredEntityId = hitResult.entityId
+    this.toolState.canMoveHoveredEntity = canMove
+
+    if (hasChanged) {
+      this.triggerRender()
+    }
+  }
+
   // For overlay component to access state
   getToolState() {
     return this.toolState
@@ -297,6 +349,9 @@ export class MoveTool extends BaseTool implements ToolImplementation {
     }
     if (this.toolState.isWaitingForMovement) {
       return 'grab'
+    }
+    if (this.toolState.hoveredBehavior && !this.toolState.canMoveHoveredEntity) {
+      return 'not-allowed'
     }
     return 'move'
   }

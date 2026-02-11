@@ -1,3 +1,5 @@
+import { useTranslation } from 'react-i18next'
+
 import { useZoom } from '@/editor/hooks/useViewportStore'
 import type { Vec2 } from '@/shared/geometry'
 
@@ -8,6 +10,7 @@ interface ModeToggleBadgeProps {
 }
 
 export function CenterModeToggleBadge({ mode, position, onClick }: ModeToggleBadgeProps): React.JSX.Element {
+  const { t } = useTranslation('inspector')
   const zoom = useZoom()
 
   const clampedScale = 0.2 / Math.max(0.02, Math.min(0.4, zoom))
@@ -23,7 +26,7 @@ export function CenterModeToggleBadge({ mode, position, onClick }: ModeToggleBad
 
   return (
     <g className="group cursor-pointer select-none" onClick={onClick}>
-      <title>Toggle between side (S) and center (C) measurement modes</title>
+      <title>{t($ => $.constraint.toggleWallEntitySideTitle)}</title>
       <rect
         className="fill-background group-hover:fill-accent stroke-input"
         x={position[0] - rectSize / 2}
