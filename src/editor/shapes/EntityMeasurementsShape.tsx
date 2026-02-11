@@ -18,6 +18,12 @@ import {
   usePerimeterWallById
 } from '@/building/store'
 import { CenterModeToggleBadge } from '@/editor/components/CenterModeToggleBadge'
+import {
+  DIMENSION_DEFAULT_FONT_SIZE,
+  DIMENSION_DEFAULT_STROKE_WIDTH,
+  WALL_DIM_LAYER_OFFSET,
+  type WallDimLayer
+} from '@/editor/constants/dimensions'
 import { gcsService } from '@/editor/gcs/service'
 import { useConstraintStatus } from '@/editor/gcs/store'
 import { useConstraintDisplayMode } from '@/editor/hooks/useConstraintDisplayMode'
@@ -177,10 +183,10 @@ export function EntityMeasurementsShape({ entity }: { entity: WallEntity & WallE
         startPoint={entity.outsideLine.start}
         endPoint={entity.outsideLine.end}
         label={formatLength(entity.width)}
-        offset={60}
+        offset={1 * WALL_DIM_LAYER_OFFSET}
         color={isSelected ? 'var(--color-foreground)' : 'var(--color-muted-foreground)'}
-        fontSize={50}
-        strokeWidth={4}
+        fontSize={DIMENSION_DEFAULT_FONT_SIZE}
+        strokeWidth={DIMENSION_DEFAULT_STROKE_WIDTH}
       />
 
       {isSelected && <CenterModeToggleBadge mode={mode} position={entity.center} onClick={toggleMode} />}
@@ -205,7 +211,7 @@ function ConstrainableCornerDistance({
   inside: boolean
   isSelected: boolean
   constraint?: WallEntityAbsoluteConstraint
-  dimensionLayer: number
+  dimensionLayer: WallDimLayer
 }) {
   const { formatLength } = useFormatters()
   const constraintStatus = useConstraintStatus(constraint?.id)
@@ -231,15 +237,15 @@ function ConstrainableCornerDistance({
   const endPoint = mode === 'next' ? cornerPoint : entityPoint
 
   const label = isConstrained ? `${formatLength(constraint.distance)} \uD83D\uDD12` : undefined
-  const offset = (inside ? -dimensionLayer : dimensionLayer) * 60
+  const offset = inside ? -dimensionLayer * WALL_DIM_LAYER_OFFSET : dimensionLayer * WALL_DIM_LAYER_OFFSET
 
   return (
     <ClickableLengthIndicator
       startPoint={startPoint}
       endPoint={endPoint}
       offset={offset}
-      fontSize={50}
-      strokeWidth={4}
+      fontSize={DIMENSION_DEFAULT_FONT_SIZE}
+      strokeWidth={DIMENSION_DEFAULT_STROKE_WIDTH}
       color={color}
       label={label}
       onClick={measurement => {
@@ -273,7 +279,7 @@ function ConstrainableEntityDistance({
   useCenter: boolean
   isSelected: boolean
   constraint?: WallEntityRelativeConstraint
-  dimensionLayer: number
+  dimensionLayer: WallDimLayer
 }) {
   const { formatLength } = useFormatters()
   const constraintStatus = useConstraintStatus(constraint?.id)
@@ -299,9 +305,9 @@ function ConstrainableEntityDistance({
     <ClickableLengthIndicator
       startPoint={startPoint}
       endPoint={endPoint}
-      offset={dimensionLayer * 60}
-      fontSize={50}
-      strokeWidth={4}
+      offset={dimensionLayer * WALL_DIM_LAYER_OFFSET}
+      fontSize={DIMENSION_DEFAULT_FONT_SIZE}
+      strokeWidth={DIMENSION_DEFAULT_STROKE_WIDTH}
       color={color}
       label={label}
       onClick={measurement => {

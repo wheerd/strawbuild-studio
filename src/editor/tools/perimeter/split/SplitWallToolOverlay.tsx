@@ -1,3 +1,4 @@
+import { WALL_DIM_LAYER_OFFSET } from '@/editor/constants/dimensions'
 import { useSelectionStore } from '@/editor/hooks/useSelectionStore'
 import { useViewportActions } from '@/editor/hooks/useViewportStore'
 import { activateLengthInput } from '@/editor/services/length-input'
@@ -60,7 +61,7 @@ export function SplitWallToolOverlay({ tool }: ToolOverlayComponentProps<SplitWa
   const splitColor = state.isValidSplit ? 'var(--color-green-600)' : 'var(--color-red-600)'
 
   return (
-    <g pointerEvents="none">
+    <g>
       {/* Hover Line (perpendicular to wall) */}
       {insideHover && outsideHover ? (
         <line
@@ -90,25 +91,25 @@ export function SplitWallToolOverlay({ tool }: ToolOverlayComponentProps<SplitWa
           <ClickableLengthIndicator
             startPoint={insideStart}
             endPoint={insideSplit}
-            offset={-120}
+            offset={-3 * WALL_DIM_LAYER_OFFSET}
             onClick={handleMeasurementClick(insideStart, insideSplit, 1)}
           />
           <ClickableLengthIndicator
             startPoint={insideEnd}
             endPoint={insideSplit}
-            offset={120}
+            offset={3 * WALL_DIM_LAYER_OFFSET}
             onClick={handleMeasurementClick(insideEnd, insideSplit, -1)}
           />
           <ClickableLengthIndicator
             startPoint={outsideStart}
             endPoint={outsideSplit}
-            offset={120}
+            offset={3 * WALL_DIM_LAYER_OFFSET}
             onClick={handleMeasurementClick(outsideStart, outsideSplit, 1)}
           />
           <ClickableLengthIndicator
             startPoint={outsideEnd}
             endPoint={outsideSplit}
-            offset={-120}
+            offset={-3 * WALL_DIM_LAYER_OFFSET}
             onClick={handleMeasurementClick(outsideEnd, outsideSplit, -1)}
           />
         </>

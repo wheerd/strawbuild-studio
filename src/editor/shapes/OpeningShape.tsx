@@ -2,21 +2,21 @@ import { useTranslation } from 'react-i18next'
 
 import type { OpeningId } from '@/building/model/ids'
 import { useWallOpeningById } from '@/building/store'
+import { DIMENSION_SMALL_FONT_SIZE, WALL_DIM_LAYER_OFFSET } from '@/editor/constants/dimensions'
 import { useCurrentSelection } from '@/editor/hooks/useSelectionStore'
-import { useViewportState } from '@/editor/hooks/useViewportStore'
+import { useUiScale } from '@/editor/hooks/useViewportStore'
 import { EntityMeasurementsShape } from '@/editor/shapes/EntityMeasurementsShape'
 import { direction, midpoint, perpendicularCW, scaleAddVec2 } from '@/shared/geometry'
 import { MATERIAL_COLORS } from '@/shared/theme/colors'
 import { polygonToSvgPath, readableTextAngle } from '@/shared/utils/svg'
 
 export function OpeningShape({ openingId }: { openingId: OpeningId }): React.JSX.Element {
-  const { zoom } = useViewportState()
   const { t } = useTranslation('overlay')
   const opening = useWallOpeningById(openingId)
+  const uiScale = useUiScale()
 
-  const clampedScale = 0.2 / Math.max(0.02, Math.min(0.4, zoom))
-  const scaledFontSize = 40 * clampedScale
-  const scaledOffset = 60 * clampedScale
+  const scaledFontSize = DIMENSION_SMALL_FONT_SIZE * uiScale
+  const scaledOffset = 1 * WALL_DIM_LAYER_OFFSET * uiScale
 
   const openingPath = polygonToSvgPath(opening.polygon)
   const centerLineStart = midpoint(opening.insideLine.start, opening.outsideLine.start)

@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 
+import { UI_SCALE_FACTOR, UI_SCALE_MAX_ZOOM, UI_SCALE_MIN_ZOOM } from '@/editor/constants/dimensions'
 import { type Bounds2D, type Vec2, newVec2 } from '@/shared/geometry'
 
 export interface ViewportState {
@@ -21,6 +22,7 @@ interface ViewportActions {
   worldToStage: (worldPos: Vec2) => Vec2
   stageToWorld: (stagePos: Vec2) => Vec2
   fitToView: (bounds: Bounds2D) => void
+  getUiScale: () => number
 
   reset: () => void
 }
@@ -117,7 +119,7 @@ const viewportStore = create<ViewportStore>()((set, get) => ({
       // Clamp zoom to reasonable bounds
       const clampedZoom = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, newZoom))
 
-      // Calculate pan to center the content
+      // Calculate pan to center content
       const newPanX = viewport.stageWidth / 2 - centerX * clampedZoom
       const newPanY = viewport.stageHeight / 2 - centerY * clampedZoom
 
@@ -126,6 +128,11 @@ const viewportStore = create<ViewportStore>()((set, get) => ({
         panX: newPanX,
         panY: newPanY
       })
+    },
+
+    getUiScale: (): number => {
+      const { zoom } = get()
+      return UI_SCALE_FACTOR / Math.max(UI_SCALE_MIN_ZOOM, Math.min(UI_SCALE_MAX_ZOOM, zoom))
     },
 
     reset: () => {
@@ -140,6 +147,7 @@ export const usePanX = (): number => viewportStore(state => state.panX)
 export const usePanY = (): number => viewportStore(state => state.panY)
 export const useStageWidth = (): number => viewportStore(state => state.stageWidth)
 export const useStageHeight = (): number => viewportStore(state => state.stageHeight)
+export const useUiScale = (): number => viewportStore(state => state.actions.getUiScale())
 
 export const useViewportActions = (): ViewportActions => viewportStore(state => state.actions)
 

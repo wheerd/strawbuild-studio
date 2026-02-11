@@ -26,6 +26,7 @@ import {
   degreesToRadians,
   direction,
   midpoint,
+  negVec2,
   perpendicular,
   radiansToDegrees,
   rotateVec2,
@@ -69,6 +70,7 @@ export function PerimeterCornerShape({ cornerId }: { cornerId: PerimeterCornerId
 
   // Calculate overlay rectangle for near-straight corners
   const outsideDirection = direction(corner.insidePoint, corner.outsidePoint)
+  const insideDirection = negVec2(outsideDirection)
   const normal = perpendicular(outsideDirection)
   const overlayHalfWidth = 80 / 2
 
@@ -251,10 +253,10 @@ export function PerimeterCornerShape({ cornerId }: { cornerId: PerimeterCornerId
         {showAngleBadge && (
           <ConstraintBadge
             label={`${Math.round(badgeAngle)}°`}
-            offset={-160}
+            dimLayer={2}
             startPoint={corner.insidePoint}
             endPoint={corner.insidePoint}
-            outsideDirection={outsideDirection}
+            outsideDirection={insideDirection}
             locked={angleConstraint != null}
             onClick={isSelected ? handleAngleClick : undefined}
             tooltipKey="angle"
@@ -266,7 +268,7 @@ export function PerimeterCornerShape({ cornerId }: { cornerId: PerimeterCornerId
         {showColinearBadge && (
           <ConstraintBadge
             label={'\u2550'}
-            offset={160}
+            dimLayer={2}
             startPoint={corner.outsidePoint}
             endPoint={corner.outsidePoint}
             outsideDirection={outsideDirection}
@@ -281,7 +283,7 @@ export function PerimeterCornerShape({ cornerId }: { cornerId: PerimeterCornerId
         {showPerpendicularBadge && (
           <ConstraintBadge
             label="⊥"
-            offset={80}
+            dimLayer={1}
             startPoint={corner.outsidePoint}
             endPoint={corner.outsidePoint}
             outsideDirection={outsideDirection}

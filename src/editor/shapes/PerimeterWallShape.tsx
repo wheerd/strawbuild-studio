@@ -15,6 +15,12 @@ import {
 } from '@/building/store'
 import { useWallAssemblyById } from '@/construction/config/store'
 import { ConstraintBadge } from '@/editor/components/ConstraintBadge'
+import {
+  DIMENSION_DEFAULT_FONT_SIZE,
+  DIMENSION_DEFAULT_STROKE_WIDTH,
+  WALL_DIM_LAYER_OFFSET,
+  type WallDimLayer
+} from '@/editor/constants/dimensions'
 import { gcsService } from '@/editor/gcs/service'
 import { useConstraintStatus } from '@/editor/gcs/store'
 import { useSelectionStore } from '@/editor/hooks/useSelectionStore'
@@ -112,7 +118,7 @@ function WallLengthIndicator({
   side,
   startPoint,
   endPoint,
-  offset,
+  dimLayer,
   isSelected,
   currentLength,
   constraint
@@ -121,7 +127,7 @@ function WallLengthIndicator({
   side: 'left' | 'right'
   startPoint: Vec2
   endPoint: Vec2
-  offset: number
+  dimLayer: WallDimLayer
   isSelected: boolean
   currentLength: Length
   constraint?: WallLengthConstraint
@@ -137,6 +143,7 @@ function WallLengthIndicator({
   }, [constraintStatus, isSelected])
 
   const label = constraint ? `${formatLength(constraint.length)} \uD83D\uDD12` : formatLength(currentLength)
+  const offset = side === 'left' ? dimLayer * WALL_DIM_LAYER_OFFSET : -dimLayer * WALL_DIM_LAYER_OFFSET
 
   return isSelected ? (
     <ClickableLengthIndicator
@@ -145,8 +152,8 @@ function WallLengthIndicator({
       label={label}
       offset={offset}
       color={color}
-      fontSize={60}
-      strokeWidth={5}
+      fontSize={DIMENSION_DEFAULT_FONT_SIZE}
+      strokeWidth={DIMENSION_DEFAULT_STROKE_WIDTH}
       onClick={() => {
         handleDistanceConstraintClick(side, constraint, currentLength, startPoint, endPoint, wallId)
       }}
@@ -158,8 +165,8 @@ function WallLengthIndicator({
       label={label}
       offset={offset}
       color={color}
-      fontSize={60}
-      strokeWidth={5}
+      fontSize={DIMENSION_DEFAULT_FONT_SIZE}
+      strokeWidth={DIMENSION_DEFAULT_STROKE_WIDTH}
     />
   )
 }
@@ -212,7 +219,7 @@ function HVConstraintBadge({
   return (
     <ConstraintBadge
       label={label}
-      offset={subEntitySelected ? 280 : 220}
+      dimLayer={subEntitySelected ? 5 : 4}
       startPoint={startCorner.outsidePoint}
       endPoint={endCorner.outsidePoint}
       outsideDirection={wall.outsideDirection}
@@ -269,7 +276,7 @@ export function PerimeterWallShape({ wallId }: { wallId: PerimeterWallId }): Rea
           side="right"
           startPoint={startCorner.insidePoint}
           endPoint={endCorner.insidePoint}
-          offset={subEntitySelected ? -180 : -120}
+          dimLayer={subEntitySelected ? 3 : 2}
           isSelected={selected}
           currentLength={wall.insideLength}
           constraint={insideDistanceConstraint}
@@ -282,7 +289,7 @@ export function PerimeterWallShape({ wallId }: { wallId: PerimeterWallId }): Rea
           side="left"
           startPoint={startCorner.outsidePoint}
           endPoint={endCorner.outsidePoint}
-          offset={subEntitySelected ? 180 : 120}
+          dimLayer={subEntitySelected ? 3 : 2}
           isSelected={selected}
           currentLength={wall.outsideLength}
           constraint={outsideDistanceConstraint}

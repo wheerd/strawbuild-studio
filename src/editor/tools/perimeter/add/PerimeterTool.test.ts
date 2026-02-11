@@ -55,6 +55,7 @@ describe('PerimeterTool', () => {
         zoomBy: vi.fn(),
         panBy: vi.fn(),
         fitToView: vi.fn(),
+        getUiScale: vi.fn(() => 1),
         reset: vi.fn()
       })
     })
