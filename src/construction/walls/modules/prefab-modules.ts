@@ -3,6 +3,7 @@ import { type ConstructionElement, createConstructionElement } from '@/construct
 import { WallConstructionArea } from '@/construction/geometry'
 import type { MaterialId, PrefabMaterial } from '@/construction/materials/material'
 import { getMaterialsActions } from '@/construction/materials/store'
+import type { ThicknessRange } from '@/construction/materials/thickness'
 import { yieldMeasurementFromArea } from '@/construction/measurements'
 import type { ConstructionModel } from '@/construction/model'
 import { mergeModels } from '@/construction/model'
@@ -361,6 +362,17 @@ export class PrefabModulesWallAssembly extends BaseWallAssembly<PrefabModulesWal
     if (thickness > module.maxThickness) {
       yield yieldError($ => $.construction.prefabModules.tooThick, undefined, [element], 'prefab-too-thick')
     }
+  }
+
+  get thicknessRange(): ThicknessRange {
+    const { defaultMaterial } = this.config
+    const moduleMaterial = this.getModuleMaterial(defaultMaterial)
+    const layerThickness = this.config.layers.insideThickness + this.config.layers.outsideThickness
+
+    const min = moduleMaterial.minThickness + layerThickness
+    const max = moduleMaterial.maxThickness + layerThickness
+
+    return { min, max }
   }
 
   readonly tag = TAG_INFILL_CONSTRUCTION

@@ -189,12 +189,14 @@ export class RoofHeightLineCacheService {
   }
 }
 
-const serviceInstance = new RoofHeightLineCacheService()
+let serviceInstance: RoofHeightLineCacheService | undefined
 
 export function getRoofHeightLineCached(storeyId: StoreyId, lines: LineSegment2D[]): HeightLine {
+  serviceInstance ??= new RoofHeightLineCacheService()
   return serviceInstance.getOffsets(storeyId, lines)
 }
 
 export function getRoofOffsetMapsDebug(): ReadonlyMap<StoreyId, { map: VerticalOffsetMap; storeyId: StoreyId }> {
+  serviceInstance ??= new RoofHeightLineCacheService()
   return serviceInstance.getDebugAllMaps()
 }

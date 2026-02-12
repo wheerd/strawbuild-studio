@@ -141,12 +141,14 @@ export class WallStoreyContextCacheService {
   }
 }
 
-const serviceInstance = new WallStoreyContextCacheService()
+let serviceInstance: WallStoreyContextCacheService | undefined
 
 export function getWallStoreyContextCached(storeyId: StoreyId): StoreyContext {
+  serviceInstance ??= new WallStoreyContextCacheService()
   return serviceInstance.getContext(storeyId)
 }
 
 export function subscribeToWallStoreyContextInvalidations(callback: InvalidationCallback): () => void {
+  serviceInstance ??= new WallStoreyContextCacheService()
   return serviceInstance.onInvalidation(callback)
 }

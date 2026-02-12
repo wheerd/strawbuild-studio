@@ -3,6 +3,7 @@ import type { WallConstructionArea } from '@/construction/geometry'
 import type { LayerConfig } from '@/construction/layers/types'
 import type { MaterialId } from '@/construction/materials/material'
 import { type PostConfig, validatePosts } from '@/construction/materials/posts'
+import type { ThicknessRange } from '@/construction/materials/thickness'
 import type { TriangularBattenConfig } from '@/construction/materials/triangularBattens'
 import type { ConstructionModel } from '@/construction/model'
 import type { ConstructionResult } from '@/construction/results'
@@ -17,6 +18,7 @@ export interface WallAssembly {
   construct: (wall: PerimeterWallWithGeometry, storeyContext: StoreyContext) => ConstructionModel
 
   get tag(): Tag
+  get thicknessRange(): ThicknessRange
 }
 
 export type WallAssemblyType = 'infill' | 'strawhenge' | 'non-strawbale' | 'modules' | 'prefab-modules'

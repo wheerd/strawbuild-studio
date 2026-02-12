@@ -1,7 +1,6 @@
 {
   "actions": {
-    "cancel": "Abbrechen",
-    "confirm": "Bestätigen"
+    "cancel": "Abbrechen"
   },
   "app": {
     "changeLanguage": "Sprache ändern",
@@ -64,6 +63,11 @@
     "name": "Name",
     "noFloorsYet": "Noch keine Geschosse.",
     "switchToFloor": "Zu Geschoss wechseln"
+  },
+  "thicknessRange": {
+    "minOnly": "{{min, length}} + ?",
+    "range": "{{min, length}} - {{max, length}}",
+    "single": "{{single, length}}"
   },
   "units": {
     "liter": "L",

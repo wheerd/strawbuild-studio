@@ -1,4 +1,5 @@
 import type { PerimeterWallWithGeometry } from '@/building/model'
+import type { ThicknessRange } from '@/construction/materials/thickness'
 import type { ConstructionModel } from '@/construction/model'
 import type { StoreyContext } from '@/construction/storeys/context'
 import type { Tag } from '@/construction/tags'
@@ -15,4 +16,6 @@ export abstract class BaseWallAssembly<T extends WallBaseConfig> implements Wall
   abstract construct(wall: PerimeterWallWithGeometry, storeyContext: StoreyContext): ConstructionModel
 
   abstract get tag(): Tag
+
+  abstract get thicknessRange(): ThicknessRange
 }

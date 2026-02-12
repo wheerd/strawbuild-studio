@@ -2,8 +2,7 @@
 interface Resources {
   "common": {
     "actions": {
-      "cancel": "Cancel",
-      "confirm": "Confirm"
+      "cancel": "Cancel"
     },
     "app": {
       "changeLanguage": "Change language",
@@ -72,6 +71,11 @@ interface Resources {
       "name": "Name",
       "noFloorsYet": "No floors yet.",
       "switchToFloor": "Switch to floor"
+    },
+    "thicknessRange": {
+      "minOnly": "{{min, length}} + ?",
+      "range": "{{min, length}} - {{max, length}}",
+      "single": "{{single, length}}"
     },
     "units": {
       "liter": "L",

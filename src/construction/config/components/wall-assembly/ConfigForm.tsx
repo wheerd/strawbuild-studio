@@ -8,10 +8,9 @@ import { TextField } from '@/components/ui/text-field'
 import { getPerimeterConfigTypeIcon } from '@/construction/config/components/Icons'
 import { useConfigActions } from '@/construction/config/store'
 import type { WallAssemblyConfig } from '@/construction/config/types'
-import { useMaterialActions } from '@/construction/materials/store'
-import type { WallConfig } from '@/construction/walls'
+import { formatThicknessRange } from '@/construction/materials/thickness'
+import { type WallConfig, resolveWallAssembly } from '@/construction/walls'
 import { useDebouncedInput } from '@/shared/hooks/useDebouncedInput'
-import { useFormatters } from '@/shared/i18n/useFormatters'
 
 import { CommonConfigForm } from './CommonConfigForm'
 import { InfillConfigForm } from './InfillConfigForm'
@@ -25,9 +24,7 @@ interface ConfigFormProps {
 }
 
 export function ConfigForm({ assembly }: ConfigFormProps): React.JSX.Element {
-  const { formatLength } = useFormatters()
-  const { updateWallAssemblyName, updateWallAssemblyConfig, getDefaultStrawMaterial } = useConfigActions()
-  const { getMaterialById } = useMaterialActions()
+  const { updateWallAssemblyName, updateWallAssemblyConfig } = useConfigActions()
 
   const { t } = useTranslation('config')
   const nameKey = assembly.nameKey
@@ -49,23 +46,8 @@ export function ConfigForm({ assembly }: ConfigFormProps): React.JSX.Element {
     [assembly.id, assembly, updateWallAssemblyConfig]
   )
 
-  const totalThickness = useMemo(() => {
-    const strawMaterialId =
-      ('strawMaterial' in assembly
-        ? assembly.strawMaterial
-        : 'infill' in assembly
-          ? assembly.infill.strawMaterial
-          : undefined) ?? getDefaultStrawMaterial()
-    const strawMaterial = getMaterialById(strawMaterialId)
-    const wallConstructionThickness = strawMaterial?.type === 'strawbale' ? strawMaterial.baleWidth : undefined
-    const totalLayerThickness = assembly.layers.insideThickness + assembly.layers.outsideThickness
-    return wallConstructionThickness != null && assembly.type !== 'non-strawbale'
-      ? formatLength(wallConstructionThickness + totalLayerThickness)
-      : t($ => $.walls.unclearTotalThickness, {
-          defaultValue: '? + {{layerThickness, length}} (Layers)',
-          layerThickness: totalLayerThickness
-        })
-  }, [assembly])
+  const wallAssembly = useMemo(() => resolveWallAssembly(assembly), [assembly])
+  const totalThickness = formatThicknessRange(wallAssembly.thicknessRange, t)
 
   return (
     <Card className="flex flex-col gap-3 p-3">

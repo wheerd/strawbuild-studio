@@ -14,7 +14,8 @@ import { BACK_VIEW, FRONT_VIEW, TOP_VIEW } from '@/construction/components/plan/
 import { RingBeamAssemblySelectWithEdit } from '@/construction/config/components/RingBeamAssemblySelectWithEdit'
 import { WallAssemblySelectWithEdit } from '@/construction/config/components/WallAssemblySelectWithEdit'
 import { useWallAssemblyById } from '@/construction/config/store'
-import { constructWall } from '@/construction/walls'
+import { formatThicknessRange } from '@/construction/materials/thickness'
+import { constructWall, resolveWallAssembly } from '@/construction/walls'
 import { MeasurementInfo } from '@/editor/components/MeasurementInfo'
 import { popSelection } from '@/editor/hooks/useSelectionStore'
 import { useViewportActions } from '@/editor/hooks/useViewportStore'
@@ -39,10 +40,13 @@ export function PerimeterWallInspector({ wallId }: { wallId: PerimeterWallId }):
   } = useModelActions()
 
   const wall = usePerimeterWallById(wallId)
-  const wallAssembly = useWallAssemblyById(wall.wallAssemblyId)
+  const wallAssemblyConfig = useWallAssemblyById(wall.wallAssemblyId)
+  const wallAssembly = wallAssemblyConfig ? resolveWallAssembly(wallAssemblyConfig) : null
   const viewportActions = useViewportActions()
 
   const openings = useWallOpeningsById(wallId)
+
+  const thicknessRangeText = wallAssembly ? formatThicknessRange(wallAssembly.thicknessRange, t) : ''
 
   const handleFitToView = useCallback(() => {
     const points = [wall.insideLine.start, wall.insideLine.end, wall.outsideLine.start, wall.outsideLine.end]
@@ -93,19 +97,22 @@ export function PerimeterWallInspector({ wallId }: { wallId: PerimeterWallId }):
           </Label.Root>
           <MeasurementInfo highlightedMeasurement="totalWallThickness" showFinishedSides />
         </div>
-        <LengthField
-          id="perimeter-thickness"
-          value={wall.thickness}
-          onCommit={value => {
-            updateOuterWallThickness(wallId, value)
-          }}
-          min={50}
-          max={1500}
-          step={10}
-          size="sm"
-          unit="cm"
-          className="w-[5rem]"
-        />
+        <div className="flex items-center gap-1">
+          <LengthField
+            id="perimeter-thickness"
+            value={wall.thickness}
+            onCommit={value => {
+              updateOuterWallThickness(wallId, value)
+            }}
+            min={wallAssembly?.thicknessRange.min ?? 50}
+            max={undefined}
+            step={10}
+            size="sm"
+            unit="cm"
+            className="w-20 grow"
+          />
+          {wallAssembly && <span className="text-muted-foreground text-xs">{thicknessRangeText}</span>}
+        </div>
 
         {/* Base Ring Beam */}
         <Label.Root>
@@ -171,7 +178,7 @@ export function PerimeterWallInspector({ wallId }: { wallId: PerimeterWallId }):
                     <MeasurementInfo highlightedPart="insideLayer" />
                   </div>
                 </DataList.Label>
-                <DataList.Value>{formatLength(wallAssembly.layers.insideThickness)}</DataList.Value>
+                <DataList.Value>{formatLength(wallAssemblyConfig?.layers.insideThickness ?? 0)}</DataList.Value>
               </DataList.Item>
               <DataList.Item>
                 <DataList.Label>
@@ -180,7 +187,7 @@ export function PerimeterWallInspector({ wallId }: { wallId: PerimeterWallId }):
                     <MeasurementInfo highlightedPart="outsideLayer" />
                   </div>
                 </DataList.Label>
-                <DataList.Value>{formatLength(wallAssembly.layers.outsideThickness)}</DataList.Value>
+                <DataList.Value>{formatLength(wallAssemblyConfig?.layers.outsideThickness ?? 0)}</DataList.Value>
               </DataList.Item>
               <DataList.Item>
                 <DataList.Label>
@@ -190,9 +197,12 @@ export function PerimeterWallInspector({ wallId }: { wallId: PerimeterWallId }):
                   </div>
                 </DataList.Label>
                 <DataList.Value>
-                  {formatLength(
-                    wall.thickness - wallAssembly.layers.outsideThickness - wallAssembly.layers.insideThickness
-                  )}
+                  {wallAssemblyConfig &&
+                    formatLength(
+                      wall.thickness -
+                        wallAssemblyConfig.layers.outsideThickness -
+                        wallAssemblyConfig.layers.insideThickness
+                    )}
                 </DataList.Value>
               </DataList.Item>
             </>

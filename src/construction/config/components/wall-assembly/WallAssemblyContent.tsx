@@ -70,9 +70,9 @@ export function WallAssemblyContent({ initialSelectionId }: WallAssemblyContentP
       let name: string
       let config: WallConfig
       const layers = {
-        insideThickness: 30,
+        insideThickness: 0,
         insideLayers: [],
-        outsideThickness: 50,
+        outsideThickness: 0,
         outsideLayers: []
       }
 

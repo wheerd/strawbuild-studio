@@ -28,7 +28,8 @@ vi.mock('@/construction/config/store', () => ({
       name: 'Strawhenge Module',
       type: 'strawhenge'
     }
-  ]
+  ],
+  useWallAssemblyById: () => undefined
 }))
 
 // Mock scrollIntoView for Radix UI components
@@ -36,6 +37,8 @@ Object.defineProperty(Element.prototype, 'scrollIntoView', {
   value: vi.fn(),
   writable: true
 })
+
+vi.mock('@/construction/walls')
 
 describe('PerimeterToolInspector', () => {
   let mockTool: PerimeterTool

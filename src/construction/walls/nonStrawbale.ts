@@ -4,6 +4,8 @@ import { getConfigActions } from '@/construction/config'
 import { getRoofHeightLineCached } from '@/construction/derived'
 import { createConstructionElement } from '@/construction/elements'
 import { WallConstructionArea } from '@/construction/geometry'
+import { getMaterialById } from '@/construction/materials/store'
+import { type ThicknessRange, addThickness, getMaterialThickness } from '@/construction/materials/thickness'
 import type { ConstructionModel } from '@/construction/model'
 import { mergeModels } from '@/construction/model'
 import { type ConstructionResult, aggregateResults, yieldElement } from '@/construction/results'
@@ -121,6 +123,12 @@ export class NonStrawbaleWallAssembly extends BaseWallAssembly<NonStrawbaleWallC
 
   private *noopInfill(this: void, _area: WallConstructionArea): Generator<ConstructionResult> {
     // Intentionally empty - openings are handled by polygon holes
+  }
+
+  get thicknessRange(): ThicknessRange {
+    const material = getMaterialById(this.config.material)
+    const layerThickness = this.config.layers.insideThickness + this.config.layers.outsideThickness
+    return addThickness(material ? getMaterialThickness(material) : undefined, layerThickness)
   }
 
   readonly tag = TAG_NON_STRAWBALE_CONSTRUCTION

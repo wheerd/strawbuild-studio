@@ -23,8 +23,11 @@ import TopDownPlanModal from '@/construction/components/TopDownPlanModal'
 import { useDefaultRoofAssemblyId } from '@/construction/config'
 import { RingBeamAssemblySelectWithEdit } from '@/construction/config/components/RingBeamAssemblySelectWithEdit'
 import { WallAssemblySelectWithEdit } from '@/construction/config/components/WallAssemblySelectWithEdit'
+import { useWallAssemblyById } from '@/construction/config/store'
+import { formatThicknessRange } from '@/construction/materials/thickness'
 import { constructPerimeter } from '@/construction/perimeters/perimeter'
 import { ConstructionViewer3DModal } from '@/construction/viewer3d/ConstructionViewer3DModal'
+import { resolveWallAssembly } from '@/construction/walls'
 import { MeasurementInfo } from '@/editor/components/MeasurementInfo'
 import { popSelection, replaceSelection } from '@/editor/hooks/useSelectionStore'
 import { useViewModeActions } from '@/editor/hooks/useViewMode'
@@ -128,6 +131,13 @@ export function PerimeterInspector({ selectedId }: PerimeterInspectorProps): Rea
   const thicknessState = useMemo(() => detectMixedThickness(walls), [walls])
   const baseRingBeamState = useMemo(() => detectMixedRingBeams(walls, 'base'), [walls])
   const topRingBeamState = useMemo(() => detectMixedRingBeams(walls, 'top'), [walls])
+
+  const firstAssembly = useWallAssemblyById(walls[0].wallAssemblyId)
+  const thicknessRangeText = useMemo(() => {
+    if (wallAssemblyState.isMixed || firstAssembly == null) return undefined
+    const firstWallAssembly = resolveWallAssembly(firstAssembly)
+    return formatThicknessRange(firstWallAssembly.thicknessRange, t)
+  }, [wallAssemblyState.isMixed, firstAssembly])
 
   const totalInnerPerimeter = polygonPerimeter(perimeter.innerPolygon)
   const totalOuterPerimeter = polygonPerimeter(perimeter.outerPolygon)
@@ -307,21 +317,26 @@ export function PerimeterInspector({ selectedId }: PerimeterInspectorProps): Rea
               </div>
             </Label.Root>
           </div>
-          <LengthField
-            id="perimeter-thickness"
-            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-            value={thicknessState.value!}
-            placeholder={thicknessState.isMixed ? t($ => $.perimeter.mixedPlaceholder) : undefined}
-            onCommit={value => {
-              updateAllPerimeterWallsThickness(selectedId, value)
-            }}
-            min={50}
-            max={1500}
-            step={10}
-            size="sm"
-            unit="cm"
-            className="w-[5rem]"
-          />
+          <div className="flex items-center gap-1">
+            <LengthField
+              id="perimeter-thickness"
+              // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+              value={thicknessState.value!}
+              placeholder={thicknessState.isMixed ? t($ => $.perimeter.mixedPlaceholder) : undefined}
+              onCommit={value => {
+                updateAllPerimeterWallsThickness(selectedId, value)
+              }}
+              min={50}
+              max={undefined}
+              step={10}
+              size="sm"
+              unit="cm"
+              className="w-20 grow"
+            />
+            {!thicknessState.isMixed && thicknessRangeText ? (
+              <span className="text-muted-foreground text-xs">{thicknessRangeText}</span>
+            ) : null}
+          </div>
         </div>
       </div>
 

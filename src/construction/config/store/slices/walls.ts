@@ -25,12 +25,14 @@ export interface WallAssembliesState {
   defaultWallAssemblyId: WallAssemblyId
 }
 
+type UnionOmit<T, K extends string | number | symbol> = T extends unknown ? Omit<T, K> : never
+
 export interface WallAssembliesActions {
   // CRUD operations for wall assemblies
   addWallAssembly: (name: string, config: WallConfig) => WallAssemblyConfig
   removeWallAssembly: (id: WallAssemblyId) => void
   updateWallAssemblyName: (id: WallAssemblyId, name: string) => void
-  updateWallAssemblyConfig: (id: WallAssemblyId, config: Partial<Omit<WallConfig, 'type'>>) => void
+  updateWallAssemblyConfig: (id: WallAssemblyId, config: Partial<UnionOmit<WallConfig, 'type' | 'layers'>>) => void
   duplicateWallAssembly: (id: WallAssemblyId, name: string) => WallAssemblyConfig
 
   addWallAssemblyInsideLayer: (id: WallAssemblyId, layer: LayerConfig) => void
@@ -87,6 +89,15 @@ export const createWallAssembliesSlice: StateCreator<
       addWallAssembly: (name: string, config: WallConfig) => {
         validateWallAssemblyName(name)
         validateWallConfig(config)
+
+        config = {
+          ...config,
+          layers: {
+            ...config.layers,
+            insideThickness: sumLayerThickness(config.layers.insideLayers),
+            outsideThickness: sumLayerThickness(config.layers.outsideLayers)
+          }
+        }
 
         const id = createWallAssemblyId()
         const assembly = {
@@ -153,7 +164,7 @@ export const createWallAssembliesSlice: StateCreator<
         })
       },
 
-      updateWallAssemblyConfig: (id: WallAssemblyId, config: Partial<Omit<WallConfig, 'type'>>) => {
+      updateWallAssemblyConfig: (id: WallAssemblyId, config: Partial<Omit<WallConfig, 'type' | 'layers'>>) => {
         set(state => {
           if (!(id in state.wallAssemblyConfigs)) return
           const assembly = state.wallAssemblyConfigs[id]

@@ -12,6 +12,9 @@ import { Separator } from '@/components/ui/separator'
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 import { RingBeamAssemblySelectWithEdit } from '@/construction/config/components/RingBeamAssemblySelectWithEdit'
 import { WallAssemblySelectWithEdit } from '@/construction/config/components/WallAssemblySelectWithEdit'
+import { useWallAssemblyById } from '@/construction/config/store'
+import { formatThicknessRange } from '@/construction/materials/thickness'
+import { resolveWallAssembly } from '@/construction/walls'
 import { MeasurementInfo } from '@/editor/components/MeasurementInfo'
 import { useReactiveTool } from '@/editor/tools/system/hooks/useReactiveTool'
 import type { ToolInspectorProps } from '@/editor/tools/system/types'
@@ -24,6 +27,9 @@ export function PerimeterToolInspector({ tool }: ToolInspectorProps<PerimeterToo
   const { t } = useTranslation('tool')
   const { formatLength } = useFormatters()
   const { state } = useReactiveTool(tool)
+  const wallAssemblyConfig = useWallAssemblyById(state.wallAssemblyId)
+  const wallAssembly = wallAssemblyConfig ? resolveWallAssembly(wallAssemblyConfig) : null
+  const thicknessRangeText = wallAssembly ? formatThicknessRange(wallAssembly.thicknessRange, t) : ''
 
   // Force re-renders when tool state changes
   const [, forceUpdate] = useState({})
@@ -78,18 +84,22 @@ export function PerimeterToolInspector({ tool }: ToolInspectorProps<PerimeterToo
             </Label.Root>
             <MeasurementInfo highlightedMeasurement="totalWallThickness" showFinishedSides />
           </div>
-          <LengthField
-            id="wall-thickness"
-            value={state.wallThickness}
-            onCommit={value => {
-              tool.setWallThickness(value)
-            }}
-            min={50}
-            max={1000}
-            step={10}
-            size="sm"
-            unit="mm"
-          />
+          <div className="flex items-center gap-1">
+            <LengthField
+              id="wall-thickness"
+              value={state.wallThickness}
+              onCommit={value => {
+                tool.setWallThickness(value)
+              }}
+              min={wallAssembly?.thicknessRange.min ?? 50}
+              max={undefined}
+              step={10}
+              size="sm"
+              unit="mm"
+              className="grow"
+            />
+            {wallAssembly && <span className="text-muted-foreground text-xs">{thicknessRangeText}</span>}
+          </div>
 
           <div className="flex items-center gap-1">
             <Label.Root>

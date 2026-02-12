@@ -78,7 +78,9 @@ void i18n
     },
 
     // Enable debug mode in development, but disable in tests to reduce noise
-    debug: import.meta.env.DEV && import.meta.env.MODE !== 'test'
+    debug: import.meta.env.DEV && import.meta.env.MODE !== 'test',
+
+    showSupportNotice: false
   })
 
 // Register custom formatters for use in translations

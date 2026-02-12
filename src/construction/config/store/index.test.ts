@@ -410,14 +410,14 @@ describe('ConfigStore', () => {
 
       expect(() => {
         store.updateWallAssemblyConfig(assembly.id, {
-          layers: { insideThickness: -1, insideLayers: [], outsideThickness: 0, outsideLayers: [] }
+          desiredPostSpacing: -1
         })
-      }).toThrow('Inside layer thickness cannot be negative')
+      }).toThrow('Desired post spacing must be greater than 0')
 
       const fetched = store.getWallAssemblyById(assembly.id)
       expect(fetched?.type).toBe('infill')
       expect.assert(fetched?.type === 'infill')
-      expect(fetched.layers.insideThickness).toBe(30)
+      expect(fetched.desiredPostSpacing).toBe(800)
     })
 
     const createMonolithicLayer = (thickness: number, name = 'Layer'): LayerConfig => ({

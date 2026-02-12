@@ -1,6 +1,9 @@
 import type { PerimeterWallWithGeometry } from '@/building/model'
+import { getConfigActions } from '@/construction/config'
 import { WallConstructionArea } from '@/construction/geometry'
+import { getMaterialById } from '@/construction/materials/store'
 import { constructStraw } from '@/construction/materials/straw'
+import { type ThicknessRange, addThickness, getMaterialThickness } from '@/construction/materials/thickness'
 import { constructTriangularBattens } from '@/construction/materials/triangularBattens'
 import { yieldMeasurementFromArea } from '@/construction/measurements'
 import type { ConstructionModel } from '@/construction/model'
@@ -174,6 +177,14 @@ export class StrawhengeWallAssembly extends BaseWallAssembly<StrawhengeWallConfi
     if (inbetweenArea.size[0] > 0) {
       yield* this.placeStrawhengeSegments(inbetweenArea, !startAtEnd)
     }
+  }
+
+  get thicknessRange(): ThicknessRange {
+    const { module, infill, layers } = this.config
+    const strawMaterialId = module.strawMaterial ?? infill.strawMaterial ?? getConfigActions().getDefaultStrawMaterial()
+    const strawMaterial = getMaterialById(strawMaterialId)
+    const layerThickness = layers.insideThickness + layers.outsideThickness
+    return addThickness(strawMaterial ? getMaterialThickness(strawMaterial) : undefined, layerThickness)
   }
 
   readonly tag = TAG_STRAWHENGE_CONSTRUCTION

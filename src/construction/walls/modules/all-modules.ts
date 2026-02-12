@@ -1,5 +1,8 @@
 import type { PerimeterWallWithGeometry } from '@/building/model'
+import { getConfigActions } from '@/construction/config'
 import { WallConstructionArea } from '@/construction/geometry'
+import { getMaterialById } from '@/construction/materials/store'
+import { type ThicknessRange, addThickness, getMaterialThickness } from '@/construction/materials/thickness'
 import type { ConstructionModel } from '@/construction/model'
 import { mergeModels } from '@/construction/model'
 import type { ConstructionResult } from '@/construction/results'
@@ -53,6 +56,14 @@ export class ModulesWallAssembly extends BaseWallAssembly<ModulesWallConfig> {
     if (remainingArea.size[0] > 0) {
       yield* infillWallArea(remainingArea, infill, startsWithStand, endsWithStand, startAtEnd)
     }
+  }
+
+  get thicknessRange(): ThicknessRange {
+    const { module, infill, layers } = this.config
+    const strawMaterialId = module.strawMaterial ?? infill.strawMaterial ?? getConfigActions().getDefaultStrawMaterial()
+    const strawMaterial = getMaterialById(strawMaterialId)
+    const layerThickness = layers.insideThickness + layers.outsideThickness
+    return addThickness(strawMaterial ? getMaterialThickness(strawMaterial) : undefined, layerThickness)
   }
 
   readonly tag = TAG_MODULE_CONSTRUCTION

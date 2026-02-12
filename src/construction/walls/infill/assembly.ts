@@ -1,4 +1,7 @@
 import type { PerimeterWallWithGeometry } from '@/building/model'
+import { getConfigActions } from '@/construction/config'
+import { getMaterialById } from '@/construction/materials/store'
+import { type ThicknessRange, addThickness, getMaterialThickness } from '@/construction/materials/thickness'
 import type { ConstructionModel } from '@/construction/model'
 import { mergeModels } from '@/construction/model'
 import { aggregateResults } from '@/construction/results'
@@ -39,6 +42,13 @@ export class InfillWallAssembly extends BaseWallAssembly<InfillWallConfig> {
     const layerModel = constructWallLayers(wall, storeyContext, this.config.layers)
 
     return mergeModels(baseModel, layerModel)
+  }
+
+  get thicknessRange(): ThicknessRange {
+    const strawMaterialId = this.config.strawMaterial ?? getConfigActions().getDefaultStrawMaterial()
+    const strawMaterial = getMaterialById(strawMaterialId)
+    const layerThickness = this.config.layers.insideThickness + this.config.layers.outsideThickness
+    return addThickness(strawMaterial ? getMaterialThickness(strawMaterial) : undefined, layerThickness)
   }
 
   readonly tag = TAG_INFILL_CONSTRUCTION

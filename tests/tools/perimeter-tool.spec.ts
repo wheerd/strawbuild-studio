@@ -63,14 +63,14 @@ test.describe('Perimeter Tool', () => {
     await inspector.getByRole('radio', { name: 'Outside' }).click()
     await expect(inspector.getByRole('radio', { name: 'Outside' })).toBeChecked()
 
-    // Change wall thickness to 200mm
-    const thicknessInput = inspector.locator('#wall-thickness')
-    await thicknessInput.fill('200')
-    await thicknessInput.press('Enter')
-
-    // Change wall assembly to Strawhenge
+    // Change wall assembly to Concrete Wall
     await inspector.getByRole('combobox').first().click()
-    await page.getByRole('option', { name: 'Strawhenge' }).click()
+    await page.getByRole('option', { name: 'Concrete Wall' }).click()
+
+    // Change wall thickness to 250mm
+    const thicknessInput = inspector.locator('#wall-thickness')
+    await thicknessInput.fill('250')
+    await thicknessInput.press('Enter')
 
     // Step 9: Restart drawing with new parameters
     await clickEditorAt(page, 300, 400)
@@ -102,10 +102,10 @@ test.describe('Perimeter Tool', () => {
     // Verify inspector shows wall properties (wall inspector, not perimeter inspector)
     // Note: Reference side is perimeter-level, not wall-level, so we can't check it here
     // The wall inspector uses #perimeter-thickness for the thickness field
-    await expect(inspector.locator('#perimeter-thickness')).toHaveValue('20') // 200mm = 20cm
+    await expect(inspector.locator('#perimeter-thickness')).toHaveValue('25') // 250mm = 25cm
 
-    // Verify wall assembly shows Strawhenge
-    await expect(inspector.getByText('Strawhenge')).toBeVisible()
+    // Verify wall assembly shows Concrete Wall
+    await expect(inspector.getByText('Concrete Wall')).toBeVisible()
 
     await expect(inspector).toHaveScreenshot('11-selected-inspector.png')
   })
