@@ -55,7 +55,10 @@ export function OpeningShape({ openingId }: { openingId: OpeningId }): React.JSX
         />
       )}
 
-      <g className="text" transform={`translate(${textPos[0]} ${textPos[1]}) rotate(${textAngle}) scale(1, -1)`}>
+      <g
+        className="text select-none"
+        transform={`translate(${textPos[0]} ${textPos[1]}) rotate(${textAngle}) scale(1, -1)`}
+      >
         <text
           x={0}
           y={0}
