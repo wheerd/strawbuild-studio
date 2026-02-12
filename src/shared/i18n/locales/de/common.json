@@ -1,6 +1,7 @@
 {
   "actions": {
-    "cancel": "Abbrechen"
+    "cancel": "Abbrechen",
+    "confirm": "Bestätigen"
   },
   "app": {
     "changeLanguage": "Sprache ändern",
@@ -37,12 +38,19 @@
   "storeys": {
     "addNewFloor": "Neues Geschoss hinzufügen",
     "basement": "UG{{level}}",
+    "copyConstraints": "Randbedingungen kopieren",
+    "copyFloorOpenings": "Bodenöffnungen kopieren",
+    "copyOpenings": "Wandöffnungen kopieren (Fenster, Türen)",
+    "copyWallPosts": "Wandpfosten kopieren",
     "defaultBasementName_ordinal_other": "{{count}}. Untergeschoss",
     "defaultName_ordinal_other": "{{count}}. Obergeschoss",
     "deleteFloor": "Geschoss löschen",
     "deleteFloorConfirm": "Möchtest du das Geschoss wirklich löschen?",
     "deleteFloorTitle": "Geschoss löschen",
+    "duplicateConfirm": "Duplizieren",
+    "duplicateDescription": "Wählen Sie, was im duplizierten Geschoss enthalten sein soll:",
     "duplicateFloor": "Geschoss duplizieren",
+    "duplicateTitle": "Geschoss duplizieren",
     "floor": "Geschoss {{level}}",
     "floorAssembly": "Bodenaufbau",
     "floorHeight": "Geschosshöhe",

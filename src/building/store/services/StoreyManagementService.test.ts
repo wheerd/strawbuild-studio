@@ -6,7 +6,13 @@ import {
   type Storey,
   createStoreyLevel
 } from '@/building/model'
-import { DEFAULT_FLOOR_ASSEMBLY_ID, type PerimeterId, type PerimeterWallId, type StoreyId } from '@/building/model/ids'
+import {
+  DEFAULT_FLOOR_ASSEMBLY_ID,
+  type PerimeterCornerId,
+  type PerimeterId,
+  type PerimeterWallId,
+  type StoreyId
+} from '@/building/model/ids'
 import type { StoreActions } from '@/building/store/types'
 import { newVec2 } from '@/shared/geometry'
 import { partial, partialMock } from '@/test/helpers'
@@ -36,10 +42,18 @@ describe('StoreyManagementService', () => {
       setWallTopRingBeam: vi.fn(),
       setWallBaseRingBeam: vi.fn(),
       removeFloorArea: vi.fn(),
-      getFloorOpeningsByStorey: vi.fn(),
+      getFloorOpeningsByStorey: vi.fn(() => []),
       removeFloorOpening: vi.fn(),
       getRoofsByStorey: vi.fn(),
-      removeRoof: vi.fn()
+      removeRoof: vi.fn(),
+      getWallOpeningsById: vi.fn(() => []),
+      getWallPostsById: vi.fn(() => []),
+      addWallOpening: vi.fn(),
+      addWallPost: vi.fn(),
+      addFloorOpening: vi.fn(),
+      getAllBuildingConstraints: vi.fn(() => []),
+      getConstraintsForEntity: vi.fn(() => []),
+      addBuildingConstraint: vi.fn()
     })
     service = new StoreyManagementService(mockActions)
   })
@@ -282,14 +296,16 @@ describe('StoreyManagementService', () => {
         storeyId: 'storey-1' as StoreyId,
         referenceSide: 'inside' as const,
         innerPolygon: referencePolygon,
-        wallIds: [sourceWall.id]
+        wallIds: [sourceWall.id],
+        cornerIds: ['corner-1' as PerimeterCornerId, 'corner-2' as PerimeterCornerId]
       })
 
       const newPerimeter = partial<PerimeterWithGeometry>({
         id: 'perimeter-1' as PerimeterId,
         storeyId: 'storey-1' as StoreyId,
         referenceSide: 'inside' as const,
-        wallIds: ['new-wall-id' as PerimeterWallId]
+        wallIds: ['new-wall-id' as PerimeterWallId],
+        cornerIds: ['new-corner-1' as PerimeterCornerId, 'new-corner-2' as PerimeterCornerId]
       })
 
       mockActions.getStoreyById.mockReturnValue(sourceStorey)

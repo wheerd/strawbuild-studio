@@ -1,8 +1,30 @@
-import type { Storey } from '@/building/model'
-import type { StoreyId, WallAssemblyId } from '@/building/model/ids'
+import type { ConstraintInput, Storey } from '@/building/model'
+import {
+  type ConstraintId,
+  type NodeId,
+  type OpeningId,
+  type PerimeterCornerId,
+  type PerimeterWallId,
+  type StoreyId,
+  type WallAssemblyId,
+  type WallEntityId,
+  type WallId,
+  type WallPostId,
+  isOpeningId,
+  isPerimeterCornerId,
+  isPerimeterWallId,
+  isWallPostId
+} from '@/building/model/ids'
 import { getModelActions } from '@/building/store'
 import type { StoreActions } from '@/building/store/types'
 import { clearSelection } from '@/editor/hooks/useSelectionStore'
+
+export interface DuplicateStoreyOptions {
+  copyOpenings?: boolean
+  copyWallPosts?: boolean
+  copyFloorOpenings?: boolean
+  copyConstraints?: boolean
+}
 
 /**
  * Service for managing storeys with cross-slice orchestration
@@ -75,18 +97,32 @@ export class StoreyManagementService {
   }
 
   /**
-   * Duplicate a storey along with all its perimeters
-   * Creates a new storey at the next available level and copies all associated perimeters
+   * Duplicate a storey along with its perimeters
+   * Creates a new storey at the next available level and copies associated data based on options
    */
-  duplicateStorey(sourceStoreyId: StoreyId): Storey {
+  duplicateStorey(sourceStoreyId: StoreyId, options: DuplicateStoreyOptions = {}): Storey {
     const sourceStorey = this.actions.getStoreyById(sourceStoreyId)
 
     if (!sourceStorey) {
       throw new Error('Source storey not found')
     }
 
+    const opts = {
+      copyOpenings: true,
+      copyWallPosts: true,
+      copyFloorOpenings: true,
+      copyConstraints: true,
+      ...options
+    }
+
     // Create the new storey, copying the floor configuration
     const newStorey = this.actions.addStorey(sourceStorey.floorHeight, sourceStorey.floorAssemblyId)
+
+    // ID maps for remapping constraints
+    const wallIdMap = new Map<PerimeterWallId, PerimeterWallId>()
+    const cornerIdMap = new Map<PerimeterCornerId, PerimeterCornerId>()
+    const openingIdMap = new Map<OpeningId, OpeningId>()
+    const wallPostIdMap = new Map<WallPostId, WallPostId>()
 
     // Duplicate all perimeters from the source storey
     const sourcePerimeters = this.actions.getPerimetersByStorey(sourceStoreyId)
@@ -99,15 +135,18 @@ export class StoreyManagementService {
         newStorey.id,
         boundary,
         'will be overwritten' as WallAssemblyId,
-        42, // will be overwritten for each wall
-        undefined, // will be set for each wall
-        undefined, // will be set for each wall
+        42,
+        undefined,
+        undefined,
         sourcePerimeter.referenceSide
       )
 
+      // Build ID maps for walls and corners
       sourcePerimeter.wallIds.forEach((sourceWallId, wallIndex) => {
-        const sourceWall = this.actions.getPerimeterWallById(sourceWallId)
         const newWallId = newPerimeter.wallIds[wallIndex]
+        wallIdMap.set(sourceWallId, newWallId)
+
+        const sourceWall = this.actions.getPerimeterWallById(sourceWallId)
         this.actions.updatePerimeterWallAssembly(newWallId, sourceWall.wallAssemblyId)
         this.actions.updatePerimeterWallThickness(newWallId, sourceWall.thickness)
         if (sourceWall.baseRingBeamAssemblyId) {
@@ -117,9 +156,131 @@ export class StoreyManagementService {
           this.actions.setWallTopRingBeam(newWallId, sourceWall.topRingBeamAssemblyId)
         }
       })
+
+      sourcePerimeter.cornerIds.forEach((sourceCornerId, cornerIndex) => {
+        const newCornerId = newPerimeter.cornerIds[cornerIndex]
+        cornerIdMap.set(sourceCornerId, newCornerId)
+      })
+
+      // Copy wall openings if requested
+      if (opts.copyOpenings) {
+        sourcePerimeter.wallIds.forEach((sourceWallId, wallIndex) => {
+          const newWallId = newPerimeter.wallIds[wallIndex]
+
+          const wallOpenings = this.actions.getWallOpeningsById(sourceWallId)
+          for (const opening of wallOpenings) {
+            const newOpening = this.actions.addWallOpening(newWallId, {
+              openingType: opening.openingType,
+              centerOffsetFromWallStart: opening.centerOffsetFromWallStart,
+              width: opening.width,
+              height: opening.height,
+              sillHeight: opening.sillHeight,
+              openingAssemblyId: opening.openingAssemblyId
+            })
+            openingIdMap.set(opening.id, newOpening.id)
+          }
+        })
+      }
+
+      // Copy wall posts if requested
+      if (opts.copyWallPosts) {
+        sourcePerimeter.wallIds.forEach((sourceWallId, wallIndex) => {
+          const newWallId = newPerimeter.wallIds[wallIndex]
+
+          const wallPosts = this.actions.getWallPostsById(sourceWallId)
+          for (const post of wallPosts) {
+            const newPost = this.actions.addWallPost(newWallId, {
+              postType: post.postType,
+              centerOffsetFromWallStart: post.centerOffsetFromWallStart,
+              width: post.width,
+              thickness: post.thickness,
+              replacesPosts: post.replacesPosts,
+              material: post.material,
+              infillMaterial: post.infillMaterial
+            })
+            wallPostIdMap.set(post.id, newPost.id)
+          }
+        })
+      }
+    }
+
+    // Copy floor openings if requested
+    if (opts.copyFloorOpenings) {
+      const sourceFloorOpenings = this.actions.getFloorOpeningsByStorey(sourceStoreyId)
+      for (const opening of sourceFloorOpenings) {
+        this.actions.addFloorOpening(newStorey.id, opening.area)
+      }
+    }
+
+    // Copy constraints if requested
+    if (opts.copyConstraints) {
+      const copiedEntityIds = [
+        ...openingIdMap.keys(),
+        ...wallPostIdMap.keys(),
+        ...wallIdMap.keys(),
+        ...cornerIdMap.keys()
+      ]
+
+      const copiedConstraints = new Set<ConstraintId>()
+      for (const sourceEntityId of copiedEntityIds) {
+        const constraints = this.actions.getConstraintsForEntity(sourceEntityId)
+        for (const constraint of constraints) {
+          if (!copiedConstraints.has(constraint.id)) {
+            const newInput = this.remapConstraintInput(constraint, wallIdMap, cornerIdMap, openingIdMap, wallPostIdMap)
+            this.actions.addBuildingConstraint(newInput)
+            copiedConstraints.add(constraint.id)
+          }
+        }
+      }
     }
 
     return newStorey
+  }
+
+  private remapConstraintInput(
+    constraint: ConstraintInput,
+    wallIdMap: Map<PerimeterWallId, PerimeterWallId>,
+    cornerIdMap: Map<PerimeterCornerId, PerimeterCornerId>,
+    openingIdMap: Map<OpeningId, OpeningId>,
+    wallPostIdMap: Map<WallPostId, WallPostId>
+  ): ConstraintInput {
+    const newInput = { ...constraint }
+
+    const mapWallId = (wallId: WallId) => (isPerimeterWallId(wallId) ? wallIdMap.get(wallId) : undefined)
+    const mapNodeId = (nodeId: NodeId) => (isPerimeterCornerId(nodeId) ? cornerIdMap.get(nodeId) : undefined)
+    const mapEntityId = (entityId: WallEntityId) =>
+      isWallPostId(entityId)
+        ? wallPostIdMap.get(entityId)
+        : isOpeningId(entityId)
+          ? openingIdMap.get(entityId)
+          : undefined
+
+    if ('wall' in constraint && 'wall' in newInput) {
+      newInput.wall = mapWallId(constraint.wall) ?? newInput.wall
+    }
+    if ('wallA' in constraint && 'wallA' in newInput) {
+      newInput.wallA = mapWallId(constraint.wallA) ?? newInput.wallA
+    }
+    if ('wallB' in constraint && 'wallB' in newInput) {
+      newInput.wallB = mapWallId(constraint.wallB) ?? newInput.wallB
+    }
+    if ('corner' in constraint && 'corner' in newInput) {
+      newInput.corner = mapNodeId(constraint.corner) ?? newInput.corner
+    }
+    if ('entity' in constraint && 'entity' in newInput) {
+      newInput.entity = mapEntityId(constraint.entity) ?? newInput.entity
+    }
+    if ('entityA' in constraint && 'entityA' in newInput) {
+      newInput.entityA = mapEntityId(constraint.entityA) ?? newInput.entityA
+    }
+    if ('entityB' in constraint && 'entityB' in newInput) {
+      newInput.entityB = mapEntityId(constraint.entityB) ?? newInput.entityB
+    }
+    if ('node' in constraint && 'node' in newInput) {
+      newInput.node = mapNodeId(constraint.node) ?? newInput.node
+    }
+
+    return newInput
   }
 
   /**

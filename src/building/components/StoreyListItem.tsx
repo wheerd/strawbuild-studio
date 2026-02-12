@@ -5,7 +5,10 @@ import { useTranslation } from 'react-i18next'
 import { useStoreyName } from '@/building/hooks/useStoreyName'
 import type { Storey } from '@/building/model'
 import { useActiveStoreyId, useModelActions } from '@/building/store'
-import { defaultStoreyManagementService } from '@/building/store/services/StoreyManagementService'
+import {
+  type DuplicateStoreyOptions,
+  defaultStoreyManagementService
+} from '@/building/store/services/StoreyManagementService'
 import { AlertDialog } from '@/components/ui/alert-dialog'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
@@ -14,6 +17,8 @@ import { FloorAssemblySelectWithEdit } from '@/construction/config/components/Fl
 import { MeasurementInfo } from '@/editor/components/MeasurementInfo'
 import { LengthField } from '@/shared/components/LengthField'
 import { useFormatters } from '@/shared/i18n/useFormatters'
+
+import { DuplicateStoreyDialog } from './DuplicateStoreyDialog'
 
 export function getLevelColor(level: number): string {
   if (level === 0) {
@@ -46,6 +51,25 @@ export function StoreyListItem({
   const [editName, setEditName] = useState(storeyName)
 
   const { updateStoreyName, updateStoreyFloorHeight, updateStoreyFloorAssembly } = useModelActions()
+
+  const [duplicateOpen, setDuplicateOpen] = useState(false)
+
+  const handleDuplicateConfirm = useCallback(
+    (options: DuplicateStoreyOptions) => {
+      try {
+        const newStorey = defaultStoreyManagementService.duplicateStorey(storey.id, options)
+        setActiveStoreyId(newStorey.id)
+        setDuplicateOpen(false)
+      } catch (error) {
+        console.error('Failed to duplicate storey:', error)
+      }
+    },
+    [storey.id, setActiveStoreyId]
+  )
+
+  const handleDuplicate = useCallback(() => {
+    setDuplicateOpen(true)
+  }, [setDuplicateOpen])
 
   // Calculate button states
   const isLowest = storey.id === lowestStorey.id
@@ -97,15 +121,6 @@ export function StoreyListItem({
       defaultStoreyManagementService.moveStoreyDown(storey.id)
     } catch (error) {
       console.error('Failed to move storey down:', error)
-    }
-  }, [storey.id])
-
-  const handleDuplicate = useCallback(() => {
-    try {
-      const newStorey = defaultStoreyManagementService.duplicateStorey(storey.id)
-      setActiveStoreyId(newStorey.id) // Switch to new storey
-    } catch (error) {
-      console.error('Failed to duplicate storey:', error)
     }
   }, [storey.id])
 
@@ -217,9 +232,15 @@ export function StoreyListItem({
             </Button>
           </div>
 
-          <Button size="icon" onClick={handleDuplicate} title={t($ => $.storeys.duplicateFloor)} variant="soft">
-            <CopyIcon />
-          </Button>
+          <DuplicateStoreyDialog
+            open={duplicateOpen}
+            onOpenChange={setDuplicateOpen}
+            onConfirm={handleDuplicateConfirm}
+          >
+            <Button size="icon" onClick={handleDuplicate} title={t($ => $.storeys.duplicateFloor)} variant="soft">
+              <CopyIcon />
+            </Button>
+          </DuplicateStoreyDialog>
 
           <AlertDialog.Root>
             <AlertDialog.Trigger asChild>

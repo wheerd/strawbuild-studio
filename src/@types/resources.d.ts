@@ -2,7 +2,8 @@
 interface Resources {
   "common": {
     "actions": {
-      "cancel": "Cancel"
+      "cancel": "Cancel",
+      "confirm": "Confirm"
     },
     "app": {
       "changeLanguage": "Change language",
@@ -39,6 +40,10 @@ interface Resources {
     "storeys": {
       "addNewFloor": "Add New Floor",
       "basement": "B{{level}}",
+      "copyConstraints": "Copy constraints",
+      "copyFloorOpenings": "Copy floor openings",
+      "copyOpenings": "Copy wall openings (windows, doors)",
+      "copyWallPosts": "Copy wall posts",
       "defaultBasementName_ordinal_few": "{{count}}rd Basement",
       "defaultBasementName_ordinal_one": "{{count}}st Basement",
       "defaultBasementName_ordinal_other": "{{count}}th Basement",
@@ -50,7 +55,10 @@ interface Resources {
       "deleteFloor": "Delete floor",
       "deleteFloorConfirm": "Are you sure you want to delete the floor?",
       "deleteFloorTitle": "Delete Floor",
+      "duplicateConfirm": "Duplicate",
+      "duplicateDescription": "Select what to include in duplicated floor:",
       "duplicateFloor": "Duplicate floor",
+      "duplicateTitle": "Duplicate Floor",
       "floor": "Floor {{level}}",
       "floorAssembly": "Floor Assembly",
       "floorHeight": "Floor Height",
@@ -1253,8 +1261,8 @@ interface Resources {
       "uploadToBegin": "Upload an image to begin"
     },
     "openings": {
-      "dimension": "H {{height}}",
-      "dimensionWithSillHeight": "H {{height}} SH {{sillHeight}}"
+      "dimension": "H {{height, length}}",
+      "dimensionWithSillHeight": "H {{height, length}} SH {{sillHeight, length}}"
     },
     "planControls": {
       "ariaLabel": "Plan Overlay",
