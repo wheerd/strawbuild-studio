@@ -5,35 +5,16 @@ import { isPerimeterCornerId, isPerimeterWallId } from '@/building/model'
 
 // --- ID helpers ---
 
-/**
- * Sort two strings alphabetically and return them as a tuple.
- */
-function sortedPair(a: string, b: string): [string, string] {
-  return a <= b ? [a, b] : [b, a]
-}
-
 const BC_PREFIX = 'bc_'
 
-/**
- * Get the GCS point ID for a corner on the reference side.
- * This is a single point shared by both adjacent walls.
- */
 export function nodeRefSidePointId(cornerId: PerimeterCornerId): string {
   return `corner_${cornerId}_ref`
 }
 
-/**
- * Get the GCS point ID for a corner on the non-reference side,
- * specifically for the previous wall (wall ending at this corner).
- */
 export function nodeNonRefSidePointForPrevWall(cornerId: PerimeterCornerId): string {
   return `corner_${cornerId}_nonref_prev`
 }
 
-/**
- * Get the GCS point ID for a corner on the non-reference side,
- * specifically for the next wall (wall starting at this corner).
- */
 export function nodeNonRefSidePointForNextWall(cornerId: PerimeterCornerId): string {
   return `corner_${cornerId}_nonref_next`
 }
@@ -42,16 +23,10 @@ export function wallNonRefSideProjectedPoint(wallId: PerimeterWallId, side: 'sta
   return `${wallId}_${side}_proj`
 }
 
-/**
- * Get the GCS line ID for the reference side of a wall.
- */
 export function wallRefLineId(wallId: WallId): string {
   return `wall_${wallId}_ref`
 }
 
-/**
- * Get the GCS line ID for the non-reference side of a wall.
- */
 export function wallNonRefLineId(wallId: WallId): string {
   return `wall_${wallId}_nonref`
 }
@@ -60,7 +35,19 @@ export function wallEntityPointId(entityId: WallEntityId, side: 'start' | 'cente
   return `${entityId}_${side}_ref`
 }
 
+export function wallEntityWidthConstraintId(entityId: WallEntityId): string {
+  return `${entityId}_width`
+}
+
+export function wallEntityOnLineConstraintId(entityId: WallEntityId, side: 'start' | 'center' | 'end'): string {
+  return `${entityId}_${side}_on_ref`
+}
+
 // --- Key derivation ---
+
+function sortedPair(a: string, b: string): [string, string] {
+  return a <= b ? [a, b] : [b, a]
+}
 
 /**
  * Derive a deterministic, deduplicated key for a building constraint.
@@ -78,7 +65,7 @@ export function buildingConstraintKey(constraint: ConstraintInput): string {
       return `colinearCorner_${constraint.corner}`
     case 'parallel': {
       const [a, b] = sortedPair(constraint.wallA, constraint.wallB)
-      return `wall_pair_${a}_${b}`
+      return `parallel_${a}_${b}`
     }
     case 'perpendicularCorner':
       return `perpendicularCorner_${constraint.corner}`
@@ -357,12 +344,4 @@ export function getReferencedWallEntityIds(constraint: ConstraintInput): WallEnt
     default:
       return []
   }
-}
-
-/**
- * Get GCS constraint ID for wall entity width constraint.
- * Only creates a constraint for the reference side (nonref is implied).
- */
-export function wallEntityWidthConstraintId(entityId: WallEntityId): string {
-  return `bc_we_${entityId}_width`
 }

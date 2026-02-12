@@ -12,6 +12,7 @@ import {
   subscribeToWallPosts,
   subscribeToWalls
 } from '@/building/store'
+import { gcsService } from '@/editor/gcs/service'
 import { midpoint, projectVec2, scaleAddVec2 } from '@/shared/geometry/2d'
 
 import {
@@ -53,6 +54,7 @@ class GcsSyncService {
       if (!current || !previous) return
       if (current.width !== previous.width) {
         this.updateEntityWidthConstraint(id, current.width)
+        gcsService.triggerSolve()
       }
     })
 
@@ -60,6 +62,7 @@ class GcsSyncService {
       if (!current || !previous) return
       if (current.width !== previous.width) {
         this.updateEntityWidthConstraint(id, current.width)
+        gcsService.triggerSolve()
       }
     })
 
@@ -237,6 +240,10 @@ class GcsSyncService {
       return
 
     getGcsActions().addPerimeterGeometry(current.perimeterId)
+
+    if (current.thickness !== previous.thickness) {
+      gcsService.triggerSolve()
+    }
   }
 
   private updateEntityWidthConstraint(entityId: WallEntityId, width: number): void {

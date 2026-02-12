@@ -10,7 +10,6 @@ export function polygonWithHolesToSvgPath(polygon: PolygonWithHoles2D) {
 
 export function readableTextAngle(dir: Vec2) {
   let textAngleRad = Math.atan2(dir[1], dir[0])
-  console.log(dir, textAngleRad)
 
   while (textAngleRad > Math.PI / 2) {
     textAngleRad -= Math.PI

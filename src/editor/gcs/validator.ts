@@ -19,6 +19,8 @@ import {
   nodeNonRefSidePointForNextWall,
   nodeNonRefSidePointForPrevWall,
   nodeRefSidePointId,
+  wallEntityOnLineConstraintId,
+  wallEntityWidthConstraintId,
   wallNonRefSideProjectedPoint
 } from '@/editor/gcs/constraintTranslator'
 import {
@@ -54,16 +56,18 @@ function checkEntityPositions(
 ): boolean {
   const wallEntities: Record<PerimeterWallId, WallEntityContext> = {}
 
+  // Extract wall entity information from GCS
   for (const point of Object.values(points)) {
+    // Find entity center points, format "{id}_center_ref"
     if (!point.id.endsWith('_center_ref')) continue
     const entityId = point.id.substring(0, point.id.length - '_center_ref'.length) as WallEntityId
 
-    const wallConstraint = constraints[`${entityId}_center_on_ref`] as PointOnLine
+    const wallConstraint = constraints[wallEntityOnLineConstraintId(entityId, 'center')] as PointOnLine
     const wallLineId = wallConstraint.l_id
-    const wallId = wallLineId.substring(5, wallLineId.length - 4) as PerimeterWallId
+    const wallId = wallLineId.substring(5, wallLineId.length - 4) as PerimeterWallId // Format: wall_{id}_ref
     const wallLine = linesMap[wallLineId]
 
-    const widthConstraint = constraints[`${entityId}_width_ref`] as P2PDistance
+    const widthConstraint = constraints[wallEntityWidthConstraintId(entityId)] as P2PDistance
     const width = widthConstraint.distance as number
 
     const startPoint1 = points[wallLine.p1_id]
@@ -85,6 +89,7 @@ function checkEntityPositions(
     const offset = projectVec2(basePos, centerPos, wallDir)
 
     if (!(wallId in wallEntities)) {
+      // Format: corner_{id}_ref
       const startCornerId = wallLine.p1_id.substring(7, wallLine.p1_id.length - 4) as PerimeterCornerId
       const startCorner = getModelActions().getPerimeterCornerById(startCornerId)
       const startCornerOffset =
@@ -92,6 +97,7 @@ function checkEntityPositions(
           ? Math.min(projectVec2(basePos, startPos1, wallDir), projectVec2(basePos, startPos2, wallDir))
           : 0
 
+      // Format: corner_{id}_ref
       const endCornerId = wallLine.p2_id.substring(7, wallLine.p2_id.length - 4) as PerimeterCornerId
       const endCorner = getModelActions().getPerimeterCornerById(endCornerId)
       const endCornerOffset =
@@ -121,8 +127,10 @@ function checkEntityPositions(
       const minOffset = isWallPostId(entity.entityId) ? startOffset : 0
       const maxOffset = length + (isWallPostId(entity.entityId) ? endOffset : 0)
 
+      // Out of wall bounds?
       if (entityStartOffset < minOffset || entityEndOffset > maxOffset) return false
 
+      // Check overlap with previous
       if (i > 0) {
         const prevEntity = entities[i - 1]
         if (prevEntity.offset + prevEntity.width / 2 > entityStartOffset) return false

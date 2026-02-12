@@ -24,7 +24,9 @@ import {
   nodeRefSidePointId,
   translateBuildingConstraint,
   translatedConstraintIds,
+  wallEntityOnLineConstraintId,
   wallEntityPointId,
+  wallEntityWidthConstraintId,
   wallNonRefLineId,
   wallNonRefSideProjectedPoint,
   wallRefLineId
@@ -282,9 +284,9 @@ const useGcsStore = create<GcsStore>()((set, get) => ({
         // Constraint: All points must be on the wall line
         const refLineId = wallRefLineId(entity.wallId)
 
-        const startOnRef = `${entity.id}_start_on_ref`
-        const centerOnRef = `${entity.id}_center_on_ref`
-        const endOnRef = `${entity.id}_end_on_ref`
+        const startOnRef = wallEntityOnLineConstraintId(entity.id, 'start')
+        const centerOnRef = wallEntityOnLineConstraintId(entity.id, 'center')
+        const endOnRef = wallEntityOnLineConstraintId(entity.id, 'end')
 
         actions.addConstraint({ id: startOnRef, type: 'point_on_line_pl', p_id: startRef, l_id: refLineId })
         actions.addConstraint({ id: centerOnRef, type: 'point_on_line_pl', p_id: centerRef, l_id: refLineId })
@@ -304,7 +306,7 @@ const useGcsStore = create<GcsStore>()((set, get) => ({
         entry.constraintIds.push(centerBisectorRef)
 
         // Constraint: Width must be maintained (distance between start and end)
-        const widthRef = `${entity.id}_width_ref`
+        const widthRef = wallEntityWidthConstraintId(entity.id)
         actions.addConstraint({ id: widthRef, type: 'p2p_distance', p1_id: startRef, p2_id: endRef, distance: width })
         entry.constraintIds.push(widthRef)
       }
