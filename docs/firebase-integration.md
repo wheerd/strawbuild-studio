@@ -14,8 +14,9 @@ This document outlines the implementation plan for adding Firebase backend suppo
 
 ```
 +------------------------------------------------------------------+
-|                    Zustand Stores                                 |
-|  useModelStore | useConfigStore | useMaterialsStore              |
+|                    Zustand Stores (all persisted)                 |
+|  useModelStore | useConfigStore | useMaterialsStore |             |
+|  useProjectMetaStore (projectId + metadata)                       |
 +------------------------------------------------------------------+
 |  Persist Middleware:                                             |
 |  - partialize: exclude actions + geometry + reverseIndex        |
@@ -32,10 +33,55 @@ This document outlines the implementation plan for adding Firebase backend suppo
 |                 FirebaseSyncService                              |
 +------------------------------------------------------------------+
 |  - Subscribes to stores (debounced)                             |
+|  - Reads projectId from useProjectMetaStore (travels with data) |
 |  - Serializes via partialize (same format as localStorage)      |
 |  - Syncs to Firestore when online + authenticated               |
 |  - Loads project -> applies migrations -> setState -> rehydrate |
 +------------------------------------------------------------------+
+```
+
+## Key Design Decision: Project ID Travels With Data
+
+The `projectId` is stored in a **persisted** `useProjectMetaStore`. This eliminates race conditions between project switching and sync:
+
+**Problem with separate project tracking:**
+
+```
+1. User edits project A
+2. Within 3s, user switches to project B
+3. Debounced sync fires -> syncs to project B (wrong!)
+```
+
+**Solution: projectId in persisted store:**
+
+```
+1. User edits project A (projectId: "uuid-a" in store)
+2. User switches to project B (projectId: "uuid-b" in store)
+3. Debounced sync fires -> reads projectId from store -> syncs to project B (correct!)
+```
+
+Even offline/local projects get a UUID on creation, so when a user signs up, their local project already has an ID ready for cloud sync.
+
+## localStorage Structure
+
+```
+strawbaler-project-meta:
+  - projectId: string (UUID, generated on first use)
+  - name: string
+  - description?: string
+  - createdAt: timestamp
+  - updatedAt: timestamp
+  - version: number
+
+strawbaler-model:
+  - storeys, perimeters, walls, corners, etc.
+  - (excludes: _perimeterGeometry, _openingGeometry, etc.)
+
+strawbaler-config:
+  - wallAssemblyConfigs, floorAssemblyConfigs, etc.
+
+strawbaler-materials:
+  - materials, timestamps
 ```
 
 ## Data Flow
@@ -43,28 +89,37 @@ This document outlines the implementation plan for adding Firebase backend suppo
 ### Offline Mode (Not Logged In)
 
 ```
-User edits -> Zustand store -> localStorage (immediate)
-                            -> "Local project" (migrates to cloud on signup)
+User edits -> Zustand stores -> localStorage (immediate)
+                            -> Local project with UUID (ready for cloud migration)
 ```
 
 ### Online Mode (Logged In)
 
 ```
-User edits -> Zustand store -> localStorage (immediate, acts as cache)
+User edits -> Zustand stores -> localStorage (immediate, acts as cache)
                             -> FirebaseSyncService (debounced 3s)
+                               -> Reads projectId from projectMetaStore
                             -> Firestore (source of truth)
 ```
 
 ### Project Switching
 
 ```
-1. Sync current project (if dirty)
-2. Reset all stores to initial state
-3. Fetch new project from Firestore
-4. Apply migrations if needed (version check)
-5. Regenerate derived state
-6. Update stores via setState
-7. localStorage overwritten with new project data
+1. Sync current project (force sync, no debounce)
+2. Fetch new project from Firestore
+3. Apply migrations if needed (version check)
+4. Regenerate derived state
+5. Update all stores atomically (including projectMetaStore)
+6. localStorage overwritten with new project data
+```
+
+### Sign Up Flow (Local -> Cloud)
+
+```
+1. User creates account
+2. Local project already has UUID from projectMetaStore
+3. Sync local data to Firestore at /projects/{local-uuid}
+4. Continue working with same projectId
 ```
 
 ## Firestore Data Model
@@ -82,12 +137,13 @@ User edits -> Zustand store -> localStorage (immediate, acts as cache)
   - userId: string
   - createdAt: timestamp
   - updatedAt: timestamp
-  - version: number (store version for migration tracking)
 
-  /data (single document)
+  /data/{document=current}
     - modelState: { ...partialized model store state... }
     - configState: { ...partialized config store state... }
     - materialsState: { ...partialized materials store state... }
+    - projectMetaState: { ...projectMetaStore state... }
+    - version: number (store version for migration tracking)
     - syncedAt: timestamp
 ```
 
@@ -212,9 +268,9 @@ onRehydrateStorage: () => state => {
 
 ---
 
-### Phase 2: Firebase Setup + Authentication
+### Phase 2: Project Meta Store + Firebase Setup
 
-**Goal**: Add Firebase infrastructure and user authentication UI.
+**Goal**: Add project metadata store (persisted) and Firebase infrastructure.
 
 #### Dependencies
 
@@ -254,6 +310,110 @@ export const FIREBASE_ENABLED = !!import.meta.env.VITE_FIREBASE_API_KEY
 ```
 
 #### New Files
+
+**`src/shared/store/projectMetaStore.ts`**
+
+Persisted store for project metadata. The projectId is a UUID that travels with the project data:
+
+```typescript
+import { v4 as uuidv4 } from 'uuid'
+import { create } from 'zustand'
+import { persist } from 'zustand/middleware'
+
+// or crypto.randomUUID()
+
+export interface ProjectMeta {
+  projectId: string // UUID, stable across sessions
+  name: string
+  description?: string
+  createdAt: string // ISO timestamp
+  updatedAt: string // ISO timestamp
+}
+
+interface ProjectMetaState {
+  currentProject: ProjectMeta
+}
+
+interface ProjectMetaActions {
+  setProjectName: (name: string) => void
+  setProjectDescription: (description: string) => void
+  touchUpdatedAt: () => void
+  loadProject: (meta: ProjectMeta) => void
+  resetToNew: () => void
+}
+
+export type ProjectMetaStore = ProjectMetaState & { actions: ProjectMetaActions }
+
+const createNewProjectMeta = (): ProjectMeta => ({
+  projectId: crypto.randomUUID(),
+  name: 'My Project',
+  createdAt: new Date().toISOString(),
+  updatedAt: new Date().toISOString()
+})
+
+const CURRENT_VERSION = 1
+
+export const useProjectMetaStore = create<ProjectMetaStore>()(
+  persist(
+    (set, get) => ({
+      currentProject: createNewProjectMeta(),
+
+      actions: {
+        setProjectName: name =>
+          set(state => ({
+            currentProject: {
+              ...state.currentProject,
+              name,
+              updatedAt: new Date().toISOString()
+            }
+          })),
+
+        setProjectDescription: description =>
+          set(state => ({
+            currentProject: {
+              ...state.currentProject,
+              description,
+              updatedAt: new Date().toISOString()
+            }
+          })),
+
+        touchUpdatedAt: () =>
+          set(state => ({
+            currentProject: {
+              ...state.currentProject,
+              updatedAt: new Date().toISOString()
+            }
+          })),
+
+        loadProject: meta => set({ currentProject: meta }),
+
+        resetToNew: () => set({ currentProject: createNewProjectMeta() })
+      }
+    }),
+    {
+      name: 'strawbaler-project-meta',
+      version: CURRENT_VERSION,
+      partialize: state => ({
+        currentProject: state.currentProject
+      })
+    }
+  )
+)
+
+// Selector hooks
+export const useCurrentProject = () => useProjectMetaStore(state => state.currentProject)
+
+export const useProjectId = () => useProjectMetaStore(state => state.currentProject.projectId)
+
+export const useProjectName = () => useProjectMetaStore(state => state.currentProject.name)
+
+export const useProjectMetaActions = () => useProjectMetaStore(state => state.actions)
+
+// Non-reactive access for sync service
+export const getProjectMeta = () => useProjectMetaStore.getState().currentProject
+
+export const setProjectMeta = (meta: ProjectMeta) => useProjectMetaStore.getState().actions.loadProject(meta)
+```
 
 **`src/shared/services/FirebaseService.ts`**
 
@@ -368,56 +528,52 @@ export const useAuthLoading = () => useAuthStore(state => state.isLoading)
 export const useAuthActions = () => useAuthStore(state => state.actions)
 ```
 
-**`src/shared/store/projectStore.ts`**
+**`src/shared/store/projectListStore.ts`**
+
+In-memory store for the list of user's projects (loaded from Firestore, not persisted):
 
 ```typescript
 import { create } from 'zustand'
 
-export interface Project {
+export interface ProjectListItem {
   id: string
   name: string
   description?: string
-  createdAt: Date
   updatedAt: Date
 }
 
-interface ProjectState {
-  projects: Project[]
-  currentProjectId: string | null
+interface ProjectListState {
+  projects: ProjectListItem[]
   isLoading: boolean
 }
 
-interface ProjectActions {
-  setProjects: (projects: Project[]) => void
-  setCurrentProject: (projectId: string | null) => void
-  addProject: (project: Project) => void
+interface ProjectListActions {
+  setProjects: (projects: ProjectListItem[]) => void
+  addProject: (project: ProjectListItem) => void
   removeProject: (projectId: string) => void
-  updateProject: (projectId: string, updates: Partial<Project>) => void
+  updateProject: (projectId: string, updates: Partial<ProjectListItem>) => void
   setLoading: (loading: boolean) => void
   reset: () => void
 }
 
-export type ProjectStore = ProjectState & { actions: ProjectActions }
+export type ProjectListStore = ProjectListState & { actions: ProjectListActions }
 
-const initialState: ProjectState = {
+const initialState: ProjectListState = {
   projects: [],
-  currentProjectId: null,
   isLoading: false
 }
 
-export const useProjectStore = create<ProjectStore>()(set => ({
+export const useProjectListStore = create<ProjectListStore>()(set => ({
   ...initialState,
   actions: {
     setProjects: projects => set({ projects }),
-    setCurrentProject: projectId => set({ currentProjectId: projectId }),
     addProject: project =>
       set(state => ({
         projects: [...state.projects, project]
       })),
     removeProject: projectId =>
       set(state => ({
-        projects: state.projects.filter(p => p.id !== projectId),
-        currentProjectId: state.currentProjectId === projectId ? null : state.currentProjectId
+        projects: state.projects.filter(p => p.id !== projectId)
       })),
     updateProject: (projectId, updates) =>
       set(state => ({
@@ -429,10 +585,9 @@ export const useProjectStore = create<ProjectStore>()(set => ({
 }))
 
 // Selector hooks
-export const useProjects = () => useProjectStore(state => state.projects)
-export const useCurrentProjectId = () => useProjectStore(state => state.currentProjectId)
-export const useProjectLoading = () => useProjectStore(state => state.isLoading)
-export const useProjectActions = () => useProjectStore(state => state.actions)
+export const useProjectList = () => useProjectListStore(state => state.projects)
+export const useProjectListLoading = () => useProjectListStore(state => state.isLoading)
+export const useProjectListActions = () => useProjectListStore(state => state.actions)
 ```
 
 **`src/shared/context/AuthContext.tsx`**
@@ -577,8 +732,10 @@ interface PersistenceActions {
 
 **`src/shared/services/FirebaseSyncService.ts`**
 
+The sync service reads `projectId` from the persisted `projectMetaStore`, eliminating race conditions:
+
 ```typescript
-import { Timestamp, doc, getDoc, serverTimestamp, setDoc } from 'firebase/firestore'
+import { collection, doc, getDoc, getDocs, limit, orderBy, query, serverTimestamp, setDoc } from 'firebase/firestore'
 
 import { useModelStore } from '@/building/store'
 import { CURRENT_VERSION as MODEL_VERSION } from '@/building/store/migrations'
@@ -589,7 +746,8 @@ import { CURRENT_VERSION as CONFIG_VERSION } from '@/construction/config/store/m
 import { useMaterialsStore } from '@/construction/materials/store'
 import { MATERIALS_STORE_VERSION } from '@/construction/materials/store/migrations'
 import { useAuthStore } from '@/shared/store/authStore'
-import { useProjectStore } from '@/shared/store/projectStore'
+import { type ProjectListItem, useProjectListStore } from '@/shared/store/projectListStore'
+import { type ProjectMeta, getProjectMeta, setProjectMeta, useProjectMetaStore } from '@/shared/store/projectMetaStore'
 
 import { FirebaseService } from './FirebaseService'
 
@@ -604,69 +762,68 @@ class FirebaseSyncService {
 
     // Subscribe to auth state changes
     const unsubscribeAuth = useAuthStore.subscribe((state, prevState) => {
-      // When user signs in, load their projects
       if (state.isAuthenticated && !prevState.isAuthenticated) {
         this.handleSignIn()
       }
-      // When user signs out, cleanup
       if (!state.isAuthenticated && prevState.isAuthenticated) {
         this.handleSignOut()
       }
     })
 
-    // Subscribe to project changes
-    const unsubscribeProject = useProjectStore.subscribe((state, prevState) => {
-      if (state.currentProjectId !== prevState.currentProjectId) {
-        this.handleProjectChange(prevState.currentProjectId, state.currentProjectId)
-      }
-    })
+    // Subscribe to data stores for sync
+    this.subscribeToStoreChanges()
 
-    this.unsubscribers.push(unsubscribeAuth, unsubscribeProject)
+    this.unsubscribers.push(unsubscribeAuth)
   }
 
   private handleSignIn = async (): Promise<void> => {
-    // Load user's projects
-    await this.loadProjects()
+    // Load user's project list from Firestore
+    await this.loadProjectList()
 
-    // Migrate local data to cloud as first project if no projects exist
-    const projects = useProjectStore.getState().projects
-    if (projects.length === 0) {
-      await this.createProjectFromLocalData()
+    const projects = useProjectListStore.getState().projects
+    const currentProjectId = getProjectMeta().projectId
+
+    // Check if current local project exists in cloud
+    const existingProject = projects.find(p => p.id === currentProjectId)
+
+    if (existingProject) {
+      // Local project already in cloud - sync local changes up
+      await this.syncToCloud()
+    } else if (projects.length === 0) {
+      // No cloud projects - upload local as first project
+      await this.syncToCloud()
     } else {
-      // Load most recent project
-      const mostRecent = projects.sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime())[0]
-      await this.loadProject(mostRecent.id)
+      // Cloud projects exist but local is new - prompt user?
+      // For now: upload local project to cloud (it has its own UUID)
+      await this.syncToCloud()
     }
   }
 
   private handleSignOut = (): void => {
-    // Clear sync timer
     if (this.syncTimeoutId) {
       clearTimeout(this.syncTimeoutId)
       this.syncTimeoutId = null
     }
-
-    // Reset project store
-    useProjectStore.getState().actions.reset()
+    useProjectListStore.getState().actions.reset()
   }
 
   private subscribeToStoreChanges = (): void => {
-    // Subscribe to all three stores with debounced sync
     const scheduleSync = () => this.scheduleSync()
 
+    // Subscribe to all data stores + projectMetaStore
     const unsubModel = useModelStore.subscribe(scheduleSync)
     const unsubConfig = useConfigStore.subscribe(scheduleSync)
     const unsubMaterials = useMaterialsStore.subscribe(scheduleSync)
+    const unsubProjectMeta = useProjectMetaStore.subscribe(scheduleSync)
 
-    this.unsubscribers.push(unsubModel, unsubConfig, unsubMaterials)
+    this.unsubscribers.push(unsubModel, unsubConfig, unsubMaterials, unsubProjectMeta)
   }
 
   private scheduleSync = (): void => {
     const { isAuthenticated } = useAuthStore.getState()
-    const { currentProjectId } = useProjectStore.getState()
     const isOnline = navigator.onLine
 
-    if (!isAuthenticated || !currentProjectId || !isOnline) return
+    if (!isAuthenticated || !isOnline) return
 
     // Debounce: wait 3s after last change
     if (this.syncTimeoutId) clearTimeout(this.syncTimeoutId)
@@ -674,8 +831,11 @@ class FirebaseSyncService {
   }
 
   private syncToCloud = async (): Promise<void> => {
-    const projectId = useProjectStore.getState().currentProjectId
-    if (!projectId || !FirebaseService.isReady()) return
+    if (!FirebaseService.isReady()) return
+
+    // Read projectId from persisted store (key insight!)
+    const projectMeta = getProjectMeta()
+    const projectId = projectMeta.projectId
 
     const persistenceActions = usePersistenceActions()
     persistenceActions.setSyncing(true)
@@ -683,18 +843,33 @@ class FirebaseSyncService {
     try {
       const db = FirebaseService.getFirestore()
 
-      // Serialize store state (using same partialize logic as localStorage)
+      // Serialize all store states
       const modelState = this.partializeModelStore()
       const configState = this.partializeConfigStore()
       const materialsState = this.partializeMaterialsStore()
+      const projectMetaState = projectMeta
 
+      // Write to Firestore
       await setDoc(doc(db, 'projects', projectId, 'data', 'current'), {
         modelState,
         configState,
         materialsState,
+        projectMetaState,
         version: MODEL_VERSION,
         syncedAt: serverTimestamp()
       })
+
+      // Update project metadata in Firestore
+      await setDoc(
+        doc(db, 'projects', projectId),
+        {
+          name: projectMeta.name,
+          description: projectMeta.description,
+          userId: FirebaseService.getCurrentUser()!.uid,
+          updatedAt: serverTimestamp()
+        },
+        { merge: true }
+      )
 
       persistenceActions.setSyncSuccess()
     } catch (error) {
@@ -702,11 +877,42 @@ class FirebaseSyncService {
     }
   }
 
+  loadProjectList = async (): Promise<void> => {
+    if (!FirebaseService.isReady()) return
+
+    const userId = FirebaseService.getCurrentUser()?.uid
+    if (!userId) return
+
+    useProjectListStore.getState().actions.setLoading(true)
+
+    try {
+      const db = FirebaseService.getFirestore()
+      const projectsRef = collection(db, 'projects')
+      const q = query(projectsRef, orderBy('updatedAt', 'desc'))
+      const snapshot = await getDocs(q)
+
+      const projects: ProjectListItem[] = snapshot.docs
+        .filter(doc => doc.data().userId === userId)
+        .map(doc => ({
+          id: doc.id,
+          name: doc.data().name,
+          description: doc.data().description,
+          updatedAt: doc.data().updatedAt.toDate()
+        }))
+
+      useProjectListStore.getState().actions.setProjects(projects)
+    } catch (error) {
+      console.error('Failed to load project list:', error)
+    } finally {
+      useProjectListStore.getState().actions.setLoading(false)
+    }
+  }
+
   loadProject = async (projectId: string): Promise<void> => {
     if (!FirebaseService.isReady()) return
 
     const persistenceActions = usePersistenceActions()
-    useProjectStore.getState().actions.setLoading(true)
+    useProjectListStore.getState().actions.setLoading(true)
 
     try {
       const db = FirebaseService.getFirestore()
@@ -718,40 +924,49 @@ class FirebaseSyncService {
 
       const data = snapshot.data()
 
-      // Apply migrations if needed (using existing migration functions)
+      // Apply migrations if needed
       const modelState = applyModelMigrations(data.modelState, data.version)
       const configState = applyConfigMigrations(data.configState, data.version)
       const materialsState = applyMaterialsMigrations(data.materialsState, data.version)
+      const projectMetaState = data.projectMetaState as ProjectMeta
 
-      // Regenerate derived state BEFORE setting (critical!)
+      // Regenerate derived state BEFORE setting
       regenerateDerivedState(modelState)
 
-      // Update stores
+      // Update all stores atomically
       useModelStore.setState(modelState)
       useConfigStore.setState(configState)
       useMaterialsStore.setState(materialsState)
-
-      // Update current project
-      useProjectStore.getState().actions.setCurrentProject(projectId)
+      setProjectMeta(projectMetaState)
 
       persistenceActions.setHydrated(true)
     } catch (error) {
       console.error('Failed to load project:', error)
       throw error
     } finally {
-      useProjectStore.getState().actions.setLoading(false)
+      useProjectListStore.getState().actions.setLoading(false)
     }
   }
 
-  createProject = async (name: string, description?: string): Promise<string> => {
-    // Implementation for creating new project
-  }
+  createNewProject = async (name: string, description?: string): Promise<string> => {
+    // Generate new project meta
+    const newMeta: ProjectMeta = {
+      projectId: crypto.randomUUID(),
+      name,
+      description,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    }
 
-  private createProjectFromLocalData = async (): Promise<void> => {
-    // Create first project from current localStorage data
-    const projectId = await this.createProject('My First Project')
-    await this.syncToCloud()
-    useProjectStore.getState().actions.setCurrentProject(projectId)
+    // Reset all stores to initial state
+    useModelStore.getState().actions.reset()
+    useConfigStore.getState().actions.reset()
+    useMaterialsStore.getState().actions.reset()
+
+    // Set new project meta (this will trigger sync)
+    setProjectMeta(newMeta)
+
+    return newMeta.projectId
   }
 
   destroy(): void {
@@ -789,30 +1004,22 @@ export const firebaseSyncService = new FirebaseSyncService()
 
 Modal component with:
 
-- List all user projects
-- Create new project (name + optional description)
+- List all user projects (from `useProjectListStore`)
+- Create new project (calls `createNewProject`)
 - Rename project
 - Delete project with confirmation
-- Select/open project
+- Select/open project (calls `loadProject`)
 - Last modified timestamp display
-- Unsaved changes warning on switch
+- Shows current project indicator (matches `useProjectId`)
 
 **`src/shared/components/ProjectSelector.tsx`**
 
 Quick project switcher component:
 
-- Dropdown showing current project name
-- Project list for quick switching
+- Shows current project name (from `useProjectName`)
+- Dropdown for quick switching
 - "Manage Projects" button to open ProjectsModal
 - Only visible when authenticated
-
-**`src/shared/components/UnsavedChangesDialog.tsx`**
-
-Dialog shown when switching projects with unsaved changes:
-
-- "Save & Switch" option
-- "Discard & Switch" option
-- "Cancel" option
 
 #### Integration Points
 
@@ -867,21 +1074,23 @@ service cloud.firestore {
 1. **`regenerateDerivedState`**: Test that geometry and reverse index are correctly regenerated from base state
 2. **`partialize`**: Verify derived state is excluded from serialization
 3. **Migration compatibility**: Test that existing migration functions work with Firebase-loaded data
+4. **ProjectMetaStore**: Verify UUID generation and persistence
 
 ### Integration Tests
 
 1. **Sync flow**: Test debounced sync triggers correctly
-2. **Project switching**: Test data is properly loaded/stored
+2. **Project switching**: Test data is properly loaded/stored with correct projectId
 3. **Offline behavior**: Test app works without Firebase configured
 4. **Auth state changes**: Test proper cleanup on sign out
+5. **Race condition**: Test that rapid project switching doesn't cause data corruption
 
 ### Manual Testing
 
-1. Sign up with new account → local data becomes first project
-2. Sign in on new device → projects load from cloud
-3. Edit offline → changes sync when back online
-4. Switch projects → correct data loads
-5. Sign out → local cache preserved
+1. Sign up with new account -> local data (with existing UUID) syncs to cloud
+2. Sign in on new device -> projects load from cloud
+3. Edit offline -> changes sync when back online
+4. Switch projects rapidly -> correct data loads, no corruption
+5. Sign out -> local cache preserved with correct projectId
 
 ---
 
@@ -915,8 +1124,8 @@ service cloud.firestore {
 
 If Firebase integration causes issues:
 
-1. **Disable Firebase**: Remove env variables → app reverts to offline mode
-2. **User data safe**: localStorage always has current project
+1. **Disable Firebase**: Remove env variables -> app reverts to offline mode
+2. **User data safe**: localStorage always has current project (with projectId)
 3. **Export/import**: Users can export projects manually
 4. **No breaking changes**: Existing functionality unaffected
 
@@ -932,13 +1141,14 @@ If Firebase integration causes issues:
 - [ ] Test localStorage persistence still works
 - [ ] Test geometry regenerates correctly on load
 
-### Phase 2: Firebase Setup + Auth
+### Phase 2: Project Meta Store + Firebase Setup
 
 - [ ] Add Firebase dependency
 - [ ] Add environment variables
+- [ ] Create `projectMetaStore.ts` (persisted, with UUID)
+- [ ] Create `projectListStore.ts` (in-memory)
 - [ ] Create `FirebaseService.ts`
 - [ ] Create `authStore.ts`
-- [ ] Create `projectStore.ts`
 - [ ] Create `AuthContext.tsx`
 - [ ] Create `AuthModal.tsx`
 - [ ] Create `UserMenu.tsx`
@@ -946,22 +1156,23 @@ If Firebase integration causes issues:
 - [ ] Update `App.tsx` with AuthProvider
 - [ ] Add sync status to `persistenceStore`
 - [ ] Test sign up / sign in / sign out
+- [ ] Test projectMetaStore persists correctly
 
 ### Phase 3: Cloud Sync
 
 - [ ] Create `FirebaseSyncService.ts`
-- [ ] Implement store subscriptions
-- [ ] Implement debounced sync
+- [ ] Implement store subscriptions (including projectMetaStore)
+- [ ] Implement debounced sync (read projectId from store)
 - [ ] Implement project loading
-- [ ] Implement local data migration on signup
+- [ ] Implement project creation
 - [ ] Test sync works correctly
+- [ ] Test race condition (rapid project switching)
 - [ ] Test offline queue (future)
 
 ### Phase 4: Project Management UI
 
 - [ ] Create `ProjectsModal.tsx`
 - [ ] Create `ProjectSelector.tsx`
-- [ ] Create `UnsavedChangesDialog.tsx`
 - [ ] Integrate into app UI
 - [ ] Test project CRUD operations
 - [ ] Test project switching
