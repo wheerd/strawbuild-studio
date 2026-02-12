@@ -1,3 +1,4 @@
+import { SolveStatus } from '@salusoft89/planegcs'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import type {
@@ -18,6 +19,9 @@ import { newVec2 } from '@/shared/geometry'
 const mockPerimeterRegistry: Record<PerimeterId, unknown> = {}
 const mockPerimetersById: Record<PerimeterId, Perimeter> = {}
 const mockBuildingConstraints: Record<ConstraintId, Constraint> = {}
+const mockGcsPoints: Record<string, unknown> = {}
+const mockGcsConstraints: Record<string, unknown> = {}
+const mockGcsLines: unknown[] = []
 
 // Captured subscription callbacks
 let capturedPerimeterCallback: ((id: PerimeterId, current?: Perimeter, previous?: Perimeter) => void) | null = null
@@ -34,6 +38,16 @@ const mockRemovePerimeterGeometry = vi.fn()
 const mockGcsAddBuildingConstraint = vi.fn()
 const mockGcsRemoveBuildingConstraint = vi.fn()
 const mockUpdatePointPosition = vi.fn()
+const mockSetTmpPoints = vi.fn()
+const mockRemoveConstraints = vi.fn()
+const mockAddConstraint = vi.fn()
+const mockSetConstraintStatus = vi.fn()
+
+// Mock building actions
+const mockUpdatePerimeterBoundary = vi.fn()
+const mockUpdateWallOpening = vi.fn()
+const mockUpdateWallPost = vi.fn()
+const mockGetWallEntityById = vi.fn()
 
 // Mock corner geometry lookup
 const mockCornerGeometries: Record<string, PerimeterCornerWithGeometry> = {}
@@ -45,10 +59,32 @@ const mockWalls: Record<string, PerimeterWall> = {}
 vi.mock('@/building/store', () => ({
   getModelActions: () => ({
     getAllPerimeters: () => Object.values(mockPerimetersById),
-    getPerimeterById: (perimeterId: PerimeterId) => mockPerimetersById[perimeterId],
+    getPerimeterById: (perimeterId: PerimeterId) =>
+      mockPerimetersById[perimeterId] ??
+      ({
+        id: perimeterId,
+        storeyId: 'storey_1' as const,
+        cornerIds: [],
+        wallIds: [],
+        referenceSide: 'inside' as const,
+        roomIds: [],
+        wallNodeIds: [],
+        intermediateWallIds: []
+      } as Perimeter),
     getPerimeterCornerById: (cornerId: string) => mockCornerGeometries[cornerId],
     getPerimeterWallById: (wallId: string) => mockWalls[wallId],
-    getAllBuildingConstraints: () => Object.values(mockBuildingConstraints)
+    getAllBuildingConstraints: () => Object.values(mockBuildingConstraints),
+    updatePerimeterBoundary: (...args: unknown[]) => mockUpdatePerimeterBoundary(...args),
+    getPerimeterWallsById: (perimeterId: PerimeterId) => {
+      const perimeter = mockPerimetersById[perimeterId]
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+      if (!perimeter) return []
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+      return perimeter.wallIds.map(wallId => mockWalls[wallId]).filter((w): w is PerimeterWall => w != null)
+    },
+    updateWallOpening: (...args: unknown[]) => mockUpdateWallOpening(...args),
+    updateWallPost: (...args: unknown[]) => mockUpdateWallPost(...args),
+    getWallEntityById: (...args: unknown[]) => mockGetWallEntityById(...args)
   }),
   subscribeToPerimeters: (cb: (id: string, current?: Perimeter, previous?: Perimeter) => void) => {
     capturedPerimeterCallback = cb
@@ -79,15 +115,47 @@ vi.mock('./store', () => ({
     removePerimeterGeometry: (...args: unknown[]) => mockRemovePerimeterGeometry(...args),
     addBuildingConstraint: (...args: unknown[]) => mockGcsAddBuildingConstraint(...args),
     removeBuildingConstraint: (...args: unknown[]) => mockGcsRemoveBuildingConstraint(...args),
-    updatePointPosition: (...args: unknown[]) => mockUpdatePointPosition(...args)
+    updatePointPosition: (...args: unknown[]) => mockUpdatePointPosition(...args),
+    setTmpPoints: (...args: unknown[]) => mockSetTmpPoints(...args),
+    removeConstraints: (...args: unknown[]) => mockRemoveConstraints(...args),
+    addConstraint: (...args: unknown[]) => mockAddConstraint(...args),
+    setConstraintStatus: (...args: unknown[]) => mockSetConstraintStatus(...args)
   }),
   getGcsState: () => ({
-    perimeterRegistry: mockPerimeterRegistry
+    perimeterRegistry: mockPerimeterRegistry,
+    points: mockGcsPoints,
+    constraints: mockGcsConstraints,
+    lines: mockGcsLines
   })
+}))
+
+// Mock createGcs and validator
+vi.mock('@/editor/gcs/gcsInstance', () => ({
+  createGcs: vi.fn(() => ({
+    solve: vi.fn(() => SolveStatus.Success),
+    apply_solution: vi.fn(),
+    clear_data: vi.fn(),
+    push_primitives_and_params: vi.fn(),
+    push_primitive: vi.fn(),
+    p_param_index: new Map(),
+    get_gcs_conflicting_constraints: vi.fn(() => []),
+    get_gcs_redundant_constraints: vi.fn(() => []),
+    sketch_index: {
+      get_primitives: vi.fn(() => [])
+    },
+    gcs: {
+      set_p_param: vi.fn()
+    }
+  }))
+}))
+
+vi.mock('@/editor/gcs/validator', () => ({
+  validateSolution: vi.fn(() => ({ valid: true }))
 }))
 
 // Reset state before each test
 beforeEach(() => {
+  vi.useFakeTimers()
   vi.resetAllMocks()
   capturedPerimeterCallback = null
   capturedConstraintCallback = null
@@ -110,6 +178,17 @@ beforeEach(() => {
   for (const key of Object.keys(mockWalls)) {
     delete mockWalls[key]
   }
+  for (const key of Object.keys(mockGcsPoints)) {
+    delete mockGcsPoints[key]
+  }
+  for (const key of Object.keys(mockGcsConstraints)) {
+    delete mockGcsConstraints[key]
+  }
+  mockGcsLines.length = 0
+})
+
+afterEach(() => {
+  vi.useRealTimers()
 })
 
 function importGcsSync(): Promise<void> {
