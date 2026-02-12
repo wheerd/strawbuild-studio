@@ -1058,6 +1058,7 @@ interface Resources {
       "redundant": "Redundant constraint (not needed)",
       "redundantStatus_one": "One redundant constraint",
       "redundantStatus_other": "{{count}} redundant constraints",
+      "toggleWallEntitySideTitle": "Toggle between side and center measurement modes",
       "vertical": {
         "active": "Vertical constraint (click to remove)",
         "suggestion": "Click to add vertical constraint"
@@ -1251,6 +1252,10 @@ interface Resources {
       "scrollToZoom": "Scroll to zoom",
       "uploadToBegin": "Upload an image to begin"
     },
+    "openings": {
+      "dimension": "H {{height}}",
+      "dimensionWithSillHeight": "H {{height}} SH {{sillHeight}}"
+    },
     "planControls": {
       "ariaLabel": "Plan Overlay",
       "confirmRemove": {
@@ -1379,6 +1384,7 @@ interface Resources {
       "esc": "Esc"
     },
     "move": {
+      "constrainedEntity": "This entity has constraints attached and cannot be moved. Remove constraints to enable movement.",
       "controlCancel": "Press {{key}} to cancel ongoing movement",
       "controlDrag": "Click and drag to move entities",
       "controlPrecise": "After moving, type numbers for precise distance",

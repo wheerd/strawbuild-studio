@@ -106,10 +106,12 @@ export class PerimeterWallMovementBehavior implements MovementBehavior<
     movementState: PerimeterWallMovementState,
     context: MovementContext<PerimeterWallEntityContext>
   ): boolean {
-    context.entity.gcs.endDrag()
-    const updated = context.store.updatePerimeterBoundary(context.entity.perimeter.id, movementState.newBoundary)
+    const { perimeter, gcs } = context.entity
+    gcs.endDrag()
+    const updated = context.store.updatePerimeterBoundary(perimeter.id, movementState.newBoundary)
     if (updated) {
-      context.entity.gcs.syncConstraintStatus()
+      gcs.applyWallEntityOffsets(perimeter.id)
+      gcs.syncConstraintStatus()
     }
     return updated
   }

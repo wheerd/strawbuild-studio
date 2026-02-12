@@ -1,5 +1,5 @@
 import type { PerimeterWallWithGeometry, WallPost } from '@/building/model'
-import type { SelectableId } from '@/building/model/ids'
+import type { SelectableId, WallEntityId } from '@/building/model/ids'
 import { isPerimeterId, isPerimeterWallId, isWallPostId } from '@/building/model/ids'
 import type { StoreActions } from '@/building/store/types'
 import type {
@@ -25,6 +25,11 @@ export interface WallPostMovementState extends MovementState {
 
 export class WallPostMovementBehavior implements MovementBehavior<WallPostEntityContext, WallPostMovementState> {
   previewComponent = WallPostMovementPreview
+
+  canMove(entityId: SelectableId, store: StoreActions): boolean {
+    const constraints = store.getConstraintsForEntity(entityId as WallEntityId)
+    return constraints.length === 0
+  }
 
   getEntity(entityId: SelectableId, parentIds: SelectableId[], store: StoreActions): WallPostEntityContext {
     const [perimeterId, wallId] = parentIds

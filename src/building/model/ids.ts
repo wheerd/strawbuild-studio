@@ -146,5 +146,5 @@ export type ConstraintId = `${typeof CONSTRAINT_ID_PREFIX}${string}`
 
 export type WallId = PerimeterWallId | IntermediateWallId
 export type NodeId = PerimeterCornerId | WallNodeId
-export type ConstraintEntityId = NodeId | WallId
 export type WallEntityId = OpeningId | WallPostId
+export type ConstraintEntityId = NodeId | WallId | WallEntityId

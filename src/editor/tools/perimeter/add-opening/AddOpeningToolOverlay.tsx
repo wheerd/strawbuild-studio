@@ -52,7 +52,6 @@ export function AddOpeningToolOverlay({ tool }: ToolOverlayComponentProps<AddOpe
           textAnchor="middle"
           dominantBaseline="central"
           fill="var(--color-schematic-gray-1)"
-          fontFamily="Arial"
         >
           {tool.getNeedsConversion() ? '⚠' : getOpeningIcon(state.openingType)}
         </text>

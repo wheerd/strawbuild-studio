@@ -48,21 +48,18 @@ export class PerimeterContextCacheService {
   private setupSubscriptions(): void {
     const { getPerimetersByStorey } = getModelActions()
 
-    subscribeToPerimeters((current, previous) => {
-      const perimeterId = current?.id ?? previous?.id
-      if (perimeterId) {
-        this.invalidate(perimeterId)
-      }
+    subscribeToPerimeters(perimeterId => {
+      this.invalidate(perimeterId)
     })
 
-    subscribeToWalls((current, previous) => {
+    subscribeToWalls((_id, current, previous) => {
       const perimeterId = current?.perimeterId ?? previous?.perimeterId
       if (perimeterId) {
         this.invalidate(perimeterId)
       }
     })
 
-    subscribeToFloorOpenings((current, previous) => {
+    subscribeToFloorOpenings((_id, current, previous) => {
       const storeyId = current?.storeyId ?? previous?.storeyId
       if (storeyId) {
         const perimeters = getPerimetersByStorey(storeyId)

@@ -34,6 +34,9 @@ export interface MovementBehavior<TEntity, TState extends MovementState> {
   // Get the entity's actual position for initialization
   getEntity(entityId: SelectableId, parentIds: SelectableId[], store: StoreActions): TEntity
 
+  // Check if this entity can be moved (optional, defaults to true)
+  canMove?(entityId: SelectableId, store: StoreActions): boolean
+
   // Called when the movement is started to create an initial state
   initializeState(movementState: PointerMovementState, context: MovementContext<TEntity>): TState
 

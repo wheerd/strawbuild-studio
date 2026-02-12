@@ -1,7 +1,8 @@
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 
-import { useZoom } from '@/editor/hooks/useViewportStore'
+import { DIMENSION_DEFAULT_FONT_SIZE, WALL_DIM_LAYER_OFFSET, type WallDimLayer } from '@/editor/constants/dimensions'
+import { useUiScale } from '@/editor/hooks/useViewportStore'
 import type { Vec2 } from '@/shared/geometry'
 import { midpoint } from '@/shared/geometry'
 
@@ -10,7 +11,7 @@ interface ConstraintBadgeProps {
   startPoint: Vec2
   endPoint: Vec2
   outsideDirection: Vec2
-  offset: number
+  dimLayer: WallDimLayer
   locked?: boolean
   onClick?: () => void
   tooltipKey?: 'horizontal' | 'vertical' | 'perpendicular' | 'colinear' | 'angle'
@@ -22,19 +23,18 @@ export function ConstraintBadge({
   startPoint,
   endPoint,
   outsideDirection,
-  offset,
+  dimLayer,
   locked,
   onClick,
   tooltipKey,
   status = 'normal'
 }: ConstraintBadgeProps): React.JSX.Element {
   const { t } = useTranslation('inspector')
-  const zoom = useZoom()
-  const fontSize = 60
+  const uiScale = useUiScale()
+  const fontSize = DIMENSION_DEFAULT_FONT_SIZE
 
-  const clampedScale = 0.2 / Math.max(0.02, Math.min(0.4, zoom))
-  const scaledFontSize = fontSize * clampedScale
-  const scaledOffset = offset * clampedScale
+  const scaledFontSize = fontSize * uiScale
+  const scaledOffset = dimLayer * WALL_DIM_LAYER_OFFSET * uiScale
 
   const mid = midpoint(startPoint, endPoint)
   const badgeX = mid[0] + outsideDirection[0] * scaledOffset

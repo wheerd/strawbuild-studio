@@ -10,9 +10,10 @@ import type {
   WallId
 } from '@/building/model'
 import type { PerimeterCornerWithGeometry } from '@/building/model/perimeters'
+import type { OpeningWithGeometry, WallPostWithGeometry } from '@/building/model/wallEntities'
 import { getModelActions } from '@/building/store'
 import { referenceSideToConstraintSide } from '@/editor/gcs/constraintGenerator'
-import { scaleAddVec2 } from '@/shared/geometry/2d'
+import { type Vec2, midpoint, projectVec2, scaleAddVec2 } from '@/shared/geometry/2d'
 
 import {
   type TranslationContext,
@@ -22,7 +23,13 @@ import {
   nodeNonRefSidePointForPrevWall,
   nodeRefSidePointId,
   translateBuildingConstraint,
-  translatedConstraintIds
+  translatedConstraintIds,
+  wallEntityOnLineConstraintId,
+  wallEntityPointId,
+  wallEntityWidthConstraintId,
+  wallNonRefLineId,
+  wallNonRefSideProjectedPoint,
+  wallRefLineId
 } from './constraintTranslator'
 
 interface PerimeterRegistryEntry {
@@ -33,6 +40,7 @@ interface PerimeterRegistryEntry {
 
 interface GcsStoreState {
   points: Record<string, SketchPoint>
+  tmpPoints?: Record<string, SketchPoint>
   lines: SketchLine[]
   constraints: Record<string, Constraint>
   buildingConstraints: Record<string, BuildingConstraint>
@@ -45,11 +53,11 @@ interface GcsStoreActions {
   addPerimeterGeometry: (perimeterId: PerimeterId) => void
   removePerimeterGeometry: (perimeterId: PerimeterId) => void
 
-  addPoint: (id: string, x: number, y: number, fixed?: boolean) => void
+  addPoint: (id: string, pos: Vec2, fixed?: boolean) => void
   addLine: (id: string, p1Id: string, p2Id: string) => void
   addConstraint: (constraint: Constraint) => void
 
-  updatePointPosition: (id: string, x: number, y: number) => void
+  updatePointPosition: (id: string, pos: Vec2) => void
 
   removePoints: (ids: string[]) => void
   removeLines: (ids: string[]) => void
@@ -58,6 +66,8 @@ interface GcsStoreActions {
   addBuildingConstraint: (constraint: BuildingConstraint) => void
   removeBuildingConstraint: (id: ConstraintId) => void
   setConstraintStatus: (conflicting: string[], redundant: string[]) => void
+
+  setTmpPoints: (tmpPoints?: Record<string, SketchPoint>) => void
 }
 
 type GcsStore = GcsStoreState & { actions: GcsStoreActions }
@@ -75,9 +85,9 @@ const useGcsStore = create<GcsStore>()((set, get) => ({
   redundantConstraintIds: new Set(),
 
   actions: {
-    addPoint: (id, x, y, fixed = false) => {
+    addPoint: (id, pos, fixed = false) => {
       set(state => ({
-        points: { ...state.points, [id]: { id, type: 'point', x, y, fixed } }
+        points: { ...state.points, [id]: { id, type: 'point', x: pos[0], y: pos[1], fixed } }
       }))
     },
 
@@ -93,9 +103,9 @@ const useGcsStore = create<GcsStore>()((set, get) => ({
       }))
     },
 
-    updatePointPosition: (id, x, y) => {
+    updatePointPosition: (id, pos) => {
       set(state => ({
-        points: { ...state.points, [id]: { ...state.points[id], x, y } }
+        points: { ...state.points, [id]: { ...state.points[id], x: pos[0], y: pos[1] } }
       }))
     },
 
@@ -235,6 +245,72 @@ const useGcsStore = create<GcsStore>()((set, get) => ({
         actions.removePerimeterGeometry(perimeterId)
       }
 
+      /**
+       * Helper function to add wall entity (opening/post) geometry and structural constraints.
+       *
+       * @param entity - The wall entity with geometry
+       * @param refLineId - The GCS line ID for the wall's reference side
+       * @param isRefInside - Whether the reference side is the inside of the perimeter
+       * @param entry - The perimeter registry entry to track created IDs
+       */
+      const addWallEntityGeometry = (
+        entity: OpeningWithGeometry | WallPostWithGeometry,
+        isRefInside: boolean,
+        entry: PerimeterRegistryEntry
+      ): void => {
+        const { insideLine, outsideLine, width } = entity
+
+        // Calculate center points
+        const insideCenter = midpoint(insideLine.start, insideLine.end)
+        const outsideCenter = midpoint(outsideLine.start, outsideLine.end)
+
+        // Determine ref vs nonref based on which side is "inside"
+        const ref = isRefInside
+          ? { start: insideLine.start, center: insideCenter, end: insideLine.end }
+          : { start: outsideLine.start, center: outsideCenter, end: outsideLine.end }
+
+        // Point IDs
+        const startRef = wallEntityPointId(entity.id, 'start')
+        const centerRef = wallEntityPointId(entity.id, 'center')
+        const endRef = wallEntityPointId(entity.id, 'end')
+
+        // Add all 3 points (start/center/end for ref side)
+        actions.addPoint(startRef, ref.start, false)
+        actions.addPoint(centerRef, ref.center, false)
+        actions.addPoint(endRef, ref.end, false)
+
+        entry.pointIds.push(startRef, centerRef, endRef)
+
+        // Constraint: All points must be on the wall line
+        const refLineId = wallRefLineId(entity.wallId)
+
+        const startOnRef = wallEntityOnLineConstraintId(entity.id, 'start')
+        const centerOnRef = wallEntityOnLineConstraintId(entity.id, 'center')
+        const endOnRef = wallEntityOnLineConstraintId(entity.id, 'end')
+
+        actions.addConstraint({ id: startOnRef, type: 'point_on_line_pl', p_id: startRef, l_id: refLineId })
+        actions.addConstraint({ id: centerOnRef, type: 'point_on_line_pl', p_id: centerRef, l_id: refLineId })
+        actions.addConstraint({ id: endOnRef, type: 'point_on_line_pl', p_id: endRef, l_id: refLineId })
+
+        entry.constraintIds.push(startOnRef, centerOnRef, endOnRef)
+
+        // Constraint: Center point must be on perpendicular bisector of start and end
+        const centerBisectorRef = `${entity.id}_center_bisector_ref`
+        actions.addConstraint({
+          id: centerBisectorRef,
+          type: 'point_on_perp_bisector_ppp',
+          p_id: centerRef,
+          lp1_id: startRef,
+          lp2_id: endRef
+        })
+        entry.constraintIds.push(centerBisectorRef)
+
+        // Constraint: Width must be maintained (distance between start and end)
+        const widthRef = wallEntityWidthConstraintId(entity.id)
+        actions.addConstraint({ id: widthRef, type: 'p2p_distance', p1_id: startRef, p2_id: endRef, distance: width })
+        entry.constraintIds.push(widthRef)
+      }
+
       const modelActions = getModelActions()
       const corners = modelActions.getPerimeterCornersById(perimeterId)
       const walls = modelActions.getPerimeterWallsById(perimeterId)
@@ -251,22 +327,23 @@ const useGcsStore = create<GcsStore>()((set, get) => ({
         cornerGeomMap.set(corner.id, corner)
       }
 
+      const isRefInside = modelActions.getPerimeterById(perimeterId).referenceSide === 'inside'
+
       // Add points for each corner
       for (const corner of corners) {
         const refPointId = nodeRefSidePointId(corner.id)
         const nonRefPrevId = nodeNonRefSidePointForPrevWall(corner.id)
         const nonRefNextId = nodeNonRefSidePointForNextWall(corner.id)
 
-        const isRefInside = modelActions.getPerimeterById(perimeterId).referenceSide === 'inside'
         const refPos = isRefInside ? corner.insidePoint : corner.outsidePoint
         const nonRefPos = isRefInside ? corner.outsidePoint : corner.insidePoint
 
         // Add reference side point
-        actions.addPoint(refPointId, refPos[0], refPos[1], false)
+        actions.addPoint(refPointId, refPos, false)
 
         if (corner.interiorAngle !== 180) {
-          actions.addPoint(nonRefPrevId, nonRefPos[0], nonRefPos[1], false)
-          actions.addPoint(nonRefNextId, nonRefPos[0], nonRefPos[1], false)
+          actions.addPoint(nonRefPrevId, nonRefPos, false)
+          actions.addPoint(nonRefNextId, nonRefPos, false)
         } else {
           // Add non-reference side points with wall-specific thickness offsets
           const prevWall = walls.find(w => w.endCornerId === corner.id)
@@ -278,7 +355,7 @@ const useGcsStore = create<GcsStore>()((set, get) => ({
               prevWall.outsideDirection,
               isRefInside ? prevWall.thickness : -prevWall.thickness
             )
-            actions.addPoint(nonRefPrevId, prevPos[0], prevPos[1], false)
+            actions.addPoint(nonRefPrevId, prevPos, false)
           }
 
           if (nextWall) {
@@ -287,36 +364,93 @@ const useGcsStore = create<GcsStore>()((set, get) => ({
               nextWall.outsideDirection,
               isRefInside ? nextWall.thickness : -nextWall.thickness
             )
-            actions.addPoint(nonRefNextId, nextPos[0], nextPos[1], false)
+            actions.addPoint(nonRefNextId, nextPos, false)
           }
         }
 
         entry.pointIds.push(refPointId, nonRefPrevId, nonRefNextId)
       }
 
-      // Add lines for each wall
       for (const wall of walls) {
-        const startRef = `corner_${wall.startCornerId}_ref`
-        const startNonRef = `corner_${wall.startCornerId}_nonref_next`
-        const endRef = `corner_${wall.endCornerId}_ref`
-        const endNonRef = `corner_${wall.endCornerId}_nonref_prev`
+        const startRef = nodeRefSidePointId(wall.startCornerId)
+        const startNonRef = nodeNonRefSidePointForNextWall(wall.startCornerId)
+        const endRef = nodeRefSidePointId(wall.endCornerId)
+        const endNonRef = nodeNonRefSidePointForPrevWall(wall.endCornerId)
 
-        const refLineId = `wall_${wall.id}_ref`
-        const nonRefLineId = `wall_${wall.id}_nonref`
+        const startNonRefProj = wallNonRefSideProjectedPoint(wall.id, 'start')
+        const endNonRefProj = wallNonRefSideProjectedPoint(wall.id, 'end')
 
+        const refLine = isRefInside ? wall.insideLine : wall.outsideLine
+        const startCorner = cornerGeomMap.get(wall.startCornerId)
+        if (!startCorner) throw new Error(`Missing corner ${wall.startCornerId}`)
+        const startPoint = isRefInside ? startCorner.outsidePoint : startCorner.insidePoint
+        const startProjected = scaleAddVec2(
+          refLine.start,
+          wall.direction,
+          projectVec2(refLine.start, startPoint, wall.direction)
+        )
+        actions.addPoint(startNonRefProj, startProjected)
+
+        const endCorner = cornerGeomMap.get(wall.endCornerId)
+        if (!endCorner) throw new Error(`Missing corner ${wall.endCornerId}`)
+        const endPoint = isRefInside ? endCorner.outsidePoint : endCorner.insidePoint
+        const endProjected = scaleAddVec2(
+          refLine.end,
+          wall.direction,
+          projectVec2(refLine.end, endPoint, wall.direction)
+        )
+        actions.addPoint(endNonRefProj, endProjected)
+        entry.pointIds.push(startNonRefProj, endNonRefProj)
+
+        const refLineId = wallRefLineId(wall.id)
+        const nonRefLineId = wallNonRefLineId(wall.id)
         actions.addLine(refLineId, startRef, endRef)
         actions.addLine(nonRefLineId, startNonRef, endNonRef)
         entry.lineIds.push(refLineId, nonRefLineId)
-        const parallelId = `parallel_${wall.id}`
+
+        const projStartOnLineId = `${wall.id}_proj_start_on_line`
+        actions.addConstraint({
+          id: projStartOnLineId,
+          type: 'point_on_line_pl',
+          p_id: startNonRefProj,
+          l_id: refLineId
+        })
+        const projStartPerpId = `${wall.id}_proj_start_perp`
+        actions.addConstraint({
+          id: projStartPerpId,
+          type: 'perpendicular_pppp',
+          l1p1_id: startNonRefProj,
+          l1p2_id: startNonRef,
+          l2p1_id: startRef,
+          l2p2_id: endRef
+        })
+
+        const projEndOnLineId = `${wall.id}_proj_end_on_line`
+        actions.addConstraint({
+          id: projEndOnLineId,
+          type: 'point_on_line_pl',
+          p_id: endNonRefProj,
+          l_id: refLineId
+        })
+        const projEndPerpId = `${wall.id}_proj_end_perp`
+        actions.addConstraint({
+          id: projEndPerpId,
+          type: 'perpendicular_pppp',
+          l1p1_id: endNonRefProj,
+          l1p2_id: endNonRef,
+          l2p1_id: startRef,
+          l2p2_id: endRef
+        })
+
+        const parallelId = `${wall.id}_parallel`
         actions.addConstraint({
           id: parallelId,
           type: 'parallel',
           l1_id: refLineId,
           l2_id: nonRefLineId
         })
-        entry.constraintIds.push(parallelId)
 
-        const thicknessId = `thickness_${wall.id}`
+        const thicknessId = `${wall.id}_thickness`
         actions.addConstraint({
           id: thicknessId,
           type: 'p2l_distance',
@@ -324,14 +458,29 @@ const useGcsStore = create<GcsStore>()((set, get) => ({
           l_id: refLineId,
           distance: wall.thickness
         })
-        entry.constraintIds.push(thicknessId)
+        entry.constraintIds.push(
+          parallelId,
+          thicknessId,
+          projStartOnLineId,
+          projEndOnLineId,
+          projStartPerpId,
+          projEndPerpId
+        )
+
+        for (const opening of modelActions.getWallOpeningsById(wall.id)) {
+          addWallEntityGeometry(opening, isRefInside, entry)
+        }
+
+        for (const post of modelActions.getWallPostsById(wall.id)) {
+          addWallEntityGeometry(post, isRefInside, entry)
+        }
       }
 
       // Add corner structure constraints for non-reference side
       for (const corner of corners) {
-        const refPointId = `corner_${corner.id}_ref`
-        const nonRefPrevId = `corner_${corner.id}_nonref_prev`
-        const nonRefNextId = `corner_${corner.id}_nonref_next`
+        const refPointId = nodeRefSidePointId(corner.id)
+        const nonRefPrevId = nodeNonRefSidePointForPrevWall(corner.id)
+        const nonRefNextId = nodeNonRefSidePointForNextWall(corner.id)
 
         const prevWall = walls.find(w => w.endCornerId === corner.id)
         const nextWall = walls.find(w => w.startCornerId === corner.id)
@@ -341,9 +490,7 @@ const useGcsStore = create<GcsStore>()((set, get) => ({
         const isColinear = corner.interiorAngle === 180
 
         if (isColinear) {
-          const prevCornerId = prevWall.startCornerId
-          const prevCornerRefId = `corner_${prevCornerId}_ref`
-
+          const prevCornerRefId = nodeRefSidePointId(prevWall.startCornerId)
           const perp1Id = `corner_${corner.id}_nonref_perp1`
           actions.addConstraint({
             id: perp1Id,
@@ -356,9 +503,7 @@ const useGcsStore = create<GcsStore>()((set, get) => ({
           })
           entry.constraintIds.push(perp1Id)
 
-          const nextCornerId = nextWall.endCornerId
-          const nextCornerRefId = `corner_${nextCornerId}_ref`
-
+          const nextCornerRefId = nodeRefSidePointId(nextWall.endCornerId)
           const perp2Id = `corner_${corner.id}_nonref_perp2`
           actions.addConstraint({
             id: perp2Id,
@@ -416,11 +561,15 @@ const useGcsStore = create<GcsStore>()((set, get) => ({
         conflictingConstraintIds: new Set(conflicting),
         redundantConstraintIds: new Set(redundant)
       }))
+    },
+
+    setTmpPoints(tmpPoints) {
+      set(() => ({ tmpPoints }))
     }
   }
 }))
 
-export const useGcsPoints = (): GcsStoreState['points'] => useGcsStore(state => state.points)
+export const useGcsPoints = (): GcsStoreState['points'] => useGcsStore(state => state.tmpPoints ?? state.points)
 export const useGcsLines = (): GcsStoreState['lines'] => useGcsStore(state => state.lines)
 export const useGcsBuildingConstraints = (): GcsStoreState['buildingConstraints'] =>
   useGcsStore(state => state.buildingConstraints)

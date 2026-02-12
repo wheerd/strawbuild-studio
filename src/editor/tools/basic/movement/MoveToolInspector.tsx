@@ -15,6 +15,18 @@ export function MoveToolInspector({ tool }: ToolInspectorProps<MoveTool>): React
   return (
     <div className="p-2">
       <div className="flex flex-col gap-3">
+        {/* Constraint Warning */}
+        {toolState.hoveredBehavior && !toolState.canMoveHoveredEntity && (
+          <Callout color="orange">
+            <CalloutIcon>
+              <InfoCircledIcon />
+            </CalloutIcon>
+            <CalloutText>
+              <span className="text-xs">{t($ => $.move.constrainedEntity)}</span>
+            </CalloutText>
+          </Callout>
+        )}
+
         {/* Informational Note */}
         <Callout color="blue">
           <CalloutIcon>

@@ -73,6 +73,7 @@
     "esc": "Esc"
   },
   "move": {
+    "constrainedEntity": "This entity has constraints attached and cannot be moved. Remove constraints to enable movement.",
     "controlCancel": "Press {{key}} to cancel ongoing movement",
     "controlDrag": "Click and drag to move entities",
     "controlPrecise": "After moving, type numbers for precise distance",

@@ -1,6 +1,7 @@
 import { useMemo, useRef } from 'react'
 
-import { useViewportState } from '@/editor/hooks/useViewportStore'
+import { DIMENSION_DEFAULT_FONT_SIZE, DIMENSION_DEFAULT_STROKE_WIDTH } from '@/editor/constants/dimensions'
+import { useUiScale } from '@/editor/hooks/useViewportStore'
 import {
   type Vec2,
   ZERO_VEC2,
@@ -25,26 +26,22 @@ interface LengthIndicatorProps {
   strokeWidth?: number
 }
 
-const BASE_FONT_SIZE = 60
-const BASE_STROKE_WIDTH = 5
-
 export function LengthIndicator({
   startPoint,
   endPoint,
   label,
   offset = 50,
   color,
-  fontSize = BASE_FONT_SIZE,
-  strokeWidth = BASE_STROKE_WIDTH
+  fontSize = DIMENSION_DEFAULT_FONT_SIZE,
+  strokeWidth = DIMENSION_DEFAULT_STROKE_WIDTH
 }: LengthIndicatorProps): React.JSX.Element {
   const { formatLength } = useFormatters()
   const textRef = useRef<SVGTextElement>(null)
-  const { zoom } = useViewportState()
+  const uiScale = useUiScale()
 
-  const clampedScale = 0.2 / Math.max(0.02, Math.min(0.4, zoom))
-  const scaledFontSize = fontSize * clampedScale
-  let scaledOffset = offset * clampedScale
-  const scaledStrokeWidth = strokeWidth * clampedScale
+  const scaledFontSize = fontSize * uiScale
+  let scaledOffset = offset * uiScale
+  const scaledStrokeWidth = strokeWidth * uiScale
 
   const actualColor = color ?? 'var(--color-foreground)'
 
@@ -172,7 +169,6 @@ export function LengthIndicator({
           ref={textRef}
           y={0}
           fontSize={calculatedFontSize}
-          fontFamily="Arial"
           fontWeight="bold"
           fill={actualColor}
           textAnchor="middle"

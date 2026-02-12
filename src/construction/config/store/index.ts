@@ -230,15 +230,17 @@ export const setConfigState = (data: {
 }
 
 // Subscription helpers for derived state invalidation
-export const subscribeToWallAssemblies = (cb: (current?: WallAssemblyConfig, previous?: WallAssemblyConfig) => void) =>
-  subscribeRecords(useConfigStore, s => s.wallAssemblyConfigs, cb)
+export const subscribeToWallAssemblies = (
+  cb: (id: WallAssemblyId, current?: WallAssemblyConfig, previous?: WallAssemblyConfig) => void
+) => subscribeRecords(useConfigStore, s => s.wallAssemblyConfigs, cb)
 
 export const subscribeToFloorAssemblies = (
-  cb: (current?: FloorAssemblyConfig, previous?: FloorAssemblyConfig) => void
+  cb: (id: FloorAssemblyId, current?: FloorAssemblyConfig, previous?: FloorAssemblyConfig) => void
 ) => subscribeRecords(useConfigStore, s => s.floorAssemblyConfigs, cb)
 
-export const subscribeToRoofAssemblies = (cb: (current?: RoofAssemblyConfig, previous?: RoofAssemblyConfig) => void) =>
-  subscribeRecords(useConfigStore, s => s.roofAssemblyConfigs, cb)
+export const subscribeToRoofAssemblies = (
+  cb: (id: RoofAssemblyId, current?: RoofAssemblyConfig, previous?: RoofAssemblyConfig) => void
+) => subscribeRecords(useConfigStore, s => s.roofAssemblyConfigs, cb)
 
 // Only for the tests
 export const _clearAllAssemblies = () =>

@@ -3,7 +3,12 @@ import type { StateCreator } from 'zustand'
 import type { Constraint, ConstraintInput } from '@/building/model'
 import type { ConstraintEntityId, ConstraintId, PerimeterCornerId, PerimeterWallId, WallId } from '@/building/model/ids'
 import { createConstraintId } from '@/building/model/ids'
-import { buildingConstraintKey, getReferencedCornerIds, getReferencedWallIds } from '@/editor/gcs/constraintTranslator'
+import {
+  buildingConstraintKey,
+  getReferencedCornerIds,
+  getReferencedWallEntityIds,
+  getReferencedWallIds
+} from '@/editor/gcs/constraintTranslator'
 import type { Length } from '@/shared/geometry'
 
 export interface ConstraintsState {
@@ -27,7 +32,7 @@ export type ConstraintsSlice = ConstraintsState & { actions: ConstraintsActions 
  * Extract all ConstraintEntityIds referenced by a constraint input.
  */
 function getReferencedEntityIds(input: ConstraintInput): ConstraintEntityId[] {
-  return [...getReferencedCornerIds(input), ...getReferencedWallIds(input)]
+  return [...getReferencedCornerIds(input), ...getReferencedWallIds(input), ...getReferencedWallEntityIds(input)]
 }
 
 /**

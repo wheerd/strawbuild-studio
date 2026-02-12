@@ -1,98 +1,32 @@
-import { type OpeningId, isOpeningId } from '@/building/model/ids'
-import { useModelActions, usePerimeterCornerById, usePerimeterWallById, useWallOpeningById } from '@/building/store'
-import { useSelectionStore } from '@/editor/hooks/useSelectionStore'
-import { useViewportActions } from '@/editor/hooks/useViewportStore'
-import { activateLengthInput } from '@/editor/services/length-input'
-import { ClickableLengthIndicator } from '@/editor/utils/ClickableLengthIndicator'
-import { LengthIndicator } from '@/editor/utils/LengthIndicator'
-import { type Length, ZERO_VEC2, midpoint } from '@/shared/geometry'
-import { useFormatters } from '@/shared/i18n/useFormatters'
+import { useTranslation } from 'react-i18next'
+
+import type { OpeningId } from '@/building/model/ids'
+import { useWallOpeningById } from '@/building/store'
+import { DIMENSION_SMALL_FONT_SIZE, WALL_DIM_LAYER_OFFSET } from '@/editor/constants/dimensions'
+import { useCurrentSelection } from '@/editor/hooks/useSelectionStore'
+import { useUiScale } from '@/editor/hooks/useViewportStore'
+import { EntityMeasurementsShape } from '@/editor/shapes/EntityMeasurementsShape'
+import { direction, midpoint, perpendicularCW, scaleAddVec2 } from '@/shared/geometry'
 import { MATERIAL_COLORS } from '@/shared/theme/colors'
-import { polygonToSvgPath } from '@/shared/utils/svg'
+import { polygonToSvgPath, readableTextAngle } from '@/shared/utils/svg'
 
 export function OpeningShape({ openingId }: { openingId: OpeningId }): React.JSX.Element {
-  const { formatLength } = useFormatters()
-  const select = useSelectionStore()
-  const modelActions = useModelActions()
-  const viewportActions = useViewportActions()
-
+  const { t } = useTranslation('overlay')
   const opening = useWallOpeningById(openingId)
-  const wall = usePerimeterWallById(opening.wallId)
-  const startCorner = usePerimeterCornerById(wall.startCornerId)
-  const endCorner = usePerimeterCornerById(wall.endCornerId)
+  const uiScale = useUiScale()
+
+  const scaledFontSize = DIMENSION_SMALL_FONT_SIZE * uiScale
+  const scaledOffset = 1 * WALL_DIM_LAYER_OFFSET * uiScale
 
   const openingPath = polygonToSvgPath(opening.polygon)
   const centerLineStart = midpoint(opening.insideLine.start, opening.outsideLine.start)
   const centerLineEnd = midpoint(opening.insideLine.end, opening.outsideLine.end)
 
-  const isOpeningSelected = select.isCurrentSelection(opening.id)
-
-  // Calculate opening-to-opening distances
-  const allObstacles = wall.entityIds
-    .map(id => (isOpeningId(id) ? modelActions.getWallOpeningById(id) : modelActions.getWallPostById(id)))
-    .sort((a, b) => a.centerOffsetFromWallStart - b.centerOffsetFromWallStart)
-
-  const currentIndex = allObstacles.findIndex(o => o.id === opening.id)
-  const previousObstacle = currentIndex > 0 ? allObstacles[currentIndex - 1] : null
-  const nextObstacle = currentIndex < allObstacles.length - 1 ? allObstacles[currentIndex + 1] : null
-
-  const hasNeighbors = wall.entityIds.length > 1
-
-  // Handler for updating opening position based on measurement clicks
-  const handleMeasurementClick = (
-    currentMeasurement: Length,
-    measurementType: 'startCorner' | 'endCorner' | 'prevOpening' | 'nextOpening'
-  ) => {
-    // Calculate world position for the measurement
-    const worldPosition =
-      measurementType === 'startCorner'
-        ? midpoint(startCorner.insidePoint, opening.insideLine.start)
-        : measurementType === 'endCorner'
-          ? midpoint(endCorner.insidePoint, opening.insideLine.end)
-          : measurementType === 'prevOpening' && previousObstacle
-            ? midpoint(previousObstacle.outsideLine.end, opening.outsideLine.start)
-            : nextObstacle
-              ? midpoint(nextObstacle.outsideLine.start, opening.outsideLine.end)
-              : ZERO_VEC2
-
-    const stagePos = viewportActions.worldToStage(worldPosition)
-    // Add small offset to position input near the indicator
-    // Bounds checking is now handled by the LengthInputService
-    activateLengthInput({
-      showImmediately: true,
-      position: { x: stagePos[0] + 20, y: stagePos[1] - 30 },
-      initialValue: currentMeasurement,
-      placeholder: 'Enter distance...',
-      onCommit: enteredValue => {
-        const rawDelta = enteredValue - currentMeasurement
-
-        // Apply delta in the correct direction based on measurement type
-        let actualDelta: Length
-        if (measurementType === 'startCorner' || measurementType === 'prevOpening') {
-          // For start corner and prev opening distances: positive delta moves opening away from start
-          actualDelta = rawDelta
-        } else {
-          // For end corner and next opening distances: positive delta moves opening toward start (negative offset change)
-          actualDelta = -rawDelta
-        }
-
-        const newCenterOffset = opening.centerOffsetFromWallStart + actualDelta
-
-        // Validate the new position
-        const isValid = modelActions.isWallOpeningPlacementValid(wall.id, newCenterOffset, opening.width, opening.id)
-
-        if (isValid) {
-          modelActions.updateWallOpening(opening.id, { centerOffsetFromWallStart: newCenterOffset })
-        } else {
-          // Could add error feedback here in the future
-          console.warn('Invalid opening position:', formatLength(newCenterOffset))
-        }
-      },
-      onCancel: () => {
-        // Nothing to do on cancel
-      }
-    })
-  }
+  const isSelected = useCurrentSelection() === openingId
+  const dir = direction(opening.insideLine.start, opening.insideLine.end)
+  const perp = perpendicularCW(dir)
+  const textPos = scaleAddVec2(midpoint(opening.insideLine.start, opening.insideLine.end), perp, scaledOffset)
+  const textAngle = readableTextAngle(dir)
 
   return (
     <g
@@ -101,7 +35,6 @@ export function OpeningShape({ openingId }: { openingId: OpeningId }): React.JSX
       data-entity-type="opening"
       data-parent-ids={JSON.stringify([opening.perimeterId, opening.wallId])}
     >
-      {/* Opening cutout - render as a different colored line */}
       <path
         d={openingPath}
         fill="var(--color-muted)"
@@ -110,7 +43,6 @@ export function OpeningShape({ openingId }: { openingId: OpeningId }): React.JSX
         strokeWidth={10}
       />
 
-      {/* Door/Window indicator line */}
       {opening.openingType !== 'passage' && (
         <line
           x1={centerLineStart[0]}
@@ -123,99 +55,32 @@ export function OpeningShape({ openingId }: { openingId: OpeningId }): React.JSX
         />
       )}
 
-      {/* Length indicators when selected */}
-      {isOpeningSelected && (
-        <>
-          {/* Opening-to-opening distance indicators (closest to wall) */}
-          {previousObstacle && (
-            <ClickableLengthIndicator
-              startPoint={previousObstacle.outsideLine.end}
-              endPoint={opening.outsideLine.start}
-              offset={60}
-              fontSize={50}
-              strokeWidth={4}
-              onClick={measurement => {
-                handleMeasurementClick(measurement, 'prevOpening')
-              }}
-            />
-          )}
+      <g
+        className="text select-none"
+        transform={`translate(${textPos[0]} ${textPos[1]}) rotate(${textAngle}) scale(1, -1)`}
+      >
+        <text
+          x={0}
+          y={0}
+          fontSize={scaledFontSize}
+          fill={isSelected ? 'var(--color-foreground)' : 'var(--color-muted-foreground)'}
+          textAnchor="middle"
+          dominantBaseline="central"
+        >
+          {opening.sillHeight != null
+            ? t($ => $.openings.dimensionWithSillHeight, {
+                sillHeight: opening.sillHeight,
+                height: opening.height,
+                defaultValue: 'H {{height}} SH {{sillHeight}}'
+              })
+            : t($ => $.openings.dimension, {
+                height: opening.height,
+                defaultValue: 'H {{height}}'
+              })}
+        </text>
+      </g>
 
-          {nextObstacle && (
-            <ClickableLengthIndicator
-              startPoint={opening.outsideLine.end}
-              endPoint={nextObstacle.outsideLine.start}
-              offset={60}
-              fontSize={50}
-              strokeWidth={4}
-              onClick={measurement => {
-                handleMeasurementClick(measurement, 'nextOpening')
-              }}
-            />
-          )}
-
-          {/* Opening width indicators (middle layer) */}
-          <LengthIndicator
-            startPoint={opening.insideLine.start}
-            endPoint={opening.insideLine.end}
-            label={formatLength(opening.width)}
-            offset={-60}
-            color="var(--color-blue-500)"
-            fontSize={50}
-            strokeWidth={4}
-          />
-          <LengthIndicator
-            startPoint={opening.outsideLine.start}
-            endPoint={opening.outsideLine.end}
-            label={formatLength(opening.width)}
-            offset={hasNeighbors ? 90 : 60}
-            color="var(--color-blue-500)"
-            fontSize={50}
-            strokeWidth={4}
-          />
-
-          {/* Corner distance indicators (outermost layer) */}
-          <ClickableLengthIndicator
-            startPoint={startCorner.insidePoint}
-            endPoint={opening.insideLine.start}
-            offset={-60}
-            fontSize={50}
-            strokeWidth={4}
-            onClick={measurement => {
-              handleMeasurementClick(measurement, 'startCorner')
-            }}
-          />
-          <ClickableLengthIndicator
-            startPoint={opening.insideLine.end}
-            endPoint={endCorner.insidePoint}
-            offset={-60}
-            fontSize={50}
-            strokeWidth={4}
-            onClick={measurement => {
-              handleMeasurementClick(measurement, 'endCorner')
-            }}
-          />
-          <ClickableLengthIndicator
-            startPoint={startCorner.outsidePoint}
-            endPoint={opening.outsideLine.start}
-            offset={hasNeighbors ? 120 : 60}
-            fontSize={50}
-            strokeWidth={4}
-            onClick={measurement => {
-              handleMeasurementClick(measurement, 'startCorner')
-            }}
-          />
-          <ClickableLengthIndicator
-            startPoint={opening.outsideLine.end}
-            endPoint={endCorner.outsidePoint}
-            offset={hasNeighbors ? 120 : 60}
-            fontSize={50}
-            strokeWidth={4}
-            onClick={measurement => {
-              handleMeasurementClick(measurement, 'endCorner')
-            }}
-          />
-        </>
-      )}
+      <EntityMeasurementsShape entity={opening} />
     </g>
   )
 }

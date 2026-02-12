@@ -2,13 +2,15 @@ import type { Constraint, ConstraintInput, OpeningParams, Storey, WallPostParams
 import {
   type FloorAssemblyId,
   type OpeningAssemblyId,
+  type OpeningId,
   type PerimeterCornerId,
   type PerimeterId,
   type PerimeterWallId,
   type RingBeamAssemblyId,
   type RoofAssemblyId,
   type WallAssemblyId,
-  type WallId
+  type WallId,
+  type WallPostId
 } from '@/building/model/ids'
 import { getModelActions } from '@/building/store'
 import { getConfigActions, getConfigState, setConfigState } from '@/construction/config/store'
@@ -66,6 +68,7 @@ export interface ExportedWall {
 }
 
 export interface ExportedOpening {
+  id?: string
   type: 'door' | 'window' | 'passage'
   centerOffset: number
   offsetFromStart?: number
@@ -76,6 +79,7 @@ export interface ExportedOpening {
 }
 
 export interface ExportedPost {
+  id?: string
   type: 'center' | 'inside' | 'outside' | 'double'
   centerOffset: number
   width: number
@@ -109,6 +113,8 @@ export interface ExportedConstraint {
     | 'cornerAngle'
     | 'horizontalWall'
     | 'verticalWall'
+    | 'wallEntityAbsolute'
+    | 'wallEntityRelative'
   wall?: string
   side?: 'left' | 'right'
   length?: number
@@ -117,6 +123,13 @@ export interface ExportedConstraint {
   distance?: number
   corner?: string
   angle?: number
+  entity?: string
+  entitySide?: 'start' | 'center' | 'end'
+  node?: string
+  entityA?: string
+  entityB?: string
+  entityASide?: 'start' | 'center' | 'end'
+  entityBSide?: 'start' | 'center' | 'end'
 }
 
 export interface ExportData {
@@ -294,6 +307,7 @@ class ProjectImportExportServiceImpl implements IProjectImportExportService {
                 baseRingBeamAssemblyId: wall.baseRingBeamAssemblyId,
                 topRingBeamAssemblyId: wall.topRingBeamAssemblyId,
                 openings: openings.map(opening => ({
+                  id: opening.id,
                   type: opening.openingType,
                   centerOffset: opening.centerOffsetFromWallStart,
                   width: opening.width,
@@ -302,6 +316,7 @@ class ProjectImportExportServiceImpl implements IProjectImportExportService {
                   openingAssemblyId: opening.openingAssemblyId
                 })),
                 posts: posts.map(post => ({
+                  id: post.id,
                   type: post.postType,
                   centerOffset: post.centerOffsetFromWallStart,
                   width: post.width,
@@ -356,6 +371,22 @@ class ProjectImportExportServiceImpl implements IProjectImportExportService {
             break
           case 'verticalWall':
             exported.wall = constraint.wall
+            break
+          case 'wallEntityAbsolute':
+            exported.wall = constraint.wall
+            exported.side = constraint.side
+            exported.entity = constraint.entity
+            exported.entitySide = constraint.entitySide
+            exported.node = constraint.node
+            exported.distance = constraint.distance
+            break
+          case 'wallEntityRelative':
+            exported.wall = constraint.wall
+            exported.entityA = constraint.entityA
+            exported.entityASide = constraint.entityASide
+            exported.entityB = constraint.entityB
+            exported.entityBSide = constraint.entityBSide
+            exported.distance = constraint.distance
             break
         }
         return exported
@@ -420,6 +451,7 @@ class ProjectImportExportServiceImpl implements IProjectImportExportService {
       const perimeterIdMap = new Map<PerimeterId, PerimeterId>()
       const wallIdMap = new Map<PerimeterWallId, PerimeterWallId>()
       const cornerIdMap = new Map<PerimeterCornerId, PerimeterCornerId>()
+      const entityIdMap = new Map<OpeningId | WallPostId, OpeningId | WallPostId>()
 
       exportedStoreys.forEach((exportedStorey, index, list) => {
         let targetStorey: Storey
@@ -547,7 +579,10 @@ class ProjectImportExportServiceImpl implements IProjectImportExportService {
                   }
 
               try {
-                modelActions.addWallOpening(wallId, openingParams)
+                const newOpening = modelActions.addWallOpening(wallId, openingParams)
+                if (exportedOpening.id) {
+                  entityIdMap.set(exportedOpening.id as OpeningId, newOpening.id)
+                }
               } catch (error) {
                 console.error(error)
               }
@@ -567,7 +602,10 @@ class ProjectImportExportServiceImpl implements IProjectImportExportService {
                 }
 
                 try {
-                  modelActions.addWallPost(wallId, postParams)
+                  const newPost = modelActions.addWallPost(wallId, postParams)
+                  if (exportedPost.id) {
+                    entityIdMap.set(exportedPost.id as WallPostId, newPost.id)
+                  }
                 } catch (error) {
                   console.error(error)
                 }
@@ -710,6 +748,44 @@ class ProjectImportExportServiceImpl implements IProjectImportExportService {
                 constraintInput = {
                   type: 'verticalWall',
                   wall: wallId as WallId
+                }
+                break
+              }
+              case 'wallEntityAbsolute': {
+                const wallId = wallIdMap.get(exportedConstraint.wall as PerimeterWallId)
+                const entity = entityIdMap.get(exportedConstraint.entity as OpeningId | WallPostId)
+                const side = exportedConstraint.side
+                const entitySide = exportedConstraint.entitySide
+                const node = cornerIdMap.get(exportedConstraint.node as PerimeterCornerId)
+                const distance = exportedConstraint.distance
+                if (!wallId || !entity || !side || !entitySide || !node || distance === undefined) continue
+                constraintInput = {
+                  type: 'wallEntityAbsolute',
+                  wall: wallId as WallId,
+                  entity,
+                  side,
+                  entitySide,
+                  node,
+                  distance
+                }
+                break
+              }
+              case 'wallEntityRelative': {
+                const wallId = wallIdMap.get(exportedConstraint.wall as PerimeterWallId)
+                const entityA = entityIdMap.get(exportedConstraint.entityA as OpeningId | WallPostId)
+                const entityASide = exportedConstraint.entityASide
+                const entityB = entityIdMap.get(exportedConstraint.entityB as OpeningId | WallPostId)
+                const entityBSide = exportedConstraint.entityBSide
+                const distance = exportedConstraint.distance
+                if (!wallId || !entityA || !entityASide || !entityB || !entityBSide || distance === undefined) continue
+                constraintInput = {
+                  type: 'wallEntityRelative',
+                  wall: wallId as WallId,
+                  entityA,
+                  entityASide,
+                  entityB,
+                  entityBSide,
+                  distance
                 }
                 break
               }

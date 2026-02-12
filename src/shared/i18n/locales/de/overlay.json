@@ -3,6 +3,10 @@
     "scrollToZoom": "Scrollen zum Zoomen",
     "uploadToBegin": "Lade ein Bild hoch, um zu beginnen"
   },
+  "openings": {
+    "dimension": "H {{height, length}}",
+    "dimensionWithSillHeight": "H {{height, length}} BRH {{sillHeight, length}}"
+  },
   "planControls": {
     "ariaLabel": "Grundriss-Überlagerung",
     "confirmRemove": {

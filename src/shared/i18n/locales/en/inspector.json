@@ -22,6 +22,7 @@
     "redundant": "Redundant constraint (not needed)",
     "redundantStatus_one": "One redundant constraint",
     "redundantStatus_other": "{{count}} redundant constraints",
+    "toggleWallEntitySideTitle": "Toggle between side and center measurement modes",
     "vertical": {
       "active": "Vertical constraint (click to remove)",
       "suggestion": "Click to add vertical constraint"

@@ -13,15 +13,21 @@ export function subscribeRecords<TState, TKey extends string, TRecord>(
     ) => () => void
   },
   selector: (state: TState) => Record<TKey, TRecord>,
-  entryChange: (current?: TRecord, previous?: TRecord) => void
+  entryChange: (key: TKey, current?: TRecord, previous?: TRecord) => void
 ): () => void {
   const subscriptions: Partial<Record<TKey, () => void>> = {}
 
   const keysChange = (current: TKey[], previous: TKey[]) => {
     for (const id of current) {
       if (!previous.includes(id)) {
-        subscriptions[id] = store.subscribe(s => selector(s)[id], entryChange, { equalityFn: isDeepEqual })
-        entryChange(selector(store.getState())[id] ?? undefined)
+        subscriptions[id] = store.subscribe(
+          s => selector(s)[id],
+          (current, previous) => {
+            entryChange(id, current, previous)
+          },
+          { equalityFn: isDeepEqual }
+        )
+        entryChange(id, selector(store.getState())[id] ?? undefined)
       }
     }
 

@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import type { Constraint, PerimeterCornerId, PerimeterId, PerimeterWallId } from '@/building/model'
+import { newVec2 } from '@/shared/geometry'
 
 import { getGcsActions, getGcsState } from './store'
 
@@ -17,7 +18,9 @@ vi.mock('@/building/store', () => ({
     getPerimeterWallsById: (...args: unknown[]) => mockGetPerimeterWallsById(...args),
     getPerimeterById: (...args: unknown[]) => mockGetPerimeterById(...args),
     getPerimeterWallById: (...args: unknown[]) => mockGetPerimeterWallById(...args),
-    getPerimeterCornerById: (...args: unknown[]) => mockGetPerimeterCornerById(...args)
+    getPerimeterCornerById: (...args: unknown[]) => mockGetPerimeterCornerById(...args),
+    getWallOpeningsById: () => [],
+    getWallPostsById: () => []
   })
 }))
 
@@ -72,18 +75,18 @@ function setupGeometry(): void {
   const actions = getGcsActions()
 
   // Add corner points (ref + nonref_prev + nonref_next for each corner)
-  actions.addPoint(`corner_${cornerA}_ref`, 0, 0)
-  actions.addPoint(`corner_${cornerA}_nonref_prev`, 0, -500)
-  actions.addPoint(`corner_${cornerA}_nonref_next`, -500, 0)
-  actions.addPoint(`corner_${cornerB}_ref`, 5000, 0)
-  actions.addPoint(`corner_${cornerB}_nonref_prev`, 5000, -500)
-  actions.addPoint(`corner_${cornerB}_nonref_next`, 5500, 0)
-  actions.addPoint(`corner_${cornerC}_ref`, 5000, 3000)
-  actions.addPoint(`corner_${cornerC}_nonref_prev`, 5500, 3000)
-  actions.addPoint(`corner_${cornerC}_nonref_next`, 5000, 3500)
-  actions.addPoint(`corner_${cornerD}_ref`, 0, 3000)
-  actions.addPoint(`corner_${cornerD}_nonref_prev`, -500, 3000)
-  actions.addPoint(`corner_${cornerD}_nonref_next`, 0, 3500)
+  actions.addPoint(`corner_${cornerA}_ref`, newVec2(0, 0))
+  actions.addPoint(`corner_${cornerA}_nonref_prev`, newVec2(0, -500))
+  actions.addPoint(`corner_${cornerA}_nonref_next`, newVec2(-500, 0))
+  actions.addPoint(`corner_${cornerB}_ref`, newVec2(5000, 0))
+  actions.addPoint(`corner_${cornerB}_nonref_prev`, newVec2(5000, -500))
+  actions.addPoint(`corner_${cornerB}_nonref_next`, newVec2(5500, 0))
+  actions.addPoint(`corner_${cornerC}_ref`, newVec2(5000, 3000))
+  actions.addPoint(`corner_${cornerC}_nonref_prev`, newVec2(5500, 3000))
+  actions.addPoint(`corner_${cornerC}_nonref_next`, newVec2(5000, 3500))
+  actions.addPoint(`corner_${cornerD}_ref`, newVec2(0, 3000))
+  actions.addPoint(`corner_${cornerD}_nonref_prev`, newVec2(-500, 3000))
+  actions.addPoint(`corner_${cornerD}_nonref_next`, newVec2(0, 3500))
 
   // Add wall lines (ref + nonref for each wall)
   actions.addLine(`wall_${wallA}_ref`, `corner_${cornerA}_ref`, `corner_${cornerB}_ref`)
@@ -629,11 +632,13 @@ describe('GCS store perimeter geometry', () => {
       const state = getGcsState()
       const entry = state.perimeterRegistry[perimeterA]
       expect(entry).toBeDefined()
-      expect(entry.pointIds).toHaveLength(12)
+      // 4 corners × 3 points = 12
+      // 4 walls × 2 projected points = 8
+      expect(entry.pointIds).toHaveLength(20)
       expect(entry.lineIds).toHaveLength(8)
       // 4 corners × 1 p2p_coincident constraint each = 4 structural constraints
-      // 4 walls × 2 constraint each = 8
-      expect(entry.constraintIds).toHaveLength(12)
+      // 4 walls × 6 constraints (parallel, thickness, proj_start_on_line, proj_end_on_line, proj_start_perp, proj_end_perp) = 24
+      expect(entry.constraintIds).toHaveLength(28)
     })
 
     it('handles upsert — removes old data before re-adding', () => {
@@ -651,7 +656,9 @@ describe('GCS store perimeter geometry', () => {
 
       const state = getGcsState()
       // Should still have exactly the right number of points (not doubled)
-      expect(Object.keys(state.points)).toHaveLength(12)
+      // 4 corners × 3 points = 12
+      // 4 walls × 2 projected points = 8
+      expect(Object.keys(state.points)).toHaveLength(20)
       // Building constraints are NOT cascade-removed by the GCS store;
       // that responsibility belongs to gcsSync's constraint subscription.
       expect(Object.keys(state.buildingConstraints)).toHaveLength(1)
@@ -775,7 +782,15 @@ describe('GCS store perimeter geometry', () => {
               endCornerId: cornerF,
               entityIds: [],
               thickness: 420,
-              wallAssemblyId: 'wall_assembly_1'
+              wallAssemblyId: 'wall_assembly_1',
+              insideLength: 5000,
+              outsideLength: 5000,
+              wallLength: 5000,
+              direction: [1, 0],
+              outsideDirection: [0, -1],
+              insideLine: { start: [10000, 0], end: [15000, 0] },
+              outsideLine: { start: [10000, -420], end: [15000, -420] },
+              polygon: { points: [] }
             },
             {
               id: wallF,
@@ -784,7 +799,15 @@ describe('GCS store perimeter geometry', () => {
               endCornerId: cornerE,
               entityIds: [],
               thickness: 420,
-              wallAssemblyId: 'wall_assembly_1'
+              wallAssemblyId: 'wall_assembly_1',
+              insideLength: 5000,
+              outsideLength: 5000,
+              wallLength: 5000,
+              direction: [-1, 0],
+              outsideDirection: [0, 1],
+              insideLine: { start: [15000, 0], end: [10000, 0] },
+              outsideLine: { start: [15000, -420], end: [10000, -420] },
+              polygon: { points: [] }
             }
           ]
         }
@@ -841,9 +864,9 @@ describe('GCS store perimeter geometry', () => {
   describe('removal helpers', () => {
     it('removePoints removes specified points', () => {
       const actions = getGcsActions()
-      actions.addPoint('p1', 0, 0)
-      actions.addPoint('p2', 1, 1)
-      actions.addPoint('p3', 2, 2)
+      actions.addPoint('p1', newVec2(0, 0))
+      actions.addPoint('p2', newVec2(1, 1))
+      actions.addPoint('p3', newVec2(2, 2))
 
       actions.removePoints(['p1', 'p3'])
 
@@ -855,9 +878,9 @@ describe('GCS store perimeter geometry', () => {
 
     it('removeLines removes specified lines', () => {
       const actions = getGcsActions()
-      actions.addPoint('a', 0, 0)
-      actions.addPoint('b', 1, 1)
-      actions.addPoint('c', 2, 2)
+      actions.addPoint('a', newVec2(0, 0))
+      actions.addPoint('b', newVec2(1, 1))
+      actions.addPoint('c', newVec2(2, 2))
       actions.addLine('l1', 'a', 'b')
       actions.addLine('l2', 'b', 'c')
 
@@ -882,7 +905,7 @@ describe('GCS store perimeter geometry', () => {
 
     it('removal helpers are no-ops for empty arrays', () => {
       const actions = getGcsActions()
-      actions.addPoint('p1', 0, 0)
+      actions.addPoint('p1', newVec2(0, 0))
 
       actions.removePoints([])
       actions.removeLines([])

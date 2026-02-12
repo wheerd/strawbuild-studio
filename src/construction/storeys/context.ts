@@ -123,19 +123,15 @@ export class WallStoreyContextCacheService {
   private setupSubscriptions(): void {
     const { getStoreysOrderedByLevel, getStoreyBelow } = getModelActions()
 
-    subscribeToStoreys((current, previous) => {
-      const storeyId = current?.id ?? previous?.id
-      if (storeyId) {
-        this.invalidate(storeyId)
-        const below = getStoreyBelow(storeyId)
-        if (below) {
-          this.invalidate(below.id)
-        }
+    subscribeToStoreys(storeyId => {
+      this.invalidate(storeyId)
+      const below = getStoreyBelow(storeyId)
+      if (below) {
+        this.invalidate(below.id)
       }
     })
 
-    subscribeToFloorAssemblies((current, previous) => {
-      const assemblyId = current?.id ?? previous?.id
+    subscribeToFloorAssemblies(assemblyId => {
       for (const storey of getStoreysOrderedByLevel()) {
         if (storey.floorAssemblyId === assemblyId) {
           this.invalidate(storey.id)

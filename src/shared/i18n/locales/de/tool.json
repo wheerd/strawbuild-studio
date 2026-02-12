@@ -73,6 +73,7 @@
     "esc": "Esc"
   },
   "move": {
+    "constrainedEntity": "Dieses Element ist beschränkt und kann daher nicht verschoben werden. Entferne die Beschränkungen, um die Bewegung zu aktivieren.",
     "controlCancel": "Drücke {{key}}, um laufende Bewegung abzubrechen",
     "controlDrag": "Klicken und ziehen, um Elemente zu verschieben",
     "controlPrecise": "Nach dem Verschieben Zahlen eingeben für präzisen Abstand",

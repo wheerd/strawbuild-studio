@@ -665,6 +665,9 @@ export const createPerimetersSlice: StateCreator<
         delete state.openings[openingId]
         delete state._openingGeometry[openingId]
 
+        // Remove constraints referencing this opening
+        removeConstraintsForEntityDraft(state, openingId)
+
         // Remove timestamp for the opening
         removeTimestampDraft(state, openingId)
       })
@@ -884,6 +887,9 @@ export const createPerimetersSlice: StateCreator<
 
         delete state.wallPosts[postId]
         delete state._wallPostGeometry[postId]
+
+        // Remove constraints referencing this post
+        removeConstraintsForEntityDraft(state, postId)
 
         // Remove timestamp for the post
         removeTimestampDraft(state, postId)

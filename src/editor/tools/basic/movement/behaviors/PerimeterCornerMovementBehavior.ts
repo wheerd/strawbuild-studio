@@ -140,6 +140,7 @@ export class PerimeterCornerMovementBehavior implements MovementBehavior<CornerE
 
     const updated = context.store.updatePerimeterBoundary(corner.perimeterId, newBoundary)
     if (updated) {
+      gcs.applyWallEntityOffsets(corner.perimeterId)
       gcs.syncConstraintStatus()
     }
 

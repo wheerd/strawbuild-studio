@@ -9,6 +9,8 @@ import type {
   Constraint,
   FloorArea,
   FloorOpening,
+  Opening,
+  OpeningGeometry,
   OpeningWithGeometry,
   Perimeter,
   PerimeterCorner,
@@ -20,6 +22,8 @@ import type {
   Roof,
   RoofOverhang,
   Storey,
+  WallPost,
+  WallPostGeometry,
   WallPostWithGeometry
 } from '@/building/model'
 import {
@@ -436,25 +440,42 @@ export const clearPersistence = (): void => {
   localStorage.removeItem('strawbaler-model')
 }
 
-export const subscribeToRoofs = (cb: (current?: Roof, previous?: Roof) => void) =>
+export const subscribeToRoofs = (cb: (id: RoofId, current?: Roof, previous?: Roof) => void) =>
   subscribeRecords(useModelStore, s => s.roofs, cb)
 
-export const subscribeToPerimeters = (cb: (current?: Perimeter, previous?: Perimeter) => void) =>
+export const subscribeToPerimeters = (cb: (id: PerimeterId, current?: Perimeter, previous?: Perimeter) => void) =>
   subscribeRecords(useModelStore, s => s.perimeters, cb)
 
-export const subscribeToWalls = (cb: (current?: PerimeterWall, previous?: PerimeterWall) => void) =>
-  subscribeRecords(useModelStore, s => s.perimeterWalls, cb)
+export const subscribeToWalls = (
+  cb: (id: PerimeterWallId, current?: PerimeterWall, previous?: PerimeterWall) => void
+) => subscribeRecords(useModelStore, s => s.perimeterWalls, cb)
 
-export const subscribeToCorners = (cb: (current?: PerimeterCorner, previous?: PerimeterCorner) => void) =>
-  subscribeRecords(useModelStore, s => s.perimeterCorners, cb)
+export const subscribeToCorners = (
+  cb: (id: PerimeterCornerId, current?: PerimeterCorner, previous?: PerimeterCorner) => void
+) => subscribeRecords(useModelStore, s => s.perimeterCorners, cb)
 
-export const subscribeToFloorOpenings = (cb: (current?: FloorOpening, previous?: FloorOpening) => void) =>
-  subscribeRecords(useModelStore, s => s.floorOpenings, cb)
+export const subscribeToFloorOpenings = (
+  cb: (id: FloorOpeningId, current?: FloorOpening, previous?: FloorOpening) => void
+) => subscribeRecords(useModelStore, s => s.floorOpenings, cb)
 
-export const subscribeToStoreys = (cb: (current?: Storey, previous?: Storey) => void) =>
+export const subscribeToWallOpenings = (cb: (id: OpeningId, current?: Opening, previous?: Opening) => void) =>
+  subscribeRecords(useModelStore, s => s.openings, cb)
+
+export const subscribeToWallPosts = (cb: (id: WallPostId, current?: WallPost, previous?: WallPost) => void) =>
+  subscribeRecords(useModelStore, s => s.wallPosts, cb)
+
+export const subscribeToStoreys = (cb: (id: StoreyId, current?: Storey, previous?: Storey) => void) =>
   subscribeRecords(useModelStore, s => s.storeys, cb)
 
-export const subscribeToConstraints = (cb: (current?: Constraint, previous?: Constraint) => void) =>
+export const subscribeToOpeningGeometry = (
+  cb: (id: OpeningId, current?: OpeningGeometry, previous?: OpeningGeometry) => void
+) => subscribeRecords(useModelStore, s => s._openingGeometry, cb)
+
+export const subscribeToWallPostGeometry = (
+  cb: (id: WallPostId, current?: WallPostGeometry, previous?: WallPostGeometry) => void
+) => subscribeRecords(useModelStore, s => s._wallPostGeometry, cb)
+
+export const subscribeToConstraints = (cb: (id: ConstraintId, current?: Constraint, previous?: Constraint) => void) =>
   subscribeRecords(useModelStore, s => s.buildingConstraints, cb)
 
 export const subscribeToModelChanges = useModelStore.subscribe

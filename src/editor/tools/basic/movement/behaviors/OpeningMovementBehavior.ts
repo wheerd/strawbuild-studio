@@ -1,5 +1,5 @@
 import type { Opening, PerimeterWallWithGeometry } from '@/building/model'
-import type { SelectableId } from '@/building/model/ids'
+import type { SelectableId, WallEntityId } from '@/building/model/ids'
 import { isOpeningId, isPerimeterId, isPerimeterWallId } from '@/building/model/ids'
 import type { StoreActions } from '@/building/store/types'
 import type {
@@ -25,6 +25,12 @@ export interface OpeningMovementState extends MovementState {
 
 export class OpeningMovementBehavior implements MovementBehavior<OpeningEntityContext, OpeningMovementState> {
   previewComponent = OpeningMovementPreview
+
+  canMove(entityId: SelectableId, store: StoreActions): boolean {
+    const constraints = store.getConstraintsForEntity(entityId as WallEntityId)
+    return constraints.length === 0
+  }
+
   getEntity(entityId: SelectableId, parentIds: SelectableId[], store: StoreActions): OpeningEntityContext {
     const [perimeterId, wallId] = parentIds
 
