@@ -1,9 +1,9 @@
 import { create } from 'zustand'
 
 import type { PerimeterWallId } from '@/building/model/ids'
-import { isPerimeterId, isRoofId, isStoreyId } from '@/building/model/ids'
-import { getModelActions } from '@/building/store'
-import { getBuildingTimestampDependencyService } from '@/building/store/timestampDependencyService'
+import { getModelActions, subscribeToModelChanges } from '@/building/store'
+import { subscribeToConfigChanges } from '@/construction/config'
+import { subscribeToMaterials } from '@/construction/materials/store'
 import { type ConstructionModel, mergeModels, transformModel } from '@/construction/model'
 import { IDENTITY } from '@/shared/geometry'
 
@@ -27,8 +27,7 @@ import {
   type CompositeModel,
   type ConstructionStore,
   type ConstructionStoreState,
-  type ModelId,
-  type ViewModelId
+  type ModelId
 } from './types'
 import {
   createBasePlateId,
@@ -36,28 +35,21 @@ import {
   createFloorId,
   createFullPerimeterId,
   createMeasurementId,
-  createTopPlateId,
-  extractPerimeterId,
-  isBasePlateId,
-  isColinearWallId,
-  isFloorId,
-  isFullPerimeterId,
-  isPerimeterMeasurementsId,
-  isTopPlateId
+  createTopPlateId
 } from './utils'
 
-const initialState: ConstructionStoreState = {
+export const useConstructionStore = create<ConstructionStore>()((set, get) => ({
   conlinearMapping: {},
   models: {},
   cache: {},
-  generatedAt: 0
-}
-
-export const useConstructionStore = create<ConstructionStore>()((set, get) => ({
-  ...initialState,
+  generatedAt: 0,
+  lastSourceChange: Date.now(),
+  hasModel: false,
 
   actions: {
     rebuildModel(): void {
+      set(state => ({ ...state, hasModel: false }))
+
       const { getStoreysOrderedByLevel, getPerimetersByStorey, getRoofsByStorey } = getModelActions()
 
       const models: ConstructionStoreState['models'] = {}
@@ -114,7 +106,8 @@ export const useConstructionStore = create<ConstructionStore>()((set, get) => ({
         models,
         conlinearMapping,
         cache: {},
-        generatedAt: Date.now()
+        generatedAt: Date.now(),
+        hasModel: true
       }))
     },
 
@@ -152,14 +145,9 @@ export const useConstructionStore = create<ConstructionStore>()((set, get) => ({
       return result
     },
 
-    isOutdated(modelId: ModelId): boolean {
-      const { generatedAt } = get()
-      if (generatedAt === 0) return true
-
-      const timestampService = getBuildingTimestampDependencyService()
-      const effectiveTimestamp = getEffectiveTimestamp(modelId, get().conlinearMapping, timestampService)
-
-      return !effectiveTimestamp || effectiveTimestamp > generatedAt
+    isOutdated(): boolean {
+      const { generatedAt, lastSourceChange } = get()
+      return generatedAt < lastSourceChange
     },
 
     clearCache(): void {
@@ -198,70 +186,24 @@ function composeComposite(
   return transformModel(mergeModels(...childModels), IDENTITY, composite.tags, undefined, composite.sourceId)
 }
 
-function getEffectiveTimestamp(
-  modelId: ModelId,
-  conlinearMapping: Partial<Record<PerimeterWallId, ColinearWallId>>,
-  service: ReturnType<typeof getBuildingTimestampDependencyService>
-): number | null {
-  if (modelId === 'building') {
-    const storeys = getModelActions().getStoreysOrderedByLevel()
-    const timestamps = storeys.map(s => service.getEffectiveStoreyTimestamp(s.id))
-    return maxTimestamp(timestamps)
-  }
-
-  if (isStoreyId(modelId)) {
-    return service.getEffectiveStoreyTimestamp(modelId)
-  }
-
-  if (isFullPerimeterId(modelId)) {
-    const perimeterId = extractPerimeterId(modelId)
-    return service.getEffectivePerimeterTimestamp(perimeterId)
-  }
-
-  if (isPerimeterId(modelId)) {
-    return service.getEffectivePerimeterTimestamp(modelId)
-  }
-
-  if (isColinearWallId(modelId)) {
-    const wallId = Object.entries(conlinearMapping).find(([, colinearId]) => colinearId === modelId)?.[0]
-    if (wallId) {
-      return service.getEffectivePerimeterWallTimestamp(wallId as PerimeterWallId)
-    }
-    return null
-  }
-
-  if (isRoofId(modelId)) {
-    return service.getEffectiveRoofTimestamp(modelId)
-  }
-
-  if (isFloorId(modelId) || isTopPlateId(modelId) || isBasePlateId(modelId) || isPerimeterMeasurementsId(modelId)) {
-    const perimeterId = extractPerimeterId(modelId)
-    return service.getEffectivePerimeterTimestamp(perimeterId)
-  }
-
-  return null
-}
-
-function maxTimestamp(timestamps: (number | null)[]): number | null {
-  const valid = timestamps.filter((t): t is number => t !== null)
-  return valid.length > 0 ? Math.max(...valid) : null
-}
-
 export function getConstructionActions() {
   return useConstructionStore.getState().actions
 }
 
-export function useModel(modelId: ViewModelId): ConstructionModel {
-  return useConstructionStore(state => state.actions.getModel(modelId))
+export function ensureConstructionLoaded() {
+  const state = useConstructionStore.getState()
+  if (state.generatedAt === 0) {
+    state.actions.rebuildModel()
+    setupSubscriptions()
+  }
 }
 
-export function useModelWithStatus(modelId: ViewModelId): {
-  model: ConstructionModel
-  isOutdated: boolean
-} {
-  const store = useConstructionStore()
-  return {
-    model: store.actions.getModel(modelId),
-    isOutdated: store.actions.isOutdated(modelId)
-  }
+function setupSubscriptions() {
+  subscribeToModelChanges(updateLastSourceChange)
+  subscribeToConfigChanges(updateLastSourceChange)
+  subscribeToMaterials(updateLastSourceChange)
+}
+
+function updateLastSourceChange() {
+  useConstructionStore.setState({ lastSourceChange: Date.now() })
 }

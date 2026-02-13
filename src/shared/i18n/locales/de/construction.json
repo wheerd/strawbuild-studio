@@ -62,6 +62,11 @@
     "wallConstruction": "Wand-\nkonstruktion",
     "wallConstructionHeight": "Wandkonstruktionshöhe"
   },
+  "modelStatus": {
+    "outdatedWarning": "Das Konstruktionsmodell ist veraltet. Änderungen am Gebäude wurden noch nicht übernommen.",
+    "rebuilding": "Modell wird neu generiert...",
+    "regenerate": "Neu generieren"
+  },
   "modulesList": {
     "actions": {
       "backToSummary": "Zurück zur Übersicht",
@@ -152,10 +157,6 @@
     "totalRow": "Gesamt"
   },
   "partsListModal": {
-    "errors": {
-      "failedModulesList": "Fehler beim Erstellen der Modulliste",
-      "failedPartsList": "Fehler beim Erstellen der Teileliste"
-    },
     "tabs": {
       "materials": "Materialien",
       "modules": "Module"
@@ -177,11 +178,6 @@
     "strawTypesHeading": "Strohfüllung Details"
   },
   "planModal": {
-    "errors": {
-      "failedModel": "Fehler beim Erstellen des Konstruktionsmodells",
-      "failedModulesList": "Fehler beim Erstellen der Modulliste",
-      "failedPartsList": "Fehler beim Erstellen der Teileliste"
-    },
     "issuesPanel": {
       "errorsTitle_one": "Fehler ({{count}})",
       "errorsTitle_other": "Fehler ({{count}})",

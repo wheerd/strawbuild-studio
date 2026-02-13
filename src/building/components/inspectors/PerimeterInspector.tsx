@@ -25,7 +25,6 @@ import { RingBeamAssemblySelectWithEdit } from '@/construction/config/components
 import { WallAssemblySelectWithEdit } from '@/construction/config/components/WallAssemblySelectWithEdit'
 import { useWallAssemblyById } from '@/construction/config/store'
 import { formatThicknessRange } from '@/construction/materials/thickness'
-import { constructPerimeter } from '@/construction/perimeters/perimeter'
 import { ConstructionViewer3DModal } from '@/construction/viewer3d/ConstructionViewer3DModal'
 import { resolveWallAssembly } from '@/construction/walls'
 import { MeasurementInfo } from '@/editor/components/MeasurementInfo'
@@ -256,8 +255,7 @@ export function PerimeterInspector({ selectedId }: PerimeterInspectorProps): Rea
       <div className="flex flex-row items-center justify-center gap-3 pt-1">
         <TopDownPlanModal
           title={t($ => $.perimeter.constructionPlanTitle)}
-          factory={() => Promise.resolve(constructPerimeter(perimeter))}
-          refreshKey={perimeter}
+          modelId={perimeter.id}
           trigger={
             <Button size="icon" title={t($ => $.perimeter.viewConstructionPlan)}>
               <ConstructionPlanIcon width={24} height={24} />
@@ -265,8 +263,7 @@ export function PerimeterInspector({ selectedId }: PerimeterInspectorProps): Rea
           }
         />
         <ConstructionViewer3DModal
-          constructionModelFactory={() => Promise.resolve(constructPerimeter(perimeter))}
-          refreshKey={perimeter}
+          modelId={perimeter.id}
           trigger={
             <Button size="icon" title={t($ => $.perimeter.view3DConstruction)} variant="outline">
               <Model3DIcon width={24} height={24} />

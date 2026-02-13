@@ -3,13 +3,7 @@ import * as Toolbar from '@radix-ui/react-toolbar'
 import React, { useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 
-import {
-  useActiveStoreyId,
-  useModelActions,
-  usePerimeters,
-  usePerimetersOfActiveStorey,
-  useStoreysOrderedByLevel
-} from '@/building/store'
+import { useActiveStoreyId, useModelActions } from '@/building/store'
 import { Button } from '@/components/ui/button'
 import { Kbd } from '@/components/ui/kbd'
 import { Separator } from '@/components/ui/separator'
@@ -35,9 +29,6 @@ export function MainToolbar({ onInfoClick }: MainToolbarProps): React.JSX.Elemen
 
   const activeStoreyId = useActiveStoreyId()
   const activeStorey = useModelActions().getStoreyById(activeStoreyId)
-  const activePerimiters = usePerimetersOfActiveStorey()
-  const storeys = useStoreysOrderedByLevel()
-  const perimeters = usePerimeters()
 
   const handleToolSelect = useCallback((toolId: ToolId) => {
     pushTool(toolId)
@@ -102,11 +93,7 @@ export function MainToolbar({ onInfoClick }: MainToolbarProps): React.JSX.Elemen
                 })
               : t($ => $.constructionPlanForActiveStorey)
           }
-          factory={async () => {
-            const { constructStorey } = await import('@/construction/storeys/storey')
-            return constructStorey(activeStoreyId)
-          }}
-          refreshKey={[activeStoreyId, activePerimiters]}
+          modelId={activeStoreyId}
           trigger={
             <Button title={t($ => $.viewConstructionPlan)} size="icon" variant="default">
               <ConstructionPlanIcon width={20} height={20} aria-hidden />
@@ -115,11 +102,7 @@ export function MainToolbar({ onInfoClick }: MainToolbarProps): React.JSX.Elemen
         />
         <ConstructionPartsListModal
           title={t($ => $.partsListForEntireModel)}
-          constructionModelFactory={async () => {
-            const { constructModel } = await import('@/construction/storeys/storey')
-            return constructModel()
-          }}
-          refreshKey={[storeys, perimeters]}
+          modelId={undefined}
           trigger={
             <Button title={t($ => $.viewPartsList)} size="icon" variant="default">
               <FileTextIcon width={20} height={20} aria-hidden />
@@ -127,11 +110,7 @@ export function MainToolbar({ onInfoClick }: MainToolbarProps): React.JSX.Elemen
           }
         />
         <ConstructionViewer3DModal
-          constructionModelFactory={async () => {
-            const { constructModel } = await import('@/construction/storeys/storey')
-            return constructModel()
-          }}
-          refreshKey={[storeys, perimeters]}
+          modelId={undefined}
           trigger={
             <Button title={t($ => $.view3DConstruction)} size="icon" variant="default">
               <Model3DIcon width={20} height={20} aria-hidden />

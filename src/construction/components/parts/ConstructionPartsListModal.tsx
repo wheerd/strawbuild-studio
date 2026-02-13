@@ -1,71 +1,42 @@
-import { CrossCircledIcon } from '@radix-ui/react-icons'
-import React, { Suspense, use, useCallback, useEffect, useState } from 'react'
+import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
-import { Callout, CalloutIcon, CalloutText } from '@/components/ui/callout'
 import { FullScreenModal } from '@/components/ui/full-screen-modal'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Spinner } from '@/components/ui/spinner'
 import { Tabs } from '@/components/ui/tabs'
 import { ConstructionPartsList } from '@/construction/components/parts/ConstructionPartsList'
 import { ConstructionVirtualPartsList } from '@/construction/components/parts/ConstructionVirtualPartsList'
-import type { ConstructionModel } from '@/construction/model'
-import type { MaterialPartsList, VirtualPartsList } from '@/construction/parts'
 import { generateMaterialPartsList, generateVirtualPartsList } from '@/construction/parts'
-
-interface PartsData {
-  material: MaterialPartsList
-  virtual: VirtualPartsList
-}
+import { type ConstructionModelId, useConstructionModel } from '@/construction/store'
 
 export interface ConstructionPartsListModalProps {
   title?: string
-  constructionModelFactory: () => Promise<ConstructionModel | null>
+  modelId: ConstructionModelId
   trigger: React.ReactNode
-  refreshKey?: unknown
 }
 
 export function ConstructionPartsListModal({
   title,
-  constructionModelFactory,
-  trigger,
-  refreshKey
+  modelId,
+  trigger
 }: ConstructionPartsListModalProps): React.JSX.Element {
   const { t } = useTranslation('construction')
   const defaultTitle = t($ => $.partsListModal.title)
   const [isOpen, setIsOpen] = useState(false)
   const [activeTab, setActiveTab] = useState<'materials' | 'modules'>('materials')
-  const [partsDataPromise, setPartsDataPromise] = useState<Promise<PartsData | null> | null>(null)
 
-  const loadPartsData = useCallback(
-    () =>
-      constructionModelFactory().then(model => {
-        if (!model) return null
-        return {
-          material: generateMaterialPartsList(model),
-          virtual: generateVirtualPartsList(model)
-        }
-      }),
-    [constructionModelFactory]
-  )
+  const model = useConstructionModel(modelId)
+
+  const materials = model ? generateMaterialPartsList(model) : null
+  const virtual = model ? generateVirtualPartsList(model) : null
 
   const handleOpenChange = (open: boolean) => {
     setIsOpen(open)
     if (!open) {
       setActiveTab('materials')
-      setPartsDataPromise(null)
-      return
-    }
-    if (!partsDataPromise) {
-      setPartsDataPromise(loadPartsData())
     }
   }
-
-  useEffect(() => {
-    if (!isOpen) return
-    if (refreshKey === undefined) return
-    setPartsDataPromise(loadPartsData())
-  }, [refreshKey, isOpen, loadPartsData])
 
   return (
     <FullScreenModal open={isOpen} onOpenChange={handleOpenChange} title={title ?? defaultTitle} trigger={trigger}>
@@ -83,67 +54,15 @@ export function ConstructionPartsListModal({
           </Tabs.List>
         </div>
         <Tabs.Content value="materials" className="flex min-h-0 w-full flex-1 flex-col overflow-auto pt-3">
-          {partsDataPromise ? (
-            <Suspense fallback={<PartsSkeleton />}>
-              <MaterialPartsContent partsDataPromise={partsDataPromise} />
-            </Suspense>
-          ) : (
-            <PartsSkeleton />
-          )}
+          {materials ? <ConstructionPartsList partsList={materials} /> : <PartsSkeleton />}
         </Tabs.Content>
 
         <Tabs.Content value="modules" className="flex min-h-0 flex-1 flex-col overflow-auto pt-3">
-          {partsDataPromise ? (
-            <Suspense fallback={<PartsSkeleton />}>
-              <ModulePartsContent partsDataPromise={partsDataPromise} />
-            </Suspense>
-          ) : (
-            <PartsSkeleton />
-          )}
+          {virtual ? <ConstructionVirtualPartsList partsList={virtual} /> : <PartsSkeleton />}
         </Tabs.Content>
       </Tabs.Root>
     </FullScreenModal>
   )
-}
-
-function MaterialPartsContent({ partsDataPromise }: { partsDataPromise: Promise<PartsData | null> }) {
-  const { t } = useTranslation('construction')
-  const partsData = use(partsDataPromise)
-
-  if (!partsData) {
-    return (
-      <div className="flex">
-        <Callout className="text-destructive">
-          <CalloutIcon>
-            <CrossCircledIcon />
-          </CalloutIcon>
-          <CalloutText>{t($ => $.partsListModal.errors.failedPartsList)}</CalloutText>
-        </Callout>
-      </div>
-    )
-  }
-
-  return <ConstructionPartsList partsList={partsData.material} />
-}
-
-function ModulePartsContent({ partsDataPromise }: { partsDataPromise: Promise<PartsData | null> }) {
-  const { t } = useTranslation('construction')
-  const partsData = use(partsDataPromise)
-
-  if (!partsData) {
-    return (
-      <div className="flex">
-        <Callout className="text-destructive">
-          <CalloutIcon>
-            <CrossCircledIcon />
-          </CalloutIcon>
-          <CalloutText>{t($ => $.partsListModal.errors.failedModulesList)}</CalloutText>
-        </Callout>
-      </div>
-    )
-  }
-
-  return <ConstructionVirtualPartsList partsList={partsData.virtual} />
 }
 
 function PartsSkeleton() {

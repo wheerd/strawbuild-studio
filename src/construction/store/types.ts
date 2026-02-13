@@ -55,11 +55,13 @@ export interface ConstructionStoreState {
   models: Partial<Record<ModelId, ModelEntry>>
   cache: Partial<Record<ModelId, ConstructionModel>>
   generatedAt: number
+  lastSourceChange: number
+  hasModel: boolean
 }
 
 export interface ConstructionStoreActions {
   getModel: (modelId: ModelId) => ConstructionModel
-  isOutdated: (modelId: ModelId) => boolean
+  isOutdated: () => boolean
   rebuildModel: () => void
   clearCache: () => void
 }

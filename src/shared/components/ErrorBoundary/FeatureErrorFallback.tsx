@@ -52,7 +52,7 @@ export function FeatureErrorFallback({ error, resetErrorBoundary }: FallbackProp
 
       <AlertDialog>
         <AlertDialogTrigger asChild>
-          <Button variant="ghost" size="sm" className="text-orange-600 dark:text-orange-400">
+          <Button variant="ghost" size="sm" className="text-orange-500 dark:text-orange-400">
             {t($ => $.feature.hardReset)}
           </Button>
         </AlertDialogTrigger>

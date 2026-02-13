@@ -242,6 +242,8 @@ export const subscribeToRoofAssemblies = (
   cb: (id: RoofAssemblyId, current?: RoofAssemblyConfig, previous?: RoofAssemblyConfig) => void
 ) => subscribeRecords(useConfigStore, s => s.roofAssemblyConfigs, cb)
 
+export const subscribeToConfigChanges = useConfigStore.subscribe
+
 // Only for the tests
 export const _clearAllAssemblies = () =>
   useConfigStore.setState({

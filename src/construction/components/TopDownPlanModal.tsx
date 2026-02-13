@@ -1,7 +1,7 @@
 import type React from 'react'
 import { useTranslation } from 'react-i18next'
 
-import type { ConstructionModel } from '@/construction/model'
+import type { ConstructionModelId } from '@/construction/store'
 import { TAG_BASE_PLATE, TAG_DECKING, TAG_ROOF, TAG_SUBFLOOR, TAG_TOP_PLATE, TAG_WALLS } from '@/construction/tags'
 
 import { ConstructionPlanModal } from './ConstructionPlanModal'
@@ -9,13 +9,11 @@ import { TOP_VIEW } from './plan/ConstructionPlan'
 
 export default function TopDownPlanModal({
   title,
-  factory,
-  refreshKey,
+  modelId,
   trigger
 }: {
   title: string
-  factory: () => Promise<ConstructionModel | null>
-  refreshKey: unknown
+  modelId: ConstructionModelId
   trigger: React.ReactNode
 }): React.JSX.Element {
   const { t } = useTranslation('construction')
@@ -23,7 +21,7 @@ export default function TopDownPlanModal({
   return (
     <ConstructionPlanModal
       title={title}
-      constructionModelFactory={factory}
+      modelId={modelId}
       views={[
         {
           view: TOP_VIEW,
@@ -53,7 +51,6 @@ export default function TopDownPlanModal({
       ]}
       midCutActiveDefault
       defaultHiddenTags={['floor-layer', 'wall-layer', 'roof-layer', 'finished-measurement']}
-      refreshKey={refreshKey}
       trigger={trigger}
     />
   )

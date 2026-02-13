@@ -531,7 +531,6 @@
       "prefab-modules": "Prefab Modules",
       "strawhenge": "Strawhenge"
     },
-    "unclearTotalThickness": "? + {{layerThickness, length}} (Layers)",
     "wallConstruction": "Wall Construction"
   }
 }

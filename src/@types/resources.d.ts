@@ -620,7 +620,6 @@ interface Resources {
         "prefab-modules": "Prefab Modules",
         "strawhenge": "Strawhenge"
       },
-      "unclearTotalThickness": "? + {{layerThickness, length}} (Layers)",
       "wallConstruction": "Wall Construction"
     }
   },
@@ -687,6 +686,11 @@ interface Resources {
       "wallAssemblyHeight": "Wall Assembly Height",
       "wallConstruction": "Wall Construction",
       "wallConstructionHeight": "Wall Construction Height"
+    },
+    "modelStatus": {
+      "outdatedWarning": "The construction model is outdated. Changes to the building have not been applied yet.",
+      "rebuilding": "Regenerating model...",
+      "regenerate": "Regenerate"
     },
     "moduleTypes": {
       "double": "Double",
@@ -778,10 +782,6 @@ interface Resources {
       "totalRow": "Total"
     },
     "partsListModal": {
-      "errors": {
-        "failedModulesList": "Failed to generate modules list",
-        "failedPartsList": "Failed to generate parts list"
-      },
       "tabs": {
         "materials": "Materials",
         "modules": "Modules"
@@ -803,11 +803,6 @@ interface Resources {
       "strawTypesHeading": "Straw Types"
     },
     "planModal": {
-      "errors": {
-        "failedModel": "Failed to generate construction model",
-        "failedModulesList": "Failed to generate modules list",
-        "failedPartsList": "Failed to generate parts list"
-      },
       "issuesPanel": {
         "errorsTitle_one": "Errors ({{count}})",
         "errorsTitle_other": "Errors ({{count}})",
