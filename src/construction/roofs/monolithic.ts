@@ -8,6 +8,7 @@ import { type ConstructionModel, mergeModels, transformModel } from '@/construct
 import type { PerimeterConstructionContext } from '@/construction/perimeters/context'
 import {
   type ConstructionResult,
+  assignDeterministicIdsToResults,
   mergeResults,
   resultsToModel,
   yieldAndClip,
@@ -54,6 +55,7 @@ export class MonolithicRoofAssembly extends BaseRoofAssembly<MonolithicRoofConfi
           yieldAndClip(this.constructOverhangLayers(roof, roofSide), clip)
         )
       )
+      assignDeterministicIdsToResults(results, roof.id)
 
       const sideTag = roofSide.side === 'left' ? TAG_ROOF_SIDE_LEFT : TAG_ROOF_SIDE_RIGHT
       return transformModel(resultsToModel(results), roofSide.transform, [sideTag])

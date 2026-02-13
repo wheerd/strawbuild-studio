@@ -8,7 +8,12 @@ import { getMaterialById } from '@/construction/materials/store'
 import { type ThicknessRange, addThickness, getMaterialThickness } from '@/construction/materials/thickness'
 import type { ConstructionModel } from '@/construction/model'
 import { mergeModels } from '@/construction/model'
-import { type ConstructionResult, aggregateResults, yieldElement } from '@/construction/results'
+import {
+  type ConstructionResult,
+  aggregateResults,
+  assignDeterministicIdsToResults,
+  yieldElement
+} from '@/construction/results'
 import { resolveRingBeamAssembly } from '@/construction/ringBeams'
 import { createExtrudedPolygon } from '@/construction/shapes'
 import type { StoreyContext } from '@/construction/storeys/context'
@@ -96,6 +101,7 @@ export class NonStrawbaleWallAssembly extends BaseWallAssembly<NonStrawbaleWallC
       ...metadataResults.filter(r => r.type !== 'element'),
       ...structureElements.flatMap(e => Array.from(yieldElement(e)))
     ]
+    assignDeterministicIdsToResults(allResults, wall.id)
     const aggRes = aggregateResults(allResults)
     const baseModel: ConstructionModel = {
       bounds: Bounds3D.merge(...aggRes.elements.map(e => e.bounds)),

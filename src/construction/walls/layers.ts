@@ -6,7 +6,7 @@ import { WallConstructionArea } from '@/construction/geometry'
 import { LAYER_CONSTRUCTIONS } from '@/construction/layers'
 import type { LayerConfig } from '@/construction/layers/types'
 import { type ConstructionModel, createConstructionGroup } from '@/construction/model'
-import { type ConstructionResult, aggregateResults } from '@/construction/results'
+import { type ConstructionResult, aggregateResults, assignDeterministicIdsToResults } from '@/construction/results'
 import type { StoreyContext } from '@/construction/storeys/context'
 import { TAG_LAYERS, TAG_WALL_LAYER_INSIDE, TAG_WALL_LAYER_OUTSIDE, createTag } from '@/construction/tags'
 import {
@@ -94,7 +94,7 @@ export function constructWallLayers(
 
     const insideLayers = [...layers.insideLayers].reverse()
 
-    insideLayers.forEach(layer => {
+    insideLayers.forEach((layer, layerIndex) => {
       const cumulativeInside = insideOffset + layer.thickness
       const span = computeLayerSpan('inside', cumulativeInside, wall, context)
       const start = Math.min(span.start, previousSpan.start)
@@ -116,6 +116,7 @@ export function constructWallLayers(
       const results = polygonsWithHoles.flatMap(p =>
         runLayerConstruction(p, insideOffset, WALL_LAYER_PLANE, layer, layerDirection)
       )
+      assignDeterministicIdsToResults(results, `${wall.id}_in_${layerIndex}`)
       const layerElements: GroupOrElement[] = []
       for (const result of results) {
         if (result.type === 'element') {
@@ -148,7 +149,7 @@ export function constructWallLayers(
 
     let outsideOffset: Length = wall.thickness - layers.outsideThickness
     let previousSpan = baseOutsideSpan
-    layers.outsideLayers.forEach(layer => {
+    layers.outsideLayers.forEach((layer, layerIndex) => {
       const remainingOutside = wall.thickness - outsideOffset - layer.thickness
       const depth = Math.max(remainingOutside, 0)
       const span = computeLayerSpan('outside', depth, wall, context)
@@ -171,6 +172,7 @@ export function constructWallLayers(
       const results = polygonsWithHoles.flatMap(p =>
         runLayerConstruction(p, outsideOffset, WALL_LAYER_PLANE, layer, layerDirection)
       )
+      assignDeterministicIdsToResults(results, `${wall.id}_out_${layerIndex}`)
       const layerElements: GroupOrElement[] = []
       for (const result of results) {
         if (result.type === 'element') {

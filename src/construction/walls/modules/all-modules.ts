@@ -6,7 +6,7 @@ import { type ThicknessRange, addThickness, getMaterialThickness } from '@/const
 import type { ConstructionModel } from '@/construction/model'
 import { mergeModels } from '@/construction/model'
 import type { ConstructionResult } from '@/construction/results'
-import { resultsToModel } from '@/construction/results'
+import { assignDeterministicIdsToResults, resultsToModel } from '@/construction/results'
 import type { StoreyContext } from '@/construction/storeys/context'
 import { TAG_MODULE_CONSTRUCTION } from '@/construction/tags'
 import type { ModulesWallConfig } from '@/construction/walls'
@@ -30,6 +30,8 @@ export class ModulesWallAssembly extends BaseWallAssembly<ModulesWallConfig> {
         false
       )
     )
+
+    assignDeterministicIdsToResults(allResults, wall.id)
 
     const baseModel = resultsToModel(allResults)
     const layerModel = constructWallLayers(wall, storeyContext, this.config.layers)

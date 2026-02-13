@@ -6,7 +6,7 @@ import { getPerimeterContextCached } from '@/construction/derived/perimeterConte
 import { polygonEdges } from '@/construction/helpers'
 import type { RawMeasurement } from '@/construction/measurements'
 import { type ConstructionModel, mergeModels, transformModel } from '@/construction/model'
-import { resultsToModel } from '@/construction/results'
+import { assignDeterministicIdsToModel, assignDeterministicIdsToResults, resultsToModel } from '@/construction/results'
 import { resolveRingBeamAssembly } from '@/construction/ringBeams'
 import { constructRoof } from '@/construction/roofs'
 import { getWallStoreyContextCached } from '@/construction/storeys/context'
@@ -142,13 +142,17 @@ export function buildFloorCoreModel(perimeterId: PerimeterId): CoreModel {
   const models: ConstructionModel[] = []
 
   const floorModel = storeyContext.floorAssembly.construct(perimeterContext)
+  assignDeterministicIdsToModel(floorModel, `${perimeterId}_floor`)
   models.push(transformModel(floorModel, fromTrans(newVec3(0, 0, storeyContext.wallBottom))))
 
   const floorHoles = perimeterContext.floorOpenings
   const floorPolygons = subtractPolygons([perimeterContext.innerFinishedPolygon], floorHoles)
 
   if (floorPolygons.length > 0) {
-    const floorLayerResults = storeyContext.floorAssembly.constructFloorLayers(floorPolygons)
+    const floorLayerResults = storeyContext.floorAssembly.constructFloorLayers(
+      floorPolygons,
+      `${perimeterId}_floor_top`
+    )
     const floorLayersModel = resultsToModel(Array.from(floorLayerResults))
     models.push(transformModel(floorLayersModel, fromTrans(newVec3(0, 0, storeyContext.floorConstructionTop))))
   }
@@ -166,7 +170,10 @@ export function buildFloorCoreModel(perimeterId: PerimeterId): CoreModel {
     const finalCeilingPolygons = subtractPolygons(ceilingPolygons, floorHoles)
 
     if (finalCeilingPolygons.length > 0) {
-      const ceilingLayerResults = storeyContext.floorAssembly.constructCeilingLayers(finalCeilingPolygons)
+      const ceilingLayerResults = storeyContext.floorAssembly.constructCeilingLayers(
+        finalCeilingPolygons,
+        `${perimeterId}_floor_bottom`
+      )
       const ceilingLayerModel = resultsToModel(Array.from(ceilingLayerResults))
       models.push(transformModel(ceilingLayerModel, fromTrans(newVec3(0, 0, storeyContext.finishedFloorBottom))))
     }
@@ -199,6 +206,7 @@ export function buildBaseRingBeamCoreModel(perimeterId: PerimeterId): CoreModel 
     const ringBeam = Array.from(
       assembly.construct({ perimeter, startIndex: segment.startIndex, endIndex: segment.endIndex }, perimeterContext)
     )
+    assignDeterministicIdsToResults(ringBeam, `${perimeter.id}_baseplate_${segment.startIndex}`)
     const model = transformModel(resultsToModel(ringBeam), fromTrans(newVec3(0, 0, storeyContext.wallBottom)), [
       TAG_BASE_PLATE
     ])
@@ -237,6 +245,7 @@ export function buildTopRingBeamCoreModel(perimeterId: PerimeterId): CoreModel {
         storeyContext
       )
     )
+    assignDeterministicIdsToResults(ringBeam, `${perimeter.id}_topplate_${segment.startIndex}`)
     const model = transformModel(
       resultsToModel(ringBeam),
       fromTrans(newVec3(0, 0, storeyContext.wallTop - assembly.height)),

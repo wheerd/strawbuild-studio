@@ -3,7 +3,7 @@ import { runLayerConstruction } from '@/construction/layers'
 import type { LayerConfig } from '@/construction/layers/types'
 import type { ConstructionModel } from '@/construction/model'
 import type { PerimeterConstructionContext } from '@/construction/perimeters/context'
-import { type ConstructionResult, yieldAsGroup } from '@/construction/results'
+import { type ConstructionResult, yieldAsGroup, yieldWithDeterministicIds } from '@/construction/results'
 import { TAG_FLOOR_LAYER_BOTTOM, TAG_FLOOR_LAYER_TOP, TAG_LAYERS, type Tag, createTag } from '@/construction/tags'
 import { type Length, type PolygonWithHoles2D } from '@/shared/geometry'
 
@@ -18,19 +18,20 @@ export abstract class BaseFloorAssembly<TConfig extends FloorAssemblyConfigBase>
 
   abstract construct: (context: PerimeterConstructionContext) => ConstructionModel;
 
-  *constructCeilingLayers(polygons: PolygonWithHoles2D[]) {
-    yield* this.constructLayers(polygons, this.config.layers.bottomLayers, TAG_FLOOR_LAYER_BOTTOM, true)
+  *constructCeilingLayers(polygons: PolygonWithHoles2D[], idPrefix: string) {
+    yield* this.constructLayers(polygons, this.config.layers.bottomLayers, TAG_FLOOR_LAYER_BOTTOM, true, idPrefix)
   }
 
-  *constructFloorLayers(polygons: PolygonWithHoles2D[]) {
-    yield* this.constructLayers(polygons, this.config.layers.topLayers, TAG_FLOOR_LAYER_TOP, false)
+  *constructFloorLayers(polygons: PolygonWithHoles2D[], idPrefix: string) {
+    yield* this.constructLayers(polygons, this.config.layers.topLayers, TAG_FLOOR_LAYER_TOP, false, idPrefix)
   }
 
   private *constructLayers(
     basePolygons: PolygonWithHoles2D[],
     layers: LayerConfig[],
     layerTag: Tag,
-    reverse: boolean
+    reverse: boolean,
+    idPrefix: string
   ): Generator<ConstructionResult> {
     if (layers.length === 0) {
       return
@@ -38,11 +39,15 @@ export abstract class BaseFloorAssembly<TConfig extends FloorAssemblyConfigBase>
 
     let offset = 0 as Length
     const actualLayers = reverse ? [...layers].reverse() : layers
-    for (const layer of actualLayers) {
+    for (const [layerIndex, layer] of actualLayers.entries()) {
       const nameKey = layer.nameKey
       const customTag = createTag('floor-layer', layer.name, nameKey ? t => t(nameKey, { ns: 'config' }) : layer.name)
       for (const polygon of basePolygons) {
-        yield* yieldAsGroup(runLayerConstruction(polygon, offset, 'xy', layer), [layerTag, TAG_LAYERS, customTag])
+        const results = yieldWithDeterministicIds(
+          runLayerConstruction(polygon, offset, 'xy', layer),
+          `${idPrefix}_${layerIndex}`
+        )
+        yield* yieldAsGroup(results, [layerTag, TAG_LAYERS, customTag])
       }
       if (!layer.overlap) {
         offset += layer.thickness

@@ -9,8 +9,8 @@ import { assertUnreachable } from '@/shared/utils'
 
 export interface FloorAssembly {
   construct: (context: PerimeterConstructionContext) => ConstructionModel
-  constructCeilingLayers: (polygons: PolygonWithHoles2D[]) => Generator<ConstructionResult>
-  constructFloorLayers: (polygons: PolygonWithHoles2D[]) => Generator<ConstructionResult>
+  constructCeilingLayers: (polygons: PolygonWithHoles2D[], idPrefix: string) => Generator<ConstructionResult>
+  constructFloorLayers: (polygons: PolygonWithHoles2D[], idPrefix: string) => Generator<ConstructionResult>
 
   get topLayersThickness(): Length
   get bottomLayersThickness(): Length

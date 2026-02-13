@@ -45,6 +45,43 @@ export const aggregateResults = (results: ConstructionResult[]) => ({
   areas: results.filter(r => r.type === 'area').map(r => r.area)
 })
 
+export function assignDeterministicIdsToResults(results: ConstructionResult[], idPrefix: string): void {
+  for (const result of results) {
+    if (result.type === 'element') {
+      assignDeterministicIds(result.element, idPrefix)
+    }
+  }
+}
+export function* yieldWithDeterministicIds(
+  results: Generator<ConstructionResult>,
+  idPrefix: string
+): Generator<ConstructionResult> {
+  for (const result of results) {
+    if (result.type === 'element') {
+      assignDeterministicIds(result.element, idPrefix)
+    }
+    yield result
+  }
+}
+
+export function assignDeterministicIdsToModel(model: ConstructionModel, idPrefix: string): void {
+  for (const element of model.elements) {
+    assignDeterministicIds(element, idPrefix)
+  }
+}
+
+function assignDeterministicIds(element: GroupOrElement, idPrefix: string): void {
+  if ('children' in element) {
+    for (const child of element.children) {
+      assignDeterministicIds(child, idPrefix)
+    }
+  } else {
+    const { min, max } = element.bounds
+    const bbox = [min[0], min[1], min[2], max[0], max[1], max[2]].map(v => Math.round(v)).join('_')
+    element.id = `ce_${idPrefix}_${bbox}` as ConstructionElementId
+  }
+}
+
 export const resultsToModel = (results: ConstructionResult[], bounds?: Bounds3D): ConstructionModel => {
   const aggregatedResults = aggregateResults(results)
   return {
@@ -65,7 +102,7 @@ export function* mergeResults(...generators: Generator<ConstructionResult>[]): G
   }
 }
 
-export function* yieldElement(element: ConstructionElement | null): Generator<ConstructionResult> {
+export function* yieldElement(element: ConstructionElement | ConstructionGroup | null): Generator<ConstructionResult> {
   if (element) {
     yield { type: 'element', element }
   }

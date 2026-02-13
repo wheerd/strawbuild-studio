@@ -14,6 +14,7 @@ import { type ConstructionModel, mergeModels, transformModel } from '@/construct
 import { type PerimeterConstructionContext, applyWallFaceOffsets } from '@/construction/perimeters/context'
 import {
   type ConstructionResult,
+  assignDeterministicIdsToResults,
   mergeResults,
   resultsToModel,
   yieldAndClip,
@@ -89,6 +90,7 @@ export class PurlinRoofAssembly extends BaseRoofAssembly<PurlinRoofConfig> {
     const edgeRafterMidpoints = this.getRafterMidpoints(roof, roof.ridgeDirection, roof.storeyId)
 
     const purlins = Array.from(this.constructAllPurlins(roof, perimeterContexts, ridgeHeight))
+    assignDeterministicIdsToResults(purlins, roof.id)
 
     const purlinClippingVolume = purlins
       .filter(p => p.type === 'element')
@@ -156,6 +158,7 @@ export class PurlinRoofAssembly extends BaseRoofAssembly<PurlinRoofConfig> {
           yieldAndClip(this.constructOverhangLayers(roof, roofSide), m => m.intersect(roofSideClip))
         )
       )
+      assignDeterministicIdsToResults(results, roof.id)
 
       const sideTag = roofSide.side === 'left' ? TAG_ROOF_SIDE_LEFT : TAG_ROOF_SIDE_RIGHT
       return transformModel(resultsToModel(results), roofSide.transform, [sideTag])
