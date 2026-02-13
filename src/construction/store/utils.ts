@@ -21,7 +21,8 @@ export const createTopPlateId = (perimeterId: PerimeterId): TopPlateId => `rb_to
 export const createBasePlateId = (perimeterId: PerimeterId): BasePlateId => `rb_base_${perimeterId}`
 export const createFullPerimeterId = (perimeterId: PerimeterId): FullPerimeterId => `pfull_${perimeterId}`
 export const createColinearWallId = (wallId: PerimeterWallId): ColinearWallId => `colinear_${wallId}`
-export const createMeasurementId = (perimeterId: PerimeterId): PerimeterMeasurementsId => `meas_${perimeterId}`
+export const createPerimeterMeasurementsId = (perimeterId: PerimeterId): PerimeterMeasurementsId =>
+  `meas_${perimeterId}`
 
 const perimeterIdPattern = /perimeter_[a-zA-Z0-9]+$/
 

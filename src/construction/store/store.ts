@@ -5,19 +5,18 @@ import { getModelActions, subscribeToModelChanges } from '@/building/store'
 import { subscribeToConfigChanges } from '@/construction/config'
 import { subscribeToMaterials } from '@/construction/materials/store'
 import { type ConstructionModel, mergeModels, transformModel } from '@/construction/model'
+import { createPerimeterMeasurementsModel } from '@/construction/perimeters/construction'
+import { constructBasePlate, constructTopPlate } from '@/construction/ringBeams/construction'
 import { IDENTITY } from '@/shared/geometry'
 
 import {
-  buildBaseRingBeamCoreModel,
   buildBuildingComposite,
   buildColinearWallComposite,
   buildFloorCoreModel,
   buildFullPerimeterComposite,
   buildPerimeterComposite,
-  buildPerimeterMeasurementsModel,
   buildRoofCoreModel,
   buildStoreyComposite,
-  buildTopRingBeamCoreModel,
   buildWallCoreModel,
   findColinearWallGroups
 } from './builders'
@@ -34,7 +33,7 @@ import {
   createColinearWallId,
   createFloorId,
   createFullPerimeterId,
-  createMeasurementId,
+  createPerimeterMeasurementsId,
   createTopPlateId
 } from './utils'
 
@@ -76,9 +75,9 @@ export const useConstructionStore = create<ConstructionStore>()((set, get) => ({
           }
 
           models[createFloorId(perimeter.id)] = buildFloorCoreModel(perimeter.id)
-          models[createBasePlateId(perimeter.id)] = buildBaseRingBeamCoreModel(perimeter.id)
-          models[createTopPlateId(perimeter.id)] = buildTopRingBeamCoreModel(perimeter.id)
-          models[createMeasurementId(perimeter.id)] = buildPerimeterMeasurementsModel(perimeter)
+          models[createBasePlateId(perimeter.id)] = { model: constructBasePlate(perimeter.id) }
+          models[createTopPlateId(perimeter.id)] = { model: constructTopPlate(perimeter.id) }
+          models[createPerimeterMeasurementsId(perimeter.id)] = { model: createPerimeterMeasurementsModel(perimeter) }
 
           models[perimeter.id] = buildPerimeterComposite(perimeter)
 
