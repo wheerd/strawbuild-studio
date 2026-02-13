@@ -30,8 +30,7 @@ import type { SegmentInfillMethod, WallLayersConfig } from '@/construction/walls
 import { Bounds3D, IDENTITY, type Length, type Vec3, ZERO_VEC2, newVec2, newVec3 } from '@/shared/geometry'
 import { partial } from '@/test/helpers'
 
-import type { WallCornerInfo } from './construction'
-import { calculateWallCornerInfo, getWallContext } from './corners/corners'
+import { type WallCornerInfo, calculateWallCornerInfo, getWallContext } from './corners/corners'
 import { type WallSegmentConstruction, segmentedWallConstruction } from './segmentation'
 
 // Mock dependencies
@@ -221,6 +220,7 @@ function createMockStoreyContext(storeyHeight: Length = 2500, wallHeight: Length
     floorConstructionTop: 110,
     wallBottom: 100,
     floorBottom: 0,
+    finishedFloorBottom: -20,
     floorAssembly: {} as FloorAssembly
   }
 }

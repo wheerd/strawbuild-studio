@@ -189,6 +189,11 @@ export function ensureConstructionLoaded() {
   setupSubscriptions()
 }
 
+export function getConstructionModel() {
+  ensureConstructionLoaded()
+  return useConstructionStore.getState().actions.getModel(BUILDING_ID)
+}
+
 let subscribed = false
 function setupSubscriptions() {
   if (!subscribed) {

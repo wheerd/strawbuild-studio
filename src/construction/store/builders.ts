@@ -192,7 +192,6 @@ export function buildBaseRingBeamCoreModel(perimeterId: PerimeterId): CoreModel 
 
   const baseSegments = groupConsecutiveWallsByRingBeam(walls.map(w => w.baseRingBeamAssemblyId))
   for (const segment of baseSegments) {
-    if (!segment.assemblyId) continue
     const assemblyConfig = getRingBeamAssemblyById(segment.assemblyId)
     if (!assemblyConfig) continue
 
@@ -227,7 +226,6 @@ export function buildTopRingBeamCoreModel(perimeterId: PerimeterId): CoreModel {
 
   const topSegments = groupConsecutiveWallsByRingBeam(walls.map(w => w.topRingBeamAssemblyId))
   for (const segment of topSegments) {
-    if (!segment.assemblyId) continue
     const assemblyConfig = getRingBeamAssemblyById(segment.assemblyId)
     if (!assemblyConfig) continue
 
@@ -255,7 +253,7 @@ export function buildTopRingBeamCoreModel(perimeterId: PerimeterId): CoreModel {
 }
 
 interface RingBeamSegment {
-  assemblyId?: RingBeamAssemblyId
+  assemblyId: RingBeamAssemblyId
   startIndex: number
   endIndex: number
 }
@@ -283,6 +281,21 @@ function groupConsecutiveWallsByRingBeam(assemblies: (RingBeamAssemblyId | undef
     }
   }
 
+  // Handle wrap-around for circular perimeter
+  if (segments.length > 1) {
+    const firstSegment = segments[0]
+    const lastSegment = segments[segments.length - 1]
+    if (
+      firstSegment.startIndex === 0 &&
+      lastSegment.endIndex === assemblies.length - 1 &&
+      firstSegment.assemblyId === lastSegment.assemblyId
+    ) {
+      // Merge first and last segment (wrap around)
+      segments[0].startIndex = lastSegment.startIndex
+      segments.pop()
+    }
+  }
+
   return segments
 }
 
@@ -297,8 +310,7 @@ export function buildRoofCoreModel(roofId: RoofId): CoreModel {
     }
   }
 
-  const perimeterContexts = roof.referencePerimeter ? [getPerimeterContextCached(roof.referencePerimeter)] : []
-  const model = constructRoof(roof, perimeterContexts)
+  const model = constructRoof(roof)
 
   return {
     model,

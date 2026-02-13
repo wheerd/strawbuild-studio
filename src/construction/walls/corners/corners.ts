@@ -1,8 +1,7 @@
-import type { PerimeterCornerWithGeometry, PerimeterWallWithGeometry } from '@/building/model'
+import type { PerimeterCornerId, PerimeterCornerWithGeometry, PerimeterWallWithGeometry } from '@/building/model'
 import { getModelActions } from '@/building/store'
 import { getConfigActions } from '@/construction/config'
-import type { WallCornerInfo } from '@/construction/walls/construction'
-import { distVec2, scaleAddVec2 } from '@/shared/geometry'
+import { type Length, type LineSegment2D, distVec2, scaleAddVec2 } from '@/shared/geometry'
 
 export interface WallContext {
   startCorner: PerimeterCornerWithGeometry
@@ -23,6 +22,25 @@ export function getWallContext(wall: PerimeterWallWithGeometry): WallContext {
     endCorner,
     nextWall
   }
+}
+
+export interface WallCornerInfo {
+  startCorner: {
+    id: PerimeterCornerId
+    constructedByThisWall: boolean
+    extensionDistance: Length
+  }
+  endCorner: {
+    id: PerimeterCornerId
+    constructedByThisWall: boolean
+    extensionDistance: Length
+  }
+  extensionStart: Length
+  constructionLength: Length
+  extensionEnd: Length
+  // Construction lines for roof queries (adjusted by layer thickness)
+  constructionInsideLine: LineSegment2D
+  constructionOutsideLine: LineSegment2D
 }
 
 export function calculateWallCornerInfo(wall: PerimeterWallWithGeometry, context: WallContext): WallCornerInfo {

@@ -15,6 +15,7 @@ import {
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
+import type { ConstructionModel } from '@/construction/model'
 import { clearSelection } from '@/editor/hooks/useSelectionStore'
 import { pushTool } from '@/editor/tools/system'
 import { cn } from '@/lib/utils'
@@ -77,13 +78,15 @@ export function AutoSaveIndicator(): React.JSX.Element {
 
     try {
       const { exportConstructionGeometryToIfc } = await import('@/exporters/ifc')
-      const { constructModel } = await import('@/construction/storeys/storey')
-      const model = constructModel()
-      if (!model) {
+      const { getConstructionModel } = await import('@/construction/store')
+      let model: ConstructionModel
+      try {
+        model = getConstructionModel()
+      } catch {
         setExportError(t($ => $.autoSave.errors.failedGenerateModel))
-      } else {
-        await exportConstructionGeometryToIfc(model)
+        return
       }
+      await exportConstructionGeometryToIfc(model)
     } catch (error) {
       setExportError(error instanceof Error ? error.message : t($ => $.autoSave.errors.failedIFCExport))
     } finally {

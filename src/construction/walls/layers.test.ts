@@ -14,8 +14,7 @@ import { clayPlasterBase, limePlasterBase } from '@/construction/materials/mater
 import type { ExtrudedShape } from '@/construction/shapes'
 import type { StoreyContext } from '@/construction/storeys/context'
 import { TAG_LAYERS, TAG_WALL_LAYER_INSIDE, TAG_WALL_LAYER_OUTSIDE } from '@/construction/tags'
-import type { WallCornerInfo } from '@/construction/walls'
-import type { WallContext } from '@/construction/walls/corners/corners'
+import type { WallContext, WallCornerInfo } from '@/construction/walls/corners/corners'
 import type { WallLayersConfig } from '@/construction/walls/types'
 import { type Polygon2D, type PolygonWithHoles2D, ZERO_VEC2, newVec2 } from '@/shared/geometry'
 import { partial } from '@/test/helpers'
@@ -125,6 +124,7 @@ const storeyContext: StoreyContext = {
   floorConstructionTop: 20,
   wallBottom: 50,
   floorBottom: -200,
+  finishedFloorBottom: -230,
   floorAssembly: {} as FloorAssembly
 }
 
