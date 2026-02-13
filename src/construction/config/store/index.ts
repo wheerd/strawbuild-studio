@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import { create } from 'zustand'
-import { persist } from 'zustand/middleware'
+import { persist, subscribeWithSelector } from 'zustand/middleware'
 import { immer } from 'zustand/middleware/immer'
 
 import type {
@@ -34,69 +34,71 @@ import { CURRENT_VERSION, applyMigrations } from './migrations'
 export * from './types'
 
 const useConfigStore = create<ConfigStore>()(
-  persist(
-    (set, get, store) => {
-      const strawSlice = immer(createStrawSlice)(set, get, store)
-      const ringBeamSlice = immer(createRingBeamAssembliesSlice)(set, get, store)
-      const wallSlice = immer(createWallAssembliesSlice)(set, get, store)
-      const floorSlice = immer(createFloorAssembliesSlice)(set, get, store)
-      const roofSlice = immer(createRoofAssembliesSlice)(set, get, store)
-      const openingSlice = immer(createOpeningAssembliesSlice)(set, get, store)
-      const timestampsSlice = immer(createTimestampsSlice)(set, get, store)
+  subscribeWithSelector(
+    persist(
+      (set, get, store) => {
+        const strawSlice = immer(createStrawSlice)(set, get, store)
+        const ringBeamSlice = immer(createRingBeamAssembliesSlice)(set, get, store)
+        const wallSlice = immer(createWallAssembliesSlice)(set, get, store)
+        const floorSlice = immer(createFloorAssembliesSlice)(set, get, store)
+        const roofSlice = immer(createRoofAssembliesSlice)(set, get, store)
+        const openingSlice = immer(createOpeningAssembliesSlice)(set, get, store)
+        const timestampsSlice = immer(createTimestampsSlice)(set, get, store)
 
-      return {
-        ...strawSlice,
-        ...ringBeamSlice,
-        ...wallSlice,
-        ...floorSlice,
-        ...roofSlice,
-        ...openingSlice,
-        ...timestampsSlice,
-        actions: {
-          ...strawSlice.actions,
-          ...ringBeamSlice.actions,
-          ...wallSlice.actions,
-          ...floorSlice.actions,
-          ...roofSlice.actions,
-          ...openingSlice.actions,
-          ...timestampsSlice.actions,
-          reset: () => {
-            set(store.getInitialState())
+        return {
+          ...strawSlice,
+          ...ringBeamSlice,
+          ...wallSlice,
+          ...floorSlice,
+          ...roofSlice,
+          ...openingSlice,
+          ...timestampsSlice,
+          actions: {
+            ...strawSlice.actions,
+            ...ringBeamSlice.actions,
+            ...wallSlice.actions,
+            ...floorSlice.actions,
+            ...roofSlice.actions,
+            ...openingSlice.actions,
+            ...timestampsSlice.actions,
+            reset: () => {
+              set(store.getInitialState())
+            }
+          }
+        }
+      },
+      {
+        name: 'strawbaler-config',
+        version: CURRENT_VERSION,
+        partialize: state => ({
+          defaultStrawMaterial: state.defaultStrawMaterial,
+          ringBeamAssemblyConfigs: state.ringBeamAssemblyConfigs,
+          wallAssemblyConfigs: state.wallAssemblyConfigs,
+          floorAssemblyConfigs: state.floorAssemblyConfigs,
+          roofAssemblyConfigs: state.roofAssemblyConfigs,
+          openingAssemblyConfigs: state.openingAssemblyConfigs,
+          defaultBaseRingBeamAssemblyId: state.defaultBaseRingBeamAssemblyId,
+          defaultTopRingBeamAssemblyId: state.defaultTopRingBeamAssemblyId,
+          defaultWallAssemblyId: state.defaultWallAssemblyId,
+          defaultFloorAssemblyId: state.defaultFloorAssemblyId,
+          defaultRoofAssemblyId: state.defaultRoofAssemblyId,
+          defaultOpeningAssemblyId: state.defaultOpeningAssemblyId,
+          timestamps: state.timestamps
+        }),
+        migrate: (persistedState: unknown, version: number) => {
+          if (version === CURRENT_VERSION) {
+            return persistedState as ConfigState
+          }
+
+          try {
+            return applyMigrations(persistedState) as ConfigState
+          } catch (error) {
+            console.error('Migration failed:', error)
+            throw error
           }
         }
       }
-    },
-    {
-      name: 'strawbaler-config',
-      version: CURRENT_VERSION,
-      partialize: state => ({
-        defaultStrawMaterial: state.defaultStrawMaterial,
-        ringBeamAssemblyConfigs: state.ringBeamAssemblyConfigs,
-        wallAssemblyConfigs: state.wallAssemblyConfigs,
-        floorAssemblyConfigs: state.floorAssemblyConfigs,
-        roofAssemblyConfigs: state.roofAssemblyConfigs,
-        openingAssemblyConfigs: state.openingAssemblyConfigs,
-        defaultBaseRingBeamAssemblyId: state.defaultBaseRingBeamAssemblyId,
-        defaultTopRingBeamAssemblyId: state.defaultTopRingBeamAssemblyId,
-        defaultWallAssemblyId: state.defaultWallAssemblyId,
-        defaultFloorAssemblyId: state.defaultFloorAssemblyId,
-        defaultRoofAssemblyId: state.defaultRoofAssemblyId,
-        defaultOpeningAssemblyId: state.defaultOpeningAssemblyId,
-        timestamps: state.timestamps
-      }),
-      migrate: (persistedState: unknown, version: number) => {
-        if (version === CURRENT_VERSION) {
-          return persistedState as ConfigState
-        }
-
-        try {
-          return applyMigrations(persistedState) as ConfigState
-        } catch (error) {
-          console.error('Migration failed:', error)
-          throw error
-        }
-      }
-    }
+    )
   )
 )
 

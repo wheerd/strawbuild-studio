@@ -410,7 +410,7 @@ export const TAG_LAYERS: PredefinedTag = {
   category: 'construction'
 }
 
-// Floor wood
+// Floor parts
 export const TAG_JOIST: PredefinedTag = {
   id: 'floor-part_joist',
   category: 'floor-part'
@@ -443,6 +443,11 @@ export const TAG_SUBFLOOR: PredefinedTag = {
 
 export const TAG_FLOOR_CEILING_SHEATHING: PredefinedTag = {
   id: 'floor-part_ceiling-sheathing',
+  category: 'floor-part'
+}
+
+export const TAG_FLOOR_SLAB: PredefinedTag = {
+  id: 'floor-part_slab',
   category: 'floor-part'
 }
 

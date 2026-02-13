@@ -168,14 +168,13 @@ export function buildFloorCoreModel(perimeterId: PerimeterId): CoreModel {
     if (finalCeilingPolygons.length > 0) {
       const ceilingLayerResults = storeyContext.floorAssembly.constructCeilingLayers(finalCeilingPolygons)
       const ceilingLayerModel = resultsToModel(Array.from(ceilingLayerResults))
-      models.push(transformModel(ceilingLayerModel, fromTrans(newVec3(0, 0, storeyContext.floorBottom))))
+      models.push(transformModel(ceilingLayerModel, fromTrans(newVec3(0, 0, storeyContext.finishedFloorBottom))))
     }
   }
 
   return {
     model: mergeModels(...models),
-    tags: [TAG_FLOOR, ...storeyContext.floorAssembly.tags],
-    sourceId: perimeterId
+    tags: [TAG_FLOOR, ...storeyContext.floorAssembly.tags]
   }
 }
 
@@ -339,7 +338,7 @@ export function buildPerimeterComposite(perimeter: PerimeterWithGeometry): Compo
   }
 }
 
-export function buildMeasurementCoreModel(perimeter: PerimeterWithGeometry): CoreModel {
+export function buildPerimeterMeasurementsModel(perimeter: PerimeterWithGeometry): CoreModel {
   const { getPerimeterWallById, getPerimeterCornerById } = getModelActions()
   const storeyContext = getWallStoreyContextCached(perimeter.storeyId)
   const perimeterContext = getPerimeterContextCached(perimeter.id)
@@ -443,12 +442,11 @@ export function buildFullPerimeterComposite(perimeterId: PerimeterId): Composite
   }
 
   return {
-    models: childModels,
-    sourceId: `pfull_${perimeterId}`
+    models: childModels
   }
 }
 
-export function buildStoreyComposite(storeyId: StoreyId, elevation: number): CompositeModel {
+export function buildStoreyComposite(storeyId: StoreyId): CompositeModel {
   const { getPerimetersByStorey, getRoofsByStorey } = getModelActions()
   const storeyContext = getWallStoreyContextCached(storeyId)
 
@@ -458,7 +456,7 @@ export function buildStoreyComposite(storeyId: StoreyId, elevation: number): Com
   for (const perimeter of perimeters) {
     childModels.push({
       id: perimeter.id,
-      transform: fromTrans(newVec3(0, 0, elevation))
+      transform: IDENTITY
     })
   }
 
@@ -466,7 +464,7 @@ export function buildStoreyComposite(storeyId: StoreyId, elevation: number): Com
   for (const roof of roofs) {
     childModels.push({
       id: roof.id,
-      transform: fromTrans(newVec3(0, 0, elevation + storeyContext.roofBottom))
+      transform: fromTrans(newVec3(0, 0, storeyContext.roofBottom))
     })
   }
 

@@ -13,8 +13,8 @@ import {
   buildColinearWallComposite,
   buildFloorCoreModel,
   buildFullPerimeterComposite,
-  buildMeasurementCoreModel,
   buildPerimeterComposite,
+  buildPerimeterMeasurementsModel,
   buildRoofCoreModel,
   buildStoreyComposite,
   buildTopRingBeamCoreModel,
@@ -45,10 +45,11 @@ export const useConstructionStore = create<ConstructionStore>()((set, get) => ({
   generatedAt: 0,
   lastSourceChange: Date.now(),
   hasModel: false,
+  rebuilding: false,
 
   actions: {
     rebuildModel(): void {
-      set(state => ({ ...state, hasModel: false }))
+      set(state => ({ ...state, hasModel: false, rebuilding: true }))
 
       const { getStoreysOrderedByLevel, getPerimetersByStorey, getRoofsByStorey } = getModelActions()
 
@@ -77,7 +78,7 @@ export const useConstructionStore = create<ConstructionStore>()((set, get) => ({
           models[createFloorId(perimeter.id)] = buildFloorCoreModel(perimeter.id)
           models[createBasePlateId(perimeter.id)] = buildBaseRingBeamCoreModel(perimeter.id)
           models[createTopPlateId(perimeter.id)] = buildTopRingBeamCoreModel(perimeter.id)
-          models[createMeasurementId(perimeter.id)] = buildMeasurementCoreModel(perimeter)
+          models[createMeasurementId(perimeter.id)] = buildPerimeterMeasurementsModel(perimeter)
 
           models[perimeter.id] = buildPerimeterComposite(perimeter)
 
@@ -91,12 +92,7 @@ export const useConstructionStore = create<ConstructionStore>()((set, get) => ({
       }
 
       for (const storey of storeys) {
-        let elevation = 0
-        for (const s of storeys) {
-          if (s.id === storey.id) break
-          elevation += s.floorHeight
-        }
-        models[storey.id] = buildStoreyComposite(storey.id, elevation)
+        models[storey.id] = buildStoreyComposite(storey.id)
       }
 
       models[BUILDING_ID] = buildBuildingComposite()
@@ -107,7 +103,8 @@ export const useConstructionStore = create<ConstructionStore>()((set, get) => ({
         conlinearMapping,
         cache: {},
         generatedAt: Date.now(),
-        hasModel: true
+        hasModel: true,
+        rebuilding: false
       }))
     },
 
@@ -165,22 +162,16 @@ function composeComposite(
   cache: ConstructionStoreState['cache']
 ): ConstructionModel {
   const childModels = composite.models.map(({ id, transform }) => {
-    let child: ConstructionModel
     const cachedChild = cache[id]
-    if (cachedChild) {
-      child = cachedChild
-    } else {
-      const entry = models[id]
-      if (!entry) {
-        throw new Error(`Model ${id} not found in models`)
-      }
-      if ('model' in entry) {
-        child = entry.model
-      } else {
-        child = composeComposite(entry, models, cache)
-      }
+    if (cachedChild) transformModel(cachedChild, transform)
+
+    const entry = models[id]
+    if (!entry) {
+      throw new Error(`Model ${id} not found in models`)
     }
-    return transformModel(child, transform)
+
+    const child = 'model' in entry ? entry.model : composeComposite(entry, models, cache)
+    return transformModel(child, transform, entry.tags, entry.partInfo, entry.sourceId)
   })
 
   return transformModel(mergeModels(...childModels), IDENTITY, composite.tags, undefined, composite.sourceId)
@@ -192,16 +183,20 @@ export function getConstructionActions() {
 
 export function ensureConstructionLoaded() {
   const state = useConstructionStore.getState()
-  if (state.generatedAt === 0) {
+  if (!state.hasModel && !state.rebuilding) {
     state.actions.rebuildModel()
-    setupSubscriptions()
   }
+  setupSubscriptions()
 }
 
+let subscribed = false
 function setupSubscriptions() {
-  subscribeToModelChanges(updateLastSourceChange)
-  subscribeToConfigChanges(updateLastSourceChange)
-  subscribeToMaterials(updateLastSourceChange)
+  if (!subscribed) {
+    subscribeToModelChanges(updateLastSourceChange)
+    subscribeToConfigChanges(updateLastSourceChange)
+    subscribeToMaterials(updateLastSourceChange)
+    subscribed = true
+  }
 }
 
 function updateLastSourceChange() {

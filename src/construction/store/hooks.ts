@@ -53,5 +53,8 @@ export function useIsConstructionOutdated(): boolean {
 }
 
 export function useEnsureConstructionLoaded(): void {
-  useEffect(ensureConstructionLoaded, [])
+  const notInitialized = useConstructionStore(state => !state.hasModel && !state.rebuilding)
+  useEffect(() => {
+    if (notInitialized) ensureConstructionLoaded()
+  }, [notInitialized])
 }

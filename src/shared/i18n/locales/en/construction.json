@@ -260,6 +260,7 @@
     "floor-part_infill": "Wall Infill",
     "floor-part_joist": "Joist",
     "floor-part_opening-frame": "Opening Frame",
+    "floor-part_slab": "Slab",
     "floor-part_subfloor": "Subfloor",
     "floor-part_wall-beam": "Wall Beam",
     "module-part_frame": "Frame",

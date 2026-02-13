@@ -57,6 +57,7 @@ export interface ConstructionStoreState {
   generatedAt: number
   lastSourceChange: number
   hasModel: boolean
+  rebuilding: boolean
 }
 
 export interface ConstructionStoreActions {
