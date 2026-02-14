@@ -1,5 +1,5 @@
 import type { Material } from '@/construction/materials/material'
-import type { AggregatedPartItem, PartId } from '@/construction/parts'
+import type { AggregatedPartItem, PartId } from '@/construction/parts/types'
 import type { Volume } from '@/shared/geometry'
 
 export const calculateWeight = (volume: Volume, material: Material): number | undefined => {

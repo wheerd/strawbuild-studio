@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState } from 'react'
 
-import type { PartId } from '@/construction/parts'
+import type { PartId } from '@/construction/parts/types'
 import type { ConstructionIssueId } from '@/construction/results'
 
 interface PlanHighlightContextValue {

@@ -4,7 +4,7 @@ import { type ConstructionElement, createConstructionElement, createCuboidElemen
 import { type WallConstructionArea } from '@/construction/geometry'
 import { buildAndCacheManifold } from '@/construction/manifold/builders'
 import type { MaterialId } from '@/construction/materials/material'
-import type { InitialPartInfo } from '@/construction/parts'
+import type { InitialPartInfo } from '@/construction/parts/types'
 import type { Tag } from '@/construction/tags'
 import {
   Bounds2D,

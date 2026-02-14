@@ -5,7 +5,7 @@ import type { Namespace, TFunction } from 'i18next'
 import { calculateWeight } from '@/construction/components/parts/utils'
 import type { Material, MaterialType, StrawbaleMaterial } from '@/construction/materials/material'
 import { getMaterialById } from '@/construction/materials/store'
-import type { AggregatedPartItem, StrawCategory } from '@/construction/parts'
+import type { AggregatedPartItem, StrawCategory } from '@/construction/parts/types'
 import type { TranslatableString } from '@/shared/i18n/TranslatableString'
 import { formatDimensions2D, formatLength } from '@/shared/i18n/formatters'
 

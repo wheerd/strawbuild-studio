@@ -9,7 +9,7 @@ import { ConstructionPartsList } from '@/construction/components/parts/Construct
 import { ConstructionVirtualPartsList } from '@/construction/components/parts/ConstructionVirtualPartsList'
 import { IssueDescriptionPanel } from '@/construction/components/plan/IssueDescriptionPanel'
 import { PartHighlightPanel } from '@/construction/components/plan/PartHighlightPanel'
-import type { PartId } from '@/construction/parts'
+import type { PartId } from '@/construction/parts/types'
 import { type ConstructionModelId, useConstructionModel } from '@/construction/store'
 import type { TagOrCategory } from '@/construction/tags'
 import { elementSizeRef } from '@/shared/hooks/useElementSize'

@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { Table } from '@/components/ui/table'
 import { ceilDiv, summarizeStrawbaleParts } from '@/construction/components/parts/utils/aggregation'
 import type { StrawbaleMaterial } from '@/construction/materials/material'
-import type { AggregatedPartItem } from '@/construction/parts'
+import type { AggregatedPartItem } from '@/construction/parts/types'
 import { useFormatters } from '@/shared/i18n/useFormatters'
 
 type StrawCategory = NonNullable<AggregatedPartItem['strawCategory']>
