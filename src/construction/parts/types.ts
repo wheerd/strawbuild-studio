@@ -1,6 +1,4 @@
-import type { ConstructionElementId } from '@/construction/elements'
-import type { CrossSection, MaterialId } from '@/construction/materials/material'
-import type { Area, Length, PolygonWithHoles2D, Vec3, Volume } from '@/shared/geometry'
+import type { PolygonWithHoles2D, Vec3 } from '@/shared/geometry'
 import type { TranslatableString } from '@/shared/i18n/TranslatableString'
 
 export type PartId = string & { readonly brand: unique symbol }
@@ -29,55 +27,6 @@ export interface InitialPartInfo {
 
 export type PartInfo = InitialPartInfo | FullPartInfo
 
-export interface MaterialParts {
-  material: MaterialId
-  totalQuantity: number
-  totalVolume: Volume
-  totalArea?: Length
-  totalLength?: Length
-  parts: Record<PartId, MaterialPartItem>
-  usages: Record<PartId, MaterialPartItem>
-}
-
-export interface PartItem {
-  partId: PartId
-  type: string
-  subtype?: string
-  description?: TranslatableString
-  label: string // A, B, C, ...
-  size: Vec3
-  elements: ConstructionElementId[]
-  quantity: number
-  area?: Area
-  totalArea?: Area
-}
-
 export type PartIssue = 'CrossSectionMismatch' | 'LengthExceedsAvailable' | 'ThicknessMismatch' | 'SheetSizeExceeded'
 
 export type StrawCategory = 'full' | 'partial' | 'flakes' | 'stuffed'
-
-export interface MaterialPartItem extends PartItem {
-  material: MaterialId
-  totalVolume: Volume
-  area?: Length
-  totalArea?: Length
-  length?: Length
-  totalLength?: Length
-  crossSection?: CrossSection
-  thickness?: Length
-  strawCategory?: StrawCategory
-  sideFaces?: SideFace[]
-  issue?: PartIssue
-  requiresSinglePiece?: boolean
-}
-
-export interface MaterialUsage {
-  key: string
-  type: string
-  label: string // A, B, C, ...
-  totalVolume: Volume
-  totalArea?: Area
-}
-
-export type MaterialPartsList = Record<MaterialId, MaterialParts>
-export type VirtualPartsList = Record<PartId, PartItem>

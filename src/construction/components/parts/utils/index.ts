@@ -1,5 +1,6 @@
 import type { Material } from '@/construction/materials/material'
-import type { MaterialPartItem, PartId } from '@/construction/parts/types'
+import type { AggregatedPartItem } from '@/construction/parts'
+import type { PartId } from '@/construction/parts/types'
 import type { Volume } from '@/shared/geometry'
 
 export const calculateWeight = (volume: Volume, material: Material): number | undefined => {
@@ -7,7 +8,7 @@ export const calculateWeight = (volume: Volume, material: Material): number | un
   return (volume * material.density) / 1_000_000_000
 }
 
-export const getIssueSeverity = (part: MaterialPartItem): 'error' | 'warning' | undefined => {
+export const getIssueSeverity = (part: AggregatedPartItem): 'error' | 'warning' | undefined => {
   if (!part.issue) return undefined
 
   // Size-related issues can be warnings if multiple pieces are allowed

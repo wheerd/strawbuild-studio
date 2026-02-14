@@ -6,7 +6,7 @@ import { Table } from '@/components/ui/table'
 import { Tooltip } from '@/components/ui/tooltip'
 import { SheetPartModal } from '@/construction/components/parts/SheetPartModal'
 import type { SheetMaterial } from '@/construction/materials/material'
-import type { MaterialPartItem, PartId } from '@/construction/parts'
+import type { AggregatedPartItem, PartId } from '@/construction/parts'
 import { SawIcon } from '@/shared/components/Icons'
 import { type Vec3, isZeroVec3 } from '@/shared/geometry'
 import { useFormatters } from '@/shared/i18n/useFormatters'
@@ -45,7 +45,7 @@ export default function SheetPartsTable({
   material,
   onViewInPlan
 }: {
-  parts: MaterialPartItem[]
+  parts: AggregatedPartItem[]
   material: SheetMaterial
   onViewInPlan?: (partId: PartId) => void
 }) {

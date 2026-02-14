@@ -7,7 +7,7 @@ import { Table } from '@/components/ui/table'
 import { Tooltip } from '@/components/ui/tooltip'
 import { PartCutModal } from '@/construction/components/parts/PartCutModal'
 import type { DimensionalMaterial } from '@/construction/materials/material'
-import type { MaterialPartItem, PartId } from '@/construction/parts'
+import type { AggregatedPartItem, PartId } from '@/construction/parts'
 import { SawIcon } from '@/shared/components/Icons'
 import { Bounds2D, type Polygon2D } from '@/shared/geometry'
 import { useFormatters } from '@/shared/i18n/useFormatters'
@@ -87,7 +87,7 @@ export default function DimensionalPartsTable({
   material,
   onViewInPlan
 }: {
-  parts: MaterialPartItem[]
+  parts: AggregatedPartItem[]
   material: DimensionalMaterial
   onViewInPlan?: (partId: PartId) => void
 }) {

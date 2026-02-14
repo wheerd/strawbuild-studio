@@ -6,6 +6,7 @@ import {
   TAG_FLOOR_LAYER_TOP,
   TAG_FULL_BALE,
   TAG_INFILL,
+  TAG_MODULE,
   TAG_MODULE_INFILL,
   TAG_PARTIAL_BALE,
   TAG_ROOF_INFILL,
@@ -56,7 +57,8 @@ const TAG_MAPPING: Record<string, TagMapping> = {
   [TAG_FLOOR_LAYER_BOTTOM.id]: { type: 'ceiling-layer', descriptionTagCategory: 'floor-layer' },
   [TAG_ROOF_LAYER_TOP.id]: { type: 'roof-layer-top', descriptionTagCategory: 'roof-layer' },
   [TAG_ROOF_LAYER_INSIDE.id]: { type: 'roof-layer-ceiling', descriptionTagCategory: 'roof-layer' },
-  [TAG_ROOF_LAYER_OVERHANG.id]: { type: 'roof-layer-overhang', descriptionTagCategory: 'roof-layer' }
+  [TAG_ROOF_LAYER_OVERHANG.id]: { type: 'roof-layer-overhang', descriptionTagCategory: 'roof-layer' },
+  [TAG_MODULE.id]: { type: 'module', descriptionTagCategory: 'module-type' }
 }
 
 export const indexToLabel = (index: number): string => {
@@ -215,6 +217,9 @@ export function computeMaterialMetrics(
       thickness = sorted[0]
       volume = thickness * area
     }
+  } else if (materialDefinition?.type === 'prefab') {
+    area = sideFaces?.[0] ? calculatePolygonWithHolesArea(sideFaces[0].polygon) : boxSize[0] * boxSize[2]
+    volume = area * boxSize[1]
   } else {
     volume = computeVolume(boxSize)
   }

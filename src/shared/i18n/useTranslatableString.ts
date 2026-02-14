@@ -11,7 +11,7 @@ import type { TranslatableString } from './TranslatableString'
  * @returns The resolved/translated string
  */
 export function useTranslatableString(value: TranslatableString | null | undefined): string {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   if (value === null || value === undefined) return ''
-  return typeof value === 'function' ? value(t) : value
+  return typeof value === 'function' ? value(t, i18n.language) : value
 }

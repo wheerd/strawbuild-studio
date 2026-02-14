@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next'
 
 import { Button } from '@/components/ui/button'
 import { Table } from '@/components/ui/table'
-import type { MaterialPartItem, PartId } from '@/construction/parts'
+import type { AggregatedPartItem, PartId } from '@/construction/parts'
 import { useTranslatableString } from '@/shared/i18n/useTranslatableString'
 
 import { canHighlightPart } from './utils'
@@ -12,7 +12,7 @@ export default function GenericPartsTable({
   parts,
   onViewInPlan
 }: {
-  parts: MaterialPartItem[]
+  parts: AggregatedPartItem[]
   onViewInPlan?: (partId: PartId) => void
 }) {
   const { t } = useTranslation('construction')
