@@ -1,14 +1,11 @@
 import { create } from 'zustand'
 
-import type { PerimeterId, RoofId, StoreyId, WallId } from '@/building/model/ids'
-import type { ConstructionElementId } from '@/construction/elements'
-import type { MaterialId } from '@/construction/materials/material'
 import type { PartId } from '@/construction/parts/types'
 import { ensureConstructionLoaded, getConstructionModel } from '@/construction/store'
 import { useConstructionStore } from '@/construction/store/store'
-import type { Vec3 } from '@/shared/geometry'
 
-import type { LocationFilter, PartDefinition, PartOccurrence, PartsStore, PartsStoreState } from './types'
+import { generatePartsData } from './generation'
+import type { LocationFilter, PartDefinition, PartsStore, PartsStoreState } from './types'
 
 const indexToLabel = (index: number): string => {
   const alphabetLength = 26
@@ -24,15 +21,8 @@ const indexToLabel = (index: number): string => {
   return label
 }
 
-const getMaterialGroupId = (materialId: string): string => `material:${materialId}`
-
-interface ElementContext {
-  storeyId?: StoreyId
-  perimeterId?: PerimeterId
-  wallId?: WallId
-  roofId?: RoofId
-  assemblyId?: string
-}
+const getGroupId = (definition: PartDefinition): string =>
+  definition.source === 'group' ? 'virtual' : `material:${definition.materialId}`
 
 export const usePartsStore = create<PartsStore>()((set, get) => ({
   definitions: {},
@@ -49,51 +39,24 @@ export const usePartsStore = create<PartsStore>()((set, get) => ({
 
       ensureConstructionLoaded()
       const model = getConstructionModel()
-
-      const definitions: PartsStoreState['definitions'] = {}
-      const occurrences: PartOccurrence[] = []
+      const { definitions, occurrences } = generatePartsData(model)
       const currentState = get()
 
-      const processElement = (element: { children?: unknown[]; [key: string]: unknown }, context: ElementContext) => {
-        if ('children' in element && element.children) {
-          const newContext = { ...context }
-          for (const child of element.children as (typeof element)[]) {
-            processElement(child, newContext)
-          }
-          return
+      const newLabels: Record<PartId, string> = { ...currentState.labels }
+
+      for (const partId of Object.keys(definitions) as PartId[]) {
+        if (!(partId in newLabels)) {
+          const definition = definitions[partId]
+          const groupId = getGroupId(definition)
+          assignLabelToDefinition(newLabels, currentState, partId, groupId)
         }
-
-        const partInfo = element.partInfo as { id?: PartId; type?: string; [key: string]: unknown } | undefined
-        const partId = partInfo?.id
-        if (!partId) return
-
-        const material = element.material as MaterialId
-        const elementId = element.id as ConstructionElementId
-
-        if (!(partId in definitions)) {
-          definitions[partId] = createPartDefinition(element, partId)
-          assignLabelToState(currentState, partId, getMaterialGroupId(material))
-        }
-
-        occurrences.push({
-          elementId,
-          partId,
-          storeyId: context.storeyId,
-          perimeterId: context.perimeterId,
-          wallId: context.wallId,
-          roofId: context.roofId,
-          assemblyId: context.assemblyId
-        })
-      }
-
-      for (const element of model.elements) {
-        processElement(element as (typeof model.elements)[number] & Record<string, unknown>, {})
       }
 
       set(state => ({
         ...state,
         definitions,
         occurrences,
+        labels: newLabels,
         hasParts: true,
         generatedAt: Date.now()
       }))
@@ -116,8 +79,8 @@ export const usePartsStore = create<PartsStore>()((set, get) => ({
             const typedPartId = partId as PartId
             if (typedPartId in state.definitions) {
               const definition = state.definitions[typedPartId]
-              const materialGroupId = getMaterialGroupId(definition.materialId)
-              if (materialGroupId !== groupId) {
+              const newGroupId = getGroupId(definition)
+              if (newGroupId !== groupId) {
                 newLabels[typedPartId] = label
               }
             }
@@ -125,18 +88,18 @@ export const usePartsStore = create<PartsStore>()((set, get) => ({
         }
 
         for (const [partId, definition] of Object.entries(state.definitions)) {
-          const materialGroupId = getMaterialGroupId(definition.materialId)
-          if (groupId && materialGroupId !== groupId) continue
+          const gid = getGroupId(definition)
+          if (groupId && gid !== groupId) continue
 
           const typedPartId = partId as PartId
-          const nextIndex = newNextLabelIndexByGroup[materialGroupId] ?? 0
+          const nextIndex = newNextLabelIndexByGroup[gid] ?? 0
           const label = indexToLabel(nextIndex)
 
           newLabels[typedPartId] = label
-          newNextLabelIndexByGroup[materialGroupId] = nextIndex + 1
+          newNextLabelIndexByGroup[gid] = nextIndex + 1
 
-          newUsedLabelsByGroup[materialGroupId] ??= []
-          newUsedLabelsByGroup[materialGroupId].push(label)
+          newUsedLabelsByGroup[gid] ??= []
+          newUsedLabelsByGroup[gid].push(label)
         }
 
         return {
@@ -148,7 +111,7 @@ export const usePartsStore = create<PartsStore>()((set, get) => ({
       })
     },
 
-    getFilteredOccurrences(filter: LocationFilter): PartOccurrence[] {
+    getFilteredOccurrences(filter: LocationFilter) {
       const { occurrences } = get()
       return occurrences.filter(occ => {
         if (filter.storeyId && occ.storeyId !== filter.storeyId) return false
@@ -161,36 +124,16 @@ export const usePartsStore = create<PartsStore>()((set, get) => ({
   }
 }))
 
-function createPartDefinition(element: Record<string, unknown>, partId: PartId): PartDefinition {
-  const bounds = element.bounds as { size?: [number, number, number] } | undefined
-  const size = (bounds?.size ?? [0, 0, 0]) as unknown as Vec3
-  const partInfo = element.partInfo as Record<string, unknown> | undefined
-
-  return {
-    partId,
-    size,
-    volume: size[0] * size[1] * size[2],
-    area: undefined,
-    crossSection: undefined,
-    thickness: undefined,
-    sideFaces: partInfo?.sideFaces as PartDefinition['sideFaces'],
-    requiresSinglePiece: partInfo?.requiresSinglePiece as boolean | undefined,
-    materialId: element.material as MaterialId,
-    type: (partInfo?.type as string | undefined) ?? 'unknown',
-    subtype: partInfo?.subtype as string | undefined,
-    description: partInfo?.description as PartDefinition['description'],
-    strawCategory: undefined,
-    issue: undefined
-  }
-}
-
-function assignLabelToState(state: PartsStoreState, partId: PartId, groupId: string): void {
-  if (partId in state.labels) return
-
+function assignLabelToDefinition(
+  newLabels: Record<PartId, string>,
+  state: PartsStoreState,
+  partId: PartId,
+  groupId: string
+): void {
   const nextIndex = state.nextLabelIndexByGroup[groupId] ?? 0
   const label = indexToLabel(nextIndex)
 
-  state.labels[partId] = label
+  newLabels[partId] = label
   state.nextLabelIndexByGroup[groupId] = nextIndex + 1
 
   state.usedLabelsByGroup[groupId] ??= []

@@ -1,12 +1,20 @@
 import type { PerimeterId, RoofId, StoreyId, WallId } from '@/building/model/ids'
 import type { ConstructionElementId } from '@/construction/elements'
-import type { CrossSection, MaterialId } from '@/construction/materials/material'
+import type { CrossSection, Material, MaterialId } from '@/construction/materials/material'
 import type { PartId, PartIssue, SideFace, StrawCategory } from '@/construction/parts/types'
 import type { Area, Length, Vec3, Volume } from '@/shared/geometry'
 import type { TranslatableString } from '@/shared/i18n/TranslatableString'
 
 export interface PartDefinition {
   partId: PartId
+  materialId?: MaterialId
+  materialType?: Material['type']
+  source: 'element' | 'group'
+  type: string
+  subtype?: string
+  description?: TranslatableString
+  strawCategory?: StrawCategory
+  issue?: PartIssue
   size: Vec3
   volume: Volume
   area?: Area
@@ -14,23 +22,16 @@ export interface PartDefinition {
   thickness?: Length
   sideFaces?: SideFace[]
   requiresSinglePiece?: boolean
-  materialId: MaterialId
-  type: string
-  subtype?: string
-  description?: TranslatableString
-  strawCategory?: StrawCategory
-  issue?: PartIssue
 }
 
 export interface PartOccurrence {
   elementId: ConstructionElementId
   partId: PartId
+  virtual: boolean
   storeyId?: StoreyId
   perimeterId?: PerimeterId
   wallId?: WallId
   roofId?: RoofId
-  assemblyId?: string
-  layerPosition?: 'inside' | 'outside' | 'top' | 'bottom' | 'overhang'
 }
 
 export interface LocationFilter {

@@ -159,8 +159,8 @@ describe('generateMaterialPartsList', () => {
     const model = createModel([fullElement, partialElement])
     const strawParts = generateMaterialPartsList(model)[strawbale.id].parts
 
-    const fullBucket = strawParts['strawbale:full' as PartId]
-    const partialBucket = strawParts['strawbale:partial' as PartId]
+    const fullBucket = strawParts['strawbale-material_strawbale:full' as PartId]
+    const partialBucket = strawParts['strawbale-material_strawbale:partial' as PartId]
 
     expect(fullBucket).toBeDefined()
     expect(fullBucket.type).toBe('strawbale-full')
