@@ -18,6 +18,7 @@ export interface PartDefinition {
   size: Vec3
   volume: Volume
   area?: Area
+  length?: Length
   crossSection?: CrossSection
   thickness?: Length
   sideFaces?: SideFace[]
@@ -39,6 +40,19 @@ export interface LocationFilter {
   perimeterId?: PerimeterId
   wallId?: WallId
   roofId?: RoofId
+}
+
+export interface PartsFilter extends LocationFilter {
+  virtual?: boolean
+}
+
+export interface AggregatedPartItem extends PartDefinition {
+  label: string
+  quantity: number
+  elementIds: ConstructionElementId[]
+  totalVolume: Volume
+  totalArea?: Area
+  totalLength?: Length
 }
 
 export interface PartsStoreState {

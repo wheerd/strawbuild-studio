@@ -10,7 +10,6 @@ import { ConstructionVirtualPartsList } from '@/construction/components/parts/Co
 import { IssueDescriptionPanel } from '@/construction/components/plan/IssueDescriptionPanel'
 import { PartHighlightPanel } from '@/construction/components/plan/PartHighlightPanel'
 import type { PartId } from '@/construction/parts'
-import { generateMaterialPartsList, generateVirtualPartsList } from '@/construction/parts'
 import { type ConstructionModelId, useConstructionModel } from '@/construction/store'
 import type { TagOrCategory } from '@/construction/tags'
 import { elementSizeRef } from '@/shared/hooks/useElementSize'
@@ -105,9 +104,6 @@ function ModalContent({
 
   const model = useConstructionModel(modelId)
 
-  const materials = model ? generateMaterialPartsList(model) : null
-  const virtual = model ? generateVirtualPartsList(model) : null
-
   const handleViewInPlan = (partId: string) => {
     setHighlightedPartId(partId as PartId)
     setActiveTab('plan')
@@ -155,18 +151,10 @@ function ModalContent({
         )}
       </Tabs.Content>
       <Tabs.Content value="parts" className="flex min-h-0 flex-1 flex-col overflow-auto pt-3">
-        {materials ? (
-          <ConstructionPartsList partsList={materials} onViewInPlan={handleViewInPlan} />
-        ) : (
-          <PartsSkeleton />
-        )}
+        {model ? <ConstructionPartsList modelId={modelId} onViewInPlan={handleViewInPlan} /> : <PartsSkeleton />}
       </Tabs.Content>
       <Tabs.Content value="modules" className="flex min-h-0 flex-1 flex-col overflow-auto pt-3">
-        {virtual ? (
-          <ConstructionVirtualPartsList partsList={virtual} onViewInPlan={handleViewInPlan} />
-        ) : (
-          <PartsSkeleton />
-        )}
+        {model ? <ConstructionVirtualPartsList modelId={modelId} onViewInPlan={handleViewInPlan} /> : <PartsSkeleton />}
       </Tabs.Content>
     </Tabs.Root>
   )

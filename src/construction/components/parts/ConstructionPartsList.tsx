@@ -17,7 +17,8 @@ import { getMaterialTypeIcon, useGetMaterialTypeName } from '@/construction/mate
 import type { DimensionalMaterial, Material, MaterialType, SheetMaterial } from '@/construction/materials/material'
 import { useMaterialsMap } from '@/construction/materials/store'
 import { useMaterialName } from '@/construction/materials/useMaterialName'
-import type { MaterialPartItem, MaterialParts, MaterialPartsList, PartId } from '@/construction/parts'
+import type { MaterialPartItem, MaterialParts, PartId } from '@/construction/parts'
+import { type ConstructionModelId, toMaterialPartsList, useMaterialParts } from '@/construction/parts/store'
 import { useFormatters } from '@/shared/i18n/useFormatters'
 
 import { calculateWeight } from './utils'
@@ -25,7 +26,7 @@ import { calculateWeight } from './utils'
 type BadgeColor = React.ComponentProps<typeof Badge>['color']
 
 interface ConstructionPartsListProps {
-  partsList: MaterialPartsList
+  modelId?: ConstructionModelId
   onViewInPlan?: (partId: PartId) => void
 }
 
@@ -46,16 +47,6 @@ interface MaterialGroup {
   issueMessage?: string
   parts: MaterialPartItem[]
   metrics: RowMetrics & { partCount: number }
-}
-
-interface Formatters {
-  formatLength: (mm: number) => string
-  formatLengthInMeters: (mm: number) => string
-  formatArea: (mm2: number) => string
-  formatVolume: (mm3: number) => string
-  formatDimensions2D: (dimensions: [number, number]) => string
-  formatDimensions3D: (dimensions: [number, number, number]) => string
-  formatWeight: (kg: number) => string
 }
 
 const createGroup = ({
@@ -111,11 +102,11 @@ const computeGroupMetrics = (parts: MaterialPartItem[], material: Material): Row
     totalQuantity += part.quantity
     totalVolume += part.totalVolume
 
-    if (part.totalLength !== undefined) {
+    if (part.totalLength != null) {
       totalLength = (totalLength ?? 0) + part.totalLength
     }
 
-    if (part.totalArea !== undefined) {
+    if (part.totalArea != null) {
       totalArea = (totalArea ?? 0) + part.totalArea
     }
   }
@@ -157,19 +148,14 @@ function MaterialTypeIndicator({ material, size = 18 }: { material: Material; si
 function MaterialSummaryRow({
   material,
   metrics,
-  onNavigate,
-  formatters
+  onNavigate
 }: {
   material: Material
   metrics: RowMetrics & { partCount: number }
   onNavigate: () => void
-  formatters: Formatters
 }) {
   const { t } = useTranslation('construction')
-  const formatWeight = (weight: number | undefined): string => {
-    if (weight === undefined) return '—'
-    return formatters.formatWeight(weight)
-  }
+  const { formatWeight, formatLengthInMeters, formatArea, formatVolume } = useFormatters()
   const materialName = useMaterialName(material)
 
   return (
@@ -188,33 +174,21 @@ function MaterialSummaryRow({
       <Table.Cell className="text-center">{metrics.totalQuantity}</Table.Cell>
       <Table.Cell className="text-center">{metrics.partCount}</Table.Cell>
       <Table.Cell className="text-end">
-        {metrics.totalLength !== undefined ? formatters.formatLengthInMeters(metrics.totalLength) : '—'}
+        {metrics.totalLength != null ? formatLengthInMeters(metrics.totalLength) : '—'}
       </Table.Cell>
+      <Table.Cell className="text-end">{metrics.totalArea != null ? formatArea(metrics.totalArea) : '—'}</Table.Cell>
+      <Table.Cell className="text-end">{formatVolume(metrics.totalVolume)}</Table.Cell>
       <Table.Cell className="text-end">
-        {metrics.totalArea !== undefined ? formatters.formatArea(metrics.totalArea) : '—'}
+        {metrics.totalWeight != null ? formatWeight(metrics.totalWeight) : '—'}
       </Table.Cell>
-      <Table.Cell className="text-end">{formatters.formatVolume(metrics.totalVolume)}</Table.Cell>
-      <Table.Cell className="text-end">{formatWeight(metrics.totalWeight)}</Table.Cell>
     </Table.Row>
   )
 }
 
-function MaterialGroupSummaryRow({
-  group,
-  onNavigate,
-  formatters
-}: {
-  group: MaterialGroup
-  onNavigate: () => void
-  formatters: Formatters
-}) {
+function MaterialGroupSummaryRow({ group, onNavigate }: { group: MaterialGroup; onNavigate: () => void }) {
   const { t } = useTranslation('construction')
+  const { formatWeight, formatLengthInMeters, formatArea, formatVolume } = useFormatters()
   const { metrics } = group
-  const formatWeight = (weight: number | undefined): string => {
-    if (weight === undefined) return '—'
-    return formatters.formatWeight(weight)
-  }
-
   return (
     <Table.Row>
       <Table.Cell width="6em" className="text-center">
@@ -233,13 +207,13 @@ function MaterialGroupSummaryRow({
       <Table.Cell className="text-center">{metrics.totalQuantity}</Table.Cell>
       <Table.Cell className="text-center">{metrics.partCount}</Table.Cell>
       <Table.Cell className="text-end">
-        {metrics.totalLength !== undefined ? formatters.formatLengthInMeters(metrics.totalLength) : '—'}
+        {metrics.totalLength != null ? formatLengthInMeters(metrics.totalLength) : '—'}
       </Table.Cell>
+      <Table.Cell className="text-end">{metrics.totalArea != null ? formatArea(metrics.totalArea) : '—'}</Table.Cell>
+      <Table.Cell className="text-end">{formatVolume(metrics.totalVolume)}</Table.Cell>
       <Table.Cell className="text-end">
-        {metrics.totalArea !== undefined ? formatters.formatArea(metrics.totalArea) : '—'}
+        {metrics.totalWeight != null ? formatWeight(metrics.totalWeight) : '—'}
       </Table.Cell>
-      <Table.Cell className="text-end">{formatters.formatVolume(metrics.totalVolume)}</Table.Cell>
-      <Table.Cell className="text-end">{formatWeight(metrics.totalWeight)}</Table.Cell>
     </Table.Row>
   )
 }
@@ -308,12 +282,15 @@ function MaterialGroupCard({ material, group, onBackToTop, onViewInPlan }: Mater
   )
 }
 
-export function ConstructionPartsList({ partsList, onViewInPlan }: ConstructionPartsListProps): React.JSX.Element {
+export function ConstructionPartsList({ modelId, onViewInPlan }: ConstructionPartsListProps): React.JSX.Element {
   const { t } = useTranslation('construction')
   const materialsMap = useMaterialsMap()
   const formatters = useFormatters()
   const topRef = useRef<HTMLDivElement | null>(null)
   const detailRefs = useRef<Record<string, HTMLDivElement | null>>({})
+
+  const aggregatedParts = useMaterialParts(modelId)
+  const partsList = useMemo(() => toMaterialPartsList(aggregatedParts), [aggregatedParts])
 
   // Helper functions for grouping parts - defined inside component to access t()
   const groupDimensionalParts = useCallback(
@@ -577,7 +554,6 @@ export function ConstructionPartsList({ partsList, onViewInPlan }: ConstructionP
                     onNavigate={() => {
                       scrollToGroup(row.groups[0]?.key)
                     }}
-                    formatters={formatters}
                   />
                   {row.groups.length > 1 &&
                     row.groups.map(group => (
@@ -587,7 +563,6 @@ export function ConstructionPartsList({ partsList, onViewInPlan }: ConstructionP
                         onNavigate={() => {
                           scrollToGroup(group.key)
                         }}
-                        formatters={formatters}
                       />
                     ))}
                 </React.Fragment>

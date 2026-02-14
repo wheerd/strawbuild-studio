@@ -67,7 +67,6 @@ function createPartDefinitionForElement(
   element: ConstructionElement,
   partId: PartId,
   metrics: MaterialMetrics,
-  hasPartInfo: boolean,
   fullPartInfo: FullPartInfo | null,
   tags: Tag[]
 ): PartDefinition {
@@ -88,13 +87,8 @@ function createPartDefinitionForElement(
     subtype: fullPartInfo?.subtype,
     description,
     strawCategory,
-    issue: metrics.issue,
     size: fullPartInfo?.sideFaces ? copyVec3(fullPartInfo.boxSize) : copyVec3(element.bounds.size),
-    volume: metrics.volume,
-    area: metrics.area,
-    crossSection: metrics.crossSection,
-    thickness: metrics.thickness,
-    sideFaces: hasPartInfo ? metrics.sideFaces : undefined,
+    ...metrics,
     requiresSinglePiece: fullPartInfo?.requiresSinglePiece
   }
 }
@@ -143,14 +137,7 @@ export function generatePartsData(model: ConstructionModel): PartsGenerationResu
 
     if (!(partId in result.definitions)) {
       const metrics = computeMaterialMetrics(geometryInfo, materialDefinition, hasPartInfo)
-      result.definitions[partId] = createPartDefinitionForElement(
-        element,
-        partId,
-        metrics,
-        hasPartInfo,
-        fullPartInfo,
-        tags
-      )
+      result.definitions[partId] = createPartDefinitionForElement(element, partId, metrics, fullPartInfo, tags)
     }
 
     result.occurrences.push({

@@ -5,7 +5,8 @@ import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Table } from '@/components/ui/table'
-import type { PartId, PartItem, VirtualPartsList } from '@/construction/parts'
+import type { PartId, PartItem } from '@/construction/parts'
+import { type ConstructionModelId, toVirtualPartsList, useVirtualParts } from '@/construction/parts/store'
 import type { TranslatableString } from '@/shared/i18n/TranslatableString'
 import { useFormatters } from '@/shared/i18n/useFormatters'
 import { useTranslatableString } from '@/shared/i18n/useTranslatableString'
@@ -212,16 +213,19 @@ function ModuleGroupCard({ group, onBackToTop, onViewInPlan, formatters }: Modul
 }
 
 export function ConstructionVirtualPartsList({
-  partsList,
+  modelId,
   onViewInPlan
 }: {
-  partsList: VirtualPartsList
+  modelId?: ConstructionModelId
   onViewInPlan?: (partId: PartId) => void
 }): React.JSX.Element {
   const { t } = useTranslation('construction')
   const formatters = useFormatters()
   const topRef = useRef<HTMLDivElement | null>(null)
   const detailRefs = useRef<Record<string, HTMLDivElement | null>>({})
+
+  const aggregatedParts = useVirtualParts(modelId)
+  const partsList = useMemo(() => toVirtualPartsList(aggregatedParts), [aggregatedParts])
 
   const parts = useMemo(() => Object.values(partsList), [partsList])
 

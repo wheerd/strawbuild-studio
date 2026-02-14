@@ -7,7 +7,6 @@ import { Spinner } from '@/components/ui/spinner'
 import { Tabs } from '@/components/ui/tabs'
 import { ConstructionPartsList } from '@/construction/components/parts/ConstructionPartsList'
 import { ConstructionVirtualPartsList } from '@/construction/components/parts/ConstructionVirtualPartsList'
-import { generateMaterialPartsList, generateVirtualPartsList } from '@/construction/parts'
 import { type ConstructionModelId, useConstructionModel } from '@/construction/store'
 
 export interface ConstructionPartsListModalProps {
@@ -27,9 +26,6 @@ export function ConstructionPartsListModal({
   const [activeTab, setActiveTab] = useState<'materials' | 'modules'>('materials')
 
   const model = useConstructionModel(modelId)
-
-  const materials = model ? generateMaterialPartsList(model) : null
-  const virtual = model ? generateVirtualPartsList(model) : null
 
   const handleOpenChange = (open: boolean) => {
     setIsOpen(open)
@@ -54,11 +50,11 @@ export function ConstructionPartsListModal({
           </Tabs.List>
         </div>
         <Tabs.Content value="materials" className="flex min-h-0 w-full flex-1 flex-col overflow-auto pt-3">
-          {materials ? <ConstructionPartsList partsList={materials} /> : <PartsSkeleton />}
+          {model ? <ConstructionPartsList modelId={modelId} /> : <PartsSkeleton />}
         </Tabs.Content>
 
         <Tabs.Content value="modules" className="flex min-h-0 flex-1 flex-col overflow-auto pt-3">
-          {virtual ? <ConstructionVirtualPartsList partsList={virtual} /> : <PartsSkeleton />}
+          {model ? <ConstructionVirtualPartsList modelId={modelId} /> : <PartsSkeleton />}
         </Tabs.Content>
       </Tabs.Root>
     </FullScreenModal>

@@ -20,7 +20,7 @@ import {
   unionPolygons
 } from '@/shared/geometry'
 
-import { BUILDING_ID, type CompositeModel, type CoreModel, type ModelWithTransform } from './types'
+import { type CompositeModel, type CoreModel, type ModelWithTransform } from './types'
 import { createBasePlateId, createFloorId, createPerimeterMeasurementsId, createTopPlateId } from './utils'
 
 interface ColinearWallGroup {
@@ -269,7 +269,6 @@ export function buildBuildingComposite(): CompositeModel {
   }
 
   return {
-    models: storeyModels,
-    sourceId: BUILDING_ID
+    models: storeyModels
   }
 }
