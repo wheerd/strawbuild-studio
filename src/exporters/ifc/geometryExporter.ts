@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unsafe-argument */
-import { i18next, t as tFunc } from 'i18next'
+import { t as tFunc } from 'i18next'
 import type { Manifold } from 'manifold-3d'
 import { Handle, IFC4, IfcAPI, type IfcLineObject } from 'web-ifc'
 import wasmUrl from 'web-ifc/web-ifc.wasm?url'
@@ -1238,13 +1238,7 @@ export class GeometryIfcExporter {
     if (constructionElement.tags) {
       if (constructionElement.tags.length > 0) {
         const tagLabels = constructionElement.tags
-          .map(t =>
-            'label' in t
-              ? typeof t.label === 'function'
-                ? t.label(tFunc, i18next.language)
-                : t.label
-              : tFunc($ => $.tags[t.id], { ns: 'construction' })
-          )
+          .map(t => ('label' in t ? transString(t.label) : tFunc($ => $.tags[t.id], { ns: 'construction' })))
           .join(', ')
         properties.push(
           this.writeEntity(new IFC4.IfcPropertySingleValue(this.identifier('Tags'), null, this.label(tagLabels), null))

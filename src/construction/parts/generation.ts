@@ -2,7 +2,10 @@ import { isPerimeterId, isPerimeterWallId, isRoofId, isStoreyId } from '@/buildi
 import type { ConstructionElement, ConstructionGroup, GroupOrElement } from '@/construction/elements'
 import { getMaterialById } from '@/construction/materials/store'
 import type { ConstructionModel } from '@/construction/model'
-import { getPartInfoFromManifold } from '@/construction/parts/pipeline'
+import { type Tag, isCustomTag } from '@/construction/tags'
+import { type Vec3, arrayToVec3, calculatePolygonWithHolesArea, copyVec3 } from '@/shared/geometry'
+
+import { getPartInfoFromManifold } from './geometry'
 import {
   type MaterialMetrics,
   computeMaterialMetrics,
@@ -11,12 +14,8 @@ import {
   computePartIdWithoutInfo,
   findMappedTag,
   getStrawCategoryFromTags
-} from '@/construction/parts/shared'
-import type { FullPartInfo, PartId, SideFace } from '@/construction/parts/types'
-import { type Tag, isCustomTag } from '@/construction/tags'
-import { type Vec3, arrayToVec3, calculatePolygonWithHolesArea, copyVec3 } from '@/shared/geometry'
-
-import type { LocationFilter, PartDefinition, PartOccurrence } from './types'
+} from './shared'
+import type { FullPartInfo, LocationFilter, PartDefinition, PartId, PartOccurrence, SideFace } from './types'
 
 export interface PartsGenerationResult {
   definitions: Record<PartId, PartDefinition>

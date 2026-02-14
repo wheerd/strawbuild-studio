@@ -25,8 +25,7 @@ import { useConfigurationModal } from '@/construction/config/context/Configurati
 import { getMaterialTypeIcon, useGetMaterialTypeName } from '@/construction/materials/components/MaterialSelect'
 import type { Material } from '@/construction/materials/material'
 import { useMaterialName } from '@/construction/materials/useMaterialName'
-import type { PartId } from '@/construction/parts'
-import { type ConstructionModelId, useMaterialParts } from '@/construction/parts/store'
+import { type ConstructionModelId, type PartId, useMaterialParts } from '@/construction/parts'
 import { useFormatters } from '@/shared/i18n/useFormatters'
 import { useTranslatableString } from '@/shared/i18n/useTranslatableString'
 

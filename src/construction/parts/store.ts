@@ -1,11 +1,10 @@
 import { create } from 'zustand'
 
-import type { PartId } from '@/construction/parts/types'
 import { ensureConstructionLoaded, getConstructionModel } from '@/construction/store'
 import { useConstructionStore } from '@/construction/store/store'
 
 import { generatePartsData } from './generation'
-import type { LocationFilter, PartDefinition, PartsStore, PartsStoreState } from './types'
+import type { LocationFilter, PartDefinition, PartId, PartsStore, PartsStoreState } from './types'
 
 const indexToLabel = (index: number): string => {
   const alphabetLength = 26
@@ -21,7 +20,7 @@ const indexToLabel = (index: number): string => {
   return label
 }
 
-const getGroupId = (definition: PartDefinition): string =>
+const getLabelGroupId = (definition: PartDefinition): string =>
   definition.source === 'group' ? 'virtual' : `material:${definition.materialId}`
 
 export const usePartsStore = create<PartsStore>()((set, get) => ({
@@ -47,7 +46,7 @@ export const usePartsStore = create<PartsStore>()((set, get) => ({
       for (const partId of Object.keys(definitions) as PartId[]) {
         if (!(partId in newLabels)) {
           const definition = definitions[partId]
-          const groupId = getGroupId(definition)
+          const groupId = getLabelGroupId(definition)
           assignLabelToDefinition(newLabels, currentState, partId, groupId)
         }
       }
@@ -79,7 +78,7 @@ export const usePartsStore = create<PartsStore>()((set, get) => ({
             const typedPartId = partId as PartId
             if (typedPartId in state.definitions) {
               const definition = state.definitions[typedPartId]
-              const newGroupId = getGroupId(definition)
+              const newGroupId = getLabelGroupId(definition)
               if (newGroupId !== groupId) {
                 newLabels[typedPartId] = label
               }
@@ -88,7 +87,7 @@ export const usePartsStore = create<PartsStore>()((set, get) => ({
         }
 
         for (const [partId, definition] of Object.entries(state.definitions)) {
-          const gid = getGroupId(definition)
+          const gid = getLabelGroupId(definition)
           if (groupId && gid !== groupId) continue
 
           const typedPartId = partId as PartId
