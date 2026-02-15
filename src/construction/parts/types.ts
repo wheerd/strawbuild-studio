@@ -93,6 +93,7 @@ export interface PartsStoreState {
   nextLabelIndexByGroup: Record<string, number>
 
   hasParts: boolean
+  rebuilding: boolean
   generatedAt: number
 }
 

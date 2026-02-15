@@ -1,11 +1,11 @@
 import { rollup } from 'd3-array'
-import { useMemo } from 'react'
+import { useEffect, useMemo } from 'react'
 
 import type { PerimeterId, PerimeterWallId, RoofId, StoreyId } from '@/building/model/ids'
 import { isPerimeterId, isPerimeterWallId, isRoofId, isStoreyId } from '@/building/model/ids'
 
 import { ensurePartsLoaded, usePartsStore } from './store'
-import type { AggregatedPartItem, PartOccurrence, PartsFilter } from './types'
+import type { AggregatedPartItem, PartDefinition, PartId, PartOccurrence, PartsFilter } from './types'
 
 export type ConstructionModelId = PerimeterId | PerimeterWallId | RoofId | StoreyId | undefined
 
@@ -20,69 +20,77 @@ function deriveLocationFilter(modelId: ConstructionModelId): PartsFilter {
 
 function filterOccurrences(occurrences: PartOccurrence[], filter: PartsFilter): PartOccurrence[] {
   return occurrences.filter(occ => {
-    if (filter.storeyId !== undefined && occ.storeyId !== filter.storeyId) return false
-    if (filter.perimeterId !== undefined && occ.perimeterId !== filter.perimeterId) return false
-    if (filter.wallId !== undefined && occ.wallId !== filter.wallId) return false
-    if (filter.roofId !== undefined && occ.roofId !== filter.roofId) return false
-    if (filter.virtual !== undefined && occ.virtual !== filter.virtual) return false
+    if (filter.storeyId != null && occ.storeyId !== filter.storeyId) return false
+    if (filter.perimeterId != null && occ.perimeterId !== filter.perimeterId) return false
+    if (filter.wallId != null && occ.wallId !== filter.wallId) return false
+    if (filter.roofId != null && occ.roofId !== filter.roofId) return false
+    if (filter.virtual != null && occ.virtual !== filter.virtual) return false
     return true
   })
 }
 
 export function useAggregatedParts(modelId?: ConstructionModelId, filter?: PartsFilter): AggregatedPartItem[] {
-  ensurePartsLoaded()
+  useEnsurePartsLoaded()
 
   const definitions = usePartsStore(s => s.definitions)
   const occurrences = usePartsStore(s => s.occurrences)
   const labels = usePartsStore(s => s.labels)
-  const generatedAt = usePartsStore(s => s.generatedAt)
 
   const locationFilter = deriveLocationFilter(modelId)
   const combinedFilter: PartsFilter = { ...locationFilter, ...filter }
 
-  return useMemo(() => {
-    const filtered = filterOccurrences(occurrences, combinedFilter)
+  return useMemo(
+    () => aggregateParts(occurrences, combinedFilter, definitions, labels),
+    [
+      occurrences,
+      definitions,
+      labels,
+      combinedFilter.storeyId,
+      combinedFilter.perimeterId,
+      combinedFilter.wallId,
+      combinedFilter.roofId,
+      combinedFilter.virtual
+    ]
+  )
+}
 
-    const aggregated = rollup(
-      filtered,
-      v => ({
-        quantity: v.length,
-        elementIds: v.map(occ => occ.elementId)
-      }),
-      occ => occ.partId
-    )
+export function aggregateParts(
+  occurrences: PartOccurrence[],
+  combinedFilter: PartsFilter,
+  definitions: Record<PartId, PartDefinition>,
+  labels: Record<PartId, string>
+) {
+  const filtered = filterOccurrences(occurrences, combinedFilter)
 
-    const result: AggregatedPartItem[] = []
-    for (const [partId, agg] of aggregated) {
-      const definition = definitions[partId]
-      const label = labels[partId] ?? ''
-      const totalVolume = agg.quantity * definition.volume
-      const totalArea = definition.area !== undefined ? agg.quantity * definition.area : undefined
-      const totalLength = definition.length !== undefined ? agg.quantity * definition.length : undefined
+  const aggregated = rollup(
+    filtered,
+    v => ({
+      quantity: v.length,
+      elementIds: v.map(occ => occ.elementId)
+    }),
+    occ => occ.partId
+  )
 
-      result.push({
-        ...definition,
-        label,
-        quantity: agg.quantity,
-        elementIds: agg.elementIds,
-        totalVolume,
-        totalArea,
-        totalLength
-      })
-    }
+  const result: AggregatedPartItem[] = []
+  for (const [partId, agg] of aggregated) {
+    const definition = definitions[partId]
+    const label = labels[partId] ?? ''
+    const totalVolume = agg.quantity * definition.volume
+    const totalArea = definition.area != null ? agg.quantity * definition.area : undefined
+    const totalLength = definition.length != null ? agg.quantity * definition.length : undefined
 
-    return result
-  }, [
-    occurrences,
-    definitions,
-    labels,
-    generatedAt,
-    combinedFilter.storeyId,
-    combinedFilter.perimeterId,
-    combinedFilter.wallId,
-    combinedFilter.roofId,
-    combinedFilter.virtual
-  ])
+    result.push({
+      ...definition,
+      label,
+      quantity: agg.quantity,
+      elementIds: agg.elementIds,
+      totalVolume,
+      totalArea,
+      totalLength
+    })
+  }
+
+  return result
 }
 
 export function useMaterialParts(modelId?: ConstructionModelId): AggregatedPartItem[] {
@@ -91,4 +99,11 @@ export function useMaterialParts(modelId?: ConstructionModelId): AggregatedPartI
 
 export function useVirtualParts(modelId?: ConstructionModelId): AggregatedPartItem[] {
   return useAggregatedParts(modelId, { virtual: true })
+}
+
+export function useEnsurePartsLoaded(): void {
+  const notInitialized = usePartsStore(state => !state.hasParts && !state.rebuilding)
+  useEffect(() => {
+    if (notInitialized) ensurePartsLoaded()
+  }, [notInitialized])
 }

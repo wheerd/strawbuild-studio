@@ -30,11 +30,12 @@ export const usePartsStore = create<PartsStore>()((set, get) => ({
   usedLabelsByGroup: {},
   nextLabelIndexByGroup: {},
   hasParts: false,
+  rebuilding: false,
   generatedAt: 0,
 
   actions: {
     rebuildParts(): void {
-      set(state => ({ ...state, hasParts: false }))
+      set(state => ({ ...state, hasParts: false, rebuilding: true }))
 
       ensureConstructionLoaded()
       const model = getConstructionModel()
@@ -57,6 +58,7 @@ export const usePartsStore = create<PartsStore>()((set, get) => ({
         occurrences,
         labels: newLabels,
         hasParts: true,
+        rebuilding: false,
         generatedAt: Date.now()
       }))
     },

@@ -129,6 +129,16 @@ describe('generatePartsData', () => {
       expect(definition.crossSection).toEqual({ smallerLength: 60, biggerLength: 120 })
     })
 
+    it('creates length metrics for dimensional materials', () => {
+      const element = createElement(roughWood.id, { type: 'stud' }, newVec3(4000, 120, 60))
+      const model = createModel([element])
+
+      const result = generatePartsData(model)
+      const definition = result.definitions[result.occurrences[0].partId]
+
+      expect(definition.length).toBe(4000)
+    })
+
     it('stores thickness metadata for sheet parts', () => {
       const element = createElement(clt.id, { type: 'sheet' }, newVec3(160, 16500, 3500))
       const model = createModel([element])
@@ -137,16 +147,6 @@ describe('generatePartsData', () => {
       const definition = result.definitions[result.occurrences[0].partId]
 
       expect(definition.thickness).toBe(160)
-    })
-
-    it('omits length metrics for non-dimensional materials', () => {
-      const element = createElement(genericMaterial.id, { type: 'window' }, newVec3(1200, 1200, 120))
-      const model = createModel([element])
-
-      const result = generatePartsData(model)
-      const definition = result.definitions[result.occurrences[0].partId]
-
-      expect(definition.length).toBeUndefined()
     })
   })
 
