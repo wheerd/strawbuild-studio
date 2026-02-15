@@ -726,7 +726,10 @@ interface Resources {
         "backToSummary": "Back to summary",
         "configureMaterial": "Configure Material",
         "jumpToDetails": "Jump to details",
+        "regenerateLabels": "Regenerate Labels",
+        "regenerateLabelsHint": "Reassign labels sequentially. Old unused labels will be removed.",
         "specialCutPreview": "Special cut polygon preview",
+        "unusedLabelsWarning": "Some labels are no longer in use. Regenerate to reassign labels sequentially.",
         "viewInPlan": "View in plan"
       },
       "issues": {

@@ -101,7 +101,10 @@
       "backToSummary": "Zurück zur Übersicht",
       "configureMaterial": "Material konfigurieren",
       "jumpToDetails": "Zu Details springen",
+      "regenerateLabels": "Bezeichnungen neu generieren",
+      "regenerateLabelsHint": "Bezeichnungen neu zuweisen. Alte ungenutzte Bezeichnungen werden entfernt.",
       "specialCutPreview": "Vorschau Sonderschnitt",
+      "unusedLabelsWarning": "Einige Bezeichnungen werden nicht mehr verwendet. Neu generieren, um Lücken zu schließen.",
       "viewInPlan": "In Plan anzeigen"
     },
     "issues": {

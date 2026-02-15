@@ -255,14 +255,13 @@ describe('assignLabelsForNewParts', () => {
       }
       const current = {
         labels: {},
-        usedLabelsByGroup: { 'material:mat1': ['A', 'B'] },
+        usedLabelsByGroup: {},
         nextLabelIndexByGroup: { 'material:mat1': 2 }
       }
 
       const result = assignLabelsForNewParts(definitions, current)
 
       expect(result.labels[part1]).toBe('C')
-      expect(result.usedLabelsByGroup['material:mat1']).toEqual(['A', 'B', 'C'])
       expect(result.nextLabelIndexByGroup['material:mat1']).toBe(3)
     })
   })
@@ -314,7 +313,7 @@ describe('assignLabelsForNewParts', () => {
   })
 
   describe('empty definitions', () => {
-    it('returns unchanged state', () => {
+    it('returns empty usedLabelsByGroup when no parts in definitions', () => {
       const part1 = createPartId('part1')
       const current = {
         labels: { [part1]: 'A' },
@@ -325,7 +324,7 @@ describe('assignLabelsForNewParts', () => {
       const result = assignLabelsForNewParts({}, current)
 
       expect(result.labels[part1]).toBe('A')
-      expect(result.usedLabelsByGroup['material:mat1']).toEqual(['A'])
+      expect(result.usedLabelsByGroup).toEqual({})
       expect(result.nextLabelIndexByGroup['material:mat1']).toBe(1)
     })
   })
@@ -388,6 +387,8 @@ describe('assignLabelsForNewParts', () => {
       expect(result.labels[part1]).toBe('AA')
       expect(result.labels[part2]).toBe('AB')
       expect(result.labels[part3]).toBe('X')
+      expect(result.usedLabelsByGroup.virtual).toEqual(['AA', 'AB'])
+      expect(result.usedLabelsByGroup['material:mat1']).toEqual(['X'])
       expect(result.nextLabelIndexByGroup.virtual).toBe(28)
       expect(result.nextLabelIndexByGroup['material:mat1']).toBe(24)
     })

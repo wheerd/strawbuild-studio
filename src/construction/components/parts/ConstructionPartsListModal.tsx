@@ -5,7 +5,7 @@ import { FullScreenModal } from '@/components/ui/full-screen-modal'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Spinner } from '@/components/ui/spinner'
 import { Tabs } from '@/components/ui/tabs'
-import { ConstructionModelStatusBanner } from '@/construction/components/ConstructionModelStatusBanner'
+import { ConstructionModelRegenerateButton } from '@/construction/components/ConstructionModelRegenerateButton'
 import { ConstructionPartsList } from '@/construction/components/parts/ConstructionPartsList'
 import { ConstructionVirtualPartsList } from '@/construction/components/parts/ConstructionVirtualPartsList'
 import { type ConstructionModelId, useConstructionModel } from '@/construction/store'
@@ -50,7 +50,7 @@ export function ConstructionPartsListModal({
             <Tabs.Trigger value="modules">{t($ => $.partsListModal.tabs.modules)}</Tabs.Trigger>
           </Tabs.List>
 
-          <ConstructionModelStatusBanner />
+          <ConstructionModelRegenerateButton />
         </div>
         <Tabs.Content value="materials" className="flex min-h-0 w-full flex-1 flex-col overflow-auto pt-3">
           {model ? <ConstructionPartsList modelId={modelId} /> : <PartsSkeleton />}

@@ -4,8 +4,8 @@ import { useEffect, useMemo } from 'react'
 import type { PerimeterId, PerimeterWallId, RoofId, StoreyId } from '@/building/model/ids'
 import { isPerimeterId, isPerimeterWallId, isRoofId, isStoreyId } from '@/building/model/ids'
 
-import { ensurePartsLoaded, usePartsStore } from './store'
-import type { AggregatedPartItem, PartDefinition, PartId, PartOccurrence, PartsFilter } from './types'
+import { ensurePartsLoaded, getLabelGroupId, usePartsStore } from './store'
+import type { AggregatedPartItem, PartDefinition, PartId, PartOccurrence, PartsFilter, PartsStoreState } from './types'
 
 export type ConstructionModelId = PerimeterId | PerimeterWallId | RoofId | StoreyId | undefined
 
@@ -58,7 +58,7 @@ export function aggregateParts(
   occurrences: PartOccurrence[],
   combinedFilter: PartsFilter,
   definitions: Record<PartId, PartDefinition>,
-  labels: Record<PartId, string>
+  labels: PartsStoreState['labels']
 ) {
   const filtered = filterOccurrences(occurrences, combinedFilter)
 
@@ -106,4 +106,30 @@ export function useEnsurePartsLoaded(): void {
   useEffect(() => {
     if (notInitialized) ensurePartsLoaded()
   }, [notInitialized])
+}
+
+export function usePartActions() {
+  return usePartsStore(store => store.actions)
+}
+
+export function useHasUnusedLabels(groupId?: string): boolean {
+  const usedLabelsByGroup = usePartsStore(s => s.usedLabelsByGroup)
+  const nextLabelIndexByGroup = usePartsStore(s => s.nextLabelIndexByGroup)
+  const definitions = usePartsStore(s => s.definitions)
+
+  return useMemo(() => {
+    if (groupId) {
+      const usedCount = usedLabelsByGroup[groupId]?.length ?? 0
+      const nextIndex = nextLabelIndexByGroup[groupId] ?? 0
+      return nextIndex > usedCount
+    }
+
+    const groups = new Set(Object.values(definitions).map(getLabelGroupId))
+    for (const gid of groups) {
+      const usedCount = usedLabelsByGroup[gid]?.length ?? 0
+      const nextIndex = nextLabelIndexByGroup[gid] ?? 0
+      if (nextIndex > usedCount) return true
+    }
+    return false
+  }, [groupId, usedLabelsByGroup, nextLabelIndexByGroup, definitions])
 }

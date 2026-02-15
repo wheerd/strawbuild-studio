@@ -6,9 +6,10 @@ import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Table } from '@/components/ui/table'
+import { RegenerateLabelsButton } from '@/construction/components/parts/RegenerateLabelsButton'
 import type { VirtualGroup } from '@/construction/components/parts/utils/aggregation'
 import { toVirtualGroup, virtualGroupKey } from '@/construction/components/parts/utils/aggregation'
-import { type ConstructionModelId, type PartId, useVirtualParts } from '@/construction/parts'
+import { type ConstructionModelId, type PartId, getLabelGroupId, useVirtualParts } from '@/construction/parts'
 import { useFormatters } from '@/shared/i18n/useFormatters'
 import { useTranslatableString } from '@/shared/i18n/useTranslatableString'
 
@@ -118,6 +119,7 @@ function ModuleGroupCard({
   onViewInPlan?: (partId: PartId) => void
 }) {
   const { t } = useTranslation('construction')
+  const groupId = getLabelGroupId(group.parts[0])
 
   return (
     <Card variant="surface" className="p-2">
@@ -128,9 +130,17 @@ function ModuleGroupCard({
               {group.description ? useTranslatableString(group.description) : group.type}
             </h3>
           </div>
-          <Button size="icon" title={t($ => $.modulesList.actions.backToSummary)} variant="ghost" onClick={onBackToTop}>
-            <PinTopIcon />
-          </Button>
+          <div className="flex items-center gap-2">
+            <RegenerateLabelsButton groupId={groupId} compact />
+            <Button
+              size="icon"
+              title={t($ => $.modulesList.actions.backToSummary)}
+              variant="ghost"
+              onClick={onBackToTop}
+            >
+              <PinTopIcon />
+            </Button>
+          </div>
         </div>
       </CardHeader>
       <CardContent className="px-3">
@@ -215,7 +225,10 @@ function SummaryTable({
   return (
     <Card ref={setTopRef} variant="surface" className="p-2">
       <CardHeader className="p-3">
-        <h2 className="text-xl font-bold">{t($ => $.modulesList.summary)}</h2>
+        <div className="flex items-center justify-between gap-3">
+          <h2 className="text-xl font-bold">{t($ => $.modulesList.summary)}</h2>
+          <RegenerateLabelsButton />
+        </div>
       </CardHeader>
       <CardContent className="px-3">
         <Table.Root variant="surface" className="min-w-full">

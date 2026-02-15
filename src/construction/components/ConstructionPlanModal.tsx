@@ -14,7 +14,7 @@ import { type ConstructionModelId, useConstructionModel } from '@/construction/s
 import type { TagOrCategory } from '@/construction/tags'
 import { elementSizeRef } from '@/shared/hooks/useElementSize'
 
-import { ConstructionModelStatusBanner } from './ConstructionModelStatusBanner'
+import { ConstructionModelRegenerateButton } from './ConstructionModelRegenerateButton'
 import { ConstructionPlan, type ViewOption } from './plan/ConstructionPlan'
 import { PlanHighlightProvider, usePlanHighlight } from './plan/PlanHighlightContext'
 import { TagVisibilityProvider } from './plan/TagVisibilityContext'
@@ -123,7 +123,7 @@ function ModalContent({
           <Tabs.Trigger value="parts">{t($ => $.planModal.tabs.partsList)}</Tabs.Trigger>
           <Tabs.Trigger value="modules">{t($ => $.planModal.tabs.modules)}</Tabs.Trigger>
         </Tabs.List>
-        <ConstructionModelStatusBanner />
+        <ConstructionModelRegenerateButton />
       </div>
       <Tabs.Content value="plan" className="flex min-h-0 flex-1 p-0">
         {model ? (

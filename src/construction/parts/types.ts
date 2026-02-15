@@ -88,9 +88,9 @@ export interface PartsStoreState {
   definitions: Record<PartId, PartDefinition>
   occurrences: PartOccurrence[]
 
-  labels: Record<PartId, string>
-  usedLabelsByGroup: Record<string, string[]>
-  nextLabelIndexByGroup: Record<string, number>
+  labels: Partial<Record<PartId, string>>
+  usedLabelsByGroup: Partial<Record<string, string[]>>
+  nextLabelIndexByGroup: Partial<Record<string, number>>
 
   hasParts: boolean
   rebuilding: boolean

@@ -11,7 +11,7 @@ import { generatePartsData } from './generation'
 import { indexToLabel } from './shared'
 import type { LocationFilter, PartDefinition, PartId, PartsStore, PartsStoreState } from './types'
 
-const getLabelGroupId = (definition: PartDefinition): string =>
+export const getLabelGroupId = (definition: Pick<PartDefinition, 'source' | 'materialId'>): string =>
   definition.source === 'group' ? 'virtual' : `material:${definition.materialId}`
 
 export const usePartsStore = create<PartsStore>()(
@@ -88,9 +88,9 @@ export const usePartsStore = create<PartsStore>()(
 export type LabelState = Pick<PartsStoreState, 'labels' | 'usedLabelsByGroup' | 'nextLabelIndexByGroup'>
 
 export function regenerateLabels(groupId: string | undefined, state: PartsStoreState): LabelState {
-  const newLabels: Record<PartId, string> = {} as Record<PartId, string>
-  const newUsedLabelsByGroup: Record<string, string[]> = {}
-  const newNextLabelIndexByGroup: Record<string, number> = {}
+  const newLabels: Partial<Record<PartId, string>> = {}
+  const newUsedLabelsByGroup: Partial<Record<string, string[]>> = {}
+  const newNextLabelIndexByGroup: Partial<Record<string, number>> = {}
 
   if (groupId) {
     for (const [gId, labels] of Object.entries(state.usedLabelsByGroup)) {
@@ -135,7 +135,6 @@ export function regenerateLabels(groupId: string | undefined, state: PartsStoreS
 
 export function assignLabelsForNewParts(definitions: Record<PartId, PartDefinition>, current: LabelState): LabelState {
   const newLabels = { ...current.labels }
-  const newUsedLabelsByGroup = { ...current.usedLabelsByGroup }
   const newNextLabelIndexByGroup = { ...current.nextLabelIndexByGroup }
 
   for (const partId of Object.keys(definitions) as PartId[]) {
@@ -147,7 +146,18 @@ export function assignLabelsForNewParts(definitions: Record<PartId, PartDefiniti
 
       newLabels[partId] = label
       newNextLabelIndexByGroup[groupId] = nextIndex + 1
-      newUsedLabelsByGroup[groupId] = [...(newUsedLabelsByGroup[groupId] ?? []), label]
+    }
+  }
+
+  const newUsedLabelsByGroup: Record<string, string[]> = {}
+  for (const [partId, label] of Object.entries(newLabels)) {
+    const typedPartId = partId as PartId
+    if (typedPartId in definitions) {
+      const definition = definitions[typedPartId]
+      const groupId = getLabelGroupId(definition)
+      newUsedLabelsByGroup[groupId] ??= []
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      newUsedLabelsByGroup[groupId].push(label!)
     }
   }
 

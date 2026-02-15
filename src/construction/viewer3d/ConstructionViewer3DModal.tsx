@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { FullScreenModal } from '@/components/ui/full-screen-modal'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Spinner } from '@/components/ui/spinner'
-import { ConstructionModelStatusBanner } from '@/construction/components/ConstructionModelStatusBanner'
+import { ConstructionModelRegenerateButton } from '@/construction/components/ConstructionModelRegenerateButton'
 import type { ConstructionModel } from '@/construction/model'
 import { type ConstructionModelId, useConstructionModel } from '@/construction/store'
 import { elementSizeRef } from '@/shared/hooks/useElementSize'
@@ -74,7 +74,7 @@ export function ConstructionViewer3DModal({ modelId, trigger }: ConstructionView
           </Suspense>
 
           <div className="absolute right-3 bottom-3 z-10 p-0">
-            <ConstructionModelStatusBanner compact />
+            <ConstructionModelRegenerateButton compact />
           </div>
         </div>
       </div>

@@ -10,6 +10,7 @@ import { Table } from '@/components/ui/table'
 import { Tooltip } from '@/components/ui/tooltip'
 import DimensionalPartsTable from '@/construction/components/parts/DimensionalPartsTable'
 import GenericPartsTable from '@/construction/components/parts/GenericPartsTable'
+import { RegenerateLabelsButton } from '@/construction/components/parts/RegenerateLabelsButton'
 import SheetPartsTable from '@/construction/components/parts/SheetPartsTable'
 import StrawbalePartsTable from '@/construction/components/parts/StrawbalePartsTable'
 import VolumePartsTable from '@/construction/components/parts/VolumePartsTable'
@@ -25,7 +26,7 @@ import { useConfigurationModal } from '@/construction/config/context/Configurati
 import { getMaterialTypeIcon, useGetMaterialTypeName } from '@/construction/materials/components/MaterialSelect'
 import type { Material } from '@/construction/materials/material'
 import { useMaterialName } from '@/construction/materials/useMaterialName'
-import { type ConstructionModelId, type PartId, useMaterialParts } from '@/construction/parts'
+import { type ConstructionModelId, type PartId, getLabelGroupId, useMaterialParts } from '@/construction/parts'
 import { useFormatters } from '@/shared/i18n/useFormatters'
 import { useTranslatableString } from '@/shared/i18n/useTranslatableString'
 
@@ -128,6 +129,7 @@ function MaterialGroupCard({ material, group, onBackToTop, onViewInPlan }: Mater
   const materialName = useMaterialName(material)
   const badgeLabel = useTranslatableString(group.badgeLabel)
   const issueMessage = useTranslatableString(group.issueMessage)
+  const groupId = getLabelGroupId({ source: 'element', materialId: material.id })
   return (
     <Card variant="surface" className="p-2">
       <CardHeader className="p-3">
@@ -158,9 +160,12 @@ function MaterialGroupCard({ material, group, onBackToTop, onViewInPlan }: Mater
               )}
             </div>
           </div>
-          <Button size="icon" title={t($ => $.partsList.actions.backToSummary)} variant="ghost" onClick={onBackToTop}>
-            <PinTopIcon />
-          </Button>
+          <div className="flex items-center gap-2">
+            <RegenerateLabelsButton groupId={groupId} compact />
+            <Button size="icon" title={t($ => $.partsList.actions.backToSummary)} variant="ghost" onClick={onBackToTop}>
+              <PinTopIcon />
+            </Button>
+          </div>
         </div>
       </CardHeader>
       <CardContent className="px-3">
@@ -259,7 +264,10 @@ function SummaryTable({
   return (
     <Card ref={setTopRef} variant="surface" className="p-2">
       <CardHeader className="p-3">
-        <h2 className="text-xl font-bold">{t($ => $.partsList.summary)}</h2>
+        <div className="flex items-center justify-between gap-3">
+          <h2 className="text-xl font-bold">{t($ => $.partsList.summary)}</h2>
+          <RegenerateLabelsButton />
+        </div>
       </CardHeader>
       <CardContent className="px-3">
         <Table.Root variant="surface" className="min-w-full">
