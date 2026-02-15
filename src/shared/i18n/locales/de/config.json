@@ -531,7 +531,6 @@
       "prefab-modules": "Fertigteile",
       "strawhenge": "Strawhenge"
     },
-    "unclearTotalThickness": "? + {{layerThickness, length}} (Schichten)",
     "wallConstruction": "Wandaufbau"
   }
 }

@@ -1,5 +1,6 @@
+import type { PerimeterId, RoofId, StoreyId, WallId } from '@/building/model/ids'
 import type { ConstructionElementId } from '@/construction/elements'
-import type { CrossSection, MaterialId } from '@/construction/materials/material'
+import type { CrossSection, Material, MaterialId } from '@/construction/materials/material'
 import type { Area, Length, PolygonWithHoles2D, Vec3, Volume } from '@/shared/geometry'
 import type { TranslatableString } from '@/shared/i18n/TranslatableString'
 
@@ -29,55 +30,79 @@ export interface InitialPartInfo {
 
 export type PartInfo = InitialPartInfo | FullPartInfo
 
-export interface MaterialParts {
-  material: MaterialId
-  totalQuantity: number
-  totalVolume: Volume
-  totalArea?: Length
-  totalLength?: Length
-  parts: Record<PartId, MaterialPartItem>
-  usages: Record<PartId, MaterialPartItem>
-}
-
-export interface PartItem {
-  partId: PartId
-  type: string
-  subtype?: string
-  description?: TranslatableString
-  label: string // A, B, C, ...
-  size: Vec3
-  elements: ConstructionElementId[]
-  quantity: number
-  area?: Area
-  totalArea?: Area
-}
-
 export type PartIssue = 'CrossSectionMismatch' | 'LengthExceedsAvailable' | 'ThicknessMismatch' | 'SheetSizeExceeded'
 
 export type StrawCategory = 'full' | 'partial' | 'flakes' | 'stuffed'
 
-export interface MaterialPartItem extends PartItem {
-  material: MaterialId
-  totalVolume: Volume
-  area?: Length
-  totalArea?: Length
+export interface PartDefinition {
+  partId: PartId
+  materialId?: MaterialId
+  materialType?: Material['type']
+  source: 'element' | 'group'
+  type: string
+  subtype?: string
+  description?: TranslatableString
+  strawCategory?: StrawCategory
+  issue?: PartIssue
+  size: Vec3
+  volume: Volume
+  area?: Area
   length?: Length
-  totalLength?: Length
   crossSection?: CrossSection
   thickness?: Length
-  strawCategory?: StrawCategory
   sideFaces?: SideFace[]
-  issue?: PartIssue
   requiresSinglePiece?: boolean
 }
 
-export interface MaterialUsage {
-  key: string
-  type: string
-  label: string // A, B, C, ...
-  totalVolume: Volume
-  totalArea?: Area
+export interface PartOccurrence {
+  elementId: ConstructionElementId
+  partId: PartId
+  virtual: boolean
+  storeyId?: StoreyId
+  perimeterId?: PerimeterId
+  wallId?: WallId
+  roofId?: RoofId
 }
 
-export type MaterialPartsList = Record<MaterialId, MaterialParts>
-export type VirtualPartsList = Record<PartId, PartItem>
+export interface LocationFilter {
+  storeyId?: StoreyId
+  perimeterId?: PerimeterId
+  wallId?: WallId
+  roofId?: RoofId
+}
+
+export interface PartsFilter extends LocationFilter {
+  virtual?: boolean
+}
+
+export interface AggregatedPartItem extends PartDefinition {
+  label: string
+  quantity: number
+  elementIds: ConstructionElementId[]
+  totalVolume: Volume
+  totalArea?: Area
+  totalLength?: Length
+}
+
+export interface PartsStoreState {
+  definitions: Record<PartId, PartDefinition>
+  occurrences: PartOccurrence[]
+
+  labels: Partial<Record<PartId, string>>
+  usedLabelsByGroup: Partial<Record<string, string[]>>
+  nextLabelIndexByGroup: Partial<Record<string, number>>
+
+  hasParts: boolean
+  rebuilding: boolean
+  generatedAt: number
+}
+
+export interface PartsStoreActions {
+  rebuildParts(): void
+  resetLabels(groupId?: string): void
+  getFilteredOccurrences(filter: LocationFilter): PartOccurrence[]
+}
+
+export type PartsStore = PartsStoreState & {
+  actions: PartsStoreActions
+}

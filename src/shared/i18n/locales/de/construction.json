@@ -62,6 +62,11 @@
     "wallConstruction": "Wand-\nkonstruktion",
     "wallConstructionHeight": "Wandkonstruktionshöhe"
   },
+  "modelStatus": {
+    "outdatedWarning": "Das Konstruktionsmodell ist veraltet. Änderungen am Gebäude wurden noch nicht übernommen.",
+    "rebuilding": "Modell wird neu generiert...",
+    "regenerate": "Modell neu generieren"
+  },
   "modulesList": {
     "actions": {
       "backToSummary": "Zurück zur Übersicht",
@@ -96,18 +101,16 @@
       "backToSummary": "Zurück zur Übersicht",
       "configureMaterial": "Material konfigurieren",
       "jumpToDetails": "Zu Details springen",
+      "regenerateLabels": "Bezeichnungen neu generieren",
+      "regenerateLabelsHint": "Bezeichnungen neu zuweisen. Alte ungenutzte Bezeichnungen werden entfernt.",
       "specialCutPreview": "Vorschau Sonderschnitt",
+      "unusedLabelsWarning": "Einige Bezeichnungen werden nicht mehr verwendet. Neu generieren, um Lücken zu schließen.",
       "viewInPlan": "In Plan anzeigen"
-    },
-    "groups": {
-      "allParts": "Alle Teile",
-      "strawbales": "Strohballen"
     },
     "issues": {
       "dimensionsExceedSizeMultiple": "Abmessungen überschreiten verfügbare Plattengrößen. Für dieses Teil werden mehrere Platten benötigt.",
       "dimensionsExceedSizeSingle": "Abmessungen überschreiten verfügbare Plattengrößen.",
       "dimensionsMismatchThickness": "Abmessungen stimmen nicht mit verfügbaren Dicken überein",
-      "groupMismatch": "Diese Gruppe stimmt nicht mit den definierten Materialoptionen überein",
       "lengthExceedsMultiple": "Teillänge überschreitet maximale verfügbare Länge. Für dieses Teil werden mehrere Stücke benötigt.",
       "lengthExceedsSingle": "Teillänge überschreitet maximale verfügbare Länge."
     },
@@ -152,10 +155,6 @@
     "totalRow": "Gesamt"
   },
   "partsListModal": {
-    "errors": {
-      "failedModulesList": "Fehler beim Erstellen der Modulliste",
-      "failedPartsList": "Fehler beim Erstellen der Teileliste"
-    },
     "tabs": {
       "materials": "Materialien",
       "modules": "Module"
@@ -177,11 +176,6 @@
     "strawTypesHeading": "Strohfüllung Details"
   },
   "planModal": {
-    "errors": {
-      "failedModel": "Fehler beim Erstellen des Konstruktionsmodells",
-      "failedModulesList": "Fehler beim Erstellen der Modulliste",
-      "failedPartsList": "Fehler beim Erstellen der Teileliste"
-    },
     "issuesPanel": {
       "errorsTitle_one": "Fehler ({{count}})",
       "errorsTitle_other": "Fehler ({{count}})",
@@ -264,6 +258,7 @@
     "floor-part_infill": "Wandfüllung",
     "floor-part_joist": "Balken",
     "floor-part_opening-frame": "Öffnungsrahmen",
+    "floor-part_slab": "Platte",
     "floor-part_subfloor": "Unterboden",
     "floor-part_wall-beam": "Wandträger",
     "module-part_frame": "Rahmen",

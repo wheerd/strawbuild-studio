@@ -8,7 +8,7 @@ import { yieldMeasurementFromArea } from '@/construction/measurements'
 import type { ConstructionModel } from '@/construction/model'
 import { mergeModels } from '@/construction/model'
 import type { ConstructionResult } from '@/construction/results'
-import { resultsToModel, yieldElement, yieldError } from '@/construction/results'
+import { assignDeterministicIdsToResults, resultsToModel, yieldElement, yieldError } from '@/construction/results'
 import { createCuboid, createElementFromArea } from '@/construction/shapes'
 import type { StoreyContext } from '@/construction/storeys/context'
 import {
@@ -38,6 +38,8 @@ export class PrefabModulesWallAssembly extends BaseWallAssembly<PrefabModulesWal
         false
       )
     )
+
+    assignDeterministicIdsToResults(allResults, wall.id)
 
     const baseModel = resultsToModel(allResults)
     const layerModel = constructWallLayers(wall, storeyContext, this.config.layers)

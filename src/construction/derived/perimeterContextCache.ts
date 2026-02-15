@@ -71,13 +71,15 @@ export class PerimeterContextCacheService {
   }
 }
 
-const serviceInstance = new PerimeterContextCacheService()
+let serviceInstance: PerimeterContextCacheService | null
 
 export function getPerimeterContextCached(perimeterId: PerimeterId): PerimeterConstructionContext {
+  serviceInstance ??= new PerimeterContextCacheService()
   return serviceInstance.getContext(perimeterId)
 }
 
 export function subscribeToPerimeterContextInvalidations(callback: InvalidationCallback): () => void {
+  serviceInstance ??= new PerimeterContextCacheService()
   return serviceInstance.onInvalidation(callback)
 }
 

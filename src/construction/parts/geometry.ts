@@ -1,7 +1,6 @@
 import type { Manifold } from 'manifold-3d'
 
 import { type Face3D, getFacesFromManifold } from '@/construction/manifold/faces'
-import type { SideFace } from '@/construction/parts/types'
 import {
   Bounds2D,
   type Length,
@@ -25,6 +24,8 @@ import {
 } from '@/shared/geometry'
 import { buildPlaneBasis, computeTriangleNormal, projectPolygonTo2D } from '@/shared/geometry/3d'
 import { createId } from '@/shared/utils/ids'
+
+import type { SideFace } from './types'
 
 export interface ManifoldPartInfo {
   id: string

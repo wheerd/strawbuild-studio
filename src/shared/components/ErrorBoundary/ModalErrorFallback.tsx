@@ -7,6 +7,7 @@ import { Callout, CalloutIcon, CalloutText } from '@/components/ui/callout'
 
 export function ModalErrorFallback({ error, resetErrorBoundary }: FallbackProps): React.JSX.Element {
   const { t } = useTranslation('errors')
+  console.error(error)
 
   return (
     <div className="flex min-h-[150px] flex-col items-center justify-center gap-3 p-4">

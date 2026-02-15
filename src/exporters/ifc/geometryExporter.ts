@@ -1238,13 +1238,7 @@ export class GeometryIfcExporter {
     if (constructionElement.tags) {
       if (constructionElement.tags.length > 0) {
         const tagLabels = constructionElement.tags
-          .map(t =>
-            'label' in t
-              ? typeof t.label === 'function'
-                ? t.label(tFunc)
-                : t.label
-              : tFunc($ => $.tags[t.id], { ns: 'construction' })
-          )
+          .map(t => ('label' in t ? transString(t.label) : tFunc($ => $.tags[t.id], { ns: 'construction' })))
           .join(', ')
         properties.push(
           this.writeEntity(new IFC4.IfcPropertySingleValue(this.identifier('Tags'), null, this.label(tagLabels), null))

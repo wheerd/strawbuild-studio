@@ -3,7 +3,7 @@ import { WallConstructionArea } from '@/construction/geometry'
 import type { MaterialId } from '@/construction/materials/material'
 import { constructStraw } from '@/construction/materials/straw'
 import { type TriangularBattenConfig, constructTriangularBattens } from '@/construction/materials/triangularBattens'
-import { type InitialPartInfo } from '@/construction/parts'
+import type { InitialPartInfo } from '@/construction/parts/types'
 import { type ConstructionResult, yieldAsGroup, yieldElement, yieldMeasurement } from '@/construction/results'
 import { createElementFromArea } from '@/construction/shapes'
 import {

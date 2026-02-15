@@ -620,7 +620,6 @@ interface Resources {
         "prefab-modules": "Prefab Modules",
         "strawhenge": "Strawhenge"
       },
-      "unclearTotalThickness": "? + {{layerThickness, length}} (Layers)",
       "wallConstruction": "Wall Construction"
     }
   },
@@ -688,6 +687,11 @@ interface Resources {
       "wallConstruction": "Wall Construction",
       "wallConstructionHeight": "Wall Construction Height"
     },
+    "modelStatus": {
+      "outdatedWarning": "The construction model is outdated. Changes to the building have not been applied yet.",
+      "rebuilding": "Regenerating model...",
+      "regenerate": "Regenerate model"
+    },
     "moduleTypes": {
       "double": "Double",
       "single": "Single"
@@ -722,18 +726,16 @@ interface Resources {
         "backToSummary": "Back to summary",
         "configureMaterial": "Configure Material",
         "jumpToDetails": "Jump to details",
+        "regenerateLabels": "Regenerate Labels",
+        "regenerateLabelsHint": "Reassign labels sequentially. Old unused labels will be removed.",
         "specialCutPreview": "Special cut polygon preview",
+        "unusedLabelsWarning": "Some labels are no longer in use. Regenerate to reassign labels sequentially.",
         "viewInPlan": "View in plan"
-      },
-      "groups": {
-        "allParts": "All parts",
-        "strawbales": "Strawbales"
       },
       "issues": {
         "dimensionsExceedSizeMultiple": "Dimensions exceed available sheet sizes. This part will require multiple sheets.",
         "dimensionsExceedSizeSingle": "Dimensions exceed available sheet sizes.",
         "dimensionsMismatchThickness": "Dimensions do not match available thicknesses",
-        "groupMismatch": "This group does not match the defined material options",
         "lengthExceedsMultiple": "Part length exceeds maximum available length. This part will require multiple pieces.",
         "lengthExceedsSingle": "Part length exceeds maximum available length."
       },
@@ -778,10 +780,6 @@ interface Resources {
       "totalRow": "Total"
     },
     "partsListModal": {
-      "errors": {
-        "failedModulesList": "Failed to generate modules list",
-        "failedPartsList": "Failed to generate parts list"
-      },
       "tabs": {
         "materials": "Materials",
         "modules": "Modules"
@@ -803,11 +801,6 @@ interface Resources {
       "strawTypesHeading": "Straw Types"
     },
     "planModal": {
-      "errors": {
-        "failedModel": "Failed to generate construction model",
-        "failedModulesList": "Failed to generate modules list",
-        "failedPartsList": "Failed to generate parts list"
-      },
       "issuesPanel": {
         "errorsTitle_one": "Errors ({{count}})",
         "errorsTitle_other": "Errors ({{count}})",
@@ -896,6 +889,7 @@ interface Resources {
       "floor-part_infill": "Wall Infill",
       "floor-part_joist": "Joist",
       "floor-part_opening-frame": "Opening Frame",
+      "floor-part_slab": "Slab",
       "floor-part_subfloor": "Subfloor",
       "floor-part_wall-beam": "Wall Beam",
       "module-part_frame": "Frame",

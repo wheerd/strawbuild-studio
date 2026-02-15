@@ -23,4 +23,3 @@ export function resolveWallAssembly(config: WallConfig): WallAssembly {
 }
 
 export * from './types'
-export * from './construction'

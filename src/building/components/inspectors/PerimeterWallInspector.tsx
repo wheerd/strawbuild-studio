@@ -15,7 +15,7 @@ import { RingBeamAssemblySelectWithEdit } from '@/construction/config/components
 import { WallAssemblySelectWithEdit } from '@/construction/config/components/WallAssemblySelectWithEdit'
 import { useWallAssemblyById } from '@/construction/config/store'
 import { formatThicknessRange } from '@/construction/materials/thickness'
-import { constructWall, resolveWallAssembly } from '@/construction/walls'
+import { resolveWallAssembly } from '@/construction/walls'
 import { MeasurementInfo } from '@/editor/components/MeasurementInfo'
 import { popSelection } from '@/editor/hooks/useSelectionStore'
 import { useViewportActions } from '@/editor/hooks/useViewportStore'
@@ -242,14 +242,13 @@ export function PerimeterWallInspector({ wallId }: { wallId: PerimeterWallId }):
         <div className="flex justify-end gap-2">
           <ConstructionPlanModal
             title={t($ => $.perimeterWall.constructionPlanTitle)}
-            constructionModelFactory={() => Promise.resolve(constructWall(wallId, true))}
+            modelId={wallId}
             views={[
               { view: FRONT_VIEW, label: t($ => $.perimeterWall.viewOutside) },
               { view: BACK_VIEW, label: t($ => $.perimeterWall.viewInside) },
               { view: TOP_VIEW, label: t($ => $.perimeterWall.viewTop) }
             ]}
             defaultHiddenTags={['wall-layer']}
-            refreshKey={[wallId]}
             trigger={
               <Button size="icon" title={t($ => $.perimeterWall.viewConstructionPlan)}>
                 <ConstructionPlanIcon width={20} height={20} />

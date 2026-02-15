@@ -32,8 +32,7 @@ import {
 } from '@/construction/walls/roofIntegration'
 import { type Length, ZERO_VEC2, fromTrans, newVec2, newVec3 } from '@/shared/geometry'
 
-import type { WallCornerInfo } from './construction'
-import { calculateWallCornerInfo, getWallContext } from './corners/corners'
+import { type WallCornerInfo, calculateWallCornerInfo, getWallContext } from './corners/corners'
 
 export function* segmentedWallConstruction(
   wall: PerimeterWallWithGeometry,

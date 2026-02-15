@@ -19,6 +19,7 @@ export interface StoreyContext {
   floorConstructionTop: ZOffset
   wallBottom: ZOffset
   floorBottom: ZOffset
+  finishedFloorBottom: ZOffset
 
   floorAssembly: FloorAssembly
   ceilingAssembly?: FloorAssembly
@@ -73,6 +74,7 @@ export class WallStoreyContextCacheService {
     const floorConstructionTop = finishedFloorTop - floorAssembly.topLayersThickness
     const wallBottom = floorConstructionTop - floorAssembly.topOffset
     const floorBottom = wallBottom - floorAssembly.constructionThickness
+    const finishedFloorBottom = floorBottom - floorAssembly.bottomLayersThickness
 
     if (ceilingAssembly) {
       const finishedCeilingBottom = finishedFloorTop + storey.floorHeight - ceilingAssembly.totalThickness
@@ -91,6 +93,7 @@ export class WallStoreyContextCacheService {
         floorConstructionTop,
         wallBottom,
         floorBottom,
+        finishedFloorBottom,
         floorAssembly,
         ceilingAssembly
       }
@@ -109,6 +112,7 @@ export class WallStoreyContextCacheService {
       floorConstructionTop,
       wallBottom,
       floorBottom,
+      finishedFloorBottom,
       floorAssembly
     }
   }

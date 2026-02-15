@@ -4,7 +4,7 @@ import { getMaterialById } from '@/construction/materials/store'
 import { type ThicknessRange, addThickness, getMaterialThickness } from '@/construction/materials/thickness'
 import type { ConstructionModel } from '@/construction/model'
 import { mergeModels } from '@/construction/model'
-import { aggregateResults } from '@/construction/results'
+import { aggregateResults, assignDeterministicIdsToResults } from '@/construction/results'
 import type { StoreyContext } from '@/construction/storeys/context'
 import { TAG_INFILL_CONSTRUCTION } from '@/construction/tags'
 import type { InfillWallConfig } from '@/construction/walls'
@@ -28,6 +28,8 @@ export class InfillWallAssembly extends BaseWallAssembly<InfillWallConfig> {
         this.config.openingAssemblyId
       )
     )
+
+    assignDeterministicIdsToResults(allResults, wall.id)
 
     const aggRes = aggregateResults(allResults)
     const baseModel: ConstructionModel = {

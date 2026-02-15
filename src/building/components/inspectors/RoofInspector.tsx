@@ -15,7 +15,6 @@ import { ConstructionPlanModal } from '@/construction/components/ConstructionPla
 import { FRONT_VIEW, LEFT_VIEW, TOP_VIEW } from '@/construction/components/plan/ConstructionPlan'
 import { RoofAssemblySelectWithEdit } from '@/construction/config/components/RoofAssemblySelectWithEdit'
 import { useDefaultRoofAssemblyId } from '@/construction/config/store'
-import { constructRoof } from '@/construction/roofs'
 import { TAG_DECKING } from '@/construction/tags'
 import { ConstructionViewer3DModal } from '@/construction/viewer3d/ConstructionViewer3DModal'
 import { popSelection, replaceSelection } from '@/editor/hooks/useSelectionStore'
@@ -58,7 +57,7 @@ function detectMixedOverhangs(overhangs: RoofOverhang[]): MixedState<Length> {
 function MixedStateIndicator({ tooltip }: { tooltip: string }) {
   return (
     <Tooltip content={tooltip}>
-      <ExclamationTriangleIcon className="text-orange-900" width={14} height={14} />
+      <ExclamationTriangleIcon className="text-amber-600" width={14} height={14} />
     </Tooltip>
   )
 }
@@ -251,7 +250,7 @@ export function RoofInspector({ roofId }: RoofInspectorProps): React.JSX.Element
       <div className="flex flex-row items-center justify-center gap-3 pt-1">
         <ConstructionPlanModal
           title={t($ => $.roof.constructionPlanTitle)}
-          constructionModelFactory={() => Promise.resolve(constructRoof(roof))}
+          modelId={roofId}
           midCutActiveDefault={false}
           views={[
             { view: TOP_VIEW, label: t($ => $.roof.viewTop), toggleHideTags: [TAG_DECKING.id] },
@@ -259,7 +258,6 @@ export function RoofInspector({ roofId }: RoofInspectorProps): React.JSX.Element
             { view: LEFT_VIEW, label: t($ => $.roof.viewLeft) }
           ]}
           defaultHiddenTags={['roof-layer']}
-          refreshKey={roof}
           trigger={
             <Button size="icon" title={t($ => $.roof.viewConstructionPlan)}>
               <ConstructionPlanIcon width={24} height={24} />
@@ -267,8 +265,7 @@ export function RoofInspector({ roofId }: RoofInspectorProps): React.JSX.Element
           }
         />
         <ConstructionViewer3DModal
-          constructionModelFactory={() => Promise.resolve(constructRoof(roof))}
-          refreshKey={roof}
+          modelId={roofId}
           trigger={
             <Button size="icon" title={t($ => $.roof.view3DConstruction)} variant="outline">
               <Model3DIcon width={24} height={24} />

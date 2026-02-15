@@ -1,8 +1,6 @@
-import { CrossCircledIcon } from '@radix-ui/react-icons'
-import React, { Suspense, use, useEffect, useState } from 'react'
+import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
-import { Callout, CalloutIcon, CalloutText } from '@/components/ui/callout'
 import { FullScreenModal } from '@/components/ui/full-screen-modal'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Spinner } from '@/components/ui/spinner'
@@ -11,86 +9,44 @@ import { ConstructionPartsList } from '@/construction/components/parts/Construct
 import { ConstructionVirtualPartsList } from '@/construction/components/parts/ConstructionVirtualPartsList'
 import { IssueDescriptionPanel } from '@/construction/components/plan/IssueDescriptionPanel'
 import { PartHighlightPanel } from '@/construction/components/plan/PartHighlightPanel'
-import type { ConstructionModel } from '@/construction/model'
-import type { MaterialPartsList, PartId, VirtualPartsList } from '@/construction/parts'
-import { generateMaterialPartsList, generateVirtualPartsList } from '@/construction/parts'
+import type { PartId } from '@/construction/parts/types'
+import { type ConstructionModelId, useConstructionModel } from '@/construction/store'
 import type { TagOrCategory } from '@/construction/tags'
 import { elementSizeRef } from '@/shared/hooks/useElementSize'
 
-import './ConstructionPlanModal.css'
+import { ConstructionModelRegenerateButton } from './ConstructionModelRegenerateButton'
 import { ConstructionPlan, type ViewOption } from './plan/ConstructionPlan'
 import { PlanHighlightProvider, usePlanHighlight } from './plan/PlanHighlightContext'
 import { TagVisibilityProvider } from './plan/TagVisibilityContext'
 
-interface PartsData {
-  material: MaterialPartsList
-  virtual: VirtualPartsList
-}
-
 export interface ConstructionModalProps {
   title: string
-  constructionModelFactory: () => Promise<ConstructionModel | null>
+  modelId: ConstructionModelId
   views: ViewOption[]
   trigger: React.ReactNode
-  refreshKey?: unknown
   defaultHiddenTags?: TagOrCategory[]
   midCutActiveDefault?: boolean
 }
 
 export function ConstructionPlanModal({
   title,
-  constructionModelFactory,
+  modelId,
   views,
   trigger,
-  refreshKey,
   defaultHiddenTags,
   midCutActiveDefault
 }: ConstructionModalProps): React.JSX.Element {
-  const [modelPromise, setModelPromise] = useState<Promise<ConstructionModel | null> | null>(null)
   const [isOpen, setIsOpen] = useState(false)
   const [activeTab, setActiveTab] = useState<'plan' | 'parts' | 'modules'>('plan')
   const [currentViewIndex, setCurrentViewIndex] = useState(0)
-  const [partsDataPromise, setPartsDataPromise] = useState<Promise<PartsData | null> | null>(null)
 
   const handleOpenChange = (open: boolean) => {
     setIsOpen(open)
     if (!open) {
       setActiveTab('plan')
       setCurrentViewIndex(0)
-      setPartsDataPromise(null)
-      return
-    }
-
-    if (!modelPromise) {
-      const nextModelPromise = constructionModelFactory()
-      setModelPromise(nextModelPromise)
-      setPartsDataPromise(null)
     }
   }
-
-  useEffect(() => {
-    if (isOpen && refreshKey !== undefined) {
-      const nextModelPromise = constructionModelFactory()
-      setModelPromise(nextModelPromise)
-      setPartsDataPromise(null)
-    }
-  }, [refreshKey, isOpen, constructionModelFactory])
-
-  useEffect(() => {
-    if (!isOpen) return
-    if (activeTab !== 'parts' && activeTab !== 'modules') return
-    if (!modelPromise) return
-    setPartsDataPromise(prev => {
-      if (prev) return prev
-      return modelPromise.then(model => {
-        if (!model) return null
-        return {
-          material: generateMaterialPartsList(model),
-          virtual: generateVirtualPartsList(model)
-        }
-      })
-    })
-  }, [activeTab, isOpen, modelPromise])
 
   const [containerSize, containerRef] = elementSizeRef()
 
@@ -104,17 +60,16 @@ export function ConstructionPlanModal({
     >
       <PlanHighlightProvider>
         <ModalContent
+          modelId={modelId}
           activeTab={activeTab}
           setActiveTab={setActiveTab}
           currentViewIndex={currentViewIndex}
           setCurrentViewIndex={setCurrentViewIndex}
-          modelPromise={modelPromise}
           views={views}
           containerSize={containerSize}
           containerRef={containerRef}
           defaultHiddenTags={defaultHiddenTags}
           midCutActiveDefault={midCutActiveDefault}
-          partsDataPromise={partsDataPromise}
         />
       </PlanHighlightProvider>
     </FullScreenModal>
@@ -122,32 +77,32 @@ export function ConstructionPlanModal({
 }
 
 function ModalContent({
+  modelId,
   activeTab,
   setActiveTab,
   currentViewIndex,
   setCurrentViewIndex,
-  modelPromise,
   views,
   containerSize,
   containerRef,
   defaultHiddenTags,
-  midCutActiveDefault,
-  partsDataPromise
+  midCutActiveDefault
 }: {
+  modelId: ConstructionModelId
   activeTab: 'plan' | 'parts' | 'modules'
   setActiveTab: (tab: 'plan' | 'parts' | 'modules') => void
   currentViewIndex: number
   setCurrentViewIndex: (index: number) => void
-  modelPromise: Promise<ConstructionModel | null> | null
   views: ViewOption[]
   containerSize: { width: number; height: number }
   containerRef: React.RefCallback<HTMLDivElement>
   defaultHiddenTags?: TagOrCategory[]
   midCutActiveDefault?: boolean
-  partsDataPromise: Promise<PartsData | null> | null
 }) {
   const { t } = useTranslation('construction')
   const { setHighlightedPartId } = usePlanHighlight()
+
+  const model = useConstructionModel(modelId)
 
   const handleViewInPlan = (partId: string) => {
     setHighlightedPartId(partId as PartId)
@@ -162,157 +117,47 @@ function ModalContent({
       }}
       className="-mt-2 flex h-full w-full flex-col"
     >
-      <div className="flex shrink-0">
+      <div className="relative flex shrink-0 items-center justify-between">
         <Tabs.List>
           <Tabs.Trigger value="plan">{t($ => $.planModal.tabs.planIssues)}</Tabs.Trigger>
           <Tabs.Trigger value="parts">{t($ => $.planModal.tabs.partsList)}</Tabs.Trigger>
           <Tabs.Trigger value="modules">{t($ => $.planModal.tabs.modules)}</Tabs.Trigger>
         </Tabs.List>
+        <ConstructionModelRegenerateButton />
       </div>
       <Tabs.Content value="plan" className="flex min-h-0 flex-1 p-0">
-        <div className="flex h-full w-full flex-col gap-2 overflow-hidden">
-          <div ref={containerRef} className="relative flex min-h-0 flex-1 overflow-hidden rounded-md border">
-            {modelPromise ? (
-              <Suspense fallback={<PlanSkeleton />}>
-                <TagVisibilityProvider defaultHidden={defaultHiddenTags}>
-                  <ConstructionPlanModalContent
-                    modelPromise={modelPromise}
-                    views={views}
-                    containerSize={containerSize}
-                    midCutActiveDefault={midCutActiveDefault}
-                    currentViewIndex={currentViewIndex}
-                    setCurrentViewIndex={setCurrentViewIndex}
-                  />
-                </TagVisibilityProvider>
-              </Suspense>
-            ) : null}
-            <PartHighlightPanel />
-          </div>
+        {model ? (
+          <div className="flex h-full w-full flex-col gap-2 overflow-hidden">
+            <div ref={containerRef} className="relative flex min-h-0 flex-1 overflow-hidden rounded-md border">
+              <TagVisibilityProvider defaultHidden={defaultHiddenTags}>
+                <ConstructionPlan
+                  model={model}
+                  views={views}
+                  containerSize={containerSize}
+                  midCutActiveDefault={midCutActiveDefault}
+                  currentViewIndex={currentViewIndex}
+                  setCurrentViewIndex={setCurrentViewIndex}
+                />
+              </TagVisibilityProvider>
+              <PartHighlightPanel />
+            </div>
 
-          <div className="flex w-full shrink-0">
-            {modelPromise ? (
-              <Suspense fallback={<PlanSkeleton />}>
-                <IssueDescriptionPanel modelPromise={modelPromise} />
-              </Suspense>
-            ) : null}
+            <div className="flex w-full shrink-0">
+              <IssueDescriptionPanel model={model} />
+            </div>
           </div>
-        </div>
+        ) : (
+          <PlanSkeleton />
+        )}
       </Tabs.Content>
       <Tabs.Content value="parts" className="flex min-h-0 flex-1 flex-col overflow-auto pt-3">
-        {partsDataPromise ? (
-          <Suspense fallback={<PartsSkeleton />}>
-            <PartsTabContent partsDataPromise={partsDataPromise} onViewInPlan={handleViewInPlan} />
-          </Suspense>
-        ) : (
-          <PartsSkeleton />
-        )}
+        {model ? <ConstructionPartsList modelId={modelId} onViewInPlan={handleViewInPlan} /> : <PartsSkeleton />}
       </Tabs.Content>
       <Tabs.Content value="modules" className="flex min-h-0 flex-1 flex-col overflow-auto pt-3">
-        {partsDataPromise ? (
-          <Suspense fallback={<PartsSkeleton />}>
-            <ModulesTabContent partsDataPromise={partsDataPromise} onViewInPlan={handleViewInPlan} />
-          </Suspense>
-        ) : (
-          <PartsSkeleton />
-        )}
+        {model ? <ConstructionVirtualPartsList modelId={modelId} onViewInPlan={handleViewInPlan} /> : <PartsSkeleton />}
       </Tabs.Content>
     </Tabs.Root>
   )
-}
-
-function ConstructionPlanModalContent({
-  modelPromise,
-  views,
-  containerSize,
-  midCutActiveDefault,
-  currentViewIndex,
-  setCurrentViewIndex
-}: {
-  modelPromise: Promise<ConstructionModel | null>
-  views: ViewOption[]
-  containerSize: { width: number; height: number }
-  midCutActiveDefault?: boolean
-  currentViewIndex: number
-  setCurrentViewIndex: (index: number) => void
-}) {
-  const { t } = useTranslation('construction')
-  const constructionModel = use(modelPromise)
-
-  if (!constructionModel) {
-    return (
-      <div className="flex items-center justify-center">
-        <Callout className="text-destructive">
-          <CalloutIcon>
-            <CrossCircledIcon />
-          </CalloutIcon>
-          <CalloutText>{t($ => $.planModal.errors.failedModel)}</CalloutText>
-        </Callout>
-      </div>
-    )
-  }
-
-  return (
-    <ConstructionPlan
-      model={constructionModel}
-      views={views}
-      containerSize={containerSize}
-      midCutActiveDefault={midCutActiveDefault}
-      currentViewIndex={currentViewIndex}
-      setCurrentViewIndex={setCurrentViewIndex}
-    />
-  )
-}
-
-function PartsTabContent({
-  partsDataPromise,
-  onViewInPlan
-}: {
-  partsDataPromise: Promise<PartsData | null>
-  onViewInPlan: (partId: string) => void
-}) {
-  const { t } = useTranslation('construction')
-  const partsData = use(partsDataPromise)
-
-  if (partsData == null) {
-    return (
-      <div className="flex">
-        <Callout className="text-destructive">
-          <CalloutIcon>
-            <CrossCircledIcon />
-          </CalloutIcon>
-          <CalloutText>{t($ => $.planModal.errors.failedPartsList)}</CalloutText>
-        </Callout>
-      </div>
-    )
-  }
-
-  return <ConstructionPartsList partsList={partsData.material} onViewInPlan={onViewInPlan} />
-}
-
-function ModulesTabContent({
-  partsDataPromise,
-  onViewInPlan
-}: {
-  partsDataPromise: Promise<PartsData | null>
-  onViewInPlan: (partId: string) => void
-}) {
-  const { t } = useTranslation('construction')
-  const partsData = use(partsDataPromise)
-
-  if (partsData == null) {
-    return (
-      <div className="flex">
-        <Callout className="text-destructive">
-          <CalloutIcon>
-            <CrossCircledIcon />
-          </CalloutIcon>
-          <CalloutText>{t($ => $.planModal.errors.failedModulesList)}</CalloutText>
-        </Callout>
-      </div>
-    )
-  }
-
-  return <ConstructionVirtualPartsList partsList={partsData.virtual} onViewInPlan={onViewInPlan} />
 }
 
 function PlanSkeleton() {

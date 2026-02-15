@@ -1,2 +1,9 @@
 export * from './types'
-export * from './list'
+export {
+  clearPartsLabelPersistence,
+  ensurePartsLoaded,
+  getLabelGroupId,
+  getPartsActions,
+  setupPartsSubscriptions
+} from './store'
+export * from './hooks'

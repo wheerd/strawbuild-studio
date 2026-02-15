@@ -1,4 +1,4 @@
-import type { InitialPartInfo } from '@/construction/parts'
+import type { InitialPartInfo } from '@/construction/parts/types'
 import {
   type Axis3D,
   Bounds3D,

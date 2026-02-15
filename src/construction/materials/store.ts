@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import { create } from 'zustand'
-import { devtools, persist } from 'zustand/middleware'
+import { devtools, persist, subscribeWithSelector } from 'zustand/middleware'
 
 import type {
   DimensionalMaterial,
@@ -150,154 +150,156 @@ const validateMaterialUpdates = (updates: Partial<UnionOmit<Material, 'id'>>, ma
 }
 
 const useMaterialsStore = create<MaterialsStore>()(
-  persist(
-    devtools(
-      (set, get, store) => ({
-        // Initialize with default materials
-        materials: { ...DEFAULT_MATERIALS },
-        timestamps: Object.fromEntries(Object.entries(DEFAULT_MATERIALS).map(([id]) => [id, Date.now()])),
+  subscribeWithSelector(
+    persist(
+      devtools(
+        (set, get, store) => ({
+          // Initialize with default materials
+          materials: { ...DEFAULT_MATERIALS },
+          timestamps: Object.fromEntries(Object.entries(DEFAULT_MATERIALS).map(([id]) => [id, Date.now()])),
 
-        actions: {
-          addMaterial: (materialData: UnionOmit<Material, 'id' | 'updatedAt'>) => {
-            validateMaterialName(materialData.name)
-            validateMaterialUpdates(materialData, materialData.type)
+          actions: {
+            addMaterial: (materialData: UnionOmit<Material, 'id' | 'updatedAt'>) => {
+              validateMaterialName(materialData.name)
+              validateMaterialUpdates(materialData, materialData.type)
 
-            const id = createMaterialId()
-            const material: Material = {
-              ...materialData,
-              id
-            } as Material
+              const id = createMaterialId()
+              const material: Material = {
+                ...materialData,
+                id
+              } as Material
 
-            set(state => ({
-              ...state,
-              materials: { ...state.materials, [id]: material },
-              timestamps: { ...state.timestamps, [id]: Date.now() }
-            }))
-
-            return material
-          },
-
-          removeMaterial: (id: MaterialId) => {
-            set(state => {
-              const { [id]: _removed, ...remainingMaterials } = state.materials
-              const { [id]: _timestampRemoved, ...remainingTimestamps } = state.timestamps
-              return {
+              set(state => ({
                 ...state,
-                materials: remainingMaterials,
-                timestamps: remainingTimestamps
-              }
-            })
-          },
-
-          updateMaterial: (id: MaterialId, updates: Partial<UnionOmit<Material, 'id' | 'type' | 'updatedAt'>>) => {
-            set(state => {
-              if (!(id in state.materials)) return state
-              const material = state.materials[id]
-
-              validateMaterialUpdates(updates, material.type)
-
-              // Check for name uniqueness (excluding current material)
-              if (updates.name !== undefined) {
-                const nameExists = Object.values(state.materials).some(
-                  mat => mat.id !== id && mat.name.trim().toLowerCase() === updates.name?.trim().toLowerCase()
-                )
-                if (nameExists) {
-                  throw new Error('A material with this name already exists')
-                }
-              }
-
-              const updatedMaterial: Material = {
-                ...material,
-                ...updates,
-                name: updates.name?.trim() ?? material.name,
-                // Clear nameKey if user is editing the name (indicates custom name)
-                nameKey: updates.name !== undefined ? undefined : material.nameKey
-              }
-
-              return {
-                ...state,
-                materials: { ...state.materials, [id]: updatedMaterial },
+                materials: { ...state.materials, [id]: material },
                 timestamps: { ...state.timestamps, [id]: Date.now() }
+              }))
+
+              return material
+            },
+
+            removeMaterial: (id: MaterialId) => {
+              set(state => {
+                const { [id]: _removed, ...remainingMaterials } = state.materials
+                const { [id]: _timestampRemoved, ...remainingTimestamps } = state.timestamps
+                return {
+                  ...state,
+                  materials: remainingMaterials,
+                  timestamps: remainingTimestamps
+                }
+              })
+            },
+
+            updateMaterial: (id: MaterialId, updates: Partial<UnionOmit<Material, 'id' | 'type' | 'updatedAt'>>) => {
+              set(state => {
+                if (!(id in state.materials)) return state
+                const material = state.materials[id]
+
+                validateMaterialUpdates(updates, material.type)
+
+                // Check for name uniqueness (excluding current material)
+                if (updates.name !== undefined) {
+                  const nameExists = Object.values(state.materials).some(
+                    mat => mat.id !== id && mat.name.trim().toLowerCase() === updates.name?.trim().toLowerCase()
+                  )
+                  if (nameExists) {
+                    throw new Error('A material with this name already exists')
+                  }
+                }
+
+                const updatedMaterial: Material = {
+                  ...material,
+                  ...updates,
+                  name: updates.name?.trim() ?? material.name,
+                  // Clear nameKey if user is editing the name (indicates custom name)
+                  nameKey: updates.name !== undefined ? undefined : material.nameKey
+                }
+
+                return {
+                  ...state,
+                  materials: { ...state.materials, [id]: updatedMaterial },
+                  timestamps: { ...state.timestamps, [id]: Date.now() }
+                }
+              })
+            },
+
+            duplicateMaterial: (id: MaterialId, newName: string) => {
+              const state = get()
+              if (!(id in state.materials)) throw new Error('Material not found')
+              const originalMaterial = state.materials[id]
+
+              validateMaterialName(newName)
+
+              // Check for name uniqueness
+              const nameExists = Object.values(state.materials).some(
+                mat => mat.name.trim().toLowerCase() === newName.trim().toLowerCase()
+              )
+              if (nameExists) {
+                throw new Error('A material with this name already exists')
               }
-            })
-          },
 
-          duplicateMaterial: (id: MaterialId, newName: string) => {
-            const state = get()
-            if (!(id in state.materials)) throw new Error('Material not found')
-            const originalMaterial = state.materials[id]
+              const newId = createMaterialId()
+              const duplicatedMaterial: Material = {
+                ...originalMaterial,
+                id: newId,
+                name: newName.trim()
+              }
 
-            validateMaterialName(newName)
+              set(state => ({
+                ...state,
+                materials: { ...state.materials, [newId]: duplicatedMaterial },
+                timestamps: { ...state.timestamps, [newId]: Date.now() }
+              }))
 
-            // Check for name uniqueness
-            const nameExists = Object.values(state.materials).some(
-              mat => mat.name.trim().toLowerCase() === newName.trim().toLowerCase()
-            )
-            if (nameExists) {
-              throw new Error('A material with this name already exists')
+              return duplicatedMaterial
+            },
+
+            // Queries
+            getMaterialById: (id: MaterialId) => {
+              const state = get()
+              return state.materials[id] ?? null
+            },
+
+            getAllMaterials: () => {
+              const state = get()
+              return Object.values(state.materials)
+            },
+
+            getMaterialsByType: (type: Material['type']) => {
+              const state = get()
+              return Object.values(state.materials).filter(material => material.type === type)
+            },
+
+            reset: () => {
+              set(store.getInitialState())
+            },
+
+            // Timestamps
+            getTimestamp: (id: MaterialId) => {
+              const state = get()
+              return state.timestamps[id] ?? null
+            },
+
+            clearAllTimestamps: () => {
+              set(state => ({
+                ...state,
+                timestamps: {}
+              }))
             }
-
-            const newId = createMaterialId()
-            const duplicatedMaterial: Material = {
-              ...originalMaterial,
-              id: newId,
-              name: newName.trim()
-            }
-
-            set(state => ({
-              ...state,
-              materials: { ...state.materials, [newId]: duplicatedMaterial },
-              timestamps: { ...state.timestamps, [newId]: Date.now() }
-            }))
-
-            return duplicatedMaterial
-          },
-
-          // Queries
-          getMaterialById: (id: MaterialId) => {
-            const state = get()
-            return state.materials[id] ?? null
-          },
-
-          getAllMaterials: () => {
-            const state = get()
-            return Object.values(state.materials)
-          },
-
-          getMaterialsByType: (type: Material['type']) => {
-            const state = get()
-            return Object.values(state.materials).filter(material => material.type === type)
-          },
-
-          reset: () => {
-            set(store.getInitialState())
-          },
-
-          // Timestamps
-          getTimestamp: (id: MaterialId) => {
-            const state = get()
-            return state.timestamps[id] ?? null
-          },
-
-          clearAllTimestamps: () => {
-            set(state => ({
-              ...state,
-              timestamps: {}
-            }))
           }
-        }
-      }),
-      { name: 'materials-store' }
-    ),
-    {
-      name: 'strawbaler-materials',
-      version: MATERIALS_STORE_VERSION,
-      partialize: state => ({
-        materials: state.materials,
-        timestamps: state.timestamps
-      }),
-      migrate: migrateMaterialsState
-    }
+        }),
+        { name: 'materials-store' }
+      ),
+      {
+        name: 'strawbaler-materials',
+        version: MATERIALS_STORE_VERSION,
+        partialize: state => ({
+          materials: state.materials,
+          timestamps: state.timestamps
+        }),
+        migrate: migrateMaterialsState
+      }
+    )
   )
 )
 

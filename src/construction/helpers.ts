@@ -37,7 +37,7 @@ import {
 
 import { createConstructionElement } from './elements'
 import type { MaterialId } from './materials/material'
-import { type InitialPartInfo } from './parts'
+import type { InitialPartInfo } from './parts/types'
 import { type ConstructionResult, yieldElement, yieldWarning } from './results'
 import { createExtrudedPolygon } from './shapes'
 import type { Tag } from './tags'

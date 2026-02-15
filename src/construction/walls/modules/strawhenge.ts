@@ -9,7 +9,7 @@ import { yieldMeasurementFromArea } from '@/construction/measurements'
 import type { ConstructionModel } from '@/construction/model'
 import { mergeModels } from '@/construction/model'
 import type { ConstructionResult } from '@/construction/results'
-import { aggregateResults } from '@/construction/results'
+import { aggregateResults, assignDeterministicIdsToResults } from '@/construction/results'
 import type { StoreyContext } from '@/construction/storeys/context'
 import { TAG_POST_SPACING, TAG_STRAWHENGE_CONSTRUCTION } from '@/construction/tags'
 import type { StrawhengeWallConfig } from '@/construction/walls'
@@ -34,6 +34,8 @@ export class StrawhengeWallAssembly extends BaseWallAssembly<StrawhengeWallConfi
         false
       )
     )
+
+    assignDeterministicIdsToResults(allResults, wall.id)
 
     const aggRes = aggregateResults(allResults)
     const baseModel: ConstructionModel = {

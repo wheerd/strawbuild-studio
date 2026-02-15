@@ -2,7 +2,7 @@ import type { MaterialId } from '@/construction/materials/material'
 import { type Bounds3D, IDENTITY, type Transform, type Vec3, fromTrans } from '@/shared/geometry'
 import { createId } from '@/shared/utils/ids'
 
-import type { InitialPartInfo, PartInfo } from './parts'
+import type { InitialPartInfo, PartInfo } from './parts/types'
 import type { ConstructionIssueId } from './results'
 import { type Shape, createCuboid } from './shapes'
 import type { Tag } from './tags'

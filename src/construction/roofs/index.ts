@@ -3,7 +3,6 @@ import { getModelActions } from '@/building/store'
 import { getConfigActions } from '@/construction/config'
 import { getPerimeterContextCached } from '@/construction/derived/perimeterContextCache'
 import { type ConstructionModel, createUnsupportedModel } from '@/construction/model'
-import { type PerimeterConstructionContext } from '@/construction/perimeters/context'
 import { PurlinRoofAssembly } from '@/construction/roofs/purlin'
 
 import { MonolithicRoofAssembly } from './monolithic'
@@ -22,7 +21,7 @@ export function resolveRoofAssembly(config: RoofConfig): RoofAssembly {
 
 export * from './types'
 
-export function constructRoof(roof: Roof, contexts?: PerimeterConstructionContext[]): ConstructionModel {
+export function constructRoof(roof: Roof): ConstructionModel {
   const { getRoofAssemblyById } = getConfigActions()
   const assemblyConfig = getRoofAssemblyById(roof.assemblyId)
 
@@ -30,7 +29,7 @@ export function constructRoof(roof: Roof, contexts?: PerimeterConstructionContex
     return createUnsupportedModel($ => $.construction.roof.invalidAssembly, undefined, 'invalid-roof-assembly')
   }
 
-  contexts ??= getModelActions()
+  const contexts = getModelActions()
     .getPerimetersByStorey(roof.storeyId)
     .map(p => getPerimeterContextCached(p.id))
 

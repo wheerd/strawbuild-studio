@@ -95,7 +95,7 @@ export function ErrorFallback({ error, resetErrorBoundary }: FallbackProps): Rea
               <span className="text-sm">{t($ => $.boundary.dataRecovery.description)}</span>
               <AlertDialog>
                 <AlertDialogTrigger asChild>
-                  <Button variant="secondary" className="text-orange-600 dark:text-orange-400">
+                  <Button variant="secondary" className="text-orange-500 dark:text-orange-400">
                     {t($ => $.boundary.dataRecovery.hardReset)}
                   </Button>
                 </AlertDialogTrigger>

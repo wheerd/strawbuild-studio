@@ -7,7 +7,7 @@ import type { LayerConfig } from '@/construction/layers/types'
 import { transformManifold } from '@/construction/manifold/operations'
 import { type ConstructionModel } from '@/construction/model'
 import type { PerimeterConstructionContext } from '@/construction/perimeters/context'
-import { type ConstructionResult, yieldAsGroup } from '@/construction/results'
+import { type ConstructionResult, yieldAsGroup, yieldWithDeterministicIds } from '@/construction/results'
 import { createExtrudedPolygon } from '@/construction/shapes'
 import { VerticalOffsetMap } from '@/construction/storeys/offsets'
 import {
@@ -303,7 +303,7 @@ export abstract class BaseRoofAssembly<T extends RoofAssemblyConfigBase> impleme
 
     let zOffset = this.constructionThickness + this.topLayerOffset
 
-    for (const layer of this.config.layers.topLayers) {
+    for (const [layerIndex, layer] of this.config.layers.topLayers.entries()) {
       const preparedPolygon = this.preparePolygonForConstruction(
         roofSide.polygon,
         roof.ridgeLine,
@@ -313,7 +313,10 @@ export abstract class BaseRoofAssembly<T extends RoofAssemblyConfigBase> impleme
         roofSide.dirToRidge
       )
 
-      const results = this.runLayerConstruction({ outer: preparedPolygon, holes: [] }, zOffset, layer)
+      const results = yieldWithDeterministicIds(
+        this.runLayerConstruction({ outer: preparedPolygon, holes: [] }, zOffset, layer),
+        `${roof.id}_top_${layerIndex}`
+      )
 
       const nameKey = layer.nameKey
       const customTag = createTag('roof-layer', layer.name, nameKey ? t => t(nameKey, { ns: 'config' }) : layer.name)
@@ -348,7 +351,7 @@ export abstract class BaseRoofAssembly<T extends RoofAssemblyConfigBase> impleme
     // Reverse order: bottom to top
     const reversedLayers = [...this.config.layers.insideLayers].reverse()
 
-    for (const layer of reversedLayers) {
+    for (const [layerIndex, layer] of reversedLayers.entries()) {
       for (const ceilingPoly of sideCeilingPolygons) {
         const preparedOuter = this.preparePolygonForConstruction(
           ceilingPoly,
@@ -359,8 +362,10 @@ export abstract class BaseRoofAssembly<T extends RoofAssemblyConfigBase> impleme
           roofSide.dirToRidge
         )
 
-        const results = this.runLayerConstruction({ outer: preparedOuter, holes: [] }, zOffset, layer)
-
+        const results = yieldWithDeterministicIds(
+          this.runLayerConstruction({ outer: preparedOuter, holes: [] }, zOffset, layer),
+          `${roof.id}_ceil_${layerIndex}`
+        )
         const nameKey = layer.nameKey
         const customTag = createTag('roof-layer', layer.name, nameKey ? t => t(nameKey, { ns: 'config' }) : layer.name)
         yield* yieldAsGroup(results, [TAG_ROOF_LAYER_INSIDE, TAG_LAYERS, customTag])
@@ -389,7 +394,7 @@ export abstract class BaseRoofAssembly<T extends RoofAssemblyConfigBase> impleme
     // Reverse order: bottom to top
     const reversedLayers = [...this.config.layers.overhangLayers].reverse()
 
-    for (const layer of reversedLayers) {
+    for (const [layerIndex, layer] of reversedLayers.entries()) {
       for (const overhangPoly of sideOverhangPolygons) {
         const preparedOuter = this.preparePolygonForConstruction(
           overhangPoly.outer,
@@ -410,7 +415,10 @@ export abstract class BaseRoofAssembly<T extends RoofAssemblyConfigBase> impleme
           )
         )
 
-        const results = this.runLayerConstruction({ outer: preparedOuter, holes: preparedHoles }, zOffset, layer)
+        const results = yieldWithDeterministicIds(
+          this.runLayerConstruction({ outer: preparedOuter, holes: preparedHoles }, zOffset, layer),
+          `${roof.id}_over_${layerIndex}`
+        )
 
         const nameKey = layer.nameKey
         const customTag = createTag('roof-layer', layer.name, nameKey ? t => t(nameKey, { ns: 'config' }) : layer.name)
