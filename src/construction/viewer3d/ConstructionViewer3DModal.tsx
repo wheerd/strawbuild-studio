@@ -38,7 +38,6 @@ export function ConstructionViewer3DModal({ modelId, trigger }: ConstructionView
       trigger={trigger}
     >
       <div className="flex h-full w-full flex-col">
-        <ConstructionModelStatusBanner />
         <div
           ref={containerRef}
           className="relative min-h-0 flex-1 overflow-hidden rounded-md border"
@@ -73,6 +72,10 @@ export function ConstructionViewer3DModal({ modelId, trigger }: ConstructionView
               <ConstructionViewer3DContent modelId={modelId} containerSize={containerSize} isOpen={isOpen} />
             </TagOpacityProvider>
           </Suspense>
+
+          <div className="absolute right-3 bottom-3 z-10 p-0">
+            <ConstructionModelStatusBanner compact />
+          </div>
         </div>
       </div>
     </FullScreenModal>

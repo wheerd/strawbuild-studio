@@ -65,7 +65,7 @@
   "modelStatus": {
     "outdatedWarning": "Das Konstruktionsmodell ist veraltet. Änderungen am Gebäude wurden noch nicht übernommen.",
     "rebuilding": "Modell wird neu generiert...",
-    "regenerate": "Neu generieren"
+    "regenerate": "Modell neu generieren"
   },
   "modulesList": {
     "actions": {
@@ -104,15 +104,10 @@
       "specialCutPreview": "Vorschau Sonderschnitt",
       "viewInPlan": "In Plan anzeigen"
     },
-    "groups": {
-      "allParts": "Alle Teile",
-      "strawbales": "Strohballen"
-    },
     "issues": {
       "dimensionsExceedSizeMultiple": "Abmessungen überschreiten verfügbare Plattengrößen. Für dieses Teil werden mehrere Platten benötigt.",
       "dimensionsExceedSizeSingle": "Abmessungen überschreiten verfügbare Plattengrößen.",
       "dimensionsMismatchThickness": "Abmessungen stimmen nicht mit verfügbaren Dicken überein",
-      "groupMismatch": "Diese Gruppe stimmt nicht mit den definierten Materialoptionen überein",
       "lengthExceedsMultiple": "Teillänge überschreitet maximale verfügbare Länge. Für dieses Teil werden mehrere Stücke benötigt.",
       "lengthExceedsSingle": "Teillänge überschreitet maximale verfügbare Länge."
     },

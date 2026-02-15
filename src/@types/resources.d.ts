@@ -690,7 +690,7 @@ interface Resources {
     "modelStatus": {
       "outdatedWarning": "The construction model is outdated. Changes to the building have not been applied yet.",
       "rebuilding": "Regenerating model...",
-      "regenerate": "Regenerate"
+      "regenerate": "Regenerate model"
     },
     "moduleTypes": {
       "double": "Double",
@@ -729,15 +729,10 @@ interface Resources {
         "specialCutPreview": "Special cut polygon preview",
         "viewInPlan": "View in plan"
       },
-      "groups": {
-        "allParts": "All parts",
-        "strawbales": "Strawbales"
-      },
       "issues": {
         "dimensionsExceedSizeMultiple": "Dimensions exceed available sheet sizes. This part will require multiple sheets.",
         "dimensionsExceedSizeSingle": "Dimensions exceed available sheet sizes.",
         "dimensionsMismatchThickness": "Dimensions do not match available thicknesses",
-        "groupMismatch": "This group does not match the defined material options",
         "lengthExceedsMultiple": "Part length exceeds maximum available length. This part will require multiple pieces.",
         "lengthExceedsSingle": "Part length exceeds maximum available length."
       },

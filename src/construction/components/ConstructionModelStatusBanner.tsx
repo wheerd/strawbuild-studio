@@ -7,12 +7,13 @@ import { Spinner } from '@/components/ui/spinner'
 import { Tooltip } from '@/components/ui/tooltip'
 import { useConstructionActions, useHasConstructionModel, useIsConstructionOutdated } from '@/construction/store'
 
-export function ConstructionModelStatusBanner(): React.JSX.Element | null {
+export function ConstructionModelStatusBanner({ compact }: { compact?: boolean }): React.JSX.Element | null {
   const { t } = useTranslation('construction')
   const hasModel = useHasConstructionModel()
   const { rebuildModel } = useConstructionActions()
   const isOutdated = useIsConstructionOutdated()
 
+  const label = hasModel ? t($ => $.modelStatus.regenerate) : t($ => $.modelStatus.rebuilding)
   return (
     <div className="flex items-center gap-2 text-sm">
       {isOutdated && (
@@ -21,16 +22,17 @@ export function ConstructionModelStatusBanner(): React.JSX.Element | null {
         </Tooltip>
       )}
       <Button
-        size="sm"
+        size={compact ? 'icon-sm' : 'sm'}
         variant="secondary"
         onClick={rebuildModel}
         className={
           isOutdated && hasModel ? 'text-destructive-foreground bg-orange-500 hover:bg-orange-500/80' : undefined
         }
         disabled={!hasModel}
+        title={compact ? label : undefined}
       >
         {hasModel ? <ReloadIcon className="mr-1" /> : <Spinner size="sm" />}
-        {hasModel ? t($ => $.modelStatus.regenerate) : t($ => $.modelStatus.rebuilding)}
+        {!compact && label}
       </Button>
     </div>
   )
