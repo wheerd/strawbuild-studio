@@ -1,24 +1,14 @@
 import { create } from 'zustand'
 
-import { ensureConstructionLoaded, getConstructionModel } from '@/construction/store'
-import { useConstructionStore } from '@/construction/store/store'
+import {
+  ensureConstructionLoaded,
+  getConstructionModel,
+  subscribeToConstructionModelChanges
+} from '@/construction/store'
 
 import { generatePartsData } from './generation'
+import { indexToLabel } from './shared'
 import type { LocationFilter, PartDefinition, PartId, PartsStore, PartsStoreState } from './types'
-
-const indexToLabel = (index: number): string => {
-  const alphabetLength = 26
-  let current = index
-  let label = ''
-
-  do {
-    const remainder = current % alphabetLength
-    label = String.fromCharCode(65 + remainder) + label
-    current = Math.floor(current / alphabetLength) - 1
-  } while (current >= 0)
-
-  return label
-}
 
 const getLabelGroupId = (definition: PartDefinition): string =>
   definition.source === 'group' ? 'virtual' : `material:${definition.materialId}`
@@ -150,12 +140,8 @@ export function setupPartsSubscriptions() {
   if (subscribed) return
   subscribed = true
 
-  let previousGeneratedAt = useConstructionStore.getState().generatedAt
-  useConstructionStore.subscribe(state => {
-    if (state.generatedAt !== previousGeneratedAt && state.generatedAt > 0) {
-      previousGeneratedAt = state.generatedAt
-      usePartsStore.getState().actions.rebuildParts()
-    }
+  subscribeToConstructionModelChanges(() => {
+    usePartsStore.getState().actions.rebuildParts()
   })
 }
 

@@ -1,4 +1,5 @@
 import { create } from 'zustand'
+import { subscribeWithSelector } from 'zustand/middleware'
 
 import type { PerimeterWallId } from '@/building/model/ids'
 import { getModelActions, subscribeToModelChanges } from '@/building/store'
@@ -26,6 +27,7 @@ import {
   type CompositeModel,
   type ConstructionStore,
   type ConstructionStoreState,
+  type ModelEntry,
   type ModelId
 } from './types'
 import {
@@ -37,123 +39,122 @@ import {
   createTopPlateId
 } from './utils'
 
-export const useConstructionStore = create<ConstructionStore>()((set, get) => ({
-  conlinearMapping: {},
-  models: {},
-  cache: {},
-  generatedAt: 0,
-  lastSourceChange: Date.now(),
-  hasModel: false,
-  rebuilding: false,
+export const useConstructionStore = create<ConstructionStore>()(
+  subscribeWithSelector((set, get) => ({
+    conlinearMapping: {},
+    models: {},
+    cache: {},
+    generatedAt: 0,
+    lastSourceChange: Date.now(),
+    hasModel: false,
+    rebuilding: false,
 
-  actions: {
-    rebuildModel(): void {
-      set(state => ({ ...state, hasModel: false, rebuilding: true }))
+    actions: {
+      rebuildModel(): void {
+        set(state => ({ ...state, hasModel: false, rebuilding: true }))
 
-      const { getStoreysOrderedByLevel, getPerimetersByStorey, getRoofsByStorey } = getModelActions()
+        const { models, conlinearMapping } = rebuildModel()
 
-      const models: ConstructionStoreState['models'] = {}
-      const conlinearMapping: Record<PerimeterWallId, ColinearWallId> = {}
+        set(state => ({
+          ...state,
+          models,
+          conlinearMapping,
+          cache: {},
+          generatedAt: Date.now(),
+          hasModel: true,
+          rebuilding: false
+        }))
+      },
 
-      const storeys = getStoreysOrderedByLevel()
+      getModel(modelId: ModelId): ConstructionModel {
+        const state = get()
 
-      for (const storey of storeys) {
-        const perimeters = getPerimetersByStorey(storey.id)
-
-        for (const perimeter of perimeters) {
-          for (const wallId of perimeter.wallIds) {
-            models[wallId] = { model: buildWallCoreModel(wallId).model, sourceId: wallId }
-          }
-
-          const colinearGroups = findColinearWallGroups(perimeter)
-          for (const group of colinearGroups) {
-            const colinearId = createColinearWallId(group.wallIds[0])
-            models[colinearId] = buildColinearWallComposite(group)
-            for (const wallId of group.wallIds) {
-              conlinearMapping[wallId] = colinearId
-            }
-          }
-
-          models[createFloorId(perimeter.id)] = buildFloorCoreModel(perimeter.id)
-          models[createBasePlateId(perimeter.id)] = { model: constructBasePlate(perimeter.id) }
-          models[createTopPlateId(perimeter.id)] = { model: constructTopPlate(perimeter.id) }
-          models[createPerimeterMeasurementsId(perimeter.id)] = { model: createPerimeterMeasurementsModel(perimeter) }
-
-          models[perimeter.id] = buildPerimeterComposite(perimeter)
-
-          models[createFullPerimeterId(perimeter.id)] = buildFullPerimeterComposite(perimeter.id)
+        const cached = state.cache[modelId]
+        if (cached) {
+          return cached
         }
 
-        const roofs = getRoofsByStorey(storey.id)
-        for (const roof of roofs) {
-          models[roof.id] = buildRoofCoreModel(roof.id)
+        const entry = state.models[modelId]
+        if (!entry) {
+          throw new Error(`Model ${modelId} not found. Call rebuildModel() first.`)
         }
-      }
 
-      for (const storey of storeys) {
-        models[storey.id] = buildStoreyComposite(storey.id)
-      }
+        const result = 'model' in entry ? entry.model : composeComposite(entry, state.models, state.cache)
 
-      models[BUILDING_ID] = buildBuildingComposite()
-
-      set(state => ({
-        ...state,
-        models,
-        conlinearMapping,
-        cache: {},
-        generatedAt: Date.now(),
-        hasModel: true,
-        rebuilding: false
-      }))
-    },
-
-    getModel(modelId: ModelId): ConstructionModel {
-      const state = get()
-
-      const cached = state.cache[modelId]
-      if (cached) {
-        return cached
-      }
-
-      const entry = state.models[modelId]
-      if (!entry) {
-        throw new Error(`Model ${modelId} not found. Call rebuildModel() first.`)
-      }
-
-      let result: ConstructionModel
-
-      if ('model' in entry) {
-        result = entry.model
-      } else {
-        result = composeComposite(entry, state.models, state.cache)
         set(state => ({
           ...state,
           cache: { ...state.cache, [modelId]: result }
         }))
+
         return result
+      },
+
+      isOutdated(): boolean {
+        const { generatedAt, lastSourceChange } = get()
+        return generatedAt < lastSourceChange
+      },
+
+      clearCache(): void {
+        set(state => ({
+          ...state,
+          cache: {}
+        }))
+      }
+    }
+  }))
+)
+
+function rebuildModel(): {
+  models: Partial<Record<ModelId, ModelEntry>>
+  conlinearMapping: Record<`outwall_${string}`, `colinear_${string}`>
+} {
+  const { getStoreysOrderedByLevel, getPerimetersByStorey, getRoofsByStorey } = getModelActions()
+
+  const models: ConstructionStoreState['models'] = {}
+  const conlinearMapping: Record<PerimeterWallId, ColinearWallId> = {}
+
+  const storeys = getStoreysOrderedByLevel()
+
+  for (const storey of storeys) {
+    const perimeters = getPerimetersByStorey(storey.id)
+
+    for (const perimeter of perimeters) {
+      for (const wallId of perimeter.wallIds) {
+        models[wallId] = { model: buildWallCoreModel(wallId).model, sourceId: wallId }
       }
 
-      set(state => ({
-        ...state,
-        cache: { ...state.cache, [modelId]: result }
-      }))
+      const colinearGroups = findColinearWallGroups(perimeter)
+      for (const group of colinearGroups) {
+        const colinearId = createColinearWallId(group.wallIds[0])
+        models[colinearId] = buildColinearWallComposite(group)
+        for (const wallId of group.wallIds) {
+          conlinearMapping[wallId] = colinearId
+        }
+      }
 
-      return result
-    },
+      models[createFloorId(perimeter.id)] = buildFloorCoreModel(perimeter.id)
+      models[createBasePlateId(perimeter.id)] = { model: constructBasePlate(perimeter.id) }
+      models[createTopPlateId(perimeter.id)] = { model: constructTopPlate(perimeter.id) }
+      models[createPerimeterMeasurementsId(perimeter.id)] = { model: createPerimeterMeasurementsModel(perimeter) }
 
-    isOutdated(): boolean {
-      const { generatedAt, lastSourceChange } = get()
-      return generatedAt < lastSourceChange
-    },
+      models[perimeter.id] = buildPerimeterComposite(perimeter)
 
-    clearCache(): void {
-      set(state => ({
-        ...state,
-        cache: {}
-      }))
+      models[createFullPerimeterId(perimeter.id)] = buildFullPerimeterComposite(perimeter.id)
+    }
+
+    const roofs = getRoofsByStorey(storey.id)
+    for (const roof of roofs) {
+      models[roof.id] = buildRoofCoreModel(roof.id)
     }
   }
-}))
+
+  for (const storey of storeys) {
+    models[storey.id] = buildStoreyComposite(storey.id)
+  }
+
+  models[BUILDING_ID] = buildBuildingComposite()
+  return { models, conlinearMapping }
+}
 
 function composeComposite(
   composite: CompositeModel,
@@ -192,6 +193,9 @@ export function getConstructionModel() {
   ensureConstructionLoaded()
   return useConstructionStore.getState().actions.getModel(BUILDING_ID)
 }
+
+export const subscribeToConstructionModelChanges = (cb: () => void) =>
+  useConstructionStore.subscribe(state => state.generatedAt, cb)
 
 let subscribed = false
 function setupSubscriptions() {
