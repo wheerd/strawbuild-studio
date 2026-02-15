@@ -1,5 +1,4 @@
-import type { CrossSection, DimensionalMaterial, MaterialId, SheetMaterial } from '@/construction/materials/material'
-import { getMaterialById } from '@/construction/materials/store'
+import type { CrossSection, DimensionalMaterial, Material, SheetMaterial } from '@/construction/materials/material'
 import {
   TAG_FLOOR_INFILL,
   TAG_FLOOR_LAYER_BOTTOM,
@@ -173,7 +172,7 @@ export interface MaterialMetrics {
 
 export function computeMaterialMetrics(
   geometryInfo: { boxSize: Vec3; sideFaces?: SideFace[] },
-  materialDefinition: ReturnType<typeof getMaterialById>,
+  material: Material | null,
   hasPartInfo: boolean
 ): MaterialMetrics {
   const { boxSize, sideFaces } = geometryInfo
@@ -184,14 +183,14 @@ export function computeMaterialMetrics(
   let crossSection: CrossSection | undefined
   let issue: PartIssue | undefined
 
-  if (materialDefinition?.type === 'dimensional') {
-    const details = computeDimensionalDetails(boxSize, materialDefinition)
+  if (material?.type === 'dimensional') {
+    const details = computeDimensionalDetails(boxSize, material)
     length = details.length
     issue = hasPartInfo ? details.issue : undefined
     crossSection = details.crossSection
     volume = computeVolume(boxSize)
-  } else if (materialDefinition?.type === 'sheet') {
-    const details = computeSheetDetails(boxSize, materialDefinition)
+  } else if (material?.type === 'sheet') {
+    const details = computeSheetDetails(boxSize, material)
     thickness = details.thickness
     issue = hasPartInfo ? details.issue : undefined
 
@@ -206,7 +205,7 @@ export function computeMaterialMetrics(
       area = details.areaSize[0] * details.areaSize[1]
     }
     volume = thickness * area
-  } else if (materialDefinition?.type === 'volume') {
+  } else if (material?.type === 'volume') {
     if (hasPartInfo && sideFaces?.[0]) {
       area = calculatePolygonWithHolesArea(sideFaces[0].polygon)
       thickness = boxSize[sideFaces[0].index]
@@ -217,7 +216,7 @@ export function computeMaterialMetrics(
       thickness = sorted[0]
       volume = thickness * area
     }
-  } else if (materialDefinition?.type === 'prefab') {
+  } else if (material?.type === 'prefab') {
     area = sideFaces?.[0] ? calculatePolygonWithHolesArea(sideFaces[0].polygon) : boxSize[0] * boxSize[2]
     volume = area * boxSize[1]
   } else {
@@ -235,13 +234,10 @@ export function computeMaterialMetrics(
   }
 }
 
-export function computePartIdWithInfo(fullPartInfo: FullPartInfo, tags: Tag[], materialId: MaterialId): PartId {
-  const materialDefinition = getMaterialById(materialId)
-  const isStrawbaleMaterial = materialDefinition?.type === 'strawbale'
-
-  if (isStrawbaleMaterial) {
+export function computePartIdWithInfo(fullPartInfo: FullPartInfo, tags: Tag[], material: Material | null): PartId {
+  if (material?.type === 'strawbale') {
     const strawCategory = getStrawCategoryFromTags(tags)
-    return `strawbale-${materialId}:${strawCategory}` as PartId
+    return `strawbale-${material.id}:${strawCategory}` as PartId
   }
 
   return fullPartInfo.id
@@ -250,24 +246,24 @@ export function computePartIdWithInfo(fullPartInfo: FullPartInfo, tags: Tag[], m
 export function computePartIdWithoutInfo(
   tags: Tag[],
   geometryInfo: { boxSize: Vec3 },
-  materialDefinition: ReturnType<typeof getMaterialById>
+  material: Material | null
 ): PartId {
   let partId: PartId
 
   const mappedInfo = findMappedTag(tags)
   if (mappedInfo) {
-    partId = `auto_${materialDefinition?.id}_${mappedInfo.tag.id}` as PartId
+    partId = `auto_${material?.id}_${mappedInfo.tag.id}` as PartId
   } else {
-    partId = `auto_${materialDefinition?.id}_misc` as PartId
+    partId = `auto_${material?.id}_misc` as PartId
   }
 
-  if (materialDefinition?.type === 'sheet') {
-    const details = computeSheetDetails(geometryInfo.boxSize, materialDefinition)
+  if (material?.type === 'sheet') {
+    const details = computeSheetDetails(geometryInfo.boxSize, material)
     partId = `${partId}_${details.thickness}` as PartId
-  } else if (materialDefinition?.type === 'dimensional') {
-    const details = computeDimensionalDetails(geometryInfo.boxSize, materialDefinition)
+  } else if (material?.type === 'dimensional') {
+    const details = computeDimensionalDetails(geometryInfo.boxSize, material)
     partId = `${partId}_${details.crossSection.smallerLength}x${details.crossSection.biggerLength}` as PartId
-  } else if (materialDefinition?.type === 'volume') {
+  } else if (material?.type === 'volume') {
     const sorted = Array.from(geometryInfo.boxSize).sort((a, b) => a - b)
     const thickness = sorted[0]
     partId = `${partId}_${thickness}` as PartId

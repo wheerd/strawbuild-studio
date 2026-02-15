@@ -129,7 +129,7 @@ export function generatePartsData(model: ConstructionModel): PartsGenerationResu
 
     let partId: PartId
     if (hasPartInfo && fullPartInfo) {
-      partId = computePartIdWithInfo(fullPartInfo, tags, element.material)
+      partId = computePartIdWithInfo(fullPartInfo, tags, materialDefinition)
     } else {
       partId = computePartIdWithoutInfo(tags, geometryInfo, materialDefinition)
     }
