@@ -92,7 +92,6 @@ export default function DimensionalPartsTable({
   onViewInPlan?: (partId: PartId) => void
 }) {
   const { t } = useTranslation('construction')
-  const { formatWeight, formatVolume, formatLengthInMeters } = useFormatters()
 
   return (
     <Table.Root variant="surface" className="min-w-full">
@@ -124,82 +123,92 @@ export default function DimensionalPartsTable({
         </Table.Row>
       </Table.Header>
       <Table.Body>
-        {parts.map(part => {
-          const partWeight = calculateWeight(part.totalVolume, material)
-          const severity = getIssueSeverity(part)
-          return (
-            <Table.Row key={part.partId} className={severity === 'error' ? 'bg-red-100 hover:bg-red-200' : undefined}>
-              <Table.RowHeaderCell className="text-center">
-                <span className="font-medium">{part.label}</span>
-              </Table.RowHeaderCell>
-              <Table.Cell>{part.type}</Table.Cell>
-              <Table.Cell>
-                <div className="flex items-center gap-2">
-                  <span>{useTranslatableString(part.description)}</span>
-                  {part.sideFaces?.length && part.sideFaces[0].polygon.outer.points.length >= 3 && (
-                    <>
-                      <Tooltip
-                        key="special-cut"
-                        content={<SpecialCutTooltip polygon={part.sideFaces[0].polygon.outer} />}
-                      >
-                        <ExclamationTriangleIcon aria-hidden className="text-orange-500" />
-                      </Tooltip>
-                      <PartCutModal
-                        trigger={
-                          <Button size="icon" variant="outline" className="rounded-full">
-                            <SawIcon />
-                          </Button>
-                        }
-                        polygon={part.sideFaces[0].polygon}
-                      />
-                    </>
-                  )}
-                </div>
-              </Table.Cell>
-              <Table.Cell className="text-center">{part.quantity}</Table.Cell>
-              <Table.Cell className="text-end">
-                <div className="flex items-center justify-end gap-2 text-end">
-                  {part.issue === 'LengthExceedsAvailable' && material.lengths.length > 0 && (
-                    <Tooltip
-                      key="length-exceeds-available"
-                      content={
-                        part.requiresSinglePiece
-                          ? t($ => $.partsList.issues.lengthExceedsSingle)
-                          : t($ => $.partsList.issues.lengthExceedsMultiple)
-                      }
-                    >
-                      <ExclamationTriangleIcon
-                        className={part.requiresSinglePiece ? 'text-red-600' : 'text-orange-500'}
-                      />
-                    </Tooltip>
-                  )}
-                  <span>{part.length !== undefined ? formatLengthInMeters(part.length) : '—'}</span>
-                </div>
-              </Table.Cell>
-              <Table.Cell className="text-end">
-                {part.totalLength !== undefined ? formatLengthInMeters(part.totalLength) : '—'}
-              </Table.Cell>
-              <Table.Cell className="text-end">{formatVolume(part.totalVolume)}</Table.Cell>
-              <Table.Cell className="text-end">{partWeight != null ? formatWeight(partWeight) : '—'}</Table.Cell>
-              <Table.Cell className="text-center">
-                {canHighlightPart(part.partId) && onViewInPlan && (
-                  <Button
-                    size="icon-sm"
-                    variant="ghost"
-                    onClick={() => {
-                      onViewInPlan(part.partId)
-                    }}
-                    title={t($ => $.partsList.actions.viewInPlan)}
-                    className="-my-2"
-                  >
-                    <EyeOpenIcon />
-                  </Button>
-                )}
-              </Table.Cell>
-            </Table.Row>
-          )
-        })}
+        {parts.map(part => (
+          <DimensionalPartsTableRow key={part.partId} part={part} material={material} onViewInPlan={onViewInPlan} />
+        ))}
       </Table.Body>
     </Table.Root>
+  )
+}
+
+function DimensionalPartsTableRow({
+  part,
+  material,
+  onViewInPlan
+}: {
+  part: AggregatedPartItem
+  material: DimensionalMaterial
+  onViewInPlan?: (partId: PartId) => void
+}) {
+  const { t } = useTranslation('construction')
+  const { formatWeight, formatVolume, formatLengthInMeters } = useFormatters()
+  const description = useTranslatableString(part.description)
+
+  const partWeight = calculateWeight(part.totalVolume, material)
+  const severity = getIssueSeverity(part)
+
+  return (
+    <Table.Row key={part.partId} className={severity === 'error' ? 'bg-red-100 hover:bg-red-200' : undefined}>
+      <Table.RowHeaderCell className="text-center">
+        <span className="font-medium">{part.label}</span>
+      </Table.RowHeaderCell>
+      <Table.Cell>{part.type}</Table.Cell>
+      <Table.Cell>
+        <div className="flex items-center gap-2">
+          <span>{description}</span>
+          {part.sideFaces?.length && part.sideFaces[0].polygon.outer.points.length >= 3 && (
+            <>
+              <Tooltip key="special-cut" content={<SpecialCutTooltip polygon={part.sideFaces[0].polygon.outer} />}>
+                <ExclamationTriangleIcon aria-hidden className="text-orange-500" />
+              </Tooltip>
+              <PartCutModal
+                trigger={
+                  <Button size="icon" variant="outline" className="rounded-full">
+                    <SawIcon />
+                  </Button>
+                }
+                polygon={part.sideFaces[0].polygon}
+              />
+            </>
+          )}
+        </div>
+      </Table.Cell>
+      <Table.Cell className="text-center">{part.quantity}</Table.Cell>
+      <Table.Cell className="text-end">
+        <div className="flex items-center justify-end gap-2 text-end">
+          {part.issue === 'LengthExceedsAvailable' && material.lengths.length > 0 && (
+            <Tooltip
+              key="length-exceeds-available"
+              content={
+                part.requiresSinglePiece
+                  ? t($ => $.partsList.issues.lengthExceedsSingle)
+                  : t($ => $.partsList.issues.lengthExceedsMultiple)
+              }
+            >
+              <ExclamationTriangleIcon className={part.requiresSinglePiece ? 'text-red-600' : 'text-orange-500'} />
+            </Tooltip>
+          )}
+          <span>{part.length ? formatLengthInMeters(part.length) : '—'}</span>
+        </div>
+      </Table.Cell>
+      <Table.Cell className="text-end">{part.totalLength ? formatLengthInMeters(part.totalLength) : '—'}</Table.Cell>
+      <Table.Cell className="text-end">{formatVolume(part.totalVolume)}</Table.Cell>
+      <Table.Cell className="text-end">{partWeight ? formatWeight(partWeight) : '—'}</Table.Cell>
+      <Table.Cell className="text-center">
+        {canHighlightPart(part.partId) && onViewInPlan && (
+          <Button
+            size="icon-sm"
+            variant="ghost"
+            onClick={() => {
+              onViewInPlan(part.partId)
+            }}
+            title={t($ => $.partsList.actions.viewInPlan)}
+            className="-my-2"
+          >
+            <EyeOpenIcon />
+          </Button>
+        )}
+      </Table.Cell>
+    </Table.Row>
   )
 }

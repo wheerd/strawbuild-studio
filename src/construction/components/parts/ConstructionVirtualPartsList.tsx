@@ -120,15 +120,14 @@ function ModuleGroupCard({
 }) {
   const { t } = useTranslation('construction')
   const groupId = getLabelGroupId(group.parts[0])
+  const description = useTranslatableString(group.description)
 
   return (
     <Card variant="surface" className="p-2">
       <CardHeader className="p-3">
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-3">
-            <h3 className="text-lg font-bold">
-              {group.description ? useTranslatableString(group.description) : group.type}
-            </h3>
+            <h3 className="text-lg font-bold">{group.description ? description : group.type}</h3>
           </div>
           <div className="flex items-center gap-2">
             <RegenerateLabelsButton groupId={groupId} compact />

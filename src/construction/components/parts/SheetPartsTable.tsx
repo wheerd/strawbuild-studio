@@ -50,7 +50,6 @@ export default function SheetPartsTable({
   onViewInPlan?: (partId: PartId) => void
 }) {
   const { t } = useTranslation('construction')
-  const { formatWeight, formatVolume, formatArea, formatDimensions2D, formatDimensions3D } = useFormatters()
 
   return (
     <Table.Root variant="surface" className="min-w-full">
@@ -85,85 +84,100 @@ export default function SheetPartsTable({
         </Table.Row>
       </Table.Header>
       <Table.Body>
-        {parts.map(part => {
-          const partWeight = calculateWeight(part.totalVolume, material)
-          const severity = getIssueSeverity(part)
-          return (
-            <Table.Row key={part.partId} className={severity === 'error' ? 'bg-red-100 hover:bg-red-200' : undefined}>
-              <Table.RowHeaderCell className="text-center">
-                <span className="font-medium">{part.label}</span>
-              </Table.RowHeaderCell>
-              <Table.Cell>{part.type}</Table.Cell>
-              <Table.Cell>
-                <div className="flex items-center gap-2">
-                  <span>{useTranslatableString(part.description)}</span>
-                  {part.sideFaces?.length && part.sideFaces[0].polygon.outer.points.length >= 3 && (
-                    <SheetPartModal
-                      trigger={
-                        <Button size="icon-sm" variant="outline" className="-my-2 rounded-full">
-                          <SawIcon />
-                        </Button>
-                      }
-                      polygon={part.sideFaces[0].polygon}
-                    />
-                  )}
-                </div>
-              </Table.Cell>
-              <Table.Cell className="text-end">
-                <div className="flex items-center justify-end gap-2">
-                  {part.issue === 'ThicknessMismatch' && (
-                    <Tooltip key="thickness-missmatch" content={t($ => $.partsList.issues.dimensionsMismatchThickness)}>
-                      <ExclamationTriangleIcon className="text-red-600" />
-                    </Tooltip>
-                  )}
-                  {part.issue === 'SheetSizeExceeded' && (
-                    <Tooltip
-                      key="sheet-size-exceeded"
-                      content={
-                        part.requiresSinglePiece
-                          ? t($ => $.partsList.issues.dimensionsExceedSizeSingle)
-                          : t($ => $.partsList.issues.dimensionsExceedSizeMultiple)
-                      }
-                    >
-                      <ExclamationTriangleIcon
-                        aria-hidden
-                        className={part.requiresSinglePiece ? 'text-red-600' : 'text-orange-500'}
-                      />
-                    </Tooltip>
-                  )}
-                  <span>
-                    {isZeroVec3(part.size)
-                      ? ''
-                      : formatSheetDimensions(part.size, part.thickness, { formatDimensions2D, formatDimensions3D })}
-                  </span>
-                </div>
-              </Table.Cell>
-              <Table.Cell className="text-center">{part.quantity}</Table.Cell>
-              <Table.Cell className="text-end">{part.area !== undefined ? formatArea(part.area) : '—'}</Table.Cell>
-              <Table.Cell className="text-end">
-                {part.totalArea !== undefined ? formatArea(part.totalArea) : '—'}
-              </Table.Cell>
-              <Table.Cell className="text-end">{formatVolume(part.totalVolume)}</Table.Cell>
-              <Table.Cell className="text-end">{partWeight != null ? formatWeight(partWeight) : '—'}</Table.Cell>
-              <Table.Cell className="text-center">
-                {canHighlightPart(part.partId) && onViewInPlan && (
-                  <Button
-                    size="icon-sm"
-                    variant="ghost"
-                    onClick={() => {
-                      onViewInPlan(part.partId)
-                    }}
-                    title={t($ => $.partsList.actions.viewInPlan)}
-                    className="-my-2"
-                  >
-                    <EyeOpenIcon />
-                  </Button>
-                )}
-              </Table.Cell>
-            </Table.Row>
-          )
-        })}
+        {parts.map(part => (
+          <SheetPartsTableRow key={part.partId} part={part} material={material} onViewInPlan={onViewInPlan} />
+        ))}
       </Table.Body>
     </Table.Root>
+  )
+}
+
+function SheetPartsTableRow({
+  part,
+  material,
+  onViewInPlan
+}: {
+  part: AggregatedPartItem
+  material: SheetMaterial
+  onViewInPlan?: (partId: PartId) => void
+}) {
+  const { t } = useTranslation('construction')
+  const { formatWeight, formatVolume, formatArea, formatDimensions2D, formatDimensions3D } = useFormatters()
+  const description = useTranslatableString(part.description)
+
+  const partWeight = calculateWeight(part.totalVolume, material)
+  const severity = getIssueSeverity(part)
+
+  return (
+    <Table.Row className={severity === 'error' ? 'bg-red-100 hover:bg-red-200' : undefined}>
+      <Table.RowHeaderCell className="text-center">
+        <span className="font-medium">{part.label}</span>
+      </Table.RowHeaderCell>
+      <Table.Cell>{part.type}</Table.Cell>
+      <Table.Cell>
+        <div className="flex items-center gap-2">
+          <span>{description}</span>
+          {part.sideFaces?.length && part.sideFaces[0].polygon.outer.points.length >= 3 && (
+            <SheetPartModal
+              trigger={
+                <Button size="icon-sm" variant="outline" className="-my-2 rounded-full">
+                  <SawIcon />
+                </Button>
+              }
+              polygon={part.sideFaces[0].polygon}
+            />
+          )}
+        </div>
+      </Table.Cell>
+      <Table.Cell className="text-end">
+        <div className="flex items-center justify-end gap-2">
+          {part.issue === 'ThicknessMismatch' && (
+            <Tooltip key="thickness-missmatch" content={t($ => $.partsList.issues.dimensionsMismatchThickness)}>
+              <ExclamationTriangleIcon className="text-red-600" />
+            </Tooltip>
+          )}
+          {part.issue === 'SheetSizeExceeded' && (
+            <Tooltip
+              key="sheet-size-exceeded"
+              content={
+                part.requiresSinglePiece
+                  ? t($ => $.partsList.issues.dimensionsExceedSizeSingle)
+                  : t($ => $.partsList.issues.dimensionsExceedSizeMultiple)
+              }
+            >
+              <ExclamationTriangleIcon
+                aria-hidden
+                className={part.requiresSinglePiece ? 'text-red-600' : 'text-orange-500'}
+              />
+            </Tooltip>
+          )}
+          <span>
+            {isZeroVec3(part.size)
+              ? ''
+              : formatSheetDimensions(part.size, part.thickness, { formatDimensions2D, formatDimensions3D })}
+          </span>
+        </div>
+      </Table.Cell>
+      <Table.Cell className="text-center">{part.quantity}</Table.Cell>
+      <Table.Cell className="text-end">{part.area ? formatArea(part.area) : '—'}</Table.Cell>
+      <Table.Cell className="text-end">{part.totalArea ? formatArea(part.totalArea) : '—'}</Table.Cell>
+      <Table.Cell className="text-end">{formatVolume(part.totalVolume)}</Table.Cell>
+      <Table.Cell className="text-end">{partWeight ? formatWeight(partWeight) : '—'}</Table.Cell>
+      <Table.Cell className="text-center">
+        {canHighlightPart(part.partId) && onViewInPlan && (
+          <Button
+            size="icon-sm"
+            variant="ghost"
+            onClick={() => {
+              onViewInPlan(part.partId)
+            }}
+            title={t($ => $.partsList.actions.viewInPlan)}
+            className="-my-2"
+          >
+            <EyeOpenIcon />
+          </Button>
+        )}
+      </Table.Cell>
+    </Table.Row>
   )
 }

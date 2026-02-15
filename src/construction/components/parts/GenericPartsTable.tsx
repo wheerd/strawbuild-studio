@@ -35,31 +35,46 @@ export default function GenericPartsTable({
       </Table.Header>
       <Table.Body>
         {parts.map(part => (
-          <Table.Row key={part.partId}>
-            <Table.RowHeaderCell className="text-center">
-              <span className="font-medium">{part.label}</span>
-            </Table.RowHeaderCell>
-            <Table.Cell>{part.type}</Table.Cell>
-            <Table.Cell>{useTranslatableString(part.description)}</Table.Cell>
-            <Table.Cell className="text-center">{part.quantity}</Table.Cell>
-            <Table.Cell className="text-center">
-              {canHighlightPart(part.partId) && onViewInPlan && (
-                <Button
-                  size="icon"
-                  variant="ghost"
-                  onClick={() => {
-                    onViewInPlan(part.partId)
-                  }}
-                  title={t($ => $.partsList.actions.viewInPlan)}
-                  className="-my-2"
-                >
-                  <EyeOpenIcon />
-                </Button>
-              )}
-            </Table.Cell>
-          </Table.Row>
+          <GenericPartsTableRow key={part.partId} part={part} onViewInPlan={onViewInPlan} />
         ))}
       </Table.Body>
     </Table.Root>
+  )
+}
+
+function GenericPartsTableRow({
+  part,
+  onViewInPlan
+}: {
+  part: AggregatedPartItem
+  onViewInPlan?: (partId: PartId) => void
+}) {
+  const { t } = useTranslation('construction')
+  const description = useTranslatableString(part.description)
+
+  return (
+    <Table.Row>
+      <Table.RowHeaderCell className="text-center">
+        <span className="font-medium">{part.label}</span>
+      </Table.RowHeaderCell>
+      <Table.Cell>{part.type}</Table.Cell>
+      <Table.Cell>{description}</Table.Cell>
+      <Table.Cell className="text-center">{part.quantity}</Table.Cell>
+      <Table.Cell className="text-center">
+        {canHighlightPart(part.partId) && onViewInPlan && (
+          <Button
+            size="icon"
+            variant="ghost"
+            onClick={() => {
+              onViewInPlan(part.partId)
+            }}
+            title={t($ => $.partsList.actions.viewInPlan)}
+            className="-my-2"
+          >
+            <EyeOpenIcon />
+          </Button>
+        )}
+      </Table.Cell>
+    </Table.Row>
   )
 }

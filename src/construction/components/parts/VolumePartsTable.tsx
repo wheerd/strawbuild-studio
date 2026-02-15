@@ -20,7 +20,6 @@ export default function VolumePartsTable({
   onViewInPlan?: (partId: PartId) => void
 }) {
   const { t } = useTranslation('construction')
-  const { formatWeight, formatArea, formatVolume, formatLength } = useFormatters()
   return (
     <Table.Root variant="surface" className="min-w-full">
       <Table.Header className="bg-muted">
@@ -51,44 +50,57 @@ export default function VolumePartsTable({
         </Table.Row>
       </Table.Header>
       <Table.Body>
-        {parts.map(part => {
-          const partWeight = calculateWeight(part.totalVolume, material)
-          const severity = getIssueSeverity(part)
-          return (
-            <Table.Row key={part.partId} className={severity === 'error' ? 'bg-red-100 hover:bg-red-200' : undefined}>
-              <Table.RowHeaderCell className="text-center">
-                <span className="font-medium">{part.label}</span>
-              </Table.RowHeaderCell>
-              <Table.Cell>{part.type}</Table.Cell>
-              <Table.Cell>{useTranslatableString(part.description)}</Table.Cell>
-              <Table.Cell className="text-center">{part.quantity}</Table.Cell>
-              <Table.Cell className="text-end">
-                {part.thickness !== undefined ? formatLength(part.thickness) : '—'}
-              </Table.Cell>
-              <Table.Cell className="text-end">
-                {part.totalArea !== undefined ? formatArea(part.totalArea) : '—'}
-              </Table.Cell>
-              <Table.Cell className="text-end">{formatVolume(part.totalVolume)}</Table.Cell>
-              <Table.Cell className="text-end">{partWeight != null ? formatWeight(partWeight) : '-'}</Table.Cell>
-              <Table.Cell className="text-center">
-                {canHighlightPart(part.partId) && onViewInPlan && (
-                  <Button
-                    size="icon-sm"
-                    variant="ghost"
-                    onClick={() => {
-                      onViewInPlan(part.partId)
-                    }}
-                    title={t($ => $.partsList.actions.viewInPlan)}
-                    className="-my-2"
-                  >
-                    <EyeOpenIcon />
-                  </Button>
-                )}
-              </Table.Cell>
-            </Table.Row>
-          )
-        })}
+        {parts.map(part => (
+          <VolumePartsTableRow key={part.partId} part={part} material={material} onViewInPlan={onViewInPlan} />
+        ))}
       </Table.Body>
     </Table.Root>
+  )
+}
+
+function VolumePartsTableRow({
+  part,
+  material,
+  onViewInPlan
+}: {
+  part: AggregatedPartItem
+  material: VolumeMaterial
+  onViewInPlan?: (partId: PartId) => void
+}) {
+  const { t } = useTranslation('construction')
+  const { formatWeight, formatArea, formatVolume, formatLength } = useFormatters()
+  const description = useTranslatableString(part.description)
+
+  const partWeight = calculateWeight(part.totalVolume, material)
+  const severity = getIssueSeverity(part)
+
+  return (
+    <Table.Row className={severity === 'error' ? 'bg-red-100 hover:bg-red-200' : undefined}>
+      <Table.RowHeaderCell className="text-center">
+        <span className="font-medium">{part.label}</span>
+      </Table.RowHeaderCell>
+      <Table.Cell>{part.type}</Table.Cell>
+      <Table.Cell>{description}</Table.Cell>
+      <Table.Cell className="text-center">{part.quantity}</Table.Cell>
+      <Table.Cell className="text-end">{part.thickness ? formatLength(part.thickness) : '—'}</Table.Cell>
+      <Table.Cell className="text-end">{part.totalArea ? formatArea(part.totalArea) : '—'}</Table.Cell>
+      <Table.Cell className="text-end">{formatVolume(part.totalVolume)}</Table.Cell>
+      <Table.Cell className="text-end">{partWeight ? formatWeight(partWeight) : '-'}</Table.Cell>
+      <Table.Cell className="text-center">
+        {canHighlightPart(part.partId) && onViewInPlan && (
+          <Button
+            size="icon-sm"
+            variant="ghost"
+            onClick={() => {
+              onViewInPlan(part.partId)
+            }}
+            title={t($ => $.partsList.actions.viewInPlan)}
+            className="-my-2"
+          >
+            <EyeOpenIcon />
+          </Button>
+        )}
+      </Table.Cell>
+    </Table.Row>
   )
 }
