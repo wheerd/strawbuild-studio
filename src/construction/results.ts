@@ -76,7 +76,8 @@ function assignDeterministicIds(element: GroupOrElement, idPrefix: string): void
       assignDeterministicIds(child, idPrefix)
     }
   } else {
-    const { min, max } = element.bounds
+    const bounds = transformBounds(element.bounds, element.transform)
+    const { min, max } = bounds
     const bbox = [min[0], min[1], min[2], max[0], max[1], max[2]].map(v => Math.round(v)).join('_')
     element.id = `ce_${idPrefix}_${bbox}` as ConstructionElementId
   }
