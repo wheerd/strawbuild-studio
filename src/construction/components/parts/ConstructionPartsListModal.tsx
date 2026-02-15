@@ -5,6 +5,7 @@ import { FullScreenModal } from '@/components/ui/full-screen-modal'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Spinner } from '@/components/ui/spinner'
 import { Tabs } from '@/components/ui/tabs'
+import { ConstructionModelStatusBanner } from '@/construction/components/ConstructionModelStatusBanner'
 import { ConstructionPartsList } from '@/construction/components/parts/ConstructionPartsList'
 import { ConstructionVirtualPartsList } from '@/construction/components/parts/ConstructionVirtualPartsList'
 import { type ConstructionModelId, useConstructionModel } from '@/construction/store'
@@ -43,11 +44,13 @@ export function ConstructionPartsListModal({
         }}
         className="-mt-2 flex h-full w-full flex-col"
       >
-        <div className="flex shrink-0">
+        <div className="flex shrink-0 items-center justify-between">
           <Tabs.List>
             <Tabs.Trigger value="materials">{t($ => $.partsListModal.tabs.materials)}</Tabs.Trigger>
             <Tabs.Trigger value="modules">{t($ => $.partsListModal.tabs.modules)}</Tabs.Trigger>
           </Tabs.List>
+
+          <ConstructionModelStatusBanner />
         </div>
         <Tabs.Content value="materials" className="flex min-h-0 w-full flex-1 flex-col overflow-auto pt-3">
           {model ? <ConstructionPartsList modelId={modelId} /> : <PartsSkeleton />}

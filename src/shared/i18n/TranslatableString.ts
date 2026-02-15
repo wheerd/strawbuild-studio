@@ -1,4 +1,6 @@
-import { type TFunction, i18next, t } from 'i18next'
+import { type TFunction, t } from 'i18next'
+
+import i18n from '@/shared/i18n/config'
 
 /**
  * A string that can be either static or a translation function.
@@ -7,5 +9,5 @@ import { type TFunction, i18next, t } from 'i18next'
 export type TranslatableString = string | ((t: TFunction, locale: string) => string)
 
 export function transString(s: TranslatableString) {
-  return typeof s === 'function' ? s(t, i18next.language) : s
+  return typeof s === 'function' ? s(t, i18n.language) : s
 }
