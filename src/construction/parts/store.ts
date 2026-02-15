@@ -1,4 +1,5 @@
 import { create } from 'zustand'
+import { persist } from 'zustand/middleware'
 
 import {
   ensureConstructionLoaded,
@@ -13,107 +14,119 @@ import type { LocationFilter, PartDefinition, PartId, PartsStore, PartsStoreStat
 const getLabelGroupId = (definition: PartDefinition): string =>
   definition.source === 'group' ? 'virtual' : `material:${definition.materialId}`
 
-export const usePartsStore = create<PartsStore>()((set, get) => ({
-  definitions: {},
-  occurrences: [],
-  labels: {},
-  usedLabelsByGroup: {},
-  nextLabelIndexByGroup: {},
-  hasParts: false,
-  rebuilding: false,
-  generatedAt: 0,
+export const usePartsStore = create<PartsStore>()(
+  persist(
+    (set, get) => ({
+      definitions: {},
+      occurrences: [],
+      labels: {},
+      usedLabelsByGroup: {},
+      nextLabelIndexByGroup: {},
+      hasParts: false,
+      rebuilding: false,
+      generatedAt: 0,
 
-  actions: {
-    rebuildParts(): void {
-      set(state => ({ ...state, hasParts: false, rebuilding: true }))
+      actions: {
+        rebuildParts(): void {
+          set(state => ({ ...state, hasParts: false, rebuilding: true }))
 
-      ensureConstructionLoaded()
-      const model = getConstructionModel()
-      const { definitions, occurrences } = generatePartsData(model)
-      const currentState = get()
+          ensureConstructionLoaded()
+          const model = getConstructionModel()
+          const { definitions, occurrences } = generatePartsData(model)
+          const currentState = get()
 
-      const newLabels: Record<PartId, string> = { ...currentState.labels }
+          const newLabels: Record<PartId, string> = { ...currentState.labels }
 
-      for (const partId of Object.keys(definitions) as PartId[]) {
-        if (!(partId in newLabels)) {
-          const definition = definitions[partId]
-          const groupId = getLabelGroupId(definition)
-          assignLabelToDefinition(newLabels, currentState, partId, groupId)
-        }
-      }
-
-      set(state => ({
-        ...state,
-        definitions,
-        occurrences,
-        labels: newLabels,
-        hasParts: true,
-        rebuilding: false,
-        generatedAt: Date.now()
-      }))
-    },
-
-    resetLabels(groupId?: string): void {
-      set(state => {
-        const newLabels: Record<PartId, string> = {} as Record<PartId, string>
-        const newUsedLabelsByGroup: Record<string, string[]> = {}
-        const newNextLabelIndexByGroup: Record<string, number> = {}
-
-        if (groupId) {
-          for (const [gId, labels] of Object.entries(state.usedLabelsByGroup)) {
-            if (gId !== groupId) {
-              newUsedLabelsByGroup[gId] = labels
-              newNextLabelIndexByGroup[gId] = state.nextLabelIndexByGroup[gId] ?? 0
+          for (const partId of Object.keys(definitions) as PartId[]) {
+            if (!(partId in newLabels)) {
+              const definition = definitions[partId]
+              const groupId = getLabelGroupId(definition)
+              assignLabelToDefinition(newLabels, currentState, partId, groupId)
             }
           }
-          for (const [partId, label] of Object.entries(state.labels)) {
-            const typedPartId = partId as PartId
-            if (typedPartId in state.definitions) {
-              const definition = state.definitions[typedPartId]
-              const newGroupId = getLabelGroupId(definition)
-              if (newGroupId !== groupId) {
-                newLabels[typedPartId] = label
+
+          set(state => ({
+            ...state,
+            definitions,
+            occurrences,
+            labels: newLabels,
+            hasParts: true,
+            rebuilding: false,
+            generatedAt: Date.now()
+          }))
+        },
+
+        resetLabels(groupId?: string): void {
+          set(state => {
+            const newLabels: Record<PartId, string> = {} as Record<PartId, string>
+            const newUsedLabelsByGroup: Record<string, string[]> = {}
+            const newNextLabelIndexByGroup: Record<string, number> = {}
+
+            if (groupId) {
+              for (const [gId, labels] of Object.entries(state.usedLabelsByGroup)) {
+                if (gId !== groupId) {
+                  newUsedLabelsByGroup[gId] = labels
+                  newNextLabelIndexByGroup[gId] = state.nextLabelIndexByGroup[gId] ?? 0
+                }
+              }
+              for (const [partId, label] of Object.entries(state.labels)) {
+                const typedPartId = partId as PartId
+                if (typedPartId in state.definitions) {
+                  const definition = state.definitions[typedPartId]
+                  const newGroupId = getLabelGroupId(definition)
+                  if (newGroupId !== groupId) {
+                    newLabels[typedPartId] = label
+                  }
+                }
               }
             }
-          }
+
+            for (const [partId, definition] of Object.entries(state.definitions)) {
+              const gid = getLabelGroupId(definition)
+              if (groupId && gid !== groupId) continue
+
+              const typedPartId = partId as PartId
+              const nextIndex = newNextLabelIndexByGroup[gid] ?? 0
+              const label = indexToLabel(nextIndex)
+
+              newLabels[typedPartId] = label
+              newNextLabelIndexByGroup[gid] = nextIndex + 1
+
+              newUsedLabelsByGroup[gid] ??= []
+              newUsedLabelsByGroup[gid].push(label)
+            }
+
+            return {
+              ...state,
+              labels: newLabels,
+              usedLabelsByGroup: newUsedLabelsByGroup,
+              nextLabelIndexByGroup: newNextLabelIndexByGroup
+            }
+          })
+        },
+
+        getFilteredOccurrences(filter: LocationFilter) {
+          const { occurrences } = get()
+          return occurrences.filter(occ => {
+            if (filter.storeyId && occ.storeyId !== filter.storeyId) return false
+            if (filter.perimeterId && occ.perimeterId !== filter.perimeterId) return false
+            if (filter.wallId && occ.wallId !== filter.wallId) return false
+            if (filter.roofId && occ.roofId !== filter.roofId) return false
+            return true
+          })
         }
-
-        for (const [partId, definition] of Object.entries(state.definitions)) {
-          const gid = getLabelGroupId(definition)
-          if (groupId && gid !== groupId) continue
-
-          const typedPartId = partId as PartId
-          const nextIndex = newNextLabelIndexByGroup[gid] ?? 0
-          const label = indexToLabel(nextIndex)
-
-          newLabels[typedPartId] = label
-          newNextLabelIndexByGroup[gid] = nextIndex + 1
-
-          newUsedLabelsByGroup[gid] ??= []
-          newUsedLabelsByGroup[gid].push(label)
-        }
-
-        return {
-          ...state,
-          labels: newLabels,
-          usedLabelsByGroup: newUsedLabelsByGroup,
-          nextLabelIndexByGroup: newNextLabelIndexByGroup
-        }
-      })
-    },
-
-    getFilteredOccurrences(filter: LocationFilter) {
-      const { occurrences } = get()
-      return occurrences.filter(occ => {
-        if (filter.storeyId && occ.storeyId !== filter.storeyId) return false
-        if (filter.perimeterId && occ.perimeterId !== filter.perimeterId) return false
-        if (filter.wallId && occ.wallId !== filter.wallId) return false
-        if (filter.roofId && occ.roofId !== filter.roofId) return false
-        return true
+      }
+    }),
+    {
+      name: 'strawbaler-parts',
+      partialize: state => ({
+        labels: state.labels,
+        usedLabelsByGroup: state.usedLabelsByGroup,
+        nextLabelIndexByGroup: state.nextLabelIndexByGroup
       })
     }
-  }
-}))
+  )
+)
 
 function assignLabelToDefinition(
   newLabels: Record<PartId, string>,
@@ -151,4 +164,8 @@ export function ensurePartsLoaded() {
     state.actions.rebuildParts()
   }
   setupPartsSubscriptions()
+}
+
+export function clearPartsLabelPersistence(): void {
+  localStorage.removeItem('strawbaler-parts-labels')
 }

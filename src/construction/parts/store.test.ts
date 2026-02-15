@@ -5,7 +5,7 @@ import type { ConstructionElementId } from '@/construction/elements'
 import type { MaterialId } from '@/construction/materials/material'
 import { Bounds3D, newVec3 } from '@/shared/geometry'
 
-import { getPartsActions, usePartsStore } from './store'
+import { clearPartsLabelPersistence, getPartsActions, usePartsStore } from './store'
 import type { PartDefinition, PartId, PartOccurrence } from './types'
 
 vi.mock('@/construction/store', () => ({
@@ -75,6 +75,7 @@ describe('indexToLabel', () => {
 
 describe('usePartsStore', () => {
   beforeEach(() => {
+    clearPartsLabelPersistence()
     usePartsStore.setState({
       definitions: {},
       occurrences: [],
