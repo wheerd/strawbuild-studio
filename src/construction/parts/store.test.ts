@@ -221,6 +221,49 @@ describe('regenerateLabels', () => {
       expect(result.nextLabelIndexByGroup['material:mat1']).toBe(24)
     })
   })
+
+  describe('usedLabelsByGroup consistency', () => {
+    it('usedLabelsByGroup count matches definition count after regenerate', () => {
+      const part1 = createPartId('part1')
+      const part2 = createPartId('part2')
+      const part3 = createPartId('part3')
+      const mat1 = createMaterialId('mat1')
+      const state = createStoreState({
+        definitions: {
+          [part1]: createPartDefinition({ partId: part1, materialId: mat1 }),
+          [part2]: createPartDefinition({ partId: part2, materialId: mat1 }),
+          [part3]: createPartDefinition({ partId: part3, materialId: mat1 })
+        },
+        labels: {},
+        usedLabelsByGroup: {},
+        nextLabelIndexByGroup: {}
+      })
+
+      const result = regenerateLabels(undefined, state)
+
+      expect(result.usedLabelsByGroup['material:mat1']).toHaveLength(3)
+      expect(result.usedLabelsByGroup['material:mat1']).toEqual(['A', 'B', 'C'])
+    })
+
+    it('usedLabelsByGroup only contains labels for parts in definitions', () => {
+      const part1 = createPartId('part1')
+      const orphanPart = createPartId('orphanPart')
+      const mat1 = createMaterialId('mat1')
+      const state = createStoreState({
+        definitions: {
+          [part1]: createPartDefinition({ partId: part1, materialId: mat1 })
+        },
+        labels: { [part1]: 'X', [orphanPart]: 'Y' },
+        usedLabelsByGroup: { 'material:mat1': ['X', 'Y', 'Z'] },
+        nextLabelIndexByGroup: { 'material:mat1': 26 }
+      })
+
+      const result = regenerateLabels(undefined, state)
+
+      expect(result.usedLabelsByGroup['material:mat1']).toHaveLength(1)
+      expect(result.usedLabelsByGroup['material:mat1']).toEqual(['A'])
+    })
+  })
 })
 
 describe('assignLabelsForNewParts', () => {
@@ -391,6 +434,120 @@ describe('assignLabelsForNewParts', () => {
       expect(result.usedLabelsByGroup['material:mat1']).toEqual(['X'])
       expect(result.nextLabelIndexByGroup.virtual).toBe(28)
       expect(result.nextLabelIndexByGroup['material:mat1']).toBe(24)
+    })
+  })
+
+  describe('usedLabelsByGroup rebuilding', () => {
+    it('excludes labels for parts removed from definitions', () => {
+      const part1 = createPartId('part1')
+      const part2 = createPartId('part2')
+      const removedPart = createPartId('removedPart')
+      const mat1 = createMaterialId('mat1')
+      const definitions = {
+        [part1]: createPartDefinition({ partId: part1, materialId: mat1 }),
+        [part2]: createPartDefinition({ partId: part2, materialId: mat1 })
+      }
+      const current = {
+        labels: { [part1]: 'A', [part2]: 'B', [removedPart]: 'C' },
+        usedLabelsByGroup: { 'material:mat1': ['A', 'B', 'C'] },
+        nextLabelIndexByGroup: { 'material:mat1': 3 }
+      }
+
+      const result = assignLabelsForNewParts(definitions, current)
+
+      expect(result.usedLabelsByGroup['material:mat1']).toEqual(['A', 'B'])
+      expect(result.usedLabelsByGroup['material:mat1']).not.toContain('C')
+    })
+
+    it('rebuilds usedLabelsByGroup from actual definitions, not from current.usedLabelsByGroup', () => {
+      const part1 = createPartId('part1')
+      const mat1 = createMaterialId('mat1')
+      const definitions = {
+        [part1]: createPartDefinition({ partId: part1, materialId: mat1 })
+      }
+      const current = {
+        labels: { [part1]: 'Z' },
+        usedLabelsByGroup: {
+          'material:mat1': ['A', 'B', 'C', 'Z'],
+          'material:mat2': ['X', 'Y']
+        },
+        nextLabelIndexByGroup: {
+          'material:mat1': 26,
+          'material:mat2': 24
+        }
+      }
+
+      const result = assignLabelsForNewParts(definitions, current)
+
+      expect(result.usedLabelsByGroup['material:mat1']).toEqual(['Z'])
+      expect(result.usedLabelsByGroup['material:mat2']).toBeUndefined()
+    })
+
+    it('handles mixed scenario: some parts kept, some removed, some new', () => {
+      const keptPart1 = createPartId('keptPart1')
+      const keptPart2 = createPartId('keptPart2')
+      const newPart = createPartId('newPart')
+      const removedPart = createPartId('removedPart')
+      const mat1 = createMaterialId('mat1')
+      const definitions = {
+        [keptPart1]: createPartDefinition({ partId: keptPart1, materialId: mat1 }),
+        [keptPart2]: createPartDefinition({ partId: keptPart2, materialId: mat1 }),
+        [newPart]: createPartDefinition({ partId: newPart, materialId: mat1 })
+      }
+      const current = {
+        labels: { [keptPart1]: 'A', [keptPart2]: 'C', [removedPart]: 'B' },
+        usedLabelsByGroup: { 'material:mat1': ['A', 'B', 'C'] },
+        nextLabelIndexByGroup: { 'material:mat1': 3 }
+      }
+
+      const result = assignLabelsForNewParts(definitions, current)
+
+      expect(result.labels[keptPart1]).toBe('A')
+      expect(result.labels[keptPart2]).toBe('C')
+      expect(result.labels[newPart]).toBe('D')
+      expect(result.labels[removedPart]).toBe('B')
+      expect(result.usedLabelsByGroup['material:mat1']).toEqual(['A', 'C', 'D'])
+      expect(result.usedLabelsByGroup['material:mat1']).not.toContain('B')
+    })
+
+    it('does not include labels from current.labels that have no matching definition', () => {
+      const part1 = createPartId('part1')
+      const orphanLabel = createPartId('orphanLabel')
+      const mat1 = createMaterialId('mat1')
+      const definitions = {
+        [part1]: createPartDefinition({ partId: part1, materialId: mat1 })
+      }
+      const current = {
+        labels: { [part1]: 'A', [orphanLabel]: 'ORPHAN' },
+        usedLabelsByGroup: { 'material:mat1': ['A', 'ORPHAN'] },
+        nextLabelIndexByGroup: { 'material:mat1': 2 }
+      }
+
+      const result = assignLabelsForNewParts(definitions, current)
+
+      expect(result.usedLabelsByGroup['material:mat1']).toEqual(['A'])
+    })
+
+    it('maintains correct label count matching definition count', () => {
+      const part1 = createPartId('part1')
+      const part2 = createPartId('part2')
+      const part3 = createPartId('part3')
+      const mat1 = createMaterialId('mat1')
+      const definitions = {
+        [part1]: createPartDefinition({ partId: part1, materialId: mat1 }),
+        [part2]: createPartDefinition({ partId: part2, materialId: mat1 }),
+        [part3]: createPartDefinition({ partId: part3, materialId: mat1 })
+      }
+      const current = {
+        labels: {},
+        usedLabelsByGroup: {},
+        nextLabelIndexByGroup: {}
+      }
+
+      const result = assignLabelsForNewParts(definitions, current)
+
+      expect(result.usedLabelsByGroup['material:mat1']).toHaveLength(3)
+      expect(Object.keys(result.labels)).toHaveLength(3)
     })
   })
 })
