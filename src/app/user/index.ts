@@ -1,0 +1,6 @@
+export { AuthProvider } from './AuthContext'
+export { AuthModal, type AuthModalProps } from './AuthModal'
+export { useAuthActions, useAuthLoading, useIsAuthenticated, useUser, useUserEmail, useUserId } from './store'
+export { isSupabaseConfigured, getSupabaseClient } from './supabaseClient'
+export type { AuthView, User } from './types'
+export { UserMenu, type UserMenuProps } from './UserMenu'

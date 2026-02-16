@@ -3,6 +3,11 @@
   "autoupdate": true,
   "plugin": [],
   "permission": {
+    "read": {
+      "*": "allow",
+      "*.env": "deny",
+      "*.env.*": "deny"
+    },
     "edit": "allow",
     "bash": {
       "git *": "ask",

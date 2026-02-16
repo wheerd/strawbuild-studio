@@ -8,6 +8,26 @@
     "fitToContent": "An Inhalt anpassen",
     "strawbaler": "Strawbaler"
   },
+  "auth": {
+    "checkEmailToConfirm": "Überprüfe deine E-Mail, um dein Konto zu bestätigen",
+    "confirmPassword": "Passwort bestätigen",
+    "createAccount": "Konto erstellen",
+    "creatingAccount": "Konto wird erstellt...",
+    "email": "E-Mail",
+    "errors": {
+      "emailAlreadyExists": "Es existiert bereits ein Konto mit dieser E-Mail-Adresse",
+      "emailNotConfirmed": "Bitte überprüfe deine E-Mail, um dein Konto zu bestätigen",
+      "generic": "Ein Fehler ist aufgetreten. Bitte versuche es erneut.",
+      "invalidCredentials": "Ungültige E-Mail oder Passwort",
+      "weakPassword": "Das Passwort ist zu schwach. Bitte wähle ein stärkeres Passwort."
+    },
+    "password": "Passwort",
+    "passwordsDoNotMatch": "Passwörter stimmen nicht überein",
+    "signIn": "Anmelden",
+    "signingIn": "Anmelden...",
+    "signOut": "Abmelden",
+    "signUp": "Registrieren"
+  },
   "autoSave": {
     "autoSaved": "Automatisch gespeichert {{time}}",
     "autoSaveFailed": "Automatisches Speichern fehlgeschlagen",

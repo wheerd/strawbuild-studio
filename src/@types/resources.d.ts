@@ -10,6 +10,26 @@ interface Resources {
       "fitToContent": "Fit to content",
       "strawbaler": "Strawbaler"
     },
+    "auth": {
+      "checkEmailToConfirm": "Check your email to confirm your account",
+      "confirmPassword": "Confirm Password",
+      "createAccount": "Create Account",
+      "creatingAccount": "Creating account...",
+      "email": "Email",
+      "errors": {
+        "emailAlreadyExists": "An account with this email already exists",
+        "emailNotConfirmed": "Please check your email to confirm your account",
+        "generic": "An error occurred. Please try again.",
+        "invalidCredentials": "Invalid email or password",
+        "weakPassword": "Password is too weak. Please use a stronger password."
+      },
+      "password": "Password",
+      "passwordsDoNotMatch": "Passwords do not match",
+      "signIn": "Sign In",
+      "signOut": "Sign Out",
+      "signUp": "Sign Up",
+      "signingIn": "Signing in..."
+    },
     "autoSave": {
       "autoSaveFailed": "Auto-save failed",
       "autoSaved": "Auto-saved {{time}}",
