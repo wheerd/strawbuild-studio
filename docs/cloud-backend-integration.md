@@ -9,46 +9,6 @@ This document outlines the implementation plan for adding cloud backend support 
 - **Multi-project support**: Authenticated users can manage multiple projects
 - **Seamless migration**: Local data becomes first cloud project on signup
 - **Future-ready**: Architecture supports collaboration and premium features later
-- **Swappable backend**: Abstraction layer allows switching between providers
-
----
-
-## Backend Options Comparison
-
-### Firebase vs Supabase
-
-| Feature               | Firebase                 | Supabase                             |
-| --------------------- | ------------------------ | ------------------------------------ |
-| **Database**          | Firestore (NoSQL)        | PostgreSQL                           |
-| **Data model**        | Document-based           | JSONB columns (document-like in SQL) |
-| **Real-time**         | Built-in                 | Via Postgres subscriptions           |
-| **Auth**              | Firebase Auth            | GoTrue (JWT-based)                   |
-| **Offline Support**   | Excellent (built-in SDK) | Manual (localStorage as cache)       |
-| **Self-hostable**     | No                       | Yes                                  |
-| **Open Source**       | No                       | Yes (Apache 2.0)                     |
-| **Pricing Model**     | Pay per read/write       | Pay per compute + storage            |
-| **Schema migrations** | N/A (schemaless)         | SQL migrations (version controlled)  |
-| **Security model**    | Firestore Rules          | Row-Level Security (RLS)             |
-| **Document limit**    | 1MB per document         | 1GB+ per row (JSONB)                 |
-| **IaC support**       | Terraform + CLI          | Terraform + CLI + SQL migrations     |
-
-### Recommendation
-
-**Start with Firebase** because:
-
-- Built-in offline handling reduces code complexity
-- Your data shape is document-like (matches Firestore naturally)
-- Faster to implement initially
-- Generous free tier for development
-
-**Consider Supabase later** if you want:
-
-- Open-source, self-hostable backend
-- SQL queries and relations
-- More predictable pricing
-- Full control over infrastructure
-
-The architecture includes an abstraction layer to make switching possible.
 
 ---
 
@@ -58,7 +18,7 @@ The architecture includes an abstraction layer to make switching possible.
 +------------------------------------------------------------------+
 |                    Zustand Stores (all persisted)                 |
 |  useModelStore | useConfigStore | useMaterialsStore |             |
-|  useProjectMetaStore (projectId + metadata)                       |
+|  usePartsStore | useProjectMetaStore (projectId + metadata)      |
 +------------------------------------------------------------------+
 |  Persist Middleware:                                             |
 |  - partialize: exclude actions + geometry + reverseIndex        |
@@ -80,12 +40,12 @@ The architecture includes an abstraction layer to make switching possible.
 |  - Syncs to cloud when online + authenticated                   |
 |  - Loads project -> applies migrations -> setState -> rehydrate |
 +------------------------------------------------------------------+
-                 |                              |
-                 v                              v
-    +-------------------------+    +-------------------------+
-    |  FirebaseSyncService    |    |  SupabaseSyncService    |
-    |  (implementation)       |    |  (implementation)       |
-    +-------------------------+    +-------------------------+
+                 |
+                 v
+    +-------------------------+
+    |  SupabaseSyncService    |
+    |  (implementation)       |
+    +-------------------------+
 ```
 
 ## Key Design Decision: Project ID Travels With Data
@@ -130,6 +90,10 @@ strawbaler-config:
 
 strawbaler-materials:
   - materials, timestamps
+
+strawbaler-parts:
+  - labels, nextLabelIndexByGroup
+  - (excludes: usedLabelsByGroup - regenerated on rebuild)
 ```
 
 ## Data Flow
@@ -180,14 +144,15 @@ The store has derived state that:
 2. MUST be present at runtime (store breaks without it)
 3. Must be regenerated on rehydration
 
-| Derived State              | Regeneration Function                         |
-| -------------------------- | --------------------------------------------- |
-| `_perimeterGeometry`       | `updatePerimeterGeometry(state, perimeterId)` |
-| `_perimeterWallGeometry`   | `updatePerimeterGeometry(state, perimeterId)` |
-| `_perimeterCornerGeometry` | `updatePerimeterGeometry(state, perimeterId)` |
-| `_openingGeometry`         | `updatePerimeterGeometry(state, perimeterId)` |
-| `_wallPostGeometry`        | `updatePerimeterGeometry(state, perimeterId)` |
-| `_constraintsByEntity`     | Rebuild from `buildingConstraints`            |
+| Derived State              | Regeneration Function                               |
+| -------------------------- | --------------------------------------------------- |
+| `_perimeterGeometry`       | `updatePerimeterGeometry(state, perimeterId)`       |
+| `_perimeterWallGeometry`   | `updatePerimeterGeometry(state, perimeterId)`       |
+| `_perimeterCornerGeometry` | `updatePerimeterGeometry(state, perimeterId)`       |
+| `_openingGeometry`         | `updatePerimeterGeometry(state, perimeterId)`       |
+| `_wallPostGeometry`        | `updatePerimeterGeometry(state, perimeterId)`       |
+| `_constraintsByEntity`     | Rebuild from `buildingConstraints`                  |
+| `usedLabelsByGroup`        | Rebuild from `labels` + `definitions` (parts store) |
 
 A helper function `regenerateDerivedState()` must be called:
 
@@ -196,56 +161,7 @@ A helper function `regenerateDerivedState()` must be called:
 
 ---
 
-## Firebase Implementation
-
-### Firestore Data Model
-
-```
-/users/{userId}
-  - email: string
-  - displayName: string?
-  - createdAt: timestamp
-  - subscription: 'free' | 'premium'
-
-/projects/{projectId}
-  - name: string
-  - description: string?
-  - userId: string
-  - createdAt: timestamp
-  - updatedAt: timestamp
-
-  /data/{document=current}
-    - modelState: { ...partialized model store state... }
-    - configState: { ...partialized config store state... }
-    - materialsState: { ...partialized materials store state... }
-    - projectMetaState: { ...projectMetaStore state... }
-    - version: number (store version for migration tracking)
-    - syncedAt: timestamp
-```
-
-**Note**: Firestore has a 1MB document limit. Most projects should fit, but we could split into subcollections if needed later.
-
-### Firebase Sync Logic
-
-```typescript
-// Sync: Write single document
-await setDoc(doc(db, 'projects', projectId, 'data', 'current'), {
-  modelState,
-  configState,
-  materialsState,
-  projectMetaState,
-  version: MODEL_VERSION,
-  syncedAt: serverTimestamp()
-})
-
-// Load: Read single document
-const snapshot = await getDoc(doc(db, 'projects', projectId, 'data', 'current'))
-const data = snapshot.data()
-```
-
----
-
-## Supabase Implementation (Alternative)
+## Supabase Implementation
 
 ### PostgreSQL Schema with JSONB
 
@@ -263,6 +179,7 @@ CREATE TABLE projects (
   model_state JSONB NOT NULL DEFAULT '{}',
   config_state JSONB NOT NULL DEFAULT '{}',
   materials_state JSONB NOT NULL DEFAULT '{}',
+  parts_label_state JSONB NOT NULL DEFAULT '{}',
   project_meta JSONB NOT NULL DEFAULT '{}',
   version INT DEFAULT 14
 );
@@ -325,6 +242,7 @@ const { error } = await supabase
     model_state: modelState,
     config_state: configState,
     materials_state: materialsState,
+    parts_label_state: partsLabelState,
     project_meta: projectMeta,
     version: MODEL_VERSION,
     updated_at: new Date().toISOString()
@@ -359,7 +277,7 @@ supabase
       filter: `id=eq.${projectId}`
     },
     payload => {
-      const { model_state, config_state, materials_state } = payload.new
+      const { model_state, config_state, materials_state, parts_label_state } = payload.new
       // Handle remote update
     }
   )
@@ -370,8 +288,6 @@ supabase
 
 ## CloudSyncService Abstraction
 
-To enable switching between Firebase and Supabase (or other providers), use an interface:
-
 ### Interface Definition
 
 **`src/shared/services/CloudSyncService.ts`**
@@ -381,6 +297,7 @@ export interface ProjectData {
   modelState: unknown
   configState: unknown
   materialsState: unknown
+  partsLabelState: unknown
   projectMetaState: unknown
   version: number
 }
@@ -407,47 +324,6 @@ export interface ICloudSyncService {
 
   // Auth integration
   getCurrentUserId(): string | null
-}
-```
-
-### Firebase Implementation
-
-**`src/shared/services/FirebaseSyncService.ts`**
-
-```typescript
-import type { ICloudSyncService, ProjectData, ProjectListItem } from './CloudSyncService'
-
-export class FirebaseSyncService implements ICloudSyncService {
-  async initialize(): Promise<void> {
-    /* ... */
-  }
-  destroy(): void {
-    /* ... */
-  }
-  isReady(): boolean {
-    /* ... */
-  }
-
-  async sync(projectId: string, data: ProjectData): Promise<void> {
-    const db = FirebaseService.getFirestore()
-    await setDoc(doc(db, 'projects', projectId, 'data', 'current'), {
-      ...data,
-      syncedAt: serverTimestamp()
-    })
-  }
-
-  async load(projectId: string): Promise<ProjectData> {
-    const db = FirebaseService.getFirestore()
-    const snapshot = await getDoc(doc(db, 'projects', projectId, 'data', 'current'))
-    return snapshot.data() as ProjectData
-  }
-
-  async loadProjectList(): Promise<ProjectListItem[]> {
-    /* ... */
-  }
-  getCurrentUserId(): string | null {
-    /* ... */
-  }
 }
 ```
 
@@ -482,6 +358,7 @@ export class SupabaseSyncService implements ICloudSyncService {
       model_state: data.modelState,
       config_state: data.configState,
       materials_state: data.materialsState,
+      parts_label_state: data.partsLabelState,
       project_meta: data.projectMetaState,
       version: data.version,
       updated_at: new Date().toISOString()
@@ -496,6 +373,7 @@ export class SupabaseSyncService implements ICloudSyncService {
       modelState: data.model_state,
       configState: data.config_state,
       materialsState: data.materials_state,
+      partsLabelState: data.parts_label_state,
       projectMetaState: data.project_meta,
       version: data.version
     }
@@ -516,16 +394,13 @@ export class SupabaseSyncService implements ICloudSyncService {
 
 ```typescript
 import type { ICloudSyncService } from './CloudSyncService'
-import { FirebaseSyncService } from './FirebaseSyncService'
 import { SupabaseSyncService } from './SupabaseSyncService'
-
-export const CLOUD_PROVIDER = import.meta.env.VITE_CLOUD_PROVIDER || 'firebase'
 
 let syncService: ICloudSyncService | null = null
 
 export function getCloudSyncService(): ICloudSyncService {
   if (!syncService) {
-    syncService = CLOUD_PROVIDER === 'supabase' ? new SupabaseSyncService() : new FirebaseSyncService()
+    syncService = new SupabaseSyncService()
   }
   return syncService
 }
@@ -535,115 +410,7 @@ export function getCloudSyncService(): ICloudSyncService {
 
 ## Infrastructure as Code
 
-### Firebase IaC
-
-#### Option 1: Firebase CLI
-
-**Repository structure:**
-
-```
-/firebase
-  firestore.rules        # Security rules
-  firestore.indexes.json # Index definitions
-  firebase.json          # Project configuration
-```
-
-**`firestore.rules`:**
-
-```javascript
-rules_version = '2';
-service cloud.firestore {
-  match /databases/{database}/documents {
-    match /users/{userId} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
-    }
-
-    match /projects/{projectId} {
-      allow read, write: if request.auth != null
-        && resource.data.userId == request.auth.uid;
-
-      match /data/{document=**} {
-        allow read, write: if request.auth != null
-          && get(/databases/$(database)/documents/projects/$(projectId)).data.userId == request.auth.uid;
-      }
-    }
-  }
-}
-```
-
-**Deploy:**
-
-```bash
-firebase login
-firebase init firestore
-firebase deploy --only firestore:rules,firestore:indexes
-```
-
-#### Option 2: Terraform
-
-**`terraform/main.tf`:**
-
-```hcl
-terraform {
-  required_providers {
-    google = {
-      source  = "hashicorp/google"
-      version = "~> 5.0"
-    }
-  }
-}
-
-provider "google" {
-  project = var.project_id
-  region  = var.region
-}
-
-# Firestore security rules
-resource "google_firebaserules_ruleset" "firestore" {
-  source {
-    files {
-      name    = "firestore.rules"
-      content = file("../firebase/firestore.rules")
-    }
-  }
-}
-
-resource "google_firebaserules_release" "firestore" {
-  name         = "cloud.firestore"
-  ruleset_name = google_firebaserules_ruleset.firestore.name
-}
-
-# Firestore indexes
-resource "google_firestore_index" "projects_by_user" {
-  project    = var.project_id
-  database   = "(default)"
-  collection = "projects"
-
-  fields {
-    field_path = "userId"
-    order      = "ASCENDING"
-  }
-  fields {
-    field_path = "updatedAt"
-    order      = "DESCENDING"
-  }
-}
-```
-
-**Deploy:**
-
-```bash
-cd terraform
-terraform init
-terraform plan
-terraform apply
-```
-
----
-
-### Supabase IaC
-
-#### Option 1: Supabase CLI (Recommended)
+### Supabase CLI
 
 **Repository structure:**
 
@@ -685,6 +452,7 @@ CREATE TABLE projects (
   model_state JSONB NOT NULL DEFAULT '{}',
   config_state JSONB NOT NULL DEFAULT '{}',
   materials_state JSONB NOT NULL DEFAULT '{}',
+  parts_label_state JSONB NOT NULL DEFAULT '{}',
   project_meta JSONB NOT NULL DEFAULT '{}',
   version INT DEFAULT 14
 );
@@ -748,49 +516,6 @@ jobs:
           SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
 ```
 
-#### Option 2: Terraform
-
-**`terraform/main.tf`:**
-
-```hcl
-terraform {
-  required_providers {
-    supabase = {
-      source  = "supabase/supabase"
-      version = "~> 1.0"
-    }
-  }
-}
-
-provider "supabase" {
-  access_token = var.supabase_access_token
-}
-
-resource "supabase_project" "main" {
-  name              = "strawbaler"
-  organization_id   = var.org_id
-  database_password = var.db_password
-  region            = "eu-west-1"
-}
-
-# Note: Table/schema management via SQL migrations is preferred
-# Terraform can manage project-level settings
-```
-
----
-
-### Comparison: Firebase vs Supabase IaC
-
-| Aspect                   | Firebase                 | Supabase                            |
-| ------------------------ | ------------------------ | ----------------------------------- |
-| **Schema management**    | N/A (schemaless)         | SQL migrations (version controlled) |
-| **Security rules**       | Custom DSL file          | SQL RLS policies (in migrations)    |
-| **Indexes**              | Terraform or JSON config | SQL `CREATE INDEX` (in migrations)  |
-| **Local development**    | Firebase emulators       | Full local stack (Docker)           |
-| **CI/CD**                | `firebase deploy`        | `supabase db push`                  |
-| **Rollback**             | Manual                   | `supabase migration repair`         |
-| **Full reproducibility** | Partial                  | Yes (SQL is source of truth)        |
-
 ---
 
 ## Implementation Phases
@@ -814,6 +539,10 @@ resource "supabase_project" "main" {
 
 - Ensure reverse index initializes with empty object (already done)
 
+**`src/construction/parts/store.ts`**
+
+- Update `partialize` to exclude `usedLabelsByGroup` (regenerated on rebuild)
+
 #### New Files
 
 **`src/building/store/regenerateDerivedState.ts`**
@@ -821,7 +550,11 @@ resource "supabase_project" "main" {
 ```typescript
 import type { PerimeterId } from '@/building/model/ids'
 import type { ConstraintEntityId, ConstraintId } from '@/building/model/ids'
-import { getReferencedEntityIds } from '@/editor/gcs/constraintTranslator'
+import {
+  getReferencedCornerIds,
+  getReferencedWallEntityIds,
+  getReferencedWallIds
+} from '@/editor/gcs/constraintTranslator'
 
 import { updatePerimeterGeometry } from './slices/perimeterGeometry'
 import type { StoreState } from './types'
@@ -835,15 +568,20 @@ export function regenerateDerivedState(state: StoreState): void {
   // 2. Rebuild constraints reverse index
   state._constraintsByEntity = {}
   for (const constraint of Object.values(state.buildingConstraints)) {
-    const entityIds = getReferencedEntityIds(constraint)
+    const { id: _id, ...input } = constraint
+    const cornerIds = getReferencedCornerIds(input)
+    const wallIds = getReferencedWallIds(input)
+    const wallEntityIds = getReferencedWallEntityIds(input)
+    const entityIds = [...cornerIds, ...wallIds, ...wallEntityIds]
+
     for (const entityId of entityIds) {
-      const list = state._constraintsByEntity[entityId as ConstraintEntityId]
+      const list = state._constraintsByEntity[entityId]
       if (list) {
-        if (!list.includes(constraint.id as ConstraintId)) {
-          list.push(constraint.id as ConstraintId)
+        if (!list.includes(constraint.id)) {
+          list.push(constraint.id)
         }
       } else {
-        state._constraintsByEntity[entityId as ConstraintEntityId] = [constraint.id as ConstraintId]
+        state._constraintsByEntity[entityId] = [constraint.id]
       }
     }
   }
@@ -857,7 +595,7 @@ Update `partialize`:
 ```typescript
 partialize: state => {
   const {
-    actions,
+    actions: _actions,
     // Exclude geometry caches (computed from other data)
     _perimeterGeometry,
     _perimeterWallGeometry,
@@ -867,7 +605,7 @@ partialize: state => {
     // Exclude reverse index (computed from constraints)
     _constraintsByEntity,
     ...rest
-  } = state as any
+  } = state as StoreState & { actions: unknown }
   return rest
 }
 ```
@@ -895,10 +633,6 @@ onRehydrateStorage: () => state => {
 #### Dependencies
 
 ```bash
-# Firebase
-pnpm add firebase
-
-# Or Supabase
 pnpm add @supabase/supabase-js
 ```
 
@@ -906,22 +640,7 @@ pnpm add @supabase/supabase-js
 
 Add to `.env.development.local` (gitignored):
 
-**For Firebase:**
-
 ```bash
-VITE_CLOUD_PROVIDER=firebase
-VITE_FIREBASE_API_KEY=...
-VITE_FIREBASE_AUTH_DOMAIN=...
-VITE_FIREBASE_PROJECT_ID=...
-VITE_FIREBASE_STORAGE_BUCKET=...
-VITE_FIREBASE_MESSAGING_SENDER_ID=...
-VITE_FIREBASE_APP_ID=...
-```
-
-**For Supabase:**
-
-```bash
-VITE_CLOUD_PROVIDER=supabase
 VITE_SUPABASE_URL=https://your-project.supabase.co
 VITE_SUPABASE_ANON_KEY=...
 ```
@@ -933,22 +652,11 @@ Add to `vite-env.d.ts`:
 ```typescript
 interface ImportMetaEnv {
   readonly VITE_SKETCHUP_API_URL?: string
-  readonly VITE_CLOUD_PROVIDER?: 'firebase' | 'supabase'
-
-  // Firebase
-  readonly VITE_FIREBASE_API_KEY?: string
-  readonly VITE_FIREBASE_AUTH_DOMAIN?: string
-  readonly VITE_FIREBASE_PROJECT_ID?: string
-  readonly VITE_FIREBASE_STORAGE_BUCKET?: string
-  readonly VITE_FIREBASE_MESSAGING_SENDER_ID?: string
-  readonly VITE_FIREBASE_APP_ID?: string
-
-  // Supabase
   readonly VITE_SUPABASE_URL?: string
   readonly VITE_SUPABASE_ANON_KEY?: string
 }
 
-export const CLOUD_ENABLED = !!(import.meta.env.VITE_FIREBASE_API_KEY || import.meta.env.VITE_SUPABASE_URL)
+export const CLOUD_ENABLED = !!import.meta.env.VITE_SUPABASE_URL
 ```
 
 #### New Files
@@ -1057,6 +765,7 @@ export interface ProjectData {
   modelState: unknown
   configState: unknown
   materialsState: unknown
+  partsLabelState: unknown
   projectMetaState: unknown
   version: number
 }
@@ -1208,9 +917,9 @@ export const useProjectListActions = () => useProjectListStore(state => state.ac
 
 #### New Files
 
-**`src/shared/services/FirebaseSyncService.ts`**
+**`src/shared/services/SupabaseSyncService.ts`**
 
-The sync service reads `projectId` from the persisted `projectMetaStore`, eliminating race conditions. See the [Firebase Sync Logic](#firebase-sync-logic) section for implementation details.
+The sync service reads `projectId` from the persisted `projectMetaStore`, eliminating race conditions. See the [Supabase Sync Logic](#supabase-sync-logic) section for implementation details.
 
 ---
 
@@ -1246,13 +955,6 @@ Quick project switcher component:
 ### Phase 5: Security & IaC
 
 **Goal**: Secure cloud access and enable infrastructure-as-code deployment.
-
-#### Firebase
-
-- [ ] Write `firestore.rules` (committed to repo)
-- [ ] Write `firestore.indexes.json`
-- [ ] Deploy via `firebase deploy` or Terraform
-- [ ] Test security (users can't access other users' data)
 
 #### Supabase
 
@@ -1295,22 +997,21 @@ Quick project switcher component:
 ### Collaboration (Phase 6+)
 
 - Add `collaborators` field to project documents
-- Update security rules/policies for shared access
-- Implement real-time sync (Firestore `onSnapshot` or Supabase realtime)
+- Update RLS policies for shared access
+- Implement real-time sync (Supabase realtime)
 - Add conflict markers for simultaneous edits
 - User presence indicators
 
 ### Premium Features
 
-- Use cloud provider's feature flags (Firebase Remote Config / Supabase config)
-- Or simple `subscription` field on user record
+- Use `subscription` field on user record
 - Premium APIs (enhanced exports, etc.) require auth + subscription check
 - Existing `VITE_SKETCHUP_API_URL` pattern can be extended for authenticated API calls
 
 ### Data Size Management
 
-- Monitor document/row sizes
-- Consider splitting large projects (Firestore subcollections / Supabase related tables)
+- Monitor row sizes
+- Consider splitting large projects (Supabase related tables)
 - Implement pagination for project lists
 - Add usage limits per subscription tier
 
@@ -1331,15 +1032,16 @@ If cloud integration causes issues:
 
 ### Phase 1: Derived State Cleanup
 
-- [ ] Create `regenerateDerivedState.ts`
-- [ ] Update `partialize` in model store
-- [ ] Add `onRehydrateStorage` regeneration
+- [x] Create `regenerateDerivedState.ts`
+- [x] Update `partialize` in model store
+- [x] Add `onRehydrateStorage` regeneration
+- [x] Update `partialize` in parts store to exclude `usedLabelsByGroup`
 - [ ] Test localStorage persistence still works
 - [ ] Test geometry regenerates correctly on load
 
 ### Phase 2: Project Meta Store + Cloud Setup
 
-- [ ] Add cloud backend dependency (firebase or @supabase/supabase-js)
+- [ ] Add cloud backend dependency (@supabase/supabase-js)
 - [ ] Add environment variables
 - [ ] Create `projectMetaStore.ts` (persisted, with UUID)
 - [ ] Create `projectListStore.ts` (in-memory)
@@ -1356,7 +1058,7 @@ If cloud integration causes issues:
 
 ### Phase 3: Cloud Sync
 
-- [ ] Create `FirebaseSyncService.ts` (or SupabaseSyncService)
+- [ ] Create `SupabaseSyncService.ts`
 - [ ] Implement store subscriptions (including projectMetaStore)
 - [ ] Implement debounced sync (read projectId from store)
 - [ ] Implement project loading
@@ -1375,8 +1077,8 @@ If cloud integration causes issues:
 
 ### Phase 5: Security & IaC
 
-- [ ] Write security rules/policies
-- [ ] Create IaC configuration (Terraform or CLI migrations)
-- [ ] Deploy rules/migrations
+- [ ] Create initial migration with schema + RLS policies
+- [ ] Test locally with `supabase db push`
+- [ ] Deploy to production
 - [ ] Test security (users can't access other users' data)
 - [ ] Set up CI/CD for automatic deployments
