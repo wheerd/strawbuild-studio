@@ -56,8 +56,9 @@ import { subscribeRecords } from '@/shared/utils/subscription'
 
 import { CURRENT_VERSION, applyMigrations } from './migrations'
 import { getPersistenceActions } from './persistenceStore'
-import { createConstraintsSlice } from './slices/constraintsSlice'
+import { createConstraintsSlice, rebuildReverseIndex } from './slices/constraintsSlice'
 import { createFloorsSlice } from './slices/floorsSlice'
+import { updatePerimeterGeometry } from './slices/perimeterGeometry'
 import { createPerimetersSlice } from './slices/perimeterSlice'
 import { createRoofsSlice } from './slices/roofsSlice'
 import { createStoreysSlice } from './slices/storeysSlice'
@@ -153,7 +154,19 @@ const useModelStore = create<Store>()(
         name: 'strawbaler-model',
         version: CURRENT_VERSION,
         migrate: (persistedState: unknown, version: number) => applyMigrations(persistedState, version) as StoreState,
-        partialize: state => Object.fromEntries(Object.entries(state).filter(([k]) => k !== 'actions')),
+        partialize: state => {
+          const {
+            actions: _actions,
+            _perimeterGeometry,
+            _perimeterWallGeometry,
+            _perimeterCornerGeometry,
+            _openingGeometry,
+            _wallPostGeometry,
+            _constraintsByEntity,
+            ...rest
+          } = state as StoreState & { actions: unknown }
+          return rest
+        },
         storage: {
           getItem: name => {
             const item = localStorage.getItem(name)
@@ -167,6 +180,8 @@ const useModelStore = create<Store>()(
         },
         onRehydrateStorage: () => state => {
           if (state) {
+            regenerateDerivedState(state)
+
             const persistenceActions = getPersistenceActions()
             persistenceActions.setHydrated(true)
           }
@@ -482,3 +497,12 @@ export const subscribeToModelChanges = useModelStore.subscribe
 
 // Export types
 export type { StoreActions } from './types'
+
+export function regenerateDerivedState(state: StoreState): void {
+  for (const perimeterId of Object.keys(state.perimeters)) {
+    updatePerimeterGeometry(state, perimeterId as PerimeterId)
+  }
+
+  state._constraintsByEntity = {}
+  rebuildReverseIndex(state)
+}

@@ -78,7 +78,6 @@ export const usePartsStore = create<PartsStore>()(
       name: 'strawbaler-parts',
       partialize: state => ({
         labels: state.labels,
-        usedLabelsByGroup: state.usedLabelsByGroup,
         nextLabelIndexByGroup: state.nextLabelIndexByGroup
       })
     }
