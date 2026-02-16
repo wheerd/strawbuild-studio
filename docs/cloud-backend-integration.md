@@ -651,11 +651,66 @@ See the [PostgreSQL Schema](#postgresql-schema) section for the full schema.
 # Apply to local development
 supabase db push
 
-# Apply to production
+# Apply to linked project
 supabase db push --linked
 ```
 
-**CI/CD integration:**
+---
+
+## Multi-Environment Setup
+
+### Environment Strategy
+
+| Environment | Branch        | Supabase Project                   | Netlify Context             |
+| ----------- | ------------- | ---------------------------------- | --------------------------- |
+| Production  | `main`        | `strawbaler-prod`                  | Production                  |
+| Development | `development` | `strawbaler-dev`                   | Deploy context: development |
+| PR Previews | PR branches   | `strawbaler-dev`                   | Deploy-preview              |
+| Local       | -             | `strawbaler-dev` or local emulator | -                           |
+
+### Supabase Projects
+
+Create two Supabase projects:
+
+1. **Production**: `strawbaler-prod` (or your preferred name)
+2. **Development**: `strawbaler-dev` (or your preferred name)
+
+Both projects use identical schema (same migrations applied).
+
+### GitHub Environments
+
+Create two environments in GitHub (Settings → Environments):
+
+1. **`development`** - Triggered on `development` branch
+2. **`production`** - Triggered on `main` branch (can require approval)
+
+#### Environment-Specific Secrets
+
+Configure the same secret names in each environment with different values:
+
+**Development environment secrets:**
+
+- `SUPABASE_PROJECT_REF` → dev project reference ID
+- `SUPABASE_DB_PASSWORD` → dev database password
+
+**Production environment secrets:**
+
+- `SUPABASE_PROJECT_REF` → prod project reference ID
+- `SUPABASE_DB_PASSWORD` → prod database password
+
+**Repository secrets (shared):**
+
+- `SUPABASE_ACCESS_TOKEN` → your Supabase personal access token
+
+#### Optional: Production Protection Rules
+
+For the `production` environment, configure:
+
+- **Required reviewers** - Someone must approve before migration runs
+- **Wait timer** - e.g., 5-minute delay before running
+- **Deployment branches** - Only allow `main` branch
+
+### CI/CD Workflow
 
 ```yaml
 # .github/workflows/supabase-migrate.yml
@@ -663,13 +718,15 @@ name: Supabase Migrate
 
 on:
   push:
-    branches: [main]
+    branches: [main, development]
     paths:
       - 'supabase/migrations/**'
 
 jobs:
   migrate:
     runs-on: ubuntu-latest
+    # Automatically selects development or production environment based on branch
+    environment: ${{ github.ref == 'refs/heads/main' && 'production' || 'development' }}
     steps:
       - uses: actions/checkout@v4
       - uses: supabase/setup-cli@v1
@@ -678,6 +735,64 @@ jobs:
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
           SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+```
+
+### Netlify Environment Variables
+
+Configure in Netlify UI (Site settings → Environment variables):
+
+**Production context:**
+
+```
+VITE_SUPABASE_URL=https://strawbaler-prod.supabase.co
+VITE_SUPABASE_ANON_KEY=<prod-anon-key>
+```
+
+**Development and Deploy Preview contexts:**
+
+```
+VITE_SUPABASE_URL=https://strawbaler-dev.supabase.co
+VITE_SUPABASE_ANON_KEY=<dev-anon-key>
+```
+
+### Local Development
+
+**Option 1: Connect to Dev Project**
+
+Create `.env.development.local` (gitignored):
+
+```bash
+VITE_SUPABASE_URL=https://strawbaler-dev.supabase.co
+VITE_SUPABASE_ANON_KEY=<dev-anon-key>
+```
+
+Then run:
+
+```bash
+pnpm dev  # Uses VITE_SUPABASE_URL from .env.development.local
+```
+
+**Option 2: Local Supabase Emulator**
+
+```bash
+# Start local Supabase (Docker-based)
+supabase start
+
+# This outputs local credentials:
+#   API URL: http://localhost:54321
+#   DB URL: postgresql://postgres:postgres@localhost:54322/postgres
+#   Studio URL: http://localhost:54323
+#   anon key: eyJ...
+
+# Update .env.development.local:
+# VITE_SUPABASE_URL=http://localhost:54321
+# VITE_SUPABASE_ANON_KEY=<local-anon-key-from-output>
+
+# Apply migrations to local database
+supabase db reset
+
+# Stop when done
+supabase stop
 ```
 
 ---
@@ -1226,8 +1341,12 @@ If cloud integration causes issues:
 
 ### Phase 2: Project Meta Store + Cloud Setup
 
+- [ ] Create two Supabase projects (dev and prod)
+- [ ] Configure Netlify environment variables for each deploy context
+- [ ] Create GitHub environments (development, production)
+- [ ] Add environment secrets to GitHub
 - [ ] Add cloud backend dependency (@supabase/supabase-js)
-- [ ] Add environment variables
+- [ ] Create local `.env.development.local` for local development
 - [ ] Create `projectMetaStore.ts` (persisted, with UUID)
 - [ ] Create `projectListStore.ts` (in-memory)
 - [ ] Create `CloudSyncService.ts` (interface)
@@ -1240,6 +1359,8 @@ If cloud integration causes issues:
 - [ ] Add sync status to `persistenceStore`
 - [ ] Test sign up / sign in / sign out
 - [ ] Test projectMetaStore persists correctly
+- [ ] Test local development with dev project
+- [ ] Test local development with local emulator
 
 ### Phase 3: Cloud Sync
 
@@ -1263,7 +1384,11 @@ If cloud integration causes issues:
 ### Phase 5: Security & IaC
 
 - [ ] Create initial migration with schema + RLS policies
+- [ ] Apply migration to development Supabase project
+- [ ] Apply migration to production Supabase project
 - [ ] Test locally with `supabase db push`
-- [ ] Deploy to production
+- [ ] Create GitHub Actions workflow for migrations
+- [ ] Test migration workflow to development environment
+- [ ] Test migration workflow to production environment
 - [ ] Test security (users can't access other users' data)
-- [ ] Set up CI/CD for automatic deployments
+- [ ] Configure production environment protection rules (optional)
