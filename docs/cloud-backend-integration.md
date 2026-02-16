@@ -46,6 +46,15 @@ This document outlines the implementation plan for adding cloud backend support 
     |  SupabaseSyncService    |
     |  (implementation)       |
     +-------------------------+
+                 |
+                 v
+    +------------------------------------------------------------------+
+    |                         Supabase Database                         |
+    +------------------------------------------------------------------+
+    |  projects (model_state, parts_label_state, config_defaults, ...)  |
+    |  materials (per-material rows)                                     |
+    |  config_entries (per-assembly-config rows)                        |
+    +------------------------------------------------------------------+
 ```
 
 ## Key Design Decision: Project ID Travels With Data
@@ -87,6 +96,8 @@ strawbaler-model:
 
 strawbaler-config:
   - wallAssemblyConfigs, floorAssemblyConfigs, etc.
+  - defaultWallAssemblyId, defaultFloorAssemblyId, etc.
+  - defaultStrawMaterial
 
 strawbaler-materials:
   - materials, timestamps
@@ -119,7 +130,7 @@ User edits -> Zustand stores -> localStorage (immediate, acts as cache)
 ```
 1. Sync current project (force sync, no debounce)
 2. Fetch new project from cloud
-3. Apply migrations if needed (version check)
+3. Apply migrations if needed (per-store version check)
 4. Regenerate derived state
 5. Update all stores atomically (including projectMetaStore)
 6. localStorage overwritten with new project data
@@ -163,10 +174,10 @@ A helper function `regenerateDerivedState()` must be called:
 
 ## Supabase Implementation
 
-### PostgreSQL Schema with JSONB
+### PostgreSQL Schema
 
 ```sql
--- Projects table (stores all project data as JSONB)
+-- Projects table (model + parts + meta + config defaults)
 CREATE TABLE projects (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID REFERENCES auth.users NOT NULL,
@@ -175,23 +186,69 @@ CREATE TABLE projects (
   created_at TIMESTAMPTZ DEFAULT now(),
   updated_at TIMESTAMPTZ DEFAULT now(),
 
-  -- Store states as JSONB (document storage pattern)
+  -- Model state with its own version
   model_state JSONB NOT NULL DEFAULT '{}',
-  config_state JSONB NOT NULL DEFAULT '{}',
-  materials_state JSONB NOT NULL DEFAULT '{}',
+  model_version INT DEFAULT 14,
+
+  -- Parts label state with its own version
   parts_label_state JSONB NOT NULL DEFAULT '{}',
-  project_meta JSONB NOT NULL DEFAULT '{}',
-  version INT DEFAULT 14
+  parts_version INT DEFAULT 1,
+
+  -- Config defaults (default assembly IDs, defaultStrawMaterial)
+  config_defaults JSONB NOT NULL DEFAULT '{}',
+  config_version INT DEFAULT 1,
+
+  -- Materials version (materials stored in separate table)
+  materials_version INT DEFAULT 1
 );
 
--- Index for user queries
+-- Materials table (each material as a row)
+CREATE TABLE materials (
+  project_id UUID REFERENCES projects(id) ON DELETE CASCADE NOT NULL,
+  material_id TEXT NOT NULL,  -- The MaterialId (e.g., "material-xxx")
+  material_data JSONB NOT NULL,
+  timestamp BIGINT,
+  created_at TIMESTAMPTZ DEFAULT now(),
+  updated_at TIMESTAMPTZ DEFAULT now(),
+
+  PRIMARY KEY (project_id, material_id)
+);
+
+-- Config entries (each assembly config as a row)
+CREATE TABLE config_entries (
+  project_id UUID REFERENCES projects(id) ON DELETE CASCADE NOT NULL,
+  assembly_id TEXT NOT NULL,  -- The AssemblyId (e.g., "wall-assembly-xxx")
+  config_type TEXT NOT NULL CHECK (config_type IN ('wall', 'floor', 'roof', 'opening', 'ringBeam')),
+  config_data JSONB NOT NULL,
+  timestamp BIGINT,
+  created_at TIMESTAMPTZ DEFAULT now(),
+  updated_at TIMESTAMPTZ DEFAULT now(),
+
+  PRIMARY KEY (project_id, assembly_id)
+);
+
+-- User profiles (optional metadata)
+CREATE TABLE user_profiles (
+  id UUID PRIMARY KEY REFERENCES auth.users,
+  email TEXT,
+  display_name TEXT,
+  created_at TIMESTAMPTZ DEFAULT now()
+);
+
+-- Indexes
 CREATE INDEX idx_projects_user_id ON projects(user_id);
 CREATE INDEX idx_projects_updated_at ON projects(updated_at DESC);
+CREATE INDEX idx_materials_project_id ON materials(project_id);
+CREATE INDEX idx_config_entries_project_id ON config_entries(project_id);
+CREATE INDEX idx_config_entries_type ON config_entries(project_id, config_type);
 
 -- Enable Row-Level Security
 ALTER TABLE projects ENABLE ROW LEVEL SECURITY;
+ALTER TABLE materials ENABLE ROW LEVEL SECURITY;
+ALTER TABLE config_entries ENABLE ROW LEVEL SECURITY;
+ALTER TABLE user_profiles ENABLE ROW LEVEL SECURITY;
 
--- RLS Policies
+-- RLS Policies for projects
 CREATE POLICY "Users can view own projects"
   ON projects FOR SELECT
   USING (auth.uid() = user_id);
@@ -208,17 +265,57 @@ CREATE POLICY "Users can delete own projects"
   ON projects FOR DELETE
   USING (auth.uid() = user_id);
 
--- Users table for additional metadata
-CREATE TABLE user_profiles (
-  id UUID PRIMARY KEY REFERENCES auth.users,
-  email TEXT,
-  display_name TEXT,
-  subscription TEXT DEFAULT 'free',
-  created_at TIMESTAMPTZ DEFAULT now()
-);
+-- RLS Policies for materials (access via project ownership)
+CREATE POLICY "Users can view materials in own projects"
+  ON materials FOR SELECT
+  USING (EXISTS (
+    SELECT 1 FROM projects WHERE projects.id = materials.project_id AND projects.user_id = auth.uid()
+  ));
 
-ALTER TABLE user_profiles ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Users can insert materials in own projects"
+  ON materials FOR INSERT
+  WITH CHECK (EXISTS (
+    SELECT 1 FROM projects WHERE projects.id = materials.project_id AND projects.user_id = auth.uid()
+  ));
 
+CREATE POLICY "Users can update materials in own projects"
+  ON materials FOR UPDATE
+  USING (EXISTS (
+    SELECT 1 FROM projects WHERE projects.id = materials.project_id AND projects.user_id = auth.uid()
+  ));
+
+CREATE POLICY "Users can delete materials in own projects"
+  ON materials FOR DELETE
+  USING (EXISTS (
+    SELECT 1 FROM projects WHERE projects.id = materials.project_id AND projects.user_id = auth.uid()
+  ));
+
+-- RLS Policies for config_entries (access via project ownership)
+CREATE POLICY "Users can view config_entries in own projects"
+  ON config_entries FOR SELECT
+  USING (EXISTS (
+    SELECT 1 FROM projects WHERE projects.id = config_entries.project_id AND projects.user_id = auth.uid()
+  ));
+
+CREATE POLICY "Users can insert config_entries in own projects"
+  ON config_entries FOR INSERT
+  WITH CHECK (EXISTS (
+    SELECT 1 FROM projects WHERE projects.id = config_entries.project_id AND projects.user_id = auth.uid()
+  ));
+
+CREATE POLICY "Users can update config_entries in own projects"
+  ON config_entries FOR UPDATE
+  USING (EXISTS (
+    SELECT 1 FROM projects WHERE projects.id = config_entries.project_id AND projects.user_id = auth.uid()
+  ));
+
+CREATE POLICY "Users can delete config_entries in own projects"
+  ON config_entries FOR DELETE
+  USING (EXISTS (
+    SELECT 1 FROM projects WHERE projects.id = config_entries.project_id AND projects.user_id = auth.uid()
+  ));
+
+-- RLS Policies for user_profiles
 CREATE POLICY "Users can view own profile"
   ON user_profiles FOR SELECT
   USING (auth.uid() = id);
@@ -231,35 +328,149 @@ CREATE POLICY "Users can update own profile"
 ### Supabase Sync Logic
 
 ```typescript
-// Sync: Upsert single row
-const { error } = await supabase
-  .from('projects')
-  .upsert({
+interface MaterialEntry {
+  materialId: string
+  materialData: unknown
+  timestamp: number
+}
+
+interface ConfigEntry {
+  assemblyId: string
+  configType: 'wall' | 'floor' | 'roof' | 'opening' | 'ringBeam'
+  configData: unknown
+  timestamp: number
+}
+
+// Sync: Multi-step process
+async function sync(projectId: string, data: ProjectData): Promise<void> {
+  const userId = getCurrentUserId()
+
+  // 1. Upsert project row
+  const { error: projectError } = await supabase.from('projects').upsert({
     id: projectId,
     user_id: userId,
-    name: projectMeta.name,
-    description: projectMeta.description,
-    model_state: modelState,
-    config_state: configState,
-    materials_state: materialsState,
-    parts_label_state: partsLabelState,
-    project_meta: projectMeta,
-    version: MODEL_VERSION,
+    name: data.projectMeta.name,
+    description: data.projectMeta.description,
+    model_state: data.modelState,
+    model_version: data.modelVersion,
+    parts_label_state: data.partsLabelState,
+    parts_version: data.partsVersion,
+    config_defaults: data.configDefaults,
+    config_version: data.configVersion,
+    materials_version: data.materialsVersion,
     updated_at: new Date().toISOString()
   })
+  if (projectError) throw projectError
 
-// Load: Read single row
-const { data, error } = await supabase
-  .from('projects')
-  .select('*')
-  .eq('id', projectId)
-  .single()
+  // 2. Sync materials (batch upsert, delete removed)
+  const existingMaterials = await supabase.from('materials').select('material_id').eq('project_id', projectId)
+
+  const currentMaterialIds = new Set(data.materials.map(m => m.materialId))
+
+  // Delete materials that no longer exist
+  const toDelete = existingMaterials.data.filter(m => !currentMaterialIds.has(m.material_id)).map(m => m.material_id)
+
+  if (toDelete.length > 0) {
+    await supabase.from('materials').delete().eq('project_id', projectId).in('material_id', toDelete)
+  }
+
+  // Upsert current materials
+  const materialRows = data.materials.map(m => ({
+    project_id: projectId,
+    material_id: m.materialId,
+    material_data: m.materialData,
+    timestamp: m.timestamp,
+    updated_at: new Date().toISOString()
+  }))
+
+  const { error: materialsError } = await supabase.from('materials').upsert(materialRows)
+  if (materialsError) throw materialsError
+
+  // 3. Sync config_entries (batch upsert, delete removed)
+  const existingConfigs = await supabase.from('config_entries').select('assembly_id').eq('project_id', projectId)
+
+  const currentConfigIds = new Set(data.configEntries.map(c => c.assemblyId))
+
+  // Delete configs that no longer exist
+  const configsToDelete = existingConfigs.data.filter(c => !currentConfigIds.has(c.assembly_id)).map(c => c.assembly_id)
+
+  if (configsToDelete.length > 0) {
+    await supabase.from('config_entries').delete().eq('project_id', projectId).in('assembly_id', configsToDelete)
+  }
+
+  // Upsert current configs
+  const configRows = data.configEntries.map(c => ({
+    project_id: projectId,
+    assembly_id: c.assemblyId,
+    config_type: c.configType,
+    config_data: c.configData,
+    timestamp: c.timestamp,
+    updated_at: new Date().toISOString()
+  }))
+
+  const { error: configError } = await supabase.from('config_entries').upsert(configRows)
+  if (configError) throw configError
+}
+
+// Load: Multi-step process
+async function load(projectId: string): Promise<ProjectData> {
+  // 1. Load project row
+  const { data: project, error: projectError } = await supabase
+    .from('projects')
+    .select('*')
+    .eq('id', projectId)
+    .single()
+  if (projectError) throw projectError
+
+  // 2. Load materials
+  const { data: materials, error: materialsError } = await supabase
+    .from('materials')
+    .select('material_id, material_data, timestamp')
+    .eq('project_id', projectId)
+  if (materialsError) throw materialsError
+
+  // 3. Load config entries
+  const { data: configs, error: configsError } = await supabase
+    .from('config_entries')
+    .select('assembly_id, config_type, config_data, timestamp')
+    .eq('project_id', projectId)
+  if (configsError) throw configsError
+
+  return {
+    modelState: project.model_state,
+    modelVersion: project.model_version,
+    partsLabelState: project.parts_label_state,
+    partsVersion: project.parts_version,
+    configDefaults: project.config_defaults,
+    configVersion: project.config_version,
+    configEntries: configs.map(c => ({
+      assemblyId: c.assembly_id,
+      configType: c.config_type,
+      configData: c.config_data,
+      timestamp: c.timestamp
+    })),
+    materialsVersion: project.materials_version,
+    materials: materials.map(m => ({
+      materialId: m.material_id,
+      materialData: m.material_data,
+      timestamp: m.timestamp
+    })),
+    projectMeta: {
+      name: project.name,
+      description: project.description
+    }
+  }
+}
 
 // Load project list
-const { data, error } = await supabase
-  .from('projects')
-  .select('id, name, description, updated_at')
-  .order('updated_at', { ascending: false })
+async function loadProjectList(): Promise<ProjectListItem[]> {
+  const { data, error } = await supabase
+    .from('projects')
+    .select('id, name, description, updated_at')
+    .order('updated_at', { ascending: false })
+  if (error) throw error
+  return data
+}
 ```
 
 ### Supabase Real-time (Future Collaboration)
@@ -271,14 +482,37 @@ supabase
   .on(
     'postgres_changes',
     {
-      event: 'UPDATE',
+      event: '*',
       schema: 'public',
       table: 'projects',
       filter: `id=eq.${projectId}`
     },
     payload => {
-      const { model_state, config_state, materials_state, parts_label_state } = payload.new
-      // Handle remote update
+      // Handle project metadata changes
+    }
+  )
+  .on(
+    'postgres_changes',
+    {
+      event: '*',
+      schema: 'public',
+      table: 'materials',
+      filter: `project_id=eq.${projectId}`
+    },
+    payload => {
+      // Handle material changes
+    }
+  )
+  .on(
+    'postgres_changes',
+    {
+      event: '*',
+      schema: 'public',
+      table: 'config_entries',
+      filter: `project_id=eq.${projectId}`
+    },
+    payload => {
+      // Handle config changes
     }
   )
   .subscribe()
@@ -293,13 +527,37 @@ supabase
 **`src/shared/services/CloudSyncService.ts`**
 
 ```typescript
+export interface MaterialEntry {
+  materialId: string
+  materialData: unknown
+  timestamp: number
+}
+
+export interface ConfigEntry {
+  assemblyId: string
+  configType: 'wall' | 'floor' | 'roof' | 'opening' | 'ringBeam'
+  configData: unknown
+  timestamp: number
+}
+
 export interface ProjectData {
   modelState: unknown
-  configState: unknown
-  materialsState: unknown
+  modelVersion: number
+
   partsLabelState: unknown
-  projectMetaState: unknown
-  version: number
+  partsVersion: number
+
+  configDefaults: unknown
+  configEntries: ConfigEntry[]
+  configVersion: number
+
+  materials: MaterialEntry[]
+  materialsVersion: number
+
+  projectMeta: {
+    name: string
+    description?: string
+  }
 }
 
 export interface ProjectListItem {
@@ -331,62 +589,7 @@ export interface ICloudSyncService {
 
 **`src/shared/services/SupabaseSyncService.ts`**
 
-```typescript
-import { createClient } from '@supabase/supabase-js'
-
-import type { ICloudSyncService, ProjectData, ProjectListItem } from './CloudSyncService'
-
-export class SupabaseSyncService implements ICloudSyncService {
-  private supabase: SupabaseClient | null = null
-
-  async initialize(): Promise<void> {
-    this.supabase = createClient(import.meta.env.VITE_SUPABASE_URL, import.meta.env.VITE_SUPABASE_ANON_KEY)
-  }
-
-  destroy(): void {
-    /* ... */
-  }
-  isReady(): boolean {
-    return this.supabase !== null
-  }
-
-  async sync(projectId: string, data: ProjectData): Promise<void> {
-    const { error } = await this.supabase!.from('projects').upsert({
-      id: projectId,
-      user_id: this.getCurrentUserId(),
-      name: (data.projectMetaState as any).name,
-      model_state: data.modelState,
-      config_state: data.configState,
-      materials_state: data.materialsState,
-      parts_label_state: data.partsLabelState,
-      project_meta: data.projectMetaState,
-      version: data.version,
-      updated_at: new Date().toISOString()
-    })
-    if (error) throw error
-  }
-
-  async load(projectId: string): Promise<ProjectData> {
-    const { data, error } = await this.supabase!.from('projects').select('*').eq('id', projectId).single()
-    if (error) throw error
-    return {
-      modelState: data.model_state,
-      configState: data.config_state,
-      materialsState: data.materials_state,
-      partsLabelState: data.parts_label_state,
-      projectMetaState: data.project_meta,
-      version: data.version
-    }
-  }
-
-  async loadProjectList(): Promise<ProjectListItem[]> {
-    /* ... */
-  }
-  getCurrentUserId(): string | null {
-    /* ... */
-  }
-}
-```
+See the [Supabase Sync Logic](#supabase-sync-logic) section for implementation details.
 
 ### Service Factory
 
@@ -440,46 +643,7 @@ supabase migration new add_user_profiles
 
 **`supabase/migrations/20240101000000_initial_schema.sql`:**
 
-```sql
--- Projects table
-CREATE TABLE projects (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id UUID REFERENCES auth.users NOT NULL,
-  name TEXT NOT NULL,
-  description TEXT,
-  created_at TIMESTAMPTZ DEFAULT now(),
-  updated_at TIMESTAMPTZ DEFAULT now(),
-  model_state JSONB NOT NULL DEFAULT '{}',
-  config_state JSONB NOT NULL DEFAULT '{}',
-  materials_state JSONB NOT NULL DEFAULT '{}',
-  parts_label_state JSONB NOT NULL DEFAULT '{}',
-  project_meta JSONB NOT NULL DEFAULT '{}',
-  version INT DEFAULT 14
-);
-
--- Indexes
-CREATE INDEX idx_projects_user_id ON projects(user_id);
-CREATE INDEX idx_projects_updated_at ON projects(updated_at DESC);
-
--- RLS
-ALTER TABLE projects ENABLE ROW LEVEL SECURITY;
-
-CREATE POLICY "Users can view own projects"
-  ON projects FOR SELECT
-  USING (auth.uid() = user_id);
-
-CREATE POLICY "Users can insert own projects"
-  ON projects FOR INSERT
-  WITH CHECK (auth.uid() = user_id);
-
-CREATE POLICY "Users can update own projects"
-  ON projects FOR UPDATE
-  USING (auth.uid() = user_id);
-
-CREATE POLICY "Users can delete own projects"
-  ON projects FOR DELETE
-  USING (auth.uid() = user_id);
-```
+See the [PostgreSQL Schema](#postgresql-schema) section for the full schema.
 
 **Deploy:**
 
@@ -761,13 +925,33 @@ export const setProjectMeta = (meta: ProjectMeta) => useProjectMetaStore.getStat
 **`src/shared/services/CloudSyncService.ts`** (interface)
 
 ```typescript
+export interface MaterialEntry {
+  materialId: string
+  materialData: unknown
+  timestamp: number
+}
+
+export interface ConfigEntry {
+  assemblyId: string
+  configType: 'wall' | 'floor' | 'roof' | 'opening' | 'ringBeam'
+  configData: unknown
+  timestamp: number
+}
+
 export interface ProjectData {
   modelState: unknown
-  configState: unknown
-  materialsState: unknown
+  modelVersion: number
   partsLabelState: unknown
-  projectMetaState: unknown
-  version: number
+  partsVersion: number
+  configDefaults: unknown
+  configEntries: ConfigEntry[]
+  configVersion: number
+  materials: MaterialEntry[]
+  materialsVersion: number
+  projectMeta: {
+    name: string
+    description?: string
+  }
 }
 
 export interface ProjectListItem {
@@ -784,7 +968,9 @@ export interface ICloudSyncService {
 
   sync(projectId: string, data: ProjectData): Promise<void>
   load(projectId: string): Promise<ProjectData>
+
   loadProjectList(): Promise<ProjectListItem[]>
+
   getCurrentUserId(): string | null
 }
 ```
@@ -1004,14 +1190,13 @@ Quick project switcher component:
 
 ### Premium Features
 
-- Use `subscription` field on user record
+- Add `subscription` field to user_profiles when needed
 - Premium APIs (enhanced exports, etc.) require auth + subscription check
 - Existing `VITE_SKETCHUP_API_URL` pattern can be extended for authenticated API calls
 
 ### Data Size Management
 
 - Monitor row sizes
-- Consider splitting large projects (Supabase related tables)
 - Implement pagination for project lists
 - Add usage limits per subscription tier
 
@@ -1061,7 +1246,7 @@ If cloud integration causes issues:
 - [ ] Create `SupabaseSyncService.ts`
 - [ ] Implement store subscriptions (including projectMetaStore)
 - [ ] Implement debounced sync (read projectId from store)
-- [ ] Implement project loading
+- [ ] Implement project loading (multi-table)
 - [ ] Implement project creation
 - [ ] Test sync works correctly
 - [ ] Test race condition (rapid project switching)
