@@ -16,6 +16,7 @@ import { ConstructionViewer3DModal } from '@/construction/viewer3d/ConstructionV
 import { TOOL_GROUPS, getToolInfoById } from '@/editor/tools/system/metadata'
 import { pushTool, useActiveToolId } from '@/editor/tools/system/store'
 import type { ToolId } from '@/editor/tools/system/types'
+import { ProjectMenu } from '@/projects/components'
 import { ConstructionPlanIcon, Model3DIcon } from '@/shared/components/Icons'
 import { Logo } from '@/shared/components/Logo'
 
@@ -37,9 +38,12 @@ export function MainToolbar({ onInfoClick }: MainToolbarProps): React.JSX.Elemen
 
   return (
     <div className="border-border flex items-center gap-4 border-b p-2" data-testid="main-toolbar">
-      {/* Logo - Compact version */}
-      <div onClick={onInfoClick} className="cursor-pointer">
-        <Logo />
+      {/* Logo + Project Menu */}
+      <div className="flex items-center gap-1">
+        <div onClick={onInfoClick} className="cursor-pointer">
+          <Logo compact />
+        </div>
+        <ProjectMenu />
       </div>
       {/* Tools positioned next to logo on the left */}
       <Toolbar.Root>

@@ -18,7 +18,7 @@ import {
 } from '@/construction/materials/store'
 import { MATERIALS_STORE_VERSION } from '@/construction/materials/store/migrations'
 import { PARTS_STORE_VERSION, type PartializedPartsState, usePartsStore } from '@/construction/parts/store'
-import { getProjectMeta, useProjectsActions, useProjectsStore } from '@/projects/store'
+import { getProjectActions, getProjectMeta, useProjectsStore } from '@/projects/store'
 import type { ProjectId } from '@/projects/types'
 import { parseTimestamp } from '@/projects/types'
 import { type ICloudSyncService, type StoreType, getCloudSyncService } from '@/shared/services/SupabaseSyncService'
@@ -115,7 +115,9 @@ export class CloudSyncManager {
       materialsState,
       materialsVersion: MATERIALS_STORE_VERSION,
       partsState: partsLabelState,
-      partsVersion: PARTS_STORE_VERSION
+      partsVersion: PARTS_STORE_VERSION,
+      createdAt: projectMeta.createdAt,
+      updatedAt: projectMeta.updatedAt
     })
   }
 
@@ -142,7 +144,7 @@ export class CloudSyncManager {
     const partsLabelState = projectData.partsState as PartializedPartsState
     usePartsStore.setState(partsLabelState, false)
 
-    const { loadProject } = useProjectsActions()
+    const { loadProject } = getProjectActions()
     loadProject({
       projectId,
       name: projectData.name,
@@ -150,6 +152,11 @@ export class CloudSyncManager {
       createdAt: parseTimestamp(projectData.createdAt),
       updatedAt: parseTimestamp(projectData.updatedAt)
     })
+  }
+
+  async flushSyncQueue(): Promise<void> {
+    if (this.pendingSyncs.size === 0) return
+    await this.flushSyncQueueInternal()
   }
 
   private async ensureSyncService(): Promise<void> {
@@ -165,12 +172,22 @@ export class CloudSyncManager {
   private async loadProjectsFromCloud(): Promise<void> {
     if (!this.syncService) return
 
-    const actions = useProjectsActions()
+    const actions = getProjectActions()
     actions.setLoading(true)
 
     try {
-      const projects = await this.syncService.loadProjectList()
+      let projects = await this.syncService.loadProjectList()
       actions.setProjects(projects)
+
+      if (projects.length === 0) {
+        try {
+          await this.syncLocalProjectToCloud()
+          projects = await this.syncService.loadProjectList()
+          actions.setProjects(projects)
+        } catch (error) {
+          console.error('Failed to sync local project to cloud:', error)
+        }
+      }
     } catch (error) {
       console.error('Failed to load projects:', error)
     } finally {
@@ -228,11 +245,11 @@ export class CloudSyncManager {
     }
 
     this.syncTimeout = setTimeout(() => {
-      void this.flushSyncQueue()
+      void this.flushSyncQueueInternal()
     }, SYNC_DEBOUNCE_MS)
   }
 
-  private async flushSyncQueue(): Promise<void> {
+  private async flushSyncQueueInternal(): Promise<void> {
     if (!this.syncService || this.pendingSyncs.size === 0) return
 
     const projectMeta = getProjectMeta()
@@ -319,6 +336,11 @@ export async function syncLocalProjectToCloud(): Promise<void> {
 export async function loadProjectFromCloud(projectId: ProjectId): Promise<void> {
   const manager = getCloudSyncManager()
   await manager.loadProjectFromCloud(projectId)
+}
+
+export async function flushSyncQueue(): Promise<void> {
+  const manager = getCloudSyncManager()
+  await manager.flushSyncQueue()
 }
 
 export function destroyCloudSync(): void {

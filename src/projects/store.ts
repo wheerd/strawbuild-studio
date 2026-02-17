@@ -147,3 +147,5 @@ export const getProjectMeta = () => useProjectsStore.getState().currentProject
 export const setProjectMeta = (meta: ProjectMeta): void => {
   useProjectsStore.getState().actions.loadProject(meta)
 }
+export const getProjectActions = () => useProjectsStore.getState().actions
+export const getProjectId = () => useProjectsStore.getState().currentProject.projectId

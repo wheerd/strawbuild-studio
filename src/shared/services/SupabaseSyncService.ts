@@ -23,7 +23,7 @@ interface CloudProjectRow {
   config_version: number
   materials_state: unknown
   materials_version: number
-  parts_label_state: unknown
+  parts_state: unknown
   parts_version: number
 }
 
@@ -36,7 +36,7 @@ export interface ICloudSyncService {
 
   syncStore(projectId: ProjectId, store: StoreType, data: unknown, version: number): Promise<void>
   loadProject(projectId: ProjectId): Promise<ProjectData>
-  createProject(userId: string, projectData: Omit<ProjectData, 'createdAt' | 'updatedAt'>): Promise<void>
+  createProject(userId: string, projectData: ProjectData): Promise<void>
   updateProjectMeta(projectId: ProjectId, meta: Partial<Pick<ProjectMeta, 'name' | 'description'>>): Promise<void>
   deleteProject(projectId: ProjectId): Promise<void>
 
@@ -138,7 +138,7 @@ export class SupabaseSyncService implements ICloudSyncService {
       configVersion: row.config_version,
       materialsState: row.materials_state,
       materialsVersion: row.materials_version,
-      partsState: row.parts_label_state,
+      partsState: row.parts_state,
       partsVersion: row.parts_version,
       name: row.name,
       description: row.description ?? undefined,
@@ -147,7 +147,7 @@ export class SupabaseSyncService implements ICloudSyncService {
     }
   }
 
-  async createProject(userId: string, projectData: Omit<ProjectData, 'createdAt' | 'updatedAt'>): Promise<void> {
+  async createProject(userId: string, projectData: ProjectData): Promise<void> {
     const row: Partial<CloudProjectRow> = {
       id: projectData.projectId,
       user_id: userId,
@@ -159,8 +159,10 @@ export class SupabaseSyncService implements ICloudSyncService {
       config_version: projectData.configVersion,
       materials_state: projectData.materialsState,
       materials_version: projectData.materialsVersion,
-      parts_label_state: projectData.partsState,
-      parts_version: projectData.partsVersion
+      parts_state: projectData.partsState,
+      parts_version: projectData.partsVersion,
+      created_at: projectData.createdAt,
+      updated_at: projectData.updatedAt
     }
     const { error } = await this.client.from('projects').insert(row)
 
@@ -220,4 +222,12 @@ export class SupabaseSyncService implements ICloudSyncService {
       updatedAt: parseTimestamp(row.updated_at as string)
     }))
   }
+}
+
+export async function deleteProject(projectId: ProjectId): Promise<void> {
+  const service = getCloudSyncService()
+  if (!service) {
+    throw new Error('Cloud sync not available')
+  }
+  await service.deleteProject(projectId)
 }

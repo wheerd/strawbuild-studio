@@ -11,6 +11,8 @@
 - `pnpm add <package>` - Add dependency
 - `pnpm typecheck` - TypeScript check only
 - `pnpm audit --audit-level moderate` Security audit
+- `pnpm i18n:update` - Update i18n translation files and regenerate TypeScript interfaces
+- `pnpm i18n:interface` - Regenerate TypeScript interfaces for i18n (run this after adding new translation keys)
 
 ## Runtime
 
