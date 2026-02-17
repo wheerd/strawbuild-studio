@@ -1,5 +1,4 @@
 import { LockClosedIcon } from '@radix-ui/react-icons'
-import type { AuthError } from '@supabase/supabase-js'
 import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -7,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 
+import { getAuthErrorMessage } from './authErrors'
 import { getSupabaseClient, isSupabaseConfigured } from './supabaseClient'
 
 export interface UpdatePasswordModalProps {
@@ -36,17 +36,6 @@ export function UpdatePasswordModal({ isOpen, onOpenChange }: UpdatePasswordModa
     onOpenChange(open)
   }
 
-  const getErrorMessage = (authError: AuthError): string => {
-    const errorCode = authError.code
-
-    switch (errorCode) {
-      case 'weak_password':
-        return t($ => $.auth.errors.weakPassword)
-      default:
-        return t($ => $.auth.errors.generic)
-    }
-  }
-
   const handleSubmit = (e: React.SyntheticEvent<HTMLFormElement>): void => {
     e.preventDefault()
     if (!isSupabaseConfigured()) return
@@ -64,7 +53,7 @@ export function UpdatePasswordModal({ isOpen, onOpenChange }: UpdatePasswordModa
       const { error } = await supabase.auth.updateUser({ password })
 
       if (error) {
-        setError(getErrorMessage(error))
+        setError(getAuthErrorMessage(error, t))
         setIsLoading(false)
       } else {
         setSuccess(true)

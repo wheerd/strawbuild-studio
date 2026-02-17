@@ -22,6 +22,7 @@
       "emailNotConfirmed": "Bitte überprüfe deine E-Mail, um dein Konto zu bestätigen",
       "generic": "Ein Fehler ist aufgetreten. Bitte versuche es erneut.",
       "invalidCredentials": "Ungültige E-Mail oder Passwort",
+      "invalidToken": "Dieser Link ist abgelaufen oder ungültig. Bitte fordere einen neuen an.",
       "weakPassword": "Das Passwort ist zu schwach. Bitte wähle ein stärkeres Passwort."
     },
     "forgotPassword": "Passwort vergessen",

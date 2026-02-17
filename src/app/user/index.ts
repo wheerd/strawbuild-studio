@@ -7,3 +7,6 @@ export { useAuthActions, useAuthLoading, useIsAuthenticated, useUser, useUserEma
 export { isSupabaseConfigured, getSupabaseClient } from './supabaseClient'
 export type { AuthView, User } from './types'
 export { UserMenu } from './UserMenu'
+export { getAuthErrorMessage } from './authErrors'
+export { ForgotPasswordForm, SignInForm, SignUpForm } from './forms'
+export type { ForgotPasswordFormProps, SignInFormProps, SignUpFormProps } from './forms'

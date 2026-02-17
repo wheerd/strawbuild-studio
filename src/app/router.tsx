@@ -18,8 +18,8 @@ export const router = createBrowserRouter([
     element: <Layout />,
     children: [
       { index: true, element: <FloorPlanEditor /> },
-      { path: 'auth/:tab', element: <AuthModalRoute /> },
-      { path: 'auth/update-password', element: <UpdatePasswordModalRoute /> }
+      { path: 'auth/:tab', element: <AuthModalRoute />, handle: { isModal: true } },
+      { path: 'auth/update-password', element: <UpdatePasswordModalRoute />, handle: { isModal: true } }
     ]
   }
 ])

@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
 
+import { getAuthErrorMessage } from './authErrors'
 import { useAuthActions } from './store'
 import { getSupabaseClient, isSupabaseConfigured } from './supabaseClient'
 
@@ -25,7 +26,17 @@ export function useAuth() {
     const hasHashToken = hash.includes('access_token')
     const hashType = hashParams.get('type')
 
-    void supabase.auth.getSession().then(({ data: { session } }) => {
+    void supabase.auth.getSession().then(({ data: { session }, error }) => {
+      if (error) {
+        // Handle token errors (expired, invalid, etc.)
+        toast.error(getAuthErrorMessage(error, t))
+        // Clean hash from URL
+        window.history.replaceState(null, '', window.location.pathname + window.location.search)
+        setUser(null)
+        setLoading(false)
+        return
+      }
+
       if (session?.user) {
         setUser({
           id: session.user.id,
@@ -49,6 +60,7 @@ export function useAuth() {
       } else {
         setUser(null)
       }
+      setLoading(false)
     })
 
     const {

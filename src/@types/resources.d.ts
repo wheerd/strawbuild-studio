@@ -24,6 +24,7 @@ interface Resources {
         "emailNotConfirmed": "Please check your email to confirm your account",
         "generic": "An error occurred. Please try again.",
         "invalidCredentials": "Invalid email or password",
+        "invalidToken": "This link has expired or is invalid. Please request a new one.",
         "weakPassword": "Password is too weak. Please use a stronger password."
       },
       "forgotPassword": "Forgot Password",
