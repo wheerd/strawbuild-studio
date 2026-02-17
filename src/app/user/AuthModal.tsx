@@ -1,6 +1,7 @@
 import { PersonIcon } from '@radix-ui/react-icons'
 import React from 'react'
 import { useTranslation } from 'react-i18next'
+import { toast } from 'sonner'
 
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -36,6 +37,10 @@ export function AuthModal({ isOpen, onOpenChange, currentTab, onTabChange }: Aut
 
   const handleSignInSuccess = (): void => {
     onOpenChange(false)
+    toast.success(
+      t($ => $.auth.signInSuccess),
+      { id: 'auth-success' }
+    )
   }
 
   const handleSignUpSuccess = (_message: string): void => {

@@ -40,7 +40,9 @@ interface Resources {
       "sendResetEmail": "Send Reset Email",
       "sendingResetEmail": "Sending...",
       "signIn": "Sign In",
+      "signInSuccess": "You are now signed in.",
       "signOut": "Sign Out",
+      "signOutSuccess": "You are now signed out.",
       "signUp": "Sign Up",
       "signingIn": "Signing in...",
       "updatePassword": "Update Password",
@@ -1582,7 +1584,6 @@ interface Resources {
     }
   },
   "toolbar": {
-    "about": "About",
     "configuration": "Configuration",
     "constructionPlanForActiveStorey": "Construction Plan for active storey",
     "constructionPlanForStorey": "Construction Plan for {{storeyName}}",

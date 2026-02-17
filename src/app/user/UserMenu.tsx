@@ -2,7 +2,9 @@ import { EnterIcon, ExitIcon, PersonIcon } from '@radix-ui/react-icons'
 import * as React from 'react'
 import { useTranslation } from 'react-i18next'
 import { useLocation, useNavigate } from 'react-router-dom'
+import { toast } from 'sonner'
 
+import { getAuthErrorMessage } from '@/app/user/authErrors'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -23,10 +25,18 @@ export function UserMenu(): React.JSX.Element {
   const navigate = useNavigate()
   const location = useLocation()
 
-  const handleSignOut = (): void => {
+  const handleSignOut = async (): Promise<void> => {
     if (isSupabaseConfigured()) {
       const supabase = getSupabaseClient()
-      void supabase.auth.signOut()
+      const result = await supabase.auth.signOut()
+      if (result.error) {
+        toast.error(getAuthErrorMessage(result.error, t), { id: 'auth-error' })
+      } else {
+        toast.success(
+          t($ => $.auth.signOutSuccess),
+          { id: 'auth-error' }
+        )
+      }
     }
   }
 
@@ -57,7 +67,7 @@ export function UserMenu(): React.JSX.Element {
             <DropdownMenuItem onClick={handleChangePassword} className="cursor-pointer">
               {t($ => $.auth.updatePassword)}
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={handleSignOut} className="cursor-pointer">
+            <DropdownMenuItem onClick={() => void handleSignOut()} className="cursor-pointer">
               <ExitIcon className="mr-2 h-4 w-4" />
               {t($ => $.auth.signOut)}
             </DropdownMenuItem>
