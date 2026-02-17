@@ -6,6 +6,7 @@ import { type ConfigTab, ConfigurationModalContext } from '@/construction/config
 import { FeatureErrorFallback } from '@/shared/components/ErrorBoundary'
 import { WelcomeModal } from '@/shared/components/WelcomeModal'
 import { useWelcomeModal } from '@/shared/hooks/useWelcomeModal'
+import { initializeCloudSync } from '@/shared/services/CloudSyncManager'
 
 import { MainToolbar } from './MainToolbar'
 import { SidePanel } from './SidePanel'
@@ -18,6 +19,7 @@ import { StatusBar } from './status-bar/StatusBar'
 import { keyboardShortcutManager } from './tools/system/KeyboardShortcutManager'
 
 export function FloorPlanEditor(): React.JSX.Element {
+  useEffect(() => void initializeCloudSync(), [])
   useAutoFitOnHydration()
   const { isOpen, mode, openManually, handleAccept } = useWelcomeModal()
 

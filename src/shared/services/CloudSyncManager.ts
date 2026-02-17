@@ -43,7 +43,7 @@ export class CloudSyncManager {
   private authUnsubscribe: (() => void) | null = null
 
   async initialize(): Promise<void> {
-    if (!isSupabaseConfigured()) {
+    if (!isSupabaseConfigured() || this.syncService) {
       return
     }
 

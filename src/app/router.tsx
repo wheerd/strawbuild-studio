@@ -1,5 +1,8 @@
 import React from 'react'
+import { ErrorBoundary } from 'react-error-boundary'
 import { createBrowserRouter } from 'react-router-dom'
+
+import { ErrorFallback } from '@/shared/components/ErrorBoundary'
 
 import { Layout } from './Layout'
 import { AuthModalRoute } from './user/AuthModalRoute'
@@ -15,7 +18,11 @@ const FloorPlanEditor = React.lazy(
 export const router = createBrowserRouter([
   {
     path: '/',
-    element: <Layout />,
+    element: (
+      <ErrorBoundary FallbackComponent={ErrorFallback}>
+        <Layout />
+      </ErrorBoundary>
+    ),
     children: [
       { index: true, element: <FloorPlanEditor /> },
       { path: 'auth/:tab', element: <AuthModalRoute />, handle: { isModal: true } },
