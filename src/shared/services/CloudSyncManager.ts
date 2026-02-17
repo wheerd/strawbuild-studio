@@ -20,9 +20,12 @@ import { MATERIALS_STORE_VERSION } from '@/construction/materials/store/migratio
 import { PARTS_STORE_VERSION, type PartializedPartsState, usePartsStore } from '@/construction/parts/store'
 import { getProjectMeta, useProjectsActions, useProjectsStore } from '@/projects/store'
 import type { ProjectId } from '@/projects/types'
+import { parseTimestamp } from '@/projects/types'
 import { type ICloudSyncService, type StoreType, getCloudSyncService } from '@/shared/services/SupabaseSyncService'
 
 const SYNC_DEBOUNCE_MS = 3000
+
+type SyncQueueItem = StoreType | 'project_meta'
 
 interface SyncSubscriptions {
   model: () => void
@@ -35,7 +38,7 @@ interface SyncSubscriptions {
 export class CloudSyncManager {
   private syncService: ICloudSyncService | null = null
   private syncTimeout: ReturnType<typeof setTimeout> | null = null
-  private pendingSyncs = new Set<StoreType>()
+  private pendingSyncs = new Set<SyncQueueItem>()
   private subscriptions: SyncSubscriptions | null = null
   private authUnsubscribe: (() => void) | null = null
 
@@ -144,8 +147,8 @@ export class CloudSyncManager {
       projectId,
       name: projectData.name,
       description: projectData.description,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
+      createdAt: parseTimestamp(projectData.createdAt),
+      updatedAt: parseTimestamp(projectData.updatedAt)
     })
   }
 
@@ -195,9 +198,8 @@ export class CloudSyncManager {
         this.queueSync('parts')
       }),
 
-      projectMeta: useProjectsStore.subscribe(state => {
-        const projectMeta = state.currentProject
-        this.queueMetaSync(projectMeta.name, projectMeta.description)
+      projectMeta: useProjectsStore.subscribe(() => {
+        this.queueSync('project_meta')
       })
     }
   }
@@ -218,8 +220,8 @@ export class CloudSyncManager {
     this.pendingSyncs.clear()
   }
 
-  private queueSync(store: StoreType): void {
-    this.pendingSyncs.add(store)
+  private queueSync(item: SyncQueueItem): void {
+    this.pendingSyncs.add(item)
 
     if (this.syncTimeout) {
       clearTimeout(this.syncTimeout)
@@ -227,29 +229,6 @@ export class CloudSyncManager {
 
     this.syncTimeout = setTimeout(() => {
       void this.flushSyncQueue()
-    }, SYNC_DEBOUNCE_MS)
-  }
-
-  private queueMetaSync(name: string, description?: string): void {
-    if (this.syncTimeout) {
-      clearTimeout(this.syncTimeout)
-    }
-
-    this.syncTimeout = setTimeout(() => {
-      void (async () => {
-        if (!this.syncService) return
-
-        const projectMeta = getProjectMeta()
-        const persistenceActions = getPersistenceActions()
-
-        try {
-          persistenceActions.setCloudSyncing(true)
-          await this.syncService.updateProjectMeta(projectMeta.projectId, { name, description })
-          persistenceActions.setCloudSyncSuccess(new Date())
-        } catch (error) {
-          persistenceActions.setCloudSyncError(error instanceof Error ? error.message : 'Sync failed')
-        }
-      })()
     }, SYNC_DEBOUNCE_MS)
   }
 
@@ -262,11 +241,19 @@ export class CloudSyncManager {
     persistenceActions.setCloudSyncing(true)
 
     try {
-      for (const column of this.pendingSyncs) {
+      for (const item of this.pendingSyncs) {
+        if (item === 'project_meta') {
+          await this.syncService.updateProjectMeta(projectMeta.projectId, {
+            name: projectMeta.name,
+            description: projectMeta.description
+          })
+          continue
+        }
+
         let data: unknown
         let version: number
 
-        switch (column) {
+        switch (item) {
           case 'model': {
             const state = useModelStore.getState()
             data = partializeModelState(state)
@@ -294,7 +281,7 @@ export class CloudSyncManager {
           }
         }
 
-        await this.syncService.syncStore(projectMeta.projectId, column, data, version)
+        await this.syncService.syncStore(projectMeta.projectId, item, data, version)
       }
 
       this.pendingSyncs.clear()

@@ -2,12 +2,18 @@ export type ProjectId = string & { readonly brand: unique symbol }
 
 export const createProjectId = (): ProjectId => crypto.randomUUID() as ProjectId
 
+export type Timestamp = string & { readonly brand: unique symbol }
+
+export const timestampNow = (): Timestamp => new Date().toISOString() as Timestamp
+
+export const parseTimestamp = (s: string): Timestamp => s as Timestamp
+
 export interface ProjectMeta {
   projectId: ProjectId
   name: string
   description?: string
-  createdAt: string
-  updatedAt: string
+  createdAt: Timestamp
+  updatedAt: Timestamp
 }
 
 export type UpdatableProjectMeta = Omit<ProjectMeta, 'projectId' | 'createdAt' | 'updatedAt'>
@@ -27,5 +33,5 @@ export interface ProjectListItem {
   id: ProjectId
   name: string
   description?: string
-  updatedAt: string
+  updatedAt: Timestamp
 }

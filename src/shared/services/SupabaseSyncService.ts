@@ -1,7 +1,14 @@
 import type { SupabaseClient, User } from '@supabase/supabase-js'
 
 import { getSupabaseClient, isSupabaseConfigured } from '@/app/user/supabaseClient'
-import type { ProjectData, ProjectId, ProjectListItem, ProjectMeta, UpdatableProjectMeta } from '@/projects/types'
+import {
+  type ProjectData,
+  type ProjectId,
+  type ProjectListItem,
+  type ProjectMeta,
+  type UpdatableProjectMeta,
+  parseTimestamp
+} from '@/projects/types'
 
 interface CloudProjectRow {
   id: string
@@ -135,8 +142,8 @@ export class SupabaseSyncService implements ICloudSyncService {
       partsVersion: row.parts_version,
       name: row.name,
       description: row.description ?? undefined,
-      createdAt: row.created_at,
-      updatedAt: row.updated_at
+      createdAt: parseTimestamp(row.created_at),
+      updatedAt: parseTimestamp(row.updated_at)
     }
   }
 
@@ -210,7 +217,7 @@ export class SupabaseSyncService implements ICloudSyncService {
       id: row.id as ProjectId,
       name: row.name as string,
       description: (row.description ?? undefined) as string | undefined,
-      updatedAt: row.updated_at as string
+      updatedAt: parseTimestamp(row.updated_at as string)
     }))
   }
 }

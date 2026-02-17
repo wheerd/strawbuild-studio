@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 import { devtools, persist } from 'zustand/middleware'
 
-import { type ProjectId, type ProjectListItem, type ProjectMeta, createProjectId } from './types'
+import { type ProjectId, type ProjectListItem, type ProjectMeta, createProjectId, timestampNow } from './types'
 
 interface ProjectsState {
   currentProject: ProjectMeta
@@ -28,8 +28,8 @@ export type ProjectsStore = ProjectsState & { actions: ProjectsActions }
 const createNewProjectMeta = (): ProjectMeta => ({
   projectId: createProjectId(),
   name: 'My Project',
-  createdAt: new Date().toISOString(),
-  updatedAt: new Date().toISOString()
+  createdAt: timestampNow(),
+  updatedAt: timestampNow()
 })
 
 const CURRENT_VERSION = 1
@@ -53,7 +53,7 @@ export const useProjectsStore = create<ProjectsStore>()(
                 currentProject: {
                   ...state.currentProject,
                   name,
-                  updatedAt: new Date().toISOString()
+                  updatedAt: timestampNow()
                 }
               }),
               false,
@@ -66,7 +66,7 @@ export const useProjectsStore = create<ProjectsStore>()(
                 currentProject: {
                   ...state.currentProject,
                   description,
-                  updatedAt: new Date().toISOString()
+                  updatedAt: timestampNow()
                 }
               }),
               false,
@@ -78,7 +78,7 @@ export const useProjectsStore = create<ProjectsStore>()(
               state => ({
                 currentProject: {
                   ...state.currentProject,
-                  updatedAt: new Date().toISOString()
+                  updatedAt: timestampNow()
                 }
               }),
               false,
