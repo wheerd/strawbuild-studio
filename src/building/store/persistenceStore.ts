@@ -6,6 +6,9 @@ export interface PersistenceState {
   lastSaved: Date | null
   saveError: string | null
   isHydrated: boolean
+  isCloudSyncing: boolean
+  lastCloudSync: Date | null
+  cloudSyncError: string | null
 }
 
 export interface PersistenceActions {
@@ -13,6 +16,9 @@ export interface PersistenceActions {
   setSaveSuccess: (timestamp: Date) => void
   setSaveError: (error: string | null) => void
   setHydrated: (isHydrated: boolean) => void
+  setCloudSyncing: (isSyncing: boolean) => void
+  setCloudSyncSuccess: (timestamp: Date) => void
+  setCloudSyncError: (error: string | null) => void
 }
 
 export type PersistenceStore = PersistenceState & PersistenceActions
@@ -20,13 +26,14 @@ export type PersistenceStore = PersistenceState & PersistenceActions
 export const usePersistenceStore = create<PersistenceStore>()(
   devtools(
     set => ({
-      // Initial state
       isSaving: false,
       lastSaved: null,
       saveError: null,
       isHydrated: false,
+      isCloudSyncing: false,
+      lastCloudSync: null,
+      cloudSyncError: null,
 
-      // Actions
       setSaving: (isSaving: boolean) => {
         set({ isSaving, saveError: null }, false, 'persistence/setSaving')
       },
@@ -56,6 +63,33 @@ export const usePersistenceStore = create<PersistenceStore>()(
 
       setHydrated: (isHydrated: boolean) => {
         set({ isHydrated, lastSaved: new Date() }, false, 'persistence/setHydrated')
+      },
+
+      setCloudSyncing: (isCloudSyncing: boolean) => {
+        set({ isCloudSyncing, cloudSyncError: null }, false, 'persistence/setCloudSyncing')
+      },
+
+      setCloudSyncSuccess: (timestamp: Date) => {
+        set(
+          {
+            isCloudSyncing: false,
+            lastCloudSync: timestamp,
+            cloudSyncError: null
+          },
+          false,
+          'persistence/setCloudSyncSuccess'
+        )
+      },
+
+      setCloudSyncError: (error: string | null) => {
+        set(
+          {
+            isCloudSyncing: false,
+            cloudSyncError: error
+          },
+          false,
+          'persistence/setCloudSyncError'
+        )
       }
     }),
     { name: 'persistence-store' }
@@ -63,6 +97,8 @@ export const usePersistenceStore = create<PersistenceStore>()(
 )
 
 export const useIsHydrated = (): boolean => usePersistenceStore(state => state.isHydrated)
+export const useIsCloudSyncing = (): boolean => usePersistenceStore(state => state.isCloudSyncing)
+export const useLastCloudSync = (): Date | null => usePersistenceStore(state => state.lastCloudSync)
+export const useCloudSyncError = (): string | null => usePersistenceStore(state => state.cloudSyncError)
 
-// Direct access for non-reactive usage
 export const getPersistenceActions = (): PersistenceActions => usePersistenceStore.getState()

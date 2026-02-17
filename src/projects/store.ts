@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 import { devtools, persist } from 'zustand/middleware'
 
-import type { ProjectListItem, ProjectMeta } from './types'
+import { type ProjectId, type ProjectListItem, type ProjectMeta, createProjectId } from './types'
 
 interface ProjectsState {
   currentProject: ProjectMeta
@@ -17,8 +17,8 @@ interface ProjectsActions {
   resetToNew: () => void
   setProjects: (projects: ProjectListItem[]) => void
   addProject: (project: ProjectListItem) => void
-  removeProject: (projectId: string) => void
-  updateProject: (projectId: string, updates: Partial<ProjectListItem>) => void
+  removeProject: (projectId: ProjectId) => void
+  updateProject: (projectId: ProjectId, updates: Partial<ProjectListItem>) => void
   setLoading: (loading: boolean) => void
   reset: () => void
 }
@@ -26,7 +26,7 @@ interface ProjectsActions {
 export type ProjectsStore = ProjectsState & { actions: ProjectsActions }
 
 const createNewProjectMeta = (): ProjectMeta => ({
-  projectId: crypto.randomUUID(),
+  projectId: createProjectId(),
   name: 'My Project',
   createdAt: new Date().toISOString(),
   updatedAt: new Date().toISOString()

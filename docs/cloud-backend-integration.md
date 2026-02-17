@@ -177,7 +177,8 @@ A helper function `regenerateDerivedState()` must be called:
 ### PostgreSQL Schema
 
 ```sql
--- Projects table (model + parts + meta + config defaults)
+-- Projects table (single table with separate JSONB columns per store)
+-- This enables partial sync - only the changed column is sent over the network
 CREATE TABLE projects (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID REFERENCES auth.users NOT NULL,
@@ -186,45 +187,21 @@ CREATE TABLE projects (
   created_at TIMESTAMPTZ DEFAULT now(),
   updated_at TIMESTAMPTZ DEFAULT now(),
 
-  -- Model state with its own version
+  -- Model state (floor plan geometry, walls, corners, etc.)
   model_state JSONB NOT NULL DEFAULT '{}',
   model_version INT DEFAULT 14,
 
-  -- Parts label state with its own version
-  parts_label_state JSONB NOT NULL DEFAULT '{}',
-  parts_version INT DEFAULT 1,
-
-  -- Config defaults (default assembly IDs, defaultStrawMaterial)
-  config_defaults JSONB NOT NULL DEFAULT '{}',
+  -- Config state (wall assemblies, floor assemblies, defaults, etc.)
+  config_state JSONB NOT NULL DEFAULT '{}',
   config_version INT DEFAULT 1,
 
-  -- Materials version (materials stored in separate table)
-  materials_version INT DEFAULT 1
-);
+  -- Materials state (material definitions)
+  materials_state JSONB NOT NULL DEFAULT '{}',
+  materials_version INT DEFAULT 1,
 
--- Materials table (each material as a row)
-CREATE TABLE materials (
-  project_id UUID REFERENCES projects(id) ON DELETE CASCADE NOT NULL,
-  material_id TEXT NOT NULL,  -- The MaterialId (e.g., "material-xxx")
-  material_data JSONB NOT NULL,
-  timestamp BIGINT,
-  created_at TIMESTAMPTZ DEFAULT now(),
-  updated_at TIMESTAMPTZ DEFAULT now(),
-
-  PRIMARY KEY (project_id, material_id)
-);
-
--- Config entries (each assembly config as a row)
-CREATE TABLE config_entries (
-  project_id UUID REFERENCES projects(id) ON DELETE CASCADE NOT NULL,
-  assembly_id TEXT NOT NULL,  -- The AssemblyId (e.g., "wall-assembly-xxx")
-  config_type TEXT NOT NULL CHECK (config_type IN ('wall', 'floor', 'roof', 'opening', 'ringBeam')),
-  config_data JSONB NOT NULL,
-  timestamp BIGINT,
-  created_at TIMESTAMPTZ DEFAULT now(),
-  updated_at TIMESTAMPTZ DEFAULT now(),
-
-  PRIMARY KEY (project_id, assembly_id)
+  -- Parts label state (label assignments for construction parts)
+  parts_label_state JSONB NOT NULL DEFAULT '{}',
+  parts_version INT DEFAULT 1
 );
 
 -- User profiles (optional metadata)
@@ -238,14 +215,9 @@ CREATE TABLE user_profiles (
 -- Indexes
 CREATE INDEX idx_projects_user_id ON projects(user_id);
 CREATE INDEX idx_projects_updated_at ON projects(updated_at DESC);
-CREATE INDEX idx_materials_project_id ON materials(project_id);
-CREATE INDEX idx_config_entries_project_id ON config_entries(project_id);
-CREATE INDEX idx_config_entries_type ON config_entries(project_id, config_type);
 
 -- Enable Row-Level Security
 ALTER TABLE projects ENABLE ROW LEVEL SECURITY;
-ALTER TABLE materials ENABLE ROW LEVEL SECURITY;
-ALTER TABLE config_entries ENABLE ROW LEVEL SECURITY;
 ALTER TABLE user_profiles ENABLE ROW LEVEL SECURITY;
 
 -- RLS Policies for projects
@@ -265,56 +237,6 @@ CREATE POLICY "Users can delete own projects"
   ON projects FOR DELETE
   USING (auth.uid() = user_id);
 
--- RLS Policies for materials (access via project ownership)
-CREATE POLICY "Users can view materials in own projects"
-  ON materials FOR SELECT
-  USING (EXISTS (
-    SELECT 1 FROM projects WHERE projects.id = materials.project_id AND projects.user_id = auth.uid()
-  ));
-
-CREATE POLICY "Users can insert materials in own projects"
-  ON materials FOR INSERT
-  WITH CHECK (EXISTS (
-    SELECT 1 FROM projects WHERE projects.id = materials.project_id AND projects.user_id = auth.uid()
-  ));
-
-CREATE POLICY "Users can update materials in own projects"
-  ON materials FOR UPDATE
-  USING (EXISTS (
-    SELECT 1 FROM projects WHERE projects.id = materials.project_id AND projects.user_id = auth.uid()
-  ));
-
-CREATE POLICY "Users can delete materials in own projects"
-  ON materials FOR DELETE
-  USING (EXISTS (
-    SELECT 1 FROM projects WHERE projects.id = materials.project_id AND projects.user_id = auth.uid()
-  ));
-
--- RLS Policies for config_entries (access via project ownership)
-CREATE POLICY "Users can view config_entries in own projects"
-  ON config_entries FOR SELECT
-  USING (EXISTS (
-    SELECT 1 FROM projects WHERE projects.id = config_entries.project_id AND projects.user_id = auth.uid()
-  ));
-
-CREATE POLICY "Users can insert config_entries in own projects"
-  ON config_entries FOR INSERT
-  WITH CHECK (EXISTS (
-    SELECT 1 FROM projects WHERE projects.id = config_entries.project_id AND projects.user_id = auth.uid()
-  ));
-
-CREATE POLICY "Users can update config_entries in own projects"
-  ON config_entries FOR UPDATE
-  USING (EXISTS (
-    SELECT 1 FROM projects WHERE projects.id = config_entries.project_id AND projects.user_id = auth.uid()
-  ));
-
-CREATE POLICY "Users can delete config_entries in own projects"
-  ON config_entries FOR DELETE
-  USING (EXISTS (
-    SELECT 1 FROM projects WHERE projects.id = config_entries.project_id AND projects.user_id = auth.uid()
-  ));
-
 -- RLS Policies for user_profiles
 CREATE POLICY "Users can view own profile"
   ON user_profiles FOR SELECT
@@ -325,139 +247,63 @@ CREATE POLICY "Users can update own profile"
   USING (auth.uid() = id);
 ```
 
+### Schema Design Rationale
+
+**Why separate JSONB columns instead of separate tables?**
+
+| Approach             | Model Change | Config Change | Complexity                       |
+| -------------------- | ------------ | ------------- | -------------------------------- |
+| Single `data` column | 50 kB        | 50 kB         | Simple                           |
+| Separate columns     | ~25 kB       | ~8 kB         | Simple                           |
+| Separate tables      | ~25 kB       | ~8 kB         | Complex (row diffing, deletions) |
+
+Separate columns give us **smaller sync payloads** with **minimal complexity**:
+
+- Each store syncs only its column
+- No row-level diffing needed
+- No cascade deletions
+- Simpler RLS policies
+
 ### Supabase Sync Logic
 
 ```typescript
-interface MaterialEntry {
-  materialId: string
-  materialData: unknown
-  timestamp: number
-}
+// Column names for each store
+type StoreColumn = 'model_state' | 'config_state' | 'materials_state' | 'parts_label_state'
 
-interface ConfigEntry {
-  assemblyId: string
-  configType: 'wall' | 'floor' | 'roof' | 'opening' | 'ringBeam'
-  configData: unknown
-  timestamp: number
-}
+// Sync a single column (called by store subscriptions)
+async function syncColumn(projectId: string, column: StoreColumn, data: unknown, version: number): Promise<void> {
+  const versionColumn = column.replace('_state', '_version')
 
-// Sync: Multi-step process
-async function sync(projectId: string, data: ProjectData): Promise<void> {
-  const userId = getCurrentUserId()
-
-  // 1. Upsert project row
-  const { error: projectError } = await supabase.from('projects').upsert({
-    id: projectId,
-    user_id: userId,
-    name: data.projectMeta.name,
-    description: data.projectMeta.description,
-    model_state: data.modelState,
-    model_version: data.modelVersion,
-    parts_label_state: data.partsLabelState,
-    parts_version: data.partsVersion,
-    config_defaults: data.configDefaults,
-    config_version: data.configVersion,
-    materials_version: data.materialsVersion,
-    updated_at: new Date().toISOString()
-  })
-  if (projectError) throw projectError
-
-  // 2. Sync materials (batch upsert, delete removed)
-  const existingMaterials = await supabase.from('materials').select('material_id').eq('project_id', projectId)
-
-  const currentMaterialIds = new Set(data.materials.map(m => m.materialId))
-
-  // Delete materials that no longer exist
-  const toDelete = existingMaterials.data.filter(m => !currentMaterialIds.has(m.material_id)).map(m => m.material_id)
-
-  if (toDelete.length > 0) {
-    await supabase.from('materials').delete().eq('project_id', projectId).in('material_id', toDelete)
-  }
-
-  // Upsert current materials
-  const materialRows = data.materials.map(m => ({
-    project_id: projectId,
-    material_id: m.materialId,
-    material_data: m.materialData,
-    timestamp: m.timestamp,
-    updated_at: new Date().toISOString()
-  }))
-
-  const { error: materialsError } = await supabase.from('materials').upsert(materialRows)
-  if (materialsError) throw materialsError
-
-  // 3. Sync config_entries (batch upsert, delete removed)
-  const existingConfigs = await supabase.from('config_entries').select('assembly_id').eq('project_id', projectId)
-
-  const currentConfigIds = new Set(data.configEntries.map(c => c.assemblyId))
-
-  // Delete configs that no longer exist
-  const configsToDelete = existingConfigs.data.filter(c => !currentConfigIds.has(c.assembly_id)).map(c => c.assembly_id)
-
-  if (configsToDelete.length > 0) {
-    await supabase.from('config_entries').delete().eq('project_id', projectId).in('assembly_id', configsToDelete)
-  }
-
-  // Upsert current configs
-  const configRows = data.configEntries.map(c => ({
-    project_id: projectId,
-    assembly_id: c.assemblyId,
-    config_type: c.configType,
-    config_data: c.configData,
-    timestamp: c.timestamp,
-    updated_at: new Date().toISOString()
-  }))
-
-  const { error: configError } = await supabase.from('config_entries').upsert(configRows)
-  if (configError) throw configError
-}
-
-// Load: Multi-step process
-async function load(projectId: string): Promise<ProjectData> {
-  // 1. Load project row
-  const { data: project, error: projectError } = await supabase
+  const { error } = await supabase
     .from('projects')
-    .select('*')
+    .update({
+      [column]: data,
+      [versionColumn]: version,
+      updated_at: new Date().toISOString()
+    })
     .eq('id', projectId)
-    .single()
-  if (projectError) throw projectError
 
-  // 2. Load materials
-  const { data: materials, error: materialsError } = await supabase
-    .from('materials')
-    .select('material_id, material_data, timestamp')
-    .eq('project_id', projectId)
-  if (materialsError) throw materialsError
+  if (error) throw error
+}
 
-  // 3. Load config entries
-  const { data: configs, error: configsError } = await supabase
-    .from('config_entries')
-    .select('assembly_id, config_type, config_data, timestamp')
-    .eq('project_id', projectId)
-  if (configsError) throw configsError
+// Load entire project (all columns)
+async function loadProject(projectId: string): Promise<ProjectData> {
+  const { data, error } = await supabase.from('projects').select('*').eq('id', projectId).single()
+
+  if (error) throw error
 
   return {
-    modelState: project.model_state,
-    modelVersion: project.model_version,
-    partsLabelState: project.parts_label_state,
-    partsVersion: project.parts_version,
-    configDefaults: project.config_defaults,
-    configVersion: project.config_version,
-    configEntries: configs.map(c => ({
-      assemblyId: c.assembly_id,
-      configType: c.config_type,
-      configData: c.config_data,
-      timestamp: c.timestamp
-    })),
-    materialsVersion: project.materials_version,
-    materials: materials.map(m => ({
-      materialId: m.material_id,
-      materialData: m.material_data,
-      timestamp: m.timestamp
-    })),
+    modelState: data.model_state,
+    modelVersion: data.model_version,
+    configState: data.config_state,
+    configVersion: data.config_version,
+    materialsState: data.materials_state,
+    materialsVersion: data.materials_version,
+    partsLabelState: data.parts_label_state,
+    partsVersion: data.parts_version,
     projectMeta: {
-      name: project.name,
-      description: project.description
+      name: data.name,
+      description: data.description
     }
   }
 }
@@ -470,6 +316,29 @@ async function loadProjectList(): Promise<ProjectListItem[]> {
     .order('updated_at', { ascending: false })
   if (error) throw error
   return data
+}
+
+// Create new project (for sign-up flow)
+async function createProject(userId: string, projectData: ProjectData): Promise<string> {
+  const projectId = crypto.randomUUID()
+
+  const { error } = await supabase.from('projects').insert({
+    id: projectId,
+    user_id: userId,
+    name: projectData.projectMeta.name,
+    description: projectData.projectMeta.description,
+    model_state: projectData.modelState,
+    model_version: projectData.modelVersion,
+    config_state: projectData.configState,
+    config_version: projectData.configVersion,
+    materials_state: projectData.materialsState,
+    materials_version: projectData.materialsVersion,
+    parts_label_state: projectData.partsLabelState,
+    parts_version: projectData.partsVersion
+  })
+
+  if (error) throw error
+  return projectId
 }
 ```
 
@@ -1341,34 +1210,46 @@ If cloud integration causes issues:
 
 ### Phase 2: Project Meta Store + Cloud Setup
 
+#### Infrastructure (external setup required)
+
 - [ ] Create two Supabase projects (dev and prod)
 - [ ] Configure Netlify environment variables for each deploy context
 - [ ] Create GitHub environments (development, production)
 - [ ] Add environment secrets to GitHub
-- [ ] Add cloud backend dependency (@supabase/supabase-js)
-- [ ] Create local `.env.development.local` for local development
-- [ ] Create `projectMetaStore.ts` (persisted, with UUID)
-- [ ] Create `projectListStore.ts` (in-memory)
-- [ ] Create `CloudSyncService.ts` (interface)
-- [ ] Create `authStore.ts`
-- [ ] Create `AuthContext.tsx`
-- [ ] Create `AuthModal.tsx`
-- [ ] Create `UserMenu.tsx`
-- [ ] Update `main.tsx` initialization
-- [ ] Update `App.tsx` with AuthProvider
-- [ ] Add sync status to `persistenceStore`
-- [ ] Test sign up / sign in / sign out
+
+#### Code Implementation
+
+- [x] Add cloud backend dependency (@supabase/supabase-js)
+- [x] Create local `.env.development.local` for local development
+- [x] Create project stores (`src/projects/store.ts` - includes projectMetaStore + projectListStore)
+- [x] Create auth store (`src/app/user/store.ts`)
+- [x] Create Supabase client (`src/app/user/supabaseClient.ts`)
+- [x] Create auth hook (`src/app/user/useAuth.ts` - replaces AuthContext pattern)
+- [x] Create auth error handling (`src/app/user/authErrors.ts`)
+- [x] Create `AuthModal.tsx` (with form subcomponents: SignInForm, SignUpForm, ForgotPasswordForm)
+- [x] Create `UpdatePasswordModal.tsx`
+- [x] Create `UserMenu.tsx`
+- [x] Add React Router with modal routes (`src/app/router.tsx`, `src/app/Layout.tsx`)
+- [x] Update `main.tsx` with RouterProvider
+- [x] Test sign up / sign in / sign out
+- [x] Test forgot password flow
+- [x] Test password reset flow
+- [x] Test expired/invalid link error handling
+- [x] Test local development with dev project
+
+#### Phase 2.5: Cloud Sync Service (completed)
+
+- [x] Create `CloudSyncService.ts` (interface)
+- [x] Create `SupabaseSyncService.ts` (implements CloudSyncService interface)
+- [x] Create `cloudSyncManager.ts` (store subscriptions, debounced sync, project load/create)
+- [x] Add sync status to `persistenceStore` (isCloudSyncing, lastCloudSync, cloudSyncError)
+- [x] Integrate project stores with auth (load projects from cloud)
+- [x] Initialize cloud sync in Layout.tsx
 - [ ] Test projectMetaStore persists correctly
-- [ ] Test local development with dev project
-- [ ] Test local development with local emulator
+- [ ] Test local development with local emulator (optional)
 
-### Phase 3: Cloud Sync
+### Phase 3: Cloud Sync Testing
 
-- [ ] Create `SupabaseSyncService.ts`
-- [ ] Implement store subscriptions (including projectMetaStore)
-- [ ] Implement debounced sync (read projectId from store)
-- [ ] Implement project loading (multi-table)
-- [ ] Implement project creation
 - [ ] Test sync works correctly
 - [ ] Test race condition (rapid project switching)
 - [ ] Test offline queue (future)
@@ -1383,7 +1264,7 @@ If cloud integration causes issues:
 
 ### Phase 5: Security & IaC
 
-- [ ] Create initial migration with schema + RLS policies
+- [x] Create initial migration with schema + RLS policies
 - [ ] Apply migration to development Supabase project
 - [ ] Apply migration to production Supabase project
 - [ ] Test locally with `supabase db push`

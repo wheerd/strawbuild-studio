@@ -15,7 +15,7 @@ import { createPerimetersSlice } from './slices/perimeterSlice'
 import { createRoofsSlice } from './slices/roofsSlice'
 import { createStoreysSlice } from './slices/storeysSlice'
 import { createTimestampsSlice } from './slices/timestampsSlice'
-import type { Store, StoreActions, StoreState } from './types'
+import type { PartializedStoreState, Store, StoreActions, StoreState } from './types'
 
 const createDebouncedSave = (debounceTimeMs: number) => {
   let saveTimeout: NodeJS.Timeout | null = null
@@ -98,19 +98,7 @@ export const useModelStore = create<Store>()(
         name: 'strawbaler-model',
         version: CURRENT_VERSION,
         migrate: (persistedState: unknown, version: number) => applyMigrations(persistedState, version) as StoreState,
-        partialize: state => {
-          const {
-            actions: _actions,
-            _perimeterGeometry,
-            _perimeterWallGeometry,
-            _perimeterCornerGeometry,
-            _openingGeometry,
-            _wallPostGeometry,
-            _constraintsByEntity,
-            ...rest
-          } = state as StoreState & { actions: unknown }
-          return rest
-        },
+        partialize: partializeState,
         storage: {
           getItem: name => {
             const item = localStorage.getItem(name)
@@ -124,7 +112,7 @@ export const useModelStore = create<Store>()(
         },
         onRehydrateStorage: () => state => {
           if (state) {
-            regenerateDerivedState(state)
+            regeneratePartializedState(state)
 
             const persistenceActions = getPersistenceActions()
             persistenceActions.setHydrated(true)
@@ -146,11 +134,31 @@ export const clearPersistence = (): void => {
   localStorage.removeItem('strawbaler-model')
 }
 
-export function regenerateDerivedState(state: StoreState): void {
-  for (const perimeterId of Object.keys(state.perimeters)) {
-    updatePerimeterGeometry(state, perimeterId as PerimeterId)
+export function partializeState(state: Store): PartializedStoreState {
+  const {
+    actions: _actions,
+    _perimeterGeometry,
+    _perimeterWallGeometry,
+    _perimeterCornerGeometry,
+    _openingGeometry,
+    _wallPostGeometry,
+    _constraintsByEntity,
+    ...rest
+  } = state
+  return rest
+}
+
+export function regeneratePartializedState(state: PartializedStoreState): void {
+  const restoredState = state as StoreState
+  restoredState._perimeterGeometry = {}
+  restoredState._perimeterWallGeometry = {}
+  restoredState._perimeterCornerGeometry = {}
+  restoredState._openingGeometry = {}
+  restoredState._wallPostGeometry = {}
+  for (const perimeterId of Object.keys(restoredState.perimeters)) {
+    updatePerimeterGeometry(restoredState, perimeterId as PerimeterId)
   }
 
-  state._constraintsByEntity = {}
-  rebuildReverseIndex(state)
+  restoredState._constraintsByEntity = {}
+  rebuildReverseIndex(restoredState)
 }

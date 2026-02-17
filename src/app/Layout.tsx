@@ -3,6 +3,7 @@ import { Outlet, Route, Routes, useLocation, useMatches } from 'react-router-dom
 
 import { AppSkeleton } from '@/app/skeletons/AppSkeleton'
 import { useAuth } from '@/app/user/useAuth'
+import { initializeCloudSync } from '@/shared/services/CloudSyncManager'
 import { startChunkPreloading } from '@/shared/services/chunkPreloader'
 
 const FloorPlanEditor = React.lazy(async () => {
@@ -32,6 +33,7 @@ export function Layout(): React.JSX.Element {
 
   useEffect(() => {
     startChunkPreloading()
+    void initializeCloudSync()
   }, [])
 
   return (

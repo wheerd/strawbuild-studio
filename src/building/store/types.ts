@@ -14,3 +14,14 @@ export interface StoreActions
 }
 
 export type Store = StoreState & { actions: StoreActions }
+
+export type PartializedStoreState = Omit<
+  Store,
+  | 'actions'
+  | '_perimeterGeometry'
+  | '_perimeterWallGeometry'
+  | '_perimeterCornerGeometry'
+  | '_openingGeometry'
+  | '_wallPostGeometry'
+  | '_constraintsByEntity'
+>

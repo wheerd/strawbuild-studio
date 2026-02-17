@@ -14,6 +14,8 @@ import type { LocationFilter, PartDefinition, PartId, PartsStore, PartsStoreStat
 export const getLabelGroupId = (definition: Pick<PartDefinition, 'source' | 'materialId'>): string =>
   definition.source === 'group' ? 'virtual' : `material:${definition.materialId}`
 
+export const PARTS_STORE_VERSION = 1
+
 export const usePartsStore = create<PartsStore>()(
   persist(
     (set, get) => ({
@@ -79,12 +81,15 @@ export const usePartsStore = create<PartsStore>()(
       partialize: state => ({
         labels: state.labels,
         nextLabelIndexByGroup: state.nextLabelIndexByGroup
-      })
+      }),
+      version: PARTS_STORE_VERSION
     }
   )
 )
 
 export type LabelState = Pick<PartsStoreState, 'labels' | 'usedLabelsByGroup' | 'nextLabelIndexByGroup'>
+
+export type PartializedPartsState = Pick<PartsStoreState, 'labels' | 'nextLabelIndexByGroup'>
 
 export function regenerateLabels(groupId: string | undefined, state: PartsStoreState): LabelState {
   const newLabels: Partial<Record<PartId, string>> = {}

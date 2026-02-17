@@ -11,7 +11,10 @@ const mockPersistenceState: PersistenceState = {
   isSaving: false,
   lastSaved: null as Date | null,
   saveError: null as string | null,
-  isHydrated: true
+  isHydrated: true,
+  isCloudSyncing: false,
+  lastCloudSync: null as Date | null,
+  cloudSyncError: null as string | null
 }
 
 vi.mock('@/building/store/persistenceStore', () => ({
