@@ -48,8 +48,8 @@ async function bootstrap() {
         <ThemeProvider attribute="class">
           <TooltipProvider>
             <ErrorBoundary FallbackComponent={ErrorFallback}>
-              <RouterProvider router={router} />
               <Toaster />
+              <RouterProvider router={router} />
             </ErrorBoundary>
           </TooltipProvider>
         </ThemeProvider>

@@ -2,8 +2,10 @@ import type { AuthError } from '@supabase/supabase-js'
 import type { TFunction } from 'i18next'
 
 export function getAuthErrorMessage(error: AuthError, t: TFunction): string {
-  const errorCode = error.code
+  return getAuthErrorMessageFromCode(error.code, t)
+}
 
+export function getAuthErrorMessageFromCode(errorCode: string | undefined, t: TFunction): string {
   switch (errorCode) {
     case 'invalid_credentials':
       return t($ => $.auth.errors.invalidCredentials)
@@ -17,6 +19,7 @@ export function getAuthErrorMessage(error: AuthError, t: TFunction): string {
     case 'invalid_token':
     case 'expired_token':
     case 'invalid_grant':
+    case 'otp_expired':
       return t($ => $.auth.errors.invalidToken)
     default:
       return t($ => $.auth.errors.generic)

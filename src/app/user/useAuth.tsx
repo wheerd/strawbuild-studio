@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
 
-import { getAuthErrorMessage } from './authErrors'
+import { getAuthErrorMessage, getAuthErrorMessageFromCode } from './authErrors'
 import { useAuthActions } from './store'
 import { getSupabaseClient, isSupabaseConfigured } from './supabaseClient'
 
@@ -23,14 +23,33 @@ export function useAuth() {
 
     const hash = window.location.hash
     const hashParams = new URLSearchParams(hash.slice(1))
+
+    // Check for error in URL hash (e.g., expired link)
+    const hashError = hashParams.get('error')
+    const hashErrorCode = hashParams.get('error_code')
+
+    if (hashError && hashErrorCode) {
+      toast.error(getAuthErrorMessageFromCode(hashErrorCode, t), {
+        duration: Infinity,
+        closeButton: true,
+        id: 'auth-error'
+      })
+      window.history.replaceState(null, '', window.location.pathname + window.location.search)
+      setUser(null)
+      setLoading(false)
+      return
+    }
+
     const hasHashToken = hash.includes('access_token')
     const hashType = hashParams.get('type')
 
     void supabase.auth.getSession().then(({ data: { session }, error }) => {
       if (error) {
-        // Handle token errors (expired, invalid, etc.)
-        toast.error(getAuthErrorMessage(error, t))
-        // Clean hash from URL
+        toast.error(getAuthErrorMessage(error, t), {
+          duration: Infinity,
+          closeButton: true,
+          id: 'auth-error'
+        })
         window.history.replaceState(null, '', window.location.pathname + window.location.search)
         setUser(null)
         setLoading(false)
@@ -45,16 +64,16 @@ export function useAuth() {
 
         if (hasHashToken) {
           if (hashType === 'recovery') {
-            // Password reset flow - navigate to update-password modal
             void navigate('/auth/update-password', {
               state: { backgroundLocation: { ...location, pathname: '/', search: '', hash: '' } },
               replace: true
             })
           } else {
-            // Email confirmation flow - show success toast
-            toast.success(t($ => $.auth.confirmationSuccess))
+            toast.success(
+              t($ => $.auth.confirmationSuccess),
+              { id: 'auth-success' }
+            )
           }
-          // Clean hash from URL
           window.history.replaceState(null, '', window.location.pathname + window.location.search)
         }
       } else {
