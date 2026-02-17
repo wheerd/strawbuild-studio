@@ -9,8 +9,10 @@
     "strawbaler": "Strawbaler"
   },
   "auth": {
+    "backToSignIn": "Zurück zur Anmeldung",
     "checkEmailToConfirm": "Überprüfe deine E-Mail, um dein Konto zu bestätigen",
     "confirmationSuccess": "E-Mail erfolgreich bestätigt. Du bist jetzt angemeldet.",
+    "confirmNewPassword": "Neues Passwort bestätigen",
     "confirmPassword": "Passwort bestätigen",
     "createAccount": "Konto erstellen",
     "creatingAccount": "Konto wird erstellt...",
@@ -22,12 +24,24 @@
       "invalidCredentials": "Ungültige E-Mail oder Passwort",
       "weakPassword": "Das Passwort ist zu schwach. Bitte wähle ein stärkeres Passwort."
     },
+    "forgotPassword": "Passwort vergessen",
+    "forgotPasswordDescription": "Gib deine E-Mail ein und wir senden dir einen Link zum Zurücksetzen deines Passworts.",
+    "forgotPasswordLink": "Passwort vergessen?",
+    "newPassword": "Neues Passwort",
     "password": "Passwort",
+    "passwordUpdated": "Passwort erfolgreich aktualisiert!",
     "passwordsDoNotMatch": "Passwörter stimmen nicht überein",
+    "resetEmailSent": "Überprüfe deine E-Mail für einen Link zum Zurücksetzen deines Passworts.",
+    "savePassword": "Neues Passwort speichern",
+    "savingPassword": "Wird gespeichert...",
+    "sendResetEmail": "E-Mail senden",
+    "sendingResetEmail": "Wird gesendet...",
     "signIn": "Anmelden",
     "signingIn": "Anmelden...",
     "signOut": "Abmelden",
-    "signUp": "Registrieren"
+    "signUp": "Registrieren",
+    "updatePassword": "Passwort aktualisieren",
+    "updatePasswordDescription": "Gib dein neues Passwort unten ein."
   },
   "autoSave": {
     "autoSaved": "Automatisch gespeichert {{time}}",

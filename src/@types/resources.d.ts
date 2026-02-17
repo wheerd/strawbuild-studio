@@ -11,7 +11,9 @@ interface Resources {
       "strawbaler": "Strawbaler"
     },
     "auth": {
+      "backToSignIn": "Back to Sign In",
       "checkEmailToConfirm": "Check your email to confirm your account",
+      "confirmNewPassword": "Confirm New Password",
       "confirmPassword": "Confirm Password",
       "confirmationSuccess": "Email confirmed successfully. You are now signed in.",
       "createAccount": "Create Account",
@@ -24,12 +26,24 @@ interface Resources {
         "invalidCredentials": "Invalid email or password",
         "weakPassword": "Password is too weak. Please use a stronger password."
       },
+      "forgotPassword": "Forgot Password",
+      "forgotPasswordDescription": "Enter your email and we'll send you a link to reset your password.",
+      "forgotPasswordLink": "Forgot password?",
+      "newPassword": "New Password",
       "password": "Password",
+      "passwordUpdated": "Password updated successfully!",
       "passwordsDoNotMatch": "Passwords do not match",
+      "resetEmailSent": "Check your email for a link to reset your password.",
+      "savePassword": "Save New Password",
+      "savingPassword": "Saving...",
+      "sendResetEmail": "Send Reset Email",
+      "sendingResetEmail": "Sending...",
       "signIn": "Sign In",
       "signOut": "Sign Out",
       "signUp": "Sign Up",
-      "signingIn": "Signing in..."
+      "signingIn": "Signing in...",
+      "updatePassword": "Update Password",
+      "updatePasswordDescription": "Enter your new password below."
     },
     "autoSave": {
       "autoSaveFailed": "Auto-save failed",

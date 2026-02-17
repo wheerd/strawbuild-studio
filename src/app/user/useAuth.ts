@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
 
 import { useAuthActions } from './store'
@@ -8,6 +9,8 @@ import { getSupabaseClient, isSupabaseConfigured } from './supabaseClient'
 export function useAuth() {
   const { setUser, setLoading } = useAuthActions()
   const { t } = useTranslation('common')
+  const navigate = useNavigate()
+  const location = useLocation()
 
   useEffect(() => {
     if (!isSupabaseConfigured()) {
@@ -17,7 +20,10 @@ export function useAuth() {
 
     const supabase = getSupabaseClient()
 
-    const hasHashToken = window.location.hash.includes('access_token')
+    const hash = window.location.hash
+    const hashParams = new URLSearchParams(hash.slice(1))
+    const hasHashToken = hash.includes('access_token')
+    const hashType = hashParams.get('type')
 
     void supabase.auth.getSession().then(({ data: { session } }) => {
       if (session?.user) {
@@ -27,7 +33,17 @@ export function useAuth() {
         })
 
         if (hasHashToken) {
-          toast.success(t($ => $.auth.confirmationSuccess))
+          if (hashType === 'recovery') {
+            // Password reset flow - navigate to update-password modal
+            void navigate('/auth/update-password', {
+              state: { backgroundLocation: { ...location, pathname: '/', search: '', hash: '' } },
+              replace: true
+            })
+          } else {
+            // Email confirmation flow - show success toast
+            toast.success(t($ => $.auth.confirmationSuccess))
+          }
+          // Clean hash from URL
           window.history.replaceState(null, '', window.location.pathname + window.location.search)
         }
       } else {
@@ -51,5 +67,5 @@ export function useAuth() {
     return () => {
       subscription.unsubscribe()
     }
-  }, [setUser, setLoading, t])
+  }, [setUser, setLoading, t, navigate, location])
 }

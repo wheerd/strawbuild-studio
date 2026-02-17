@@ -1,5 +1,8 @@
 export { useAuth } from './useAuth'
 export { AuthModal, type AuthModalProps } from './AuthModal'
+export { AuthModalRoute } from './AuthModalRoute'
+export { UpdatePasswordModal, type UpdatePasswordModalProps } from './UpdatePasswordModal'
+export { UpdatePasswordModalRoute } from './UpdatePasswordModalRoute'
 export { useAuthActions, useAuthLoading, useIsAuthenticated, useUser, useUserEmail, useUserId } from './store'
 export { isSupabaseConfigured, getSupabaseClient } from './supabaseClient'
 export type { AuthView, User } from './types'
