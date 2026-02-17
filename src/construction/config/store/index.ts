@@ -176,6 +176,12 @@ export const clearPersistence = (): void => {
   localStorage.removeItem('strawbaler-config')
 }
 
+export const getInitialConfigState = (): ConfigState => {
+  const state = useConfigStore.getInitialState()
+  const { actions: _actions, ...rest } = state
+  return rest
+}
+
 // Export config state for persistence
 export const getConfigState = () => {
   const state = useConfigStore.getState()

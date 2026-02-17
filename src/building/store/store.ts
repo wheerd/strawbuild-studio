@@ -134,6 +134,11 @@ export const clearPersistence = (): void => {
   localStorage.removeItem('strawbaler-model')
 }
 
+export const getInitialModelState = (): StoreState => {
+  const state = useModelStore.getInitialState()
+  return partializeState(state) as StoreState
+}
+
 export function partializeState(state: Store): PartializedStoreState {
   const {
     actions: _actions,

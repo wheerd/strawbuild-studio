@@ -8,6 +8,7 @@ export {
   getRedoFunction,
   getUndoFunction,
   getModelActions,
+  getInitialModelState,
   regeneratePartializedState as regenerateDerivedState
 } from './store'
 export type { StoreActions } from './types'

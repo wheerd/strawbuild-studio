@@ -3,15 +3,23 @@ import { isSupabaseConfigured } from '@/app/user/supabaseClient'
 import { CURRENT_VERSION as MODEL_VERSION } from '@/building/store/migrations'
 import { getPersistenceActions } from '@/building/store/persistenceStore'
 import {
+  getInitialModelState,
   partializeState as partializeModelState,
   regeneratePartializedState,
   useModelStore
 } from '@/building/store/store'
 import type { StoreState } from '@/building/store/types'
-import { type ConfigState, getConfigState, setConfigState, subscribeToConfigChanges } from '@/construction/config/store'
+import {
+  type ConfigState,
+  getConfigState,
+  getInitialConfigState,
+  setConfigState,
+  subscribeToConfigChanges
+} from '@/construction/config/store'
 import { CURRENT_VERSION as CONFIG_VERSION } from '@/construction/config/store/migrations'
 import {
   type MaterialsState,
+  getInitialMaterialsState,
   getMaterialsState,
   setMaterialsState,
   subscribeToMaterials
@@ -19,8 +27,8 @@ import {
 import { MATERIALS_STORE_VERSION } from '@/construction/materials/store/migrations'
 import { PARTS_STORE_VERSION, type PartializedPartsState, usePartsStore } from '@/construction/parts/store'
 import { getProjectActions, getProjectMeta, useProjectsStore } from '@/projects/store'
-import type { ProjectId } from '@/projects/types'
-import { parseTimestamp } from '@/projects/types'
+import type { ProjectData, ProjectId } from '@/projects/types'
+import { createProjectId, parseTimestamp, timestampNow } from '@/projects/types'
 import { type ICloudSyncService, type StoreType, getCloudSyncService } from '@/shared/services/SupabaseSyncService'
 
 const SYNC_DEBOUNCE_MS = 3000
@@ -157,6 +165,135 @@ export class CloudSyncManager {
   async flushSyncQueue(): Promise<void> {
     if (this.pendingSyncs.size === 0) return
     await this.flushSyncQueueInternal()
+  }
+
+  async switchProject(projectId: ProjectId): Promise<void> {
+    await this.ensureSyncService()
+
+    await this.flushSyncQueue()
+    await this.loadProjectFromCloud(projectId)
+    await this.reloadProjectList()
+  }
+
+  async createProject(options: { name: string; description?: string; mode: 'empty' | 'copy' }): Promise<void> {
+    await this.ensureSyncService()
+
+    const userId = this.syncService?.getCurrentUserId()
+    if (!userId) {
+      throw new Error('Not authenticated')
+    }
+
+    await this.flushSyncQueue()
+
+    const newProjectId = createProjectId()
+    const now = timestampNow()
+
+    const projectData =
+      options.mode === 'empty'
+        ? this.getEmptyProjectData(newProjectId, options.name, options.description, now)
+        : this.getCurrentProjectData(newProjectId, options.name, options.description, now)
+
+    const service = this.syncService
+    if (!service) {
+      throw new Error('Sync service not available')
+    }
+
+    await service.createProject(userId, projectData)
+    await this.loadProjectFromCloud(newProjectId)
+    await this.reloadProjectList()
+  }
+
+  async deleteProject(projectId: ProjectId): Promise<void> {
+    await this.ensureSyncService()
+
+    const service = this.syncService
+    if (!service) {
+      throw new Error('Sync service not available')
+    }
+
+    await service.deleteProject(projectId)
+
+    const actions = getProjectActions()
+    actions.removeProject(projectId)
+  }
+
+  async reloadProjectList(): Promise<void> {
+    await this.ensureSyncService()
+
+    const service = this.syncService
+    if (!service) return
+
+    const actions = getProjectActions()
+    actions.setLoading(true)
+
+    try {
+      const projects = await service.loadProjectList()
+      actions.setProjects(projects)
+    } catch (error) {
+      console.error('Failed to reload project list:', error)
+    } finally {
+      actions.setLoading(false)
+    }
+  }
+
+  private getEmptyProjectData(
+    projectId: ProjectId,
+    name: string,
+    description: string | undefined,
+    now: ReturnType<typeof timestampNow>
+  ): ProjectData {
+    const modelState = getInitialModelState()
+    const configState = getInitialConfigState()
+    const materialsState = getInitialMaterialsState()
+    const partsState = { labels: {}, nextLabelIndexByGroup: {} }
+
+    return {
+      projectId,
+      name,
+      description,
+      modelState,
+      modelVersion: MODEL_VERSION,
+      configState,
+      configVersion: CONFIG_VERSION,
+      materialsState,
+      materialsVersion: MATERIALS_STORE_VERSION,
+      partsState,
+      partsVersion: PARTS_STORE_VERSION,
+      createdAt: now,
+      updatedAt: now
+    }
+  }
+
+  private getCurrentProjectData(
+    projectId: ProjectId,
+    name: string,
+    description: string | undefined,
+    now: ReturnType<typeof timestampNow>
+  ): ProjectData {
+    const modelState = partializeModelState(useModelStore.getState())
+    const configState = getConfigState()
+    const materialsState = getMaterialsState()
+    const partsState = usePartsStore.getState()
+    const partsLabelState = {
+      labels: partsState.labels,
+      nextLabelIndexByGroup: partsState.nextLabelIndexByGroup
+    }
+
+    return {
+      projectId,
+      name,
+      description,
+      modelState,
+      modelVersion: MODEL_VERSION,
+      configState,
+      configVersion: CONFIG_VERSION,
+      materialsState,
+      materialsVersion: MATERIALS_STORE_VERSION,
+      partsState: partsLabelState,
+      partsVersion: PARTS_STORE_VERSION,
+      createdAt: now,
+      updatedAt: now
+    }
   }
 
   private async ensureSyncService(): Promise<void> {
@@ -341,6 +478,25 @@ export async function loadProjectFromCloud(projectId: ProjectId): Promise<void> 
 export async function flushSyncQueue(): Promise<void> {
   const manager = getCloudSyncManager()
   await manager.flushSyncQueue()
+}
+
+export async function switchProject(projectId: ProjectId): Promise<void> {
+  const manager = getCloudSyncManager()
+  await manager.switchProject(projectId)
+}
+
+export async function createProject(options: {
+  name: string
+  description?: string
+  mode: 'empty' | 'copy'
+}): Promise<void> {
+  const manager = getCloudSyncManager()
+  await manager.createProject(options)
+}
+
+export async function deleteProject(projectId: ProjectId): Promise<void> {
+  const manager = getCloudSyncManager()
+  await manager.deleteProject(projectId)
 }
 
 export function destroyCloudSync(): void {

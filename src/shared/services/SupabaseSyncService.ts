@@ -223,11 +223,3 @@ export class SupabaseSyncService implements ICloudSyncService {
     }))
   }
 }
-
-export async function deleteProject(projectId: ProjectId): Promise<void> {
-  const service = getCloudSyncService()
-  if (!service) {
-    throw new Error('Cloud sync not available')
-  }
-  await service.deleteProject(projectId)
-}

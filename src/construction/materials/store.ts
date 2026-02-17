@@ -327,8 +327,16 @@ export const useMaterialActions = (): MaterialsActions => useMaterialsStore(stat
 // For non-reactive contexts
 export const getMaterialsActions = (): MaterialsActions => useMaterialsStore.getState().actions
 
+export const getInitialMaterialsState = (): MaterialsState => {
+  const state = useMaterialsStore.getInitialState()
+  return {
+    materials: state.materials,
+    timestamps: state.timestamps
+  }
+}
+
 // Export materials state for persistence/debugging
-export const getMaterialsState = () => {
+export const getMaterialsState = (): MaterialsState => {
   const state = useMaterialsStore.getState()
   return {
     materials: state.materials,
@@ -341,10 +349,13 @@ export const setMaterialsState = (data: {
   materials: Record<MaterialId, Material>
   timestamps?: Record<MaterialId, number>
 }) => {
-  useMaterialsStore.setState({
-    materials: data.materials,
-    timestamps: data.timestamps ?? {}
-  })
+  useMaterialsStore.setState(
+    {
+      materials: data.materials,
+      timestamps: data.timestamps ?? {}
+    },
+    false
+  )
 }
 // For non-reactive material resolution in construction functions
 export const getMaterialById = (id: MaterialId): Material | null => {

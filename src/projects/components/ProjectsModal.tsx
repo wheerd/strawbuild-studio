@@ -3,26 +3,28 @@ import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 
-import { Button } from '@/components/ui/button'
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle
-} from '@/components/ui/dialog'
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger
+} from '@/components/ui/alert-dialog'
+import { Button } from '@/components/ui/button'
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { Textarea } from '@/components/ui/textarea'
 import { cn } from '@/lib/utils'
-import { getProjectId, useProjectId, useProjectList, useProjectListLoading, useProjectsActions } from '@/projects/store'
+import { useProjectId, useProjectList, useProjectListLoading } from '@/projects/store'
 import type { ProjectListItem } from '@/projects/types'
-import { timestampNow } from '@/projects/types'
 import { useOfflineStatus } from '@/shared/hooks/useOfflineStatus'
-import { flushSyncQueue, loadProjectFromCloud } from '@/shared/services/CloudSyncManager'
-import { deleteProject } from '@/shared/services/SupabaseSyncService'
+import { createProject, deleteProject, switchProject } from '@/shared/services/CloudSyncManager'
 
 interface ProjectsModalProps {
   open: boolean
@@ -34,11 +36,9 @@ export function ProjectsModal({ open, onOpenChange }: ProjectsModalProps): React
   const projects = useProjectList()
   const isLoading = useProjectListLoading()
   const currentProjectId = useProjectId()
-  const { removeProject } = useProjectsActions()
   const { isOnline } = useOfflineStatus()
 
   const [showNewProjectDialog, setShowNewProjectDialog] = useState(false)
-  const [showDeleteDialog, setShowDeleteDialog] = useState<ProjectListItem | null>(null)
   const [switchingToProject, setSwitchingToProject] = useState<string | null>(null)
 
   const handleSwitchProject = async (project: ProjectListItem) => {
@@ -46,9 +46,8 @@ export function ProjectsModal({ open, onOpenChange }: ProjectsModalProps): React
 
     setSwitchingToProject(project.id)
     try {
-      await flushSyncQueue()
-      await loadProjectFromCloud(project.id)
-      toast.success(t($ => $.projectMenu.switchProject))
+      await switchProject(project.id)
+      toast.success(t($ => $.projectMenu.switchSuccess))
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Failed to switch project')
     } finally {
@@ -56,17 +55,12 @@ export function ProjectsModal({ open, onOpenChange }: ProjectsModalProps): React
     }
   }
 
-  const handleDeleteProject = async () => {
-    if (!showDeleteDialog) return
-
+  const handleDeleteProject = async (project: ProjectListItem) => {
     try {
-      await deleteProject(showDeleteDialog.id)
-      removeProject(showDeleteDialog.id)
-      toast.success(t($ => $.projectMenu.delete))
+      await deleteProject(project.id)
+      toast.success(t($ => $.projectMenu.deleteSuccess))
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Failed to delete project')
-    } finally {
-      setShowDeleteDialog(null)
     }
   }
 
@@ -90,7 +84,6 @@ export function ProjectsModal({ open, onOpenChange }: ProjectsModalProps): React
         <DialogContent className="sm:max-w-[600px]">
           <DialogHeader>
             <DialogTitle>{t($ => $.projectMenu.manageProjects)}</DialogTitle>
-            <DialogDescription>{!isOnline && t($ => $.projectMenu.offlineMessage)}</DialogDescription>
           </DialogHeader>
 
           <div className="max-h-[400px] overflow-y-auto">
@@ -136,17 +129,37 @@ export function ProjectsModal({ open, onOpenChange }: ProjectsModalProps): React
                     </button>
 
                     {project.id !== currentProjectId && (
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => {
-                          setShowDeleteDialog(project)
-                        }}
-                        disabled={!isOnline}
-                        className="text-muted-foreground hover:text-destructive"
-                      >
-                        <TrashIcon className="h-4 w-4" />
-                      </Button>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            disabled={!isOnline || switchingToProject !== null}
+                            className="text-muted-foreground hover:text-destructive"
+                          >
+                            <TrashIcon className="h-4 w-4" />
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent maxWidth="400px">
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>{t($ => $.projectMenu.deleteConfirm)}</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              {project.name}: {t($ => $.projectMenu.deleteMessage)}
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>{t($ => $.actions.cancel)}</AlertDialogCancel>
+                            <AlertDialogAction
+                              onClick={() => {
+                                void handleDeleteProject(project)
+                              }}
+                              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                            >
+                              {t($ => $.projectMenu.delete)}
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
                     )}
                   </div>
                 ))}
@@ -183,17 +196,6 @@ export function ProjectsModal({ open, onOpenChange }: ProjectsModalProps): React
           setShowNewProjectDialog(false)
         }}
       />
-
-      <DeleteConfirmDialog
-        project={showDeleteDialog}
-        open={showDeleteDialog !== null}
-        onOpenChange={open => {
-          if (!open) setShowDeleteDialog(null)
-        }}
-        onConfirm={() => {
-          void handleDeleteProject()
-        }}
-      />
     </>
   )
 }
@@ -206,7 +208,6 @@ interface NewProjectDialogProps {
 
 function NewProjectDialog({ open, onOpenChange, onProjectCreated }: NewProjectDialogProps): React.JSX.Element {
   const { t } = useTranslation('common')
-  const { addProject, resetToNew } = useProjectsActions()
   const { isOnline } = useOfflineStatus()
 
   const [name, setName] = useState('')
@@ -214,7 +215,7 @@ function NewProjectDialog({ open, onOpenChange, onProjectCreated }: NewProjectDi
   const [copyMode, setCopyMode] = useState<'empty' | 'copy'>('empty')
   const [isCreating, setIsCreating] = useState(false)
 
-  const handleCreate = () => {
+  const handleCreate = async () => {
     if (!isOnline) return
 
     setIsCreating(true)
@@ -222,25 +223,18 @@ function NewProjectDialog({ open, onOpenChange, onProjectCreated }: NewProjectDi
       const trimmedName = name.trim() || t($ => $.projectMenu.untitled)
       const trimmedDescription = description.trim() || undefined
 
-      if (copyMode === 'empty') {
-        resetToNew()
-        const newProjectId = getProjectId()
-        addProject({
-          id: newProjectId,
-          name: trimmedName,
-          description: trimmedDescription,
-          updatedAt: timestampNow()
-        })
-      } else {
-        resetToNew()
-      }
+      await createProject({
+        name: trimmedName,
+        description: trimmedDescription,
+        mode: copyMode
+      })
 
+      toast.success(t($ => $.projectMenu.createSuccess))
       onProjectCreated()
       setName('')
       setDescription('')
       setCopyMode('empty')
     } catch (error) {
-      console.error(error)
       toast.error(error instanceof Error ? error.message : 'Failed to create project')
     } finally {
       setIsCreating(false)
@@ -253,26 +247,20 @@ function NewProjectDialog({ open, onOpenChange, onProjectCreated }: NewProjectDi
         <DialogHeader>
           <DialogTitle>{t($ => $.projectMenu.newProject)}</DialogTitle>
         </DialogHeader>
-        <div className="grid gap-4 py-4">
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="new-name" className="text-right">
-              {t($ => $.projectMenu.projectName)}
-            </Label>
+        <div className="flex flex-col gap-3 py-4">
+          <Label className="grid grid-cols-4 items-center gap-4 text-right">
+            {t($ => $.projectMenu.projectName)}
             <Input
-              id="new-name"
               value={name}
               onChange={e => {
                 setName(e.target.value)
               }}
               className="col-span-3"
             />
-          </div>
-          <div className="grid grid-cols-4 items-start gap-4">
-            <Label htmlFor="new-description" className="pt-2 text-right">
-              {t($ => $.projectMenu.description)}
-            </Label>
+          </Label>
+          <Label className="grid grid-cols-4 items-start gap-4 pt-2 text-right">
+            {t($ => $.projectMenu.description)}
             <Textarea
-              id="new-description"
               value={description}
               onChange={e => {
                 setDescription(e.target.value)
@@ -280,7 +268,7 @@ function NewProjectDialog({ open, onOpenChange, onProjectCreated }: NewProjectDi
               placeholder={t($ => $.projectMenu.descriptionPlaceholder)}
               className="col-span-3 min-h-[80px]"
             />
-          </div>
+          </Label>
           <div className="grid grid-cols-4 items-center gap-4">
             <Label className="text-right">Options</Label>
             <RadioGroup
@@ -314,51 +302,8 @@ function NewProjectDialog({ open, onOpenChange, onProjectCreated }: NewProjectDi
           >
             {t($ => $.actions.cancel)}
           </Button>
-          <Button onClick={handleCreate} disabled={isCreating || !isOnline}>
+          <Button onClick={() => void handleCreate()} disabled={isCreating || !isOnline}>
             {t($ => $.projectMenu.create)}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  )
-}
-
-interface DeleteConfirmDialogProps {
-  project: ProjectListItem | null
-  open: boolean
-  onOpenChange: (open: boolean) => void
-  onConfirm: () => void
-}
-
-function DeleteConfirmDialog({ project, open, onOpenChange, onConfirm }: DeleteConfirmDialogProps): React.JSX.Element {
-  const { t } = useTranslation('common')
-
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[400px]">
-        <DialogHeader>
-          <DialogTitle>{t($ => $.projectMenu.deleteConfirm)}</DialogTitle>
-          <DialogDescription>
-            {project?.name}: {t($ => $.projectMenu.deleteMessage)}
-          </DialogDescription>
-        </DialogHeader>
-        <DialogFooter>
-          <Button
-            variant="outline"
-            onClick={() => {
-              onOpenChange(false)
-            }}
-          >
-            {t($ => $.actions.cancel)}
-          </Button>
-          <Button
-            variant="destructive"
-            onClick={() => {
-              onConfirm()
-              onOpenChange(false)
-            }}
-          >
-            {t($ => $.projectMenu.delete)}
           </Button>
         </DialogFooter>
       </DialogContent>
