@@ -10,6 +10,7 @@
   },
   "auth": {
     "checkEmailToConfirm": "Check your email to confirm your account",
+    "confirmationSuccess": "Email confirmed successfully. You are now signed in.",
     "confirmPassword": "Confirm Password",
     "createAccount": "Create Account",
     "creatingAccount": "Creating account...",

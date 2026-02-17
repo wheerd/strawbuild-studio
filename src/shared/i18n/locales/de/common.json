@@ -10,6 +10,7 @@
   },
   "auth": {
     "checkEmailToConfirm": "Überprüfe deine E-Mail, um dein Konto zu bestätigen",
+    "confirmationSuccess": "E-Mail erfolgreich bestätigt. Du bist jetzt angemeldet.",
     "confirmPassword": "Passwort bestätigen",
     "createAccount": "Konto erstellen",
     "creatingAccount": "Konto wird erstellt...",

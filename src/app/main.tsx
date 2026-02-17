@@ -3,6 +3,7 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { ErrorBoundary } from 'react-error-boundary'
 
+import { Toaster } from '@/components/ui/sonner.tsx'
 import { TooltipProvider } from '@/components/ui/tooltip'
 import { injectMaterialCSS } from '@/construction/materials/materialCSS'
 import { getAllMaterials, subscribeToMaterials } from '@/construction/materials/store'
@@ -47,6 +48,7 @@ async function bootstrap() {
           <TooltipProvider>
             <ErrorBoundary FallbackComponent={ErrorFallback}>
               <App />
+              <Toaster />
             </ErrorBoundary>
           </TooltipProvider>
         </ThemeProvider>

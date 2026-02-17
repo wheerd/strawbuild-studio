@@ -13,6 +13,7 @@ interface Resources {
     "auth": {
       "checkEmailToConfirm": "Check your email to confirm your account",
       "confirmPassword": "Confirm Password",
+      "confirmationSuccess": "Email confirmed successfully. You are now signed in.",
       "createAccount": "Create Account",
       "creatingAccount": "Creating account...",
       "email": "Email",

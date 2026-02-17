@@ -1,8 +1,9 @@
-import { FileTextIcon, GearIcon, InfoCircledIcon } from '@radix-ui/react-icons'
+import { FileTextIcon, GearIcon } from '@radix-ui/react-icons'
 import * as Toolbar from '@radix-ui/react-toolbar'
 import React, { useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 
+import { UserMenu } from '@/app/user'
 import { useActiveStoreyId, useModelActions } from '@/building/store'
 import { Button } from '@/components/ui/button'
 import { Kbd } from '@/components/ui/kbd'
@@ -37,7 +38,9 @@ export function MainToolbar({ onInfoClick }: MainToolbarProps): React.JSX.Elemen
   return (
     <div className="border-border flex items-center gap-4 border-b p-2" data-testid="main-toolbar">
       {/* Logo - Compact version */}
-      <Logo />
+      <div onClick={onInfoClick} className="cursor-pointer">
+        <Logo />
+      </div>
       {/* Tools positioned next to logo on the left */}
       <Toolbar.Root>
         <div className="flex items-center gap-2">
@@ -127,9 +130,7 @@ export function MainToolbar({ onInfoClick }: MainToolbarProps): React.JSX.Elemen
         >
           <GearIcon width={20} height={20} aria-hidden />
         </Button>
-        <Button title={t($ => $.about)} variant="ghost" size="icon-sm" onClick={onInfoClick} className="h-6 w-6">
-          <InfoCircledIcon aria-hidden />
-        </Button>
+        <UserMenu />
       </div>
     </div>
   )
