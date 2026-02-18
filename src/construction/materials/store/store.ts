@@ -2,16 +2,18 @@ import { useMemo } from 'react'
 import { create } from 'zustand'
 import { devtools, persist, subscribeWithSelector } from 'zustand/middleware'
 
-import type {
-  DimensionalMaterial,
-  Material,
-  MaterialId,
-  SheetMaterial,
-  StrawbaleMaterial,
-  VolumeMaterial
-} from './material'
-import { DEFAULT_MATERIALS, createMaterialId } from './material'
-import { MATERIALS_STORE_VERSION, migrateMaterialsState } from './store/migrations'
+import {
+  DEFAULT_MATERIALS,
+  type DimensionalMaterial,
+  type Material,
+  type MaterialId,
+  type SheetMaterial,
+  type StrawbaleMaterial,
+  type VolumeMaterial,
+  createMaterialId
+} from '@/construction/materials/material'
+
+import { MATERIALS_STORE_VERSION, migrateMaterialsState } from './migrations'
 
 export interface MaterialsState {
   materials: Record<MaterialId, Material>

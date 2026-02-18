@@ -1,9 +1,11 @@
-import { type PartializedStoreState, exportModelState, hydrateModelState } from '@/building/store'
-import { CURRENT_VERSION as MODEL_VERSION } from '@/building/store/migrations'
-import { type ConfigState, getConfigState, hydrateConfigState } from '@/construction/config/store'
-import { CURRENT_VERSION as CONFIG_VERSION } from '@/construction/config/store/migrations'
-import { type MaterialsState, getMaterialsState, hydrateMaterialsState } from '@/construction/materials/store'
-import { MATERIALS_STORE_VERSION } from '@/construction/materials/store/migrations'
+import { MODEL_STORE_VERSION, type PartializedStoreState, exportModelState, hydrateModelState } from '@/building/store'
+import { CONFIG_STORE_VERSION, type ConfigState, getConfigState, hydrateConfigState } from '@/construction/config/store'
+import {
+  MATERIALS_STORE_VERSION,
+  type MaterialsState,
+  getMaterialsState,
+  hydrateMaterialsState
+} from '@/construction/materials/store'
 import {
   PARTS_STORE_VERSION,
   type PartializedPartsState,
@@ -16,7 +18,8 @@ import {
   exportProjectMeta,
   hydrateProjectMeta
 } from '@/projects/store'
-import { LegacyProjectImportService } from '@/shared/services/LegacyProjectImportService'
+
+import { LegacyProjectImportService } from './LegacyProjectImportService'
 
 export interface StoreExport<T> {
   state: T
@@ -52,11 +55,11 @@ class ProjectJSONService implements IProjectImportExportService {
         },
         model: {
           state: exportModelState(),
-          version: MODEL_VERSION
+          version: MODEL_STORE_VERSION
         },
         config: {
           state: getConfigState(),
-          version: CONFIG_VERSION
+          version: CONFIG_STORE_VERSION
         },
         materials: {
           state: getMaterialsState(),

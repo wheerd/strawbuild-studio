@@ -7,7 +7,7 @@ import { immer } from 'zustand/middleware/immer'
 import { type PerimeterId, type StoreyId } from '@/building/model/ids'
 import { Bounds2D } from '@/shared/geometry'
 
-import { CURRENT_VERSION, applyMigrations } from './migrations'
+import { MODEL_STORE_VERSION, applyMigrations } from './migrations'
 import { getPersistenceActions } from './persistenceStore'
 import { createConstraintsSlice, rebuildReverseIndex } from './slices/constraintsSlice'
 import { createFloorsSlice } from './slices/floorsSlice'
@@ -114,7 +114,7 @@ export const useModelStore = create<Store>()(
       {
         // Persistence configuration
         name: 'strawbaler-model',
-        version: CURRENT_VERSION,
+        version: MODEL_STORE_VERSION,
         migrate: (persistedState: unknown, version: number) => applyMigrations(persistedState, version) as StoreState,
         partialize: partializeState,
         storage: {
@@ -192,7 +192,7 @@ function regeneratePartializedState(state: PartializedStoreState): void {
 
 export function hydrateModelState(state: PartializedStoreState, version: number): StoreState {
   const migratedState =
-    version < CURRENT_VERSION ? (applyMigrations(state, version) as StoreState) : (state as StoreState)
+    version < MODEL_STORE_VERSION ? (applyMigrations(state, version) as StoreState) : (state as StoreState)
   regeneratePartializedState(migratedState)
   useModelStore.setState(migratedState)
   return migratedState

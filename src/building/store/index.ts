@@ -13,3 +13,4 @@ export {
   hydrateModelState
 } from './store'
 export type { StoreActions, PartializedStoreState } from './types'
+export { MODEL_STORE_VERSION } from './migrations'

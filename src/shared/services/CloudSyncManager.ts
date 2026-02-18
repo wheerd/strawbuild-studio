@@ -1,28 +1,28 @@
 import { useAuthStore } from '@/app/user/store'
 import { isSupabaseConfigured } from '@/app/user/supabaseClient'
 import {
+  MODEL_STORE_VERSION,
   type PartializedStoreState,
   exportModelState,
   getInitialModelState,
   hydrateModelState,
   subscribeToModelChanges
 } from '@/building/store'
-import { CURRENT_VERSION as MODEL_VERSION } from '@/building/store/migrations'
 import { getPersistenceActions } from '@/building/store/persistenceStore'
 import {
+  CONFIG_STORE_VERSION,
   getConfigState,
   getInitialConfigState,
   hydrateConfigState,
   subscribeToConfigChanges
 } from '@/construction/config/store'
-import { CURRENT_VERSION as CONFIG_VERSION } from '@/construction/config/store/migrations'
 import {
+  MATERIALS_STORE_VERSION,
   getInitialMaterialsState,
   getMaterialsState,
   hydrateMaterialsState,
   subscribeToMaterials
 } from '@/construction/materials/store'
-import { MATERIALS_STORE_VERSION } from '@/construction/materials/store/migrations'
 import {
   PARTS_STORE_VERSION,
   type PartializedPartsState,
@@ -124,9 +124,9 @@ export class CloudSyncManager {
         name: projectMeta.name,
         description: projectMeta.description,
         modelState,
-        modelVersion: MODEL_VERSION,
+        modelVersion: MODEL_STORE_VERSION,
         configState,
-        configVersion: CONFIG_VERSION,
+        configVersion: CONFIG_STORE_VERSION,
         materialsState,
         materialsVersion: MATERIALS_STORE_VERSION,
         partsState: partsLabelState,
@@ -256,9 +256,9 @@ export class CloudSyncManager {
       name,
       description,
       modelState,
-      modelVersion: MODEL_VERSION,
+      modelVersion: MODEL_STORE_VERSION,
       configState,
-      configVersion: CONFIG_VERSION,
+      configVersion: CONFIG_STORE_VERSION,
       materialsState,
       materialsVersion: MATERIALS_STORE_VERSION,
       partsState,
@@ -284,9 +284,9 @@ export class CloudSyncManager {
       name,
       description,
       modelState,
-      modelVersion: MODEL_VERSION,
+      modelVersion: MODEL_STORE_VERSION,
       configState,
-      configVersion: CONFIG_VERSION,
+      configVersion: CONFIG_STORE_VERSION,
       materialsState,
       materialsVersion: MATERIALS_STORE_VERSION,
       partsState,
@@ -438,12 +438,12 @@ export class CloudSyncManager {
         switch (item) {
           case 'model': {
             data = exportModelState()
-            version = MODEL_VERSION
+            version = MODEL_STORE_VERSION
             break
           }
           case 'config': {
             data = getConfigState()
-            version = CONFIG_VERSION
+            version = CONFIG_STORE_VERSION
             break
           }
           case 'materials': {

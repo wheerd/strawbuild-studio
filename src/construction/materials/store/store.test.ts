@@ -1,6 +1,8 @@
 import { beforeEach, describe, expect, it } from 'vitest'
 
-import { DEFAULT_MATERIALS, createMaterialId } from './material'
+import { DEFAULT_MATERIALS } from '@/construction/materials/defaults'
+import { createMaterialId } from '@/construction/materials/material'
+
 import { getMaterialsActions, getMaterialsState, setMaterialsState } from './store'
 
 describe('Materials Store', () => {
