@@ -4,6 +4,7 @@ import { ErrorBoundary } from 'react-error-boundary'
 import { ConfigurationModal } from '@/construction/config/components/ConfigurationModal'
 import { type ConfigTab, ConfigurationModalContext } from '@/construction/config/context/ConfigurationModalContext'
 import { FeatureErrorFallback } from '@/shared/components/ErrorBoundary'
+import { InitialSyncOverlay } from '@/shared/components/InitialSyncOverlay'
 import { WelcomeModal } from '@/shared/components/WelcomeModal'
 import { useWelcomeModal } from '@/shared/hooks/useWelcomeModal'
 import { initializeCloudSync } from '@/shared/services/CloudSyncManager'
@@ -152,7 +153,8 @@ export function FloorPlanEditor(): React.JSX.Element {
         <WelcomeModal isOpen={isOpen} mode={mode} onAccept={handleAccept} />
 
         {/* Main Content Area - Editor + Side Panel */}
-        <div className="grid grid-cols-[1fr_320px] gap-0 overflow-hidden p-0">
+        <div className="relative grid grid-cols-[1fr_320px] gap-0 overflow-hidden p-0">
+          <InitialSyncOverlay />
           {/* Editor Area */}
           <div className="bg-background border-border relative overflow-hidden border-r">
             <ErrorBoundary FallbackComponent={FeatureErrorFallback}>

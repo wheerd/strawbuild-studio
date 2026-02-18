@@ -37,6 +37,7 @@ export interface ICloudSyncService {
   syncStore(projectId: ProjectId, store: StoreType, data: unknown, version: number): Promise<void>
   loadProject(projectId: ProjectId): Promise<ProjectData>
   createProject(userId: string, projectData: ProjectData): Promise<void>
+  upsertProject(userId: string, projectData: ProjectData): Promise<void>
   updateProjectMeta(projectId: ProjectId, meta: Partial<Pick<ProjectMeta, 'name' | 'description'>>): Promise<void>
   deleteProject(projectId: ProjectId): Promise<void>
 
@@ -168,6 +169,31 @@ export class SupabaseSyncService implements ICloudSyncService {
 
     if (error) {
       throw new Error(`Failed to create project: ${error.message}`)
+    }
+  }
+
+  async upsertProject(userId: string, projectData: ProjectData): Promise<void> {
+    const row = {
+      id: projectData.projectId,
+      user_id: userId,
+      name: projectData.name,
+      description: projectData.description ?? null,
+      model_state: projectData.modelState,
+      model_version: projectData.modelVersion,
+      config_state: projectData.configState,
+      config_version: projectData.configVersion,
+      materials_state: projectData.materialsState,
+      materials_version: projectData.materialsVersion,
+      parts_state: projectData.partsState,
+      parts_version: projectData.partsVersion,
+      created_at: projectData.createdAt,
+      updated_at: projectData.updatedAt
+    }
+
+    const { error } = await this.client.from('projects').upsert(row, { onConflict: 'id' })
+
+    if (error) {
+      throw new Error(`Failed to upsert project: ${error.message}`)
     }
   }
 

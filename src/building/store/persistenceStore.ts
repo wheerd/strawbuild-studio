@@ -9,6 +9,8 @@ export interface PersistenceState {
   isCloudSyncing: boolean
   lastCloudSync: Date | null
   cloudSyncError: string | null
+  isInitialSyncing: boolean
+  initialSyncError: string | null
 }
 
 export interface PersistenceActions {
@@ -19,6 +21,8 @@ export interface PersistenceActions {
   setCloudSyncing: (isSyncing: boolean) => void
   setCloudSyncSuccess: (timestamp: Date) => void
   setCloudSyncError: (error: string | null) => void
+  setInitialSyncing: (isSyncing: boolean) => void
+  setInitialSyncError: (error: string | null) => void
 }
 
 export type PersistenceStore = PersistenceState & PersistenceActions
@@ -33,6 +37,8 @@ export const usePersistenceStore = create<PersistenceStore>()(
       isCloudSyncing: false,
       lastCloudSync: null,
       cloudSyncError: null,
+      isInitialSyncing: false,
+      initialSyncError: null,
 
       setSaving: (isSaving: boolean) => {
         set({ isSaving, saveError: null }, false, 'persistence/setSaving')
@@ -90,6 +96,21 @@ export const usePersistenceStore = create<PersistenceStore>()(
           false,
           'persistence/setCloudSyncError'
         )
+      },
+
+      setInitialSyncing: (isInitialSyncing: boolean) => {
+        set({ isInitialSyncing, initialSyncError: null }, false, 'persistence/setInitialSyncing')
+      },
+
+      setInitialSyncError: (error: string | null) => {
+        set(
+          {
+            isInitialSyncing: false,
+            initialSyncError: error
+          },
+          false,
+          'persistence/setInitialSyncError'
+        )
       }
     }),
     { name: 'persistence-store' }
@@ -100,5 +121,7 @@ export const useIsHydrated = (): boolean => usePersistenceStore(state => state.i
 export const useIsCloudSyncing = (): boolean => usePersistenceStore(state => state.isCloudSyncing)
 export const useLastCloudSync = (): Date | null => usePersistenceStore(state => state.lastCloudSync)
 export const useCloudSyncError = (): string | null => usePersistenceStore(state => state.cloudSyncError)
+export const useIsInitialSyncing = (): boolean => usePersistenceStore(state => state.isInitialSyncing)
+export const useInitialSyncError = (): string | null => usePersistenceStore(state => state.initialSyncError)
 
 export const getPersistenceActions = (): PersistenceActions => usePersistenceStore.getState()

@@ -27,7 +27,7 @@ import {
 import { MATERIALS_STORE_VERSION } from '@/construction/materials/store/migrations'
 import { PARTS_STORE_VERSION, type PartializedPartsState, usePartsStore } from '@/construction/parts/store'
 import { getProjectActions, getProjectMeta, useProjectsStore } from '@/projects/store'
-import type { ProjectData, ProjectId } from '@/projects/types'
+import type { ProjectData, ProjectId, ProjectListItem } from '@/projects/types'
 import { createProjectId, parseTimestamp, timestampNow } from '@/projects/types'
 import { type ICloudSyncService, type StoreType, getCloudSyncService } from '@/shared/services/SupabaseSyncService'
 
@@ -97,36 +97,44 @@ export class CloudSyncManager {
       throw new Error('Not authenticated')
     }
 
-    const projectMeta = getProjectMeta()
-    const modelState = partializeModelState(useModelStore.getState())
-    const configState = getConfigState()
-    const materialsState = getMaterialsState()
-    const partsState = usePartsStore.getState()
-    const partsLabelState = {
-      labels: partsState.labels,
-      nextLabelIndexByGroup: partsState.nextLabelIndexByGroup
-    }
+    const { setCloudSyncError, setCloudSyncSuccess, setCloudSyncing } = getPersistenceActions()
+    setCloudSyncing(true)
+    try {
+      const projectMeta = getProjectMeta()
+      const modelState = partializeModelState(useModelStore.getState())
+      const configState = getConfigState()
+      const materialsState = getMaterialsState()
+      const partsState = usePartsStore.getState()
+      const partsLabelState = {
+        labels: partsState.labels,
+        nextLabelIndexByGroup: partsState.nextLabelIndexByGroup
+      }
 
-    const service = this.syncService
-    if (!service) {
-      throw new Error('Sync service not available')
-    }
+      const service = this.syncService
+      if (!service) {
+        throw new Error('Sync service not available')
+      }
 
-    await service.createProject(userId, {
-      projectId: projectMeta.projectId,
-      name: projectMeta.name,
-      description: projectMeta.description,
-      modelState,
-      modelVersion: MODEL_VERSION,
-      configState,
-      configVersion: CONFIG_VERSION,
-      materialsState,
-      materialsVersion: MATERIALS_STORE_VERSION,
-      partsState: partsLabelState,
-      partsVersion: PARTS_STORE_VERSION,
-      createdAt: projectMeta.createdAt,
-      updatedAt: projectMeta.updatedAt
-    })
+      await service.upsertProject(userId, {
+        projectId: projectMeta.projectId,
+        name: projectMeta.name,
+        description: projectMeta.description,
+        modelState,
+        modelVersion: MODEL_VERSION,
+        configState,
+        configVersion: CONFIG_VERSION,
+        materialsState,
+        materialsVersion: MATERIALS_STORE_VERSION,
+        partsState: partsLabelState,
+        partsVersion: PARTS_STORE_VERSION,
+        createdAt: projectMeta.createdAt,
+        updatedAt: projectMeta.updatedAt
+      })
+
+      setCloudSyncSuccess(new Date())
+    } catch (error) {
+      setCloudSyncError(error instanceof Error ? error.message : 'Sync failed')
+    }
   }
 
   async loadProjectFromCloud(projectId: ProjectId): Promise<void> {
@@ -313,23 +321,48 @@ export class CloudSyncManager {
     actions.setLoading(true)
 
     try {
-      let projects = await this.syncService.loadProjectList()
+      const projects = await this.syncService.loadProjectList()
       actions.setProjects(projects)
 
-      if (projects.length === 0) {
-        try {
-          await this.syncLocalProjectToCloud()
-          projects = await this.syncService.loadProjectList()
-          actions.setProjects(projects)
-        } catch (error) {
-          console.error('Failed to sync local project to cloud:', error)
-        }
+      await this.syncCurrentProjectState(projects)
+
+      const localProjectId = getProjectMeta().projectId
+      if (!projects.some(p => p.id === localProjectId)) {
+        const updatedProjects = await this.syncService.loadProjectList()
+        actions.setProjects(updatedProjects)
       }
     } catch (error) {
-      console.error('Failed to load projects:', error)
+      console.error('Failed to sync projects:', error)
+      getPersistenceActions().setInitialSyncError(error instanceof Error ? error.message : 'Sync failed')
     } finally {
       actions.setLoading(false)
     }
+  }
+
+  private async syncCurrentProjectState(cloudProjects: ProjectListItem[]): Promise<void> {
+    const localMeta = getProjectMeta()
+    const cloudProject = cloudProjects.find(p => p.id === localMeta.projectId)
+    const persistenceActions = getPersistenceActions()
+
+    if (cloudProject) {
+      const localTime = new Date(localMeta.updatedAt).getTime()
+      const cloudTime = new Date(cloudProject.updatedAt).getTime()
+
+      if (cloudTime > localTime) {
+        persistenceActions.setInitialSyncing(true)
+        try {
+          await this.loadProjectFromCloud(localMeta.projectId)
+        } finally {
+          persistenceActions.setInitialSyncing(false)
+        }
+      } else if (localTime > cloudTime) {
+        await this.syncLocalProjectToCloud()
+      }
+    } else {
+      await this.syncLocalProjectToCloud()
+    }
+
+    persistenceActions.setCloudSyncSuccess(new Date())
   }
 
   private setupStoreSubscriptions(): void {
