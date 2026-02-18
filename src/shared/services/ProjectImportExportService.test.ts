@@ -19,7 +19,6 @@ import { partial } from '@/test/helpers'
 
 import { ProjectImportExportService } from './ProjectImportExportService'
 
-// Create a shared mock that we can control
 const mockStorey = partial<Storey>({
   id: 'storey_ground',
   name: 'Ground Floor',
@@ -140,7 +139,6 @@ const mockActions = partial<StoreActions>({
   addFloorOpening: vi.fn()
 })
 
-// Mock the stores and dependencies
 vi.mock('@/building/store', () => ({
   getModelActions: () => mockActions
 }))
@@ -201,11 +199,9 @@ vi.mock('@/construction/config/store', () => ({
   setConfigState: vi.fn()
 }))
 
-// DOM operations are now handled by utilities, not the service
-
 describe('ProjectImportExportService', () => {
   describe('exportToString', () => {
-    it('successfully exports project to string using store getters', async () => {
+    it('successfully exports project to string using v2 format', async () => {
       const result = await ProjectImportExportService.exportToString()
       expect('error' in result ? result.error : '').toEqual('')
       expect(result.success).toBe(true)
@@ -213,41 +209,20 @@ describe('ProjectImportExportService', () => {
       expect(result.content).toBeDefined()
       expect(typeof result.content).toBe('string')
 
-      // Verify the content is valid JSON
       const parsed = JSON.parse(result.content)
-      expect(parsed.version).toBeDefined()
+      expect(parsed.version).toBe('2.0.0')
       expect(parsed.timestamp).toBeDefined()
-      expect(parsed.modelStore).toBeDefined()
-      expect(parsed.modelStore.storeys).toBeDefined()
-      expect(parsed.modelStore.minLevel).toBeDefined()
-      expect(parsed.configStore).toBeDefined()
-      expect(parsed.configStore.defaultStrawMaterial).toBe('material_straw')
-
-      const exportedStorey = parsed.modelStore.storeys[0]
-      expect(exportedStorey).toBeDefined()
-      expect.assert(exportedStorey.perimeters.length > 0)
-      expect(exportedStorey.perimeters[0].referenceSide).toBeDefined()
-    })
-
-    it('uses store getters for proper encapsulation', async () => {
-      const { getModelActions } = await import('@/building/store')
-      const mockActions = getModelActions()
-
-      // Clear previous calls
-      vi.clearAllMocks()
-
-      await ProjectImportExportService.exportToString()
-
-      expect(mockActions.getStoreysOrderedByLevel).toHaveBeenCalled()
-      expect(mockActions.getPerimetersByStorey).toHaveBeenCalled()
-      expect(mockActions.getFloorAreasByStorey).toHaveBeenCalled()
-      expect(mockActions.getFloorOpeningsByStorey).toHaveBeenCalled()
+      expect(parsed.stores).toBeDefined()
+      expect(parsed.stores.model).toBeDefined()
+      expect(parsed.stores.config).toBeDefined()
+      expect(parsed.stores.materials).toBeDefined()
+      expect(parsed.stores.parts).toBeDefined()
+      expect(parsed.stores.project).toBeDefined()
     })
   })
 
   describe('importFromString', () => {
     it('calls the correct store assemblies on import', async () => {
-      // Create simple valid import data
       const validImportData = {
         version: '1.11.0',
         timestamp: new Date().toISOString(),
@@ -304,17 +279,13 @@ describe('ProjectImportExportService', () => {
         }
       }
 
-      // Clear previous calls
       vi.clearAllMocks()
 
       const result = await ProjectImportExportService.importFromString(JSON.stringify(validImportData))
 
       expect(result.success).toBeTruthy()
 
-      // Should have called reset and basic store assemblies
       expect(mockActions.reset).toHaveBeenCalled()
-
-      // For a storey with no perimeters, should still call updateStoreyName
       expect(mockActions.updateStoreyName).toHaveBeenCalled()
       expect(mockActions.updateStoreyFloorHeight).toHaveBeenCalled()
       expect(mockActions.updateStoreyFloorAssembly).toHaveBeenCalled()

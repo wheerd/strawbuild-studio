@@ -3,6 +3,13 @@ import { devtools, persist, subscribeWithSelector } from 'zustand/middleware'
 
 import { type ProjectId, type ProjectListItem, type ProjectMeta, createProjectId, timestampNow } from './types'
 
+export const PROJECTS_STORE_VERSION = 1
+
+export interface ExportedProjectMeta {
+  name: string
+  description?: string
+}
+
 interface ProjectsState {
   currentProject: ProjectMeta
   projects: ProjectListItem[]
@@ -154,3 +161,16 @@ export const getProjectId = () => useProjectsStore.getState().currentProject.pro
 
 export const subscribeToProjectChanges = (cb: (newProjectId: ProjectId, previousProjectId: ProjectId) => void) =>
   useProjectsStore.subscribe(state => state.currentProject.projectId, cb)
+
+export function exportProjectMeta(): ExportedProjectMeta {
+  const { name, description } = useProjectsStore.getState().currentProject
+  return { name, description }
+}
+
+export function hydrateProjectMeta(meta: ExportedProjectMeta): void {
+  const actions = useProjectsStore.getState().actions
+  actions.setProjectName(meta.name)
+  if (meta.description !== undefined) {
+    actions.setProjectDescription(meta.description)
+  }
+}

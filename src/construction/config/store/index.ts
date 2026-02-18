@@ -252,6 +252,12 @@ export const subscribeToRoofAssemblies = (
 
 export const subscribeToConfigChanges = useConfigStore.subscribe
 
+export function hydrateConfigState(state: unknown, version: number): ConfigState {
+  const migratedState = version < CURRENT_VERSION ? (applyMigrations(state) as ConfigState) : (state as ConfigState)
+  useConfigStore.setState(migratedState)
+  return migratedState
+}
+
 // Only for the tests
 export const _clearAllAssemblies = () =>
   useConfigStore.setState({

@@ -91,6 +91,18 @@ export type LabelState = Pick<PartsStoreState, 'labels' | 'usedLabelsByGroup' | 
 
 export type PartializedPartsState = Pick<PartsStoreState, 'labels' | 'nextLabelIndexByGroup'>
 
+export function exportPartsState(): PartializedPartsState {
+  const state = usePartsStore.getState()
+  return {
+    labels: state.labels,
+    nextLabelIndexByGroup: state.nextLabelIndexByGroup
+  }
+}
+
+export function hydratePartsState(state: PartializedPartsState, _version: number): void {
+  usePartsStore.setState(state, false)
+}
+
 export function regenerateLabels(groupId: string | undefined, state: PartsStoreState): LabelState {
   const newLabels: Partial<Record<PartId, string>> = {}
   const newUsedLabelsByGroup: Partial<Record<string, string[]>> = {}

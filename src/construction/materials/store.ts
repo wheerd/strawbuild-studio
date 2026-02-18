@@ -357,6 +357,13 @@ export const setMaterialsState = (data: {
     false
   )
 }
+
+export function hydrateMaterialsState(state: unknown, version: number): MaterialsState {
+  const migratedState = migrateMaterialsState(state, version)
+  useMaterialsStore.setState(migratedState)
+  return migratedState
+}
+
 // For non-reactive material resolution in construction functions
 export const getMaterialById = (id: MaterialId): Material | null => {
   const state = useMaterialsStore.getState()

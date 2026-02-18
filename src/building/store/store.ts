@@ -185,3 +185,11 @@ export function regeneratePartializedState(state: PartializedStoreState): void {
   restoredState._constraintsByEntity = {}
   rebuildReverseIndex(restoredState)
 }
+
+export function hydrateModelState(state: PartializedStoreState, version: number): StoreState {
+  const migratedState =
+    version < CURRENT_VERSION ? (applyMigrations(state, version) as StoreState) : (state as StoreState)
+  regeneratePartializedState(migratedState)
+  useModelStore.setState(migratedState)
+  return migratedState
+}

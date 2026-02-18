@@ -1,0 +1,1772 @@
+{
+  "version": "1.14.0",
+  "timestamp": "2026-02-18T15:28:56.979Z",
+  "modelStore": {
+    "storeys": [
+      {
+        "name": "Ground Floor",
+        "useDefaultName": true,
+        "floorHeight": 3000,
+        "floorAssemblyId": "fa_clt_default",
+        "perimeters": [
+          {
+            "id": "perimeter_mls6t75avtu2jgno1qk",
+            "referenceSide": "inside",
+            "referencePolygon": {
+              "points": [
+                {
+                  "x": -4000,
+                  "y": 2500
+                },
+                {
+                  "x": 4000,
+                  "y": 2500
+                },
+                {
+                  "x": 4000,
+                  "y": -2500
+                },
+                {
+                  "x": -4000,
+                  "y": -2500
+                }
+              ]
+            },
+            "corners": [
+              {
+                "id": "outcorner_mls6t75alqtqqziqhgm",
+                "insideX": -4000,
+                "insideY": 2500,
+                "constructedByWall": "next"
+              },
+              {
+                "id": "outcorner_mls6t75ax9652pa81d",
+                "insideX": 4000,
+                "insideY": 2500,
+                "constructedByWall": "next"
+              },
+              {
+                "id": "outcorner_mls6t75ajpqxmyr82ve",
+                "insideX": 4000,
+                "insideY": -2500,
+                "constructedByWall": "next"
+              },
+              {
+                "id": "outcorner_mls6t75axv56g4610v",
+                "insideX": -4000,
+                "insideY": -2500,
+                "constructedByWall": "next"
+              }
+            ],
+            "walls": [
+              {
+                "id": "outwall_mls6t75amf7cz5vbgzi",
+                "thickness": 420,
+                "wallAssemblyId": "wa_infill_default",
+                "baseRingBeamAssemblyId": "ringbeam_default",
+                "topRingBeamAssemblyId": "ringbeam_default",
+                "openings": [
+                  {
+                    "id": "opening_mls6t75kw137djsxp09",
+                    "type": "door",
+                    "centerOffset": 2850,
+                    "width": 900,
+                    "height": 2100
+                  },
+                  {
+                    "id": "opening_mls6t75pq4fkqe5omvk",
+                    "type": "window",
+                    "centerOffset": 1100,
+                    "width": 600,
+                    "height": 800,
+                    "sillHeight": 1000
+                  },
+                  {
+                    "id": "opening_mls6t75ra4qeyna2o3l",
+                    "type": "window",
+                    "centerOffset": 6700,
+                    "width": 600,
+                    "height": 800,
+                    "sillHeight": 1000
+                  }
+                ],
+                "posts": []
+              },
+              {
+                "id": "outwall_mls6t75apyhk7qwqcqb",
+                "thickness": 420,
+                "wallAssemblyId": "wa_infill_default",
+                "baseRingBeamAssemblyId": "ringbeam_default",
+                "topRingBeamAssemblyId": "ringbeam_default",
+                "openings": [
+                  {
+                    "id": "opening_mls6t75t6rsuauawqge",
+                    "type": "window",
+                    "centerOffset": 1500,
+                    "width": 1000,
+                    "height": 1000,
+                    "sillHeight": 900
+                  },
+                  {
+                    "id": "opening_mls6t75vxoix242odn",
+                    "type": "window",
+                    "centerOffset": 3000,
+                    "width": 1000,
+                    "height": 1000,
+                    "sillHeight": 900
+                  },
+                  {
+                    "id": "opening_mls6t75xcvpbx9qlbz",
+                    "type": "window",
+                    "centerOffset": 4500,
+                    "width": 1000,
+                    "height": 1000,
+                    "sillHeight": 900
+                  }
+                ],
+                "posts": []
+              },
+              {
+                "id": "outwall_mls6t75axbgw0tdozi",
+                "thickness": 420,
+                "wallAssemblyId": "wa_infill_default",
+                "baseRingBeamAssemblyId": "ringbeam_default",
+                "topRingBeamAssemblyId": "ringbeam_default",
+                "openings": [
+                  {
+                    "id": "opening_mls6t75naah192flz48",
+                    "type": "door",
+                    "centerOffset": 6050,
+                    "width": 900,
+                    "height": 2100
+                  },
+                  {
+                    "id": "opening_mls6t75zsk0j62w2x",
+                    "type": "window",
+                    "centerOffset": 2400,
+                    "width": 1600,
+                    "height": 1400,
+                    "sillHeight": 900
+                  },
+                  {
+                    "id": "opening_mls6t76007117doudk1",
+                    "type": "window",
+                    "centerOffset": 7500,
+                    "width": 600,
+                    "height": 800,
+                    "sillHeight": 1000
+                  }
+                ],
+                "posts": [
+                  {
+                    "id": "post_mls6t764sjb5o1uibei",
+                    "type": "inside",
+                    "centerOffset": 3900,
+                    "width": 200,
+                    "thickness": 200,
+                    "replacesPosts": true,
+                    "material": "material_rough_wood",
+                    "infillMaterial": "material_woodwool"
+                  }
+                ]
+              },
+              {
+                "id": "outwall_mls6t75ag61cedzbpme",
+                "thickness": 420,
+                "wallAssemblyId": "wa_infill_default",
+                "baseRingBeamAssemblyId": "ringbeam_default",
+                "topRingBeamAssemblyId": "ringbeam_default",
+                "openings": [
+                  {
+                    "id": "opening_mls6t762sr8qfr4ca7o",
+                    "type": "window",
+                    "centerOffset": 2200,
+                    "width": 900,
+                    "height": 1100,
+                    "sillHeight": 900
+                  },
+                  {
+                    "id": "opening_mls6t763klnctuso6m",
+                    "type": "window",
+                    "centerOffset": 3200,
+                    "width": 900,
+                    "height": 1100,
+                    "sillHeight": 900
+                  }
+                ],
+                "posts": []
+              }
+            ]
+          }
+        ],
+        "floorOpenings": [
+          {
+            "points": [
+              {
+                "x": -3500,
+                "y": -2000
+              },
+              {
+                "x": -2500,
+                "y": -2000
+              },
+              {
+                "x": -2500,
+                "y": -1000
+              },
+              {
+                "x": -3500,
+                "y": -1000
+              }
+            ]
+          }
+        ],
+        "roofs": [
+          {
+            "type": "gable",
+            "referencePolygon": {
+              "points": [
+                {
+                  "x": -4420,
+                  "y": 2920
+                },
+                {
+                  "x": 4420,
+                  "y": 2920
+                },
+                {
+                  "x": 4420,
+                  "y": -2920
+                },
+                {
+                  "x": -4420,
+                  "y": -2920
+                }
+              ]
+            },
+            "mainSideIndex": 0,
+            "slope": 30,
+            "verticalOffset": 0,
+            "overhangs": [
+              500,
+              500,
+              500,
+              500
+            ],
+            "assemblyId": "ra_purlin_default",
+            "referencePerimeter": "perimeter_mls6t75avtu2jgno1qk"
+          }
+        ]
+      }
+    ],
+    "minLevel": 0,
+    "constraints": []
+  },
+  "configStore": {
+    "defaultStrawMaterial": "material_strawbale",
+    "ringBeamAssemblyConfigs": {
+      "ringbeam_default": {
+        "id": "ringbeam_default",
+        "name": "Full 36x6cm",
+        "type": "full",
+        "material": "material_rough_wood",
+        "height": 60,
+        "width": 360,
+        "offsetFromEdge": 0
+      },
+      "ringbeam_brick_default": {
+        "id": "ringbeam_brick_default",
+        "name": "Brick Ring Beam",
+        "type": "brick",
+        "wallHeight": 300,
+        "wallWidth": 240,
+        "wallMaterial": "material_aac_brick",
+        "beamThickness": 60,
+        "beamWidth": 360,
+        "beamMaterial": "material_rough_wood",
+        "waterproofingThickness": 2,
+        "waterproofingMaterial": "material_bitumen",
+        "insulationThickness": 120,
+        "insulationMaterial": "material_cork"
+      }
+    },
+    "wallAssemblyConfigs": {
+      "wa_infill_default": {
+        "id": "wa_infill_default",
+        "name": "Standard Infill",
+        "type": "infill",
+        "maxPostSpacing": 900,
+        "desiredPostSpacing": 800,
+        "minStrawSpace": 70,
+        "posts": {
+          "type": "double",
+          "width": 60,
+          "thickness": 120,
+          "infillMaterial": "material_strawbale",
+          "material": "material_rough_wood"
+        },
+        "triangularBattens": {
+          "size": 30,
+          "material": "material_batten",
+          "inside": false,
+          "outside": false,
+          "minLength": 100
+        },
+        "layers": {
+          "insideThickness": 30,
+          "insideLayers": [
+            {
+              "type": "monolithic",
+              "name": "Base Plaster (Clay)",
+              "material": "material_clay_plaster_base",
+              "thickness": 20
+            },
+            {
+              "type": "monolithic",
+              "name": "Fine Plaster (Clay)",
+              "material": "material_clay_plaster_fine",
+              "thickness": 10
+            }
+          ],
+          "outsideThickness": 30,
+          "outsideLayers": [
+            {
+              "type": "monolithic",
+              "name": "Base Plaster (Lime)",
+              "material": "material_lime_plaster_base",
+              "thickness": 20
+            },
+            {
+              "type": "monolithic",
+              "name": "Fine Plaster (Lime)",
+              "material": "material_lime_plaster_fine",
+              "thickness": 10
+            }
+          ]
+        }
+      },
+      "wa_strawhenge_default": {
+        "id": "wa_strawhenge_default",
+        "name": "Strawhenge Module",
+        "type": "strawhenge",
+        "module": {
+          "minWidth": 920,
+          "maxWidth": 920,
+          "type": "single",
+          "frameThickness": 60,
+          "frameMaterial": "material_rough_wood",
+          "strawMaterial": "material_strawbale",
+          "triangularBattens": {
+            "size": 30,
+            "material": "material_batten",
+            "inside": false,
+            "outside": false,
+            "minLength": 100
+          }
+        },
+        "infill": {
+          "maxPostSpacing": 900,
+          "desiredPostSpacing": 800,
+          "minStrawSpace": 70,
+          "posts": {
+            "type": "full",
+            "width": 60,
+            "material": "material_rough_wood"
+          },
+          "triangularBattens": {
+            "size": 30,
+            "material": "material_batten",
+            "inside": false,
+            "outside": false,
+            "minLength": 100
+          }
+        },
+        "layers": {
+          "insideThickness": 30,
+          "insideLayers": [
+            {
+              "type": "monolithic",
+              "name": "Base Plaster (Clay)",
+              "material": "material_clay_plaster_base",
+              "thickness": 20
+            },
+            {
+              "type": "monolithic",
+              "name": "Fine Plaster (Clay)",
+              "material": "material_clay_plaster_fine",
+              "thickness": 10
+            }
+          ],
+          "outsideThickness": 30,
+          "outsideLayers": [
+            {
+              "type": "monolithic",
+              "name": "Base Plaster (Lime)",
+              "material": "material_lime_plaster_base",
+              "thickness": 20
+            },
+            {
+              "type": "monolithic",
+              "name": "Fine Plaster (Lime)",
+              "material": "material_lime_plaster_fine",
+              "thickness": 10
+            }
+          ]
+        }
+      },
+      "wa_module_default": {
+        "id": "wa_module_default",
+        "name": "Default Module",
+        "type": "modules",
+        "module": {
+          "minWidth": 920,
+          "maxWidth": 920,
+          "type": "single",
+          "frameThickness": 60,
+          "frameMaterial": "material_rough_wood",
+          "strawMaterial": "material_strawbale",
+          "triangularBattens": {
+            "size": 30,
+            "material": "material_batten",
+            "inside": false,
+            "outside": false,
+            "minLength": 100
+          }
+        },
+        "infill": {
+          "maxPostSpacing": 900,
+          "desiredPostSpacing": 800,
+          "minStrawSpace": 70,
+          "posts": {
+            "type": "full",
+            "width": 60,
+            "material": "material_rough_wood"
+          },
+          "triangularBattens": {
+            "size": 30,
+            "material": "material_batten",
+            "inside": false,
+            "outside": false,
+            "minLength": 100
+          }
+        },
+        "layers": {
+          "insideThickness": 30,
+          "insideLayers": [
+            {
+              "type": "monolithic",
+              "name": "Base Plaster (Clay)",
+              "material": "material_clay_plaster_base",
+              "thickness": 20
+            },
+            {
+              "type": "monolithic",
+              "name": "Fine Plaster (Clay)",
+              "material": "material_clay_plaster_fine",
+              "thickness": 10
+            }
+          ],
+          "outsideThickness": 30,
+          "outsideLayers": [
+            {
+              "type": "monolithic",
+              "name": "Base Plaster (Lime)",
+              "material": "material_lime_plaster_base",
+              "thickness": 20
+            },
+            {
+              "type": "monolithic",
+              "name": "Fine Plaster (Lime)",
+              "material": "material_lime_plaster_fine",
+              "thickness": 10
+            }
+          ]
+        }
+      },
+      "wa_non_strawbale_default": {
+        "id": "wa_non_strawbale_default",
+        "name": "Concrete Wall",
+        "type": "non-strawbale",
+        "material": "material_concrete",
+        "openingAssemblyId": "oa_empty_default",
+        "layers": {
+          "insideThickness": 30,
+          "insideLayers": [
+            {
+              "type": "monolithic",
+              "name": "Base Plaster (Clay)",
+              "material": "material_clay_plaster_base",
+              "thickness": 20
+            },
+            {
+              "type": "monolithic",
+              "name": "Fine Plaster (Clay)",
+              "material": "material_clay_plaster_fine",
+              "thickness": 10
+            }
+          ],
+          "outsideThickness": 190,
+          "outsideLayers": [
+            {
+              "type": "monolithic",
+              "name": "Insulation",
+              "material": "material_invalid",
+              "thickness": 160
+            },
+            {
+              "type": "monolithic",
+              "name": "Base Plaster (Lime)",
+              "material": "material_lime_plaster_base",
+              "thickness": 20
+            },
+            {
+              "type": "monolithic",
+              "name": "Fine Plaster (Lime)",
+              "material": "material_lime_plaster_fine",
+              "thickness": 10
+            }
+          ]
+        }
+      },
+      "wa_ecococon_default": {
+        "id": "wa_ecococon_default",
+        "name": "Ecococon Modules",
+        "type": "prefab-modules",
+        "defaultMaterial": "material_ecococon_standard",
+        "fallbackMaterial": "material_ecococon_box",
+        "inclinedMaterial": "material_ecococon_inclined",
+        "lintelMaterial": "material_ecococon_lintel",
+        "sillMaterial": "material_ecococon_sill",
+        "maxWidth": 850,
+        "targetWidth": 800,
+        "preferEqualWidths": true,
+        "openingAssemblyId": "oa_prefab_threshold_default",
+        "tallReinforceThreshold": 3000,
+        "tallReinforceThickness": 15,
+        "tallReinforceStagger": 800,
+        "tallReinforceMaterial": "material_lvl",
+        "layers": {
+          "insideThickness": 30,
+          "insideLayers": [
+            {
+              "type": "monolithic",
+              "name": "Base Plaster (Clay)",
+              "material": "material_clay_plaster_base",
+              "thickness": 20
+            },
+            {
+              "type": "monolithic",
+              "name": "Fine Plaster (Clay)",
+              "material": "material_clay_plaster_fine",
+              "thickness": 10
+            }
+          ],
+          "outsideThickness": 30,
+          "outsideLayers": [
+            {
+              "type": "monolithic",
+              "name": "Base Plaster (Lime)",
+              "material": "material_lime_plaster_base",
+              "thickness": 20
+            },
+            {
+              "type": "monolithic",
+              "name": "Fine Plaster (Lime)",
+              "material": "material_lime_plaster_fine",
+              "thickness": 10
+            }
+          ]
+        }
+      }
+    },
+    "floorAssemblyConfigs": {
+      "fa_clt_default": {
+        "id": "fa_clt_default",
+        "name": "CLT 18cm (6cm)",
+        "type": "monolithic",
+        "thickness": 180,
+        "material": "material_clt",
+        "layers": {
+          "topThickness": 60,
+          "topLayers": [
+            {
+              "type": "monolithic",
+              "name": "Impact Sound Insulation",
+              "material": "material_impact_sound_insulation",
+              "thickness": 25
+            },
+            {
+              "type": "monolithic",
+              "name": "Screed",
+              "material": "material_cement_screed",
+              "thickness": 35
+            }
+          ],
+          "bottomThickness": 0,
+          "bottomLayers": []
+        }
+      },
+      "fa_concrete_default": {
+        "id": "fa_concrete_default",
+        "name": "Concrete 20cm (6cm)",
+        "type": "monolithic",
+        "thickness": 200,
+        "material": "material_concrete",
+        "layers": {
+          "topThickness": 60,
+          "topLayers": [
+            {
+              "type": "monolithic",
+              "name": "Impact Sound Insulation",
+              "material": "material_impact_sound_insulation",
+              "thickness": 25
+            },
+            {
+              "type": "monolithic",
+              "name": "Screed",
+              "material": "material_cement_screed",
+              "thickness": 35
+            }
+          ],
+          "bottomThickness": 0,
+          "bottomLayers": []
+        }
+      },
+      "fa_joist_default": {
+        "id": "fa_joist_default",
+        "name": "Joist 8x24cm (6cm)",
+        "type": "joist",
+        "constructionHeight": 240,
+        "joistMaterial": "material_glt",
+        "joistSpacing": 800,
+        "joistThickness": 80,
+        "wallBeamThickness": 120,
+        "wallBeamMaterial": "material_glt",
+        "wallBeamInsideOffset": 40,
+        "wallInfillMaterial": "material_strawbale",
+        "subfloorMaterial": "material_osb",
+        "subfloorThickness": 22,
+        "openingSideMaterial": "material_rough_wood",
+        "openingSideThickness": 60,
+        "layers": {
+          "topThickness": 60,
+          "topLayers": [
+            {
+              "type": "monolithic",
+              "name": "Impact Sound Insulation",
+              "material": "material_impact_sound_insulation",
+              "thickness": 25
+            },
+            {
+              "type": "monolithic",
+              "name": "Screed",
+              "material": "material_cement_screed",
+              "thickness": 35
+            }
+          ],
+          "bottomThickness": 0,
+          "bottomLayers": []
+        }
+      },
+      "fa_filled_default": {
+        "id": "fa_filled_default",
+        "name": "Filled Joist 8x36cm (6cm)",
+        "type": "filled",
+        "constructionHeight": 360,
+        "joistThickness": 80,
+        "joistSpacing": 800,
+        "joistMaterial": "material_glt",
+        "frameThickness": 60,
+        "frameMaterial": "material_rough_wood",
+        "subfloorThickness": 22,
+        "subfloorMaterial": "material_osb",
+        "ceilingSheathingThickness": 22,
+        "ceilingSheathingMaterial": "material_osb",
+        "openingFrameThickness": 60,
+        "openingFrameMaterial": "material_rough_wood",
+        "layers": {
+          "topThickness": 60,
+          "topLayers": [
+            {
+              "type": "monolithic",
+              "name": "Impact Sound Insulation",
+              "material": "material_impact_sound_insulation",
+              "thickness": 25
+            },
+            {
+              "type": "monolithic",
+              "name": "Screed",
+              "material": "material_cement_screed",
+              "thickness": 35
+            }
+          ],
+          "bottomThickness": 0,
+          "bottomLayers": []
+        }
+      },
+      "fa_hanging_joist_default": {
+        "id": "fa_hanging_joist_default",
+        "name": "Hanging Joist 8x24cm (6cm)",
+        "type": "hanging-joist",
+        "joistHeight": 240,
+        "joistMaterial": "material_glt",
+        "joistSpacing": 800,
+        "joistThickness": 80,
+        "subfloorMaterial": "material_osb",
+        "subfloorThickness": 22,
+        "openingSideMaterial": "material_rough_wood",
+        "openingSideThickness": 60,
+        "verticalOffset": 0,
+        "layers": {
+          "topThickness": 60,
+          "topLayers": [
+            {
+              "type": "monolithic",
+              "name": "Impact Sound Insulation",
+              "material": "material_impact_sound_insulation",
+              "thickness": 25
+            },
+            {
+              "type": "monolithic",
+              "name": "Screed",
+              "material": "material_cement_screed",
+              "thickness": 35
+            }
+          ],
+          "bottomThickness": 0,
+          "bottomLayers": []
+        }
+      }
+    },
+    "roofAssemblyConfigs": {
+      "ra_purlin_default": {
+        "id": "ra_purlin_default",
+        "name": "Purlin Roof (Straw)",
+        "type": "purlin",
+        "thickness": 360,
+        "purlinMaterial": "material_glt",
+        "purlinHeight": 240,
+        "purlinWidth": 120,
+        "purlinSpacing": 6000,
+        "purlinInset": 20,
+        "infillMaterial": "material_strawbale",
+        "rafterMaterial": "material_glt",
+        "rafterWidth": 80,
+        "rafterSpacingMin": 70,
+        "rafterSpacing": 500,
+        "ceilingSheathingMaterial": "material_fire_boarding",
+        "ceilingSheathingThickness": 40,
+        "deckingMaterial": "material_osb",
+        "deckingThickness": 22,
+        "strawMaterial": "material_strawbale",
+        "layers": {
+          "insideThickness": 30,
+          "insideLayers": [
+            {
+              "type": "monolithic",
+              "name": "Base Plaster (Clay)",
+              "material": "material_clay_plaster_base",
+              "thickness": 20
+            },
+            {
+              "type": "monolithic",
+              "name": "Fine Plaster (Clay)",
+              "material": "material_clay_plaster_fine",
+              "thickness": 10
+            }
+          ],
+          "topThickness": 106,
+          "topLayers": [
+            {
+              "type": "monolithic",
+              "name": "Wind Paper",
+              "material": "material_wind_barrier",
+              "thickness": 1
+            },
+            {
+              "type": "striped",
+              "direction": "colinear",
+              "name": "Battens",
+              "gapWidth": 500,
+              "thickness": 40,
+              "stripeMaterial": "material_batten",
+              "stripeWidth": 60
+            },
+            {
+              "type": "striped",
+              "direction": "perpendicular",
+              "name": "Counter Battens",
+              "gapWidth": 300,
+              "thickness": 30,
+              "stripeMaterial": "material_batten",
+              "stripeWidth": 50
+            },
+            {
+              "type": "monolithic",
+              "name": "Tiles",
+              "material": "material_invalid",
+              "thickness": 35
+            }
+          ],
+          "overhangThickness": 0,
+          "overhangLayers": []
+        }
+      },
+      "ra_clt_default": {
+        "id": "ra_clt_default",
+        "name": "CLT Monolithic 18cm",
+        "type": "monolithic",
+        "thickness": 180,
+        "material": "material_clt",
+        "infillMaterial": "material_woodwool",
+        "layers": {
+          "insideThickness": 30,
+          "insideLayers": [
+            {
+              "type": "monolithic",
+              "name": "Base Plaster (Clay)",
+              "material": "material_clay_plaster_base",
+              "thickness": 20
+            },
+            {
+              "type": "monolithic",
+              "name": "Fine Plaster (Clay)",
+              "material": "material_clay_plaster_fine",
+              "thickness": 10
+            }
+          ],
+          "topThickness": 106,
+          "topLayers": [
+            {
+              "type": "monolithic",
+              "name": "Wind Paper",
+              "material": "material_wind_barrier",
+              "thickness": 1
+            },
+            {
+              "type": "striped",
+              "direction": "colinear",
+              "name": "Battens",
+              "gapWidth": 500,
+              "thickness": 40,
+              "stripeMaterial": "material_batten",
+              "stripeWidth": 60
+            },
+            {
+              "type": "striped",
+              "direction": "perpendicular",
+              "name": "Counter Battens",
+              "gapWidth": 300,
+              "thickness": 30,
+              "stripeMaterial": "material_batten",
+              "stripeWidth": 50
+            },
+            {
+              "type": "monolithic",
+              "name": "Tiles",
+              "material": "material_invalid",
+              "thickness": 35
+            }
+          ],
+          "overhangThickness": 0,
+          "overhangLayers": []
+        }
+      }
+    },
+    "openingAssemblyConfigs": {
+      "oa_simple_default": {
+        "id": "oa_simple_default",
+        "name": "Standard Opening",
+        "type": "simple",
+        "padding": 15,
+        "sillThickness": 60,
+        "sillMaterial": "material_rough_wood",
+        "headerThickness": 60,
+        "headerMaterial": "material_rough_wood"
+      },
+      "oa_post_default": {
+        "id": "oa_post_default",
+        "name": "Standard Opening with Posts",
+        "type": "post",
+        "padding": 15,
+        "sillThickness": 60,
+        "sillMaterial": "material_rough_wood",
+        "headerThickness": 140,
+        "headerMaterial": "material_rough_wood",
+        "posts": {
+          "type": "double",
+          "infillMaterial": "material_woodwool",
+          "material": "material_rough_wood",
+          "thickness": 140,
+          "width": 100
+        },
+        "replacePosts": true
+      },
+      "oa_planked_default": {
+        "id": "oa_planked_default",
+        "name": "Standard Opening with Planking",
+        "type": "planked",
+        "padding": 15,
+        "sillThickness": 60,
+        "sillMaterial": "material_rough_wood",
+        "headerThickness": 60,
+        "headerMaterial": "material_rough_wood",
+        "plankMaterial": "material_dhf",
+        "plankThickness": 25
+      },
+      "oa_empty_default": {
+        "id": "oa_empty_default",
+        "name": "Empty Opening",
+        "type": "empty",
+        "padding": 15
+      },
+      "oa_simple_prefab_default": {
+        "id": "oa_simple_prefab_default",
+        "name": "Prefab Opening without Planking",
+        "type": "simple",
+        "padding": 15,
+        "sillThickness": 0,
+        "sillMaterial": "",
+        "headerThickness": 0,
+        "headerMaterial": ""
+      },
+      "oa_post_prefab_default": {
+        "id": "oa_post_prefab_default",
+        "name": "Prefab Opening with Posts",
+        "type": "post",
+        "padding": 15,
+        "sillThickness": 0,
+        "sillMaterial": "",
+        "headerThickness": 0,
+        "headerMaterial": "",
+        "posts": {
+          "type": "full",
+          "material": "material_lvl",
+          "width": 75
+        },
+        "replacePosts": false,
+        "postsSupportHeader": true
+      },
+      "oa_planked_prefab_default": {
+        "id": "oa_planked_prefab_default",
+        "name": "Prefab Opening with Planking",
+        "type": "planked",
+        "padding": 15,
+        "sillThickness": 0,
+        "sillMaterial": "",
+        "headerThickness": 0,
+        "headerMaterial": "",
+        "plankMaterial": "material_lvl",
+        "plankThickness": 21
+      },
+      "oa_prefab_threshold_default": {
+        "id": "oa_prefab_threshold_default",
+        "name": "Standard Prefab Opening",
+        "type": "threshold",
+        "padding": 15,
+        "defaultId": "oa_planked_prefab_default",
+        "thresholds": [
+          {
+            "widthThreshold": 2000,
+            "assemblyId": "oa_post_prefab_default"
+          }
+        ]
+      }
+    },
+    "defaultBaseRingBeamAssemblyId": "ringbeam_default",
+    "defaultTopRingBeamAssemblyId": "ringbeam_default",
+    "defaultWallAssemblyId": "wa_infill_default",
+    "defaultFloorAssemblyId": "fa_clt_default",
+    "defaultRoofAssemblyId": "ra_purlin_default",
+    "defaultOpeningAssemblyId": "oa_simple_default",
+    "timestamps": {}
+  },
+  "materialsStore": {
+    "materials": {
+      "material_batten": {
+        "id": "material_batten",
+        "name": "Battens",
+        "nameKey": "battens",
+        "type": "dimensional",
+        "color": "#cd853f",
+        "crossSections": [
+          {
+            "smallerLength": 18,
+            "biggerLength": 48
+          },
+          {
+            "smallerLength": 20,
+            "biggerLength": 40
+          },
+          {
+            "smallerLength": 24,
+            "biggerLength": 48
+          },
+          {
+            "smallerLength": 24,
+            "biggerLength": 60
+          },
+          {
+            "smallerLength": 28,
+            "biggerLength": 48
+          },
+          {
+            "smallerLength": 38,
+            "biggerLength": 68
+          },
+          {
+            "smallerLength": 30,
+            "biggerLength": 50
+          },
+          {
+            "smallerLength": 40,
+            "biggerLength": 60
+          }
+        ],
+        "lengths": [
+          1350,
+          2000,
+          2500,
+          3000,
+          4000,
+          5000,
+          6000
+        ],
+        "density": 480
+      },
+      "material_aac_brick": {
+        "id": "material_aac_brick",
+        "name": "Brick",
+        "nameKey": "brick",
+        "type": "dimensional",
+        "color": "#b2b2af",
+        "crossSections": [
+          {
+            "smallerLength": 240,
+            "biggerLength": 300
+          }
+        ],
+        "lengths": [
+          600
+        ],
+        "density": 750
+      },
+      "material_glt": {
+        "id": "material_glt",
+        "name": "Glulam (GLT)",
+        "nameKey": "glt",
+        "type": "dimensional",
+        "color": "#cd853f",
+        "crossSections": [
+          {
+            "smallerLength": 80,
+            "biggerLength": 240
+          },
+          {
+            "smallerLength": 80,
+            "biggerLength": 360
+          },
+          {
+            "smallerLength": 100,
+            "biggerLength": 280
+          },
+          {
+            "smallerLength": 120,
+            "biggerLength": 240
+          },
+          {
+            "smallerLength": 120,
+            "biggerLength": 320
+          },
+          {
+            "smallerLength": 140,
+            "biggerLength": 360
+          },
+          {
+            "smallerLength": 160,
+            "biggerLength": 400
+          },
+          {
+            "smallerLength": 200,
+            "biggerLength": 480
+          },
+          {
+            "smallerLength": 240,
+            "biggerLength": 600
+          }
+        ],
+        "lengths": [
+          6000,
+          8000,
+          10000,
+          12000
+        ],
+        "density": 470
+      },
+      "material_rough_wood": {
+        "id": "material_rough_wood",
+        "name": "Rough-sawn timber",
+        "nameKey": "roughWood",
+        "type": "dimensional",
+        "color": "#cd853f",
+        "crossSections": [
+          {
+            "smallerLength": 50,
+            "biggerLength": 50
+          },
+          {
+            "smallerLength": 50,
+            "biggerLength": 80
+          },
+          {
+            "smallerLength": 60,
+            "biggerLength": 100
+          },
+          {
+            "smallerLength": 60,
+            "biggerLength": 120
+          },
+          {
+            "smallerLength": 60,
+            "biggerLength": 140
+          },
+          {
+            "smallerLength": 60,
+            "biggerLength": 240
+          },
+          {
+            "smallerLength": 60,
+            "biggerLength": 360
+          },
+          {
+            "smallerLength": 80,
+            "biggerLength": 120
+          },
+          {
+            "smallerLength": 100,
+            "biggerLength": 150
+          }
+        ],
+        "lengths": [
+          2000,
+          2500,
+          3000,
+          4000,
+          5000
+        ],
+        "density": 480
+      },
+      "material_structural_timber": {
+        "id": "material_structural_timber",
+        "name": "Structural timber",
+        "nameKey": "structuralWood",
+        "type": "dimensional",
+        "color": "#cd853f",
+        "crossSections": [
+          {
+            "smallerLength": 60,
+            "biggerLength": 80
+          },
+          {
+            "smallerLength": 60,
+            "biggerLength": 120
+          },
+          {
+            "smallerLength": 80,
+            "biggerLength": 120
+          },
+          {
+            "smallerLength": 80,
+            "biggerLength": 160
+          },
+          {
+            "smallerLength": 100,
+            "biggerLength": 120
+          },
+          {
+            "smallerLength": 100,
+            "biggerLength": 160
+          },
+          {
+            "smallerLength": 120,
+            "biggerLength": 120
+          },
+          {
+            "smallerLength": 140,
+            "biggerLength": 140
+          }
+        ],
+        "lengths": [
+          5000,
+          6000
+        ],
+        "density": 470
+      },
+      "material_ecococon_box": {
+        "id": "material_ecococon_box",
+        "type": "prefab",
+        "color": "#FF8888",
+        "name": "Ecococon Box Element",
+        "nameKey": "ecococon-box",
+        "minHeight": 100,
+        "maxHeight": 600,
+        "minThickness": 300,
+        "maxThickness": 400,
+        "minWidth": 400,
+        "maxWidth": 9000,
+        "isFlipped": true
+      },
+      "material_ecococon_braced": {
+        "id": "material_ecococon_braced",
+        "type": "prefab",
+        "color": "#888888",
+        "name": "Ecococon Braced",
+        "nameKey": "ecococon-braced",
+        "minHeight": 400,
+        "maxHeight": 3000,
+        "minThickness": 300,
+        "maxThickness": 400,
+        "minWidth": 500,
+        "maxWidth": 850,
+        "isFlipped": false
+      },
+      "material_ecococon_column": {
+        "id": "material_ecococon_column",
+        "type": "prefab",
+        "color": "#BBFFBB",
+        "name": "Ecococon Column",
+        "nameKey": "ecococon-column",
+        "minHeight": 400,
+        "maxHeight": 3000,
+        "minThickness": 300,
+        "maxThickness": 400,
+        "minWidth": 424,
+        "maxWidth": 850,
+        "isFlipped": false
+      },
+      "material_ecococon_inclined": {
+        "id": "material_ecococon_inclined",
+        "type": "prefab",
+        "color": "#FFFFBB",
+        "name": "Ecococon Inclined",
+        "nameKey": "ecococon-inclined",
+        "minHeight": 200,
+        "maxHeight": 3000,
+        "minThickness": 300,
+        "maxThickness": 400,
+        "minWidth": 400,
+        "maxWidth": 850,
+        "sloped": {
+          "minAngleDegrees": 1,
+          "maxAngleDegrees": 50
+        },
+        "isFlipped": false
+      },
+      "material_ecococon_inclined_braced": {
+        "id": "material_ecococon_inclined_braced",
+        "type": "prefab",
+        "color": "#FFFF88",
+        "name": "Ecococon Inclined Braced",
+        "nameKey": "ecococon-inclined-braced",
+        "minHeight": 200,
+        "maxHeight": 3000,
+        "minThickness": 300,
+        "maxThickness": 400,
+        "minWidth": 400,
+        "maxWidth": 850,
+        "sloped": {
+          "minAngleDegrees": 1,
+          "maxAngleDegrees": 50
+        },
+        "isFlipped": false
+      },
+      "material_ecococon_lintel": {
+        "id": "material_ecococon_lintel",
+        "type": "prefab",
+        "color": "#BBFFFF",
+        "name": "Ecococon Lintel",
+        "nameKey": "ecococon-lintel",
+        "minHeight": 424,
+        "maxHeight": 850,
+        "minThickness": 300,
+        "maxThickness": 400,
+        "minWidth": 400,
+        "maxWidth": 3000,
+        "isFlipped": true
+      },
+      "material_ecococon_sill": {
+        "id": "material_ecococon_sill",
+        "type": "prefab",
+        "color": "#BBBBFF",
+        "name": "Ecococon Sill",
+        "nameKey": "ecococon-sill",
+        "minHeight": 424,
+        "maxHeight": 850,
+        "minThickness": 300,
+        "maxThickness": 400,
+        "minWidth": 600,
+        "maxWidth": 3000,
+        "isFlipped": true
+      },
+      "material_ecococon_standard": {
+        "id": "material_ecococon_standard",
+        "type": "prefab",
+        "color": "#BBBBBB",
+        "name": "Ecococon Standard",
+        "nameKey": "ecococon-standard",
+        "minHeight": 400,
+        "maxHeight": 3000,
+        "minThickness": 300,
+        "maxThickness": 400,
+        "minWidth": 400,
+        "maxWidth": 850,
+        "isFlipped": false
+      },
+      "material_bitumen": {
+        "id": "material_bitumen",
+        "name": "Bitumen",
+        "nameKey": "bitumen",
+        "sizes": [
+          {
+            "smallerLength": 1000,
+            "biggerLength": 10000
+          }
+        ],
+        "thicknesses": [
+          1.2,
+          1.5,
+          1.8,
+          2,
+          3,
+          4
+        ],
+        "sheetType": "flexible",
+        "type": "sheet",
+        "color": "#130f12",
+        "density": 1000
+      },
+      "material_board": {
+        "id": "material_board",
+        "name": "Boards",
+        "nameKey": "boards",
+        "sizes": [
+          {
+            "smallerLength": 200,
+            "biggerLength": 2000
+          },
+          {
+            "smallerLength": 200,
+            "biggerLength": 2500
+          },
+          {
+            "smallerLength": 250,
+            "biggerLength": 3000
+          },
+          {
+            "smallerLength": 250,
+            "biggerLength": 4000
+          },
+          {
+            "smallerLength": 250,
+            "biggerLength": 5000
+          }
+        ],
+        "thicknesses": [
+          20,
+          25
+        ],
+        "sheetType": "solid",
+        "type": "sheet",
+        "color": "#cd853f",
+        "density": 480
+      },
+      "material_clt": {
+        "id": "material_clt",
+        "name": "Cross-laminated timber (CLT)",
+        "nameKey": "clt",
+        "sizes": [
+          {
+            "smallerLength": 3500,
+            "biggerLength": 16500
+          }
+        ],
+        "thicknesses": [
+          160,
+          170,
+          180,
+          190,
+          200,
+          220,
+          240,
+          260,
+          280,
+          300,
+          320
+        ],
+        "sheetType": "tongueAndGroove",
+        "type": "sheet",
+        "color": "#cd853f",
+        "density": 500
+      },
+      "material_cork": {
+        "id": "material_cork",
+        "name": "Cork",
+        "nameKey": "cork",
+        "sizes": [
+          {
+            "smallerLength": 500,
+            "biggerLength": 1000
+          }
+        ],
+        "thicknesses": [
+          20
+        ],
+        "sheetType": "solid",
+        "type": "sheet",
+        "color": "#6b5f4e",
+        "density": 110
+      },
+      "material_dhf": {
+        "id": "material_dhf",
+        "name": "DHF (wood fiber board)",
+        "nameKey": "dhf",
+        "sizes": [
+          {
+            "smallerLength": 625,
+            "biggerLength": 2500
+          },
+          {
+            "smallerLength": 1220,
+            "biggerLength": 2440
+          },
+          {
+            "smallerLength": 1250,
+            "biggerLength": 2500
+          },
+          {
+            "smallerLength": 1000,
+            "biggerLength": 2500
+          }
+        ],
+        "thicknesses": [
+          15,
+          16,
+          18,
+          22,
+          25,
+          35
+        ],
+        "sheetType": "tongueAndGroove",
+        "type": "sheet",
+        "color": "#c9a36a",
+        "density": 250
+      },
+      "material_fire_boarding": {
+        "id": "material_fire_boarding",
+        "name": "Fire protection boarding",
+        "nameKey": "fireProtectionBoarding",
+        "sizes": [
+          {
+            "smallerLength": 130,
+            "biggerLength": 4000
+          }
+        ],
+        "thicknesses": [
+          40
+        ],
+        "sheetType": "solid",
+        "type": "sheet",
+        "color": "#e4c098",
+        "density": 500
+      },
+      "material_gypsum": {
+        "id": "material_gypsum",
+        "name": "Gypsum board",
+        "nameKey": "gypsum",
+        "sizes": [
+          {
+            "smallerLength": 1200,
+            "biggerLength": 2000
+          },
+          {
+            "smallerLength": 1200,
+            "biggerLength": 2400
+          },
+          {
+            "smallerLength": 1200,
+            "biggerLength": 2600
+          },
+          {
+            "smallerLength": 1200,
+            "biggerLength": 3000
+          }
+        ],
+        "thicknesses": [
+          9.5,
+          12.5,
+          15
+        ],
+        "sheetType": "solid",
+        "type": "sheet",
+        "color": "#d9d9d9",
+        "density": 850
+      },
+      "material_lvl": {
+        "id": "material_lvl",
+        "name": "LVL (Laminated Veneer Lumber)",
+        "nameKey": "lvl",
+        "sizes": [
+          {
+            "smallerLength": 1250,
+            "biggerLength": 6000
+          }
+        ],
+        "thicknesses": [
+          21,
+          24,
+          27,
+          30,
+          33,
+          39,
+          45,
+          51,
+          57,
+          63,
+          69,
+          75
+        ],
+        "sheetType": "solid",
+        "type": "sheet",
+        "color": "#e9d9c4",
+        "density": 480
+      },
+      "material_osb": {
+        "id": "material_osb",
+        "name": "OSB",
+        "nameKey": "osb",
+        "sizes": [
+          {
+            "smallerLength": 1220,
+            "biggerLength": 2440
+          },
+          {
+            "smallerLength": 1250,
+            "biggerLength": 2500
+          },
+          {
+            "smallerLength": 915,
+            "biggerLength": 2135
+          }
+        ],
+        "thicknesses": [
+          12,
+          15,
+          18,
+          22,
+          25
+        ],
+        "sheetType": "solid",
+        "type": "sheet",
+        "color": "#e2b079",
+        "density": 600
+      },
+      "material_reed": {
+        "id": "material_reed",
+        "name": "Reed matting",
+        "nameKey": "reed",
+        "sizes": [
+          {
+            "smallerLength": 180,
+            "biggerLength": 10000
+          },
+          {
+            "smallerLength": 200,
+            "biggerLength": 5000
+          }
+        ],
+        "thicknesses": [
+          9
+        ],
+        "sheetType": "flexible",
+        "type": "sheet",
+        "color": "#a78952",
+        "density": 100
+      },
+      "material_wind_barrier": {
+        "id": "material_wind_barrier",
+        "name": "Wind barrier",
+        "nameKey": "windBarrier",
+        "sizes": [
+          {
+            "smallerLength": 1500,
+            "biggerLength": 25000
+          },
+          {
+            "smallerLength": 1500,
+            "biggerLength": 50000
+          }
+        ],
+        "thicknesses": [
+          1
+        ],
+        "sheetType": "flexible",
+        "type": "sheet",
+        "color": "#2a2a28",
+        "density": 150
+      },
+      "material_woodwool": {
+        "id": "material_woodwool",
+        "name": "Woodwool",
+        "nameKey": "woodwool",
+        "sizes": [
+          {
+            "smallerLength": 575,
+            "biggerLength": 1220
+          }
+        ],
+        "thicknesses": [
+          30,
+          40,
+          50,
+          60,
+          80,
+          100,
+          120,
+          140,
+          160,
+          180,
+          200,
+          220,
+          240
+        ],
+        "type": "sheet",
+        "color": "#ddb984",
+        "sheetType": "flexible",
+        "density": 50
+      },
+      "material_strawbale": {
+        "id": "material_strawbale",
+        "type": "strawbale",
+        "color": "#daa520",
+        "name": "Strawbales",
+        "nameKey": "strawbale",
+        "baleMinLength": 800,
+        "baleMaxLength": 900,
+        "baleHeight": 500,
+        "baleWidth": 360,
+        "tolerance": 2,
+        "topCutoffLimit": 50,
+        "flakeSize": 70,
+        "density": 110
+      },
+      "material_cement_screed": {
+        "id": "material_cement_screed",
+        "name": "Cement screed",
+        "nameKey": "cementScreed",
+        "type": "volume",
+        "availableVolumes": [],
+        "color": "#767773",
+        "density": 2000
+      },
+      "material_clay_plaster_base": {
+        "id": "material_clay_plaster_base",
+        "name": "Clay plaster (base)",
+        "nameKey": "clayPlasterBase",
+        "type": "volume",
+        "availableVolumes": [
+          598802395.21,
+          299401197.605
+        ],
+        "color": "#927d61",
+        "density": 1670
+      },
+      "material_clay_plaster_fine": {
+        "id": "material_clay_plaster_fine",
+        "name": "Clay plaster (fine)",
+        "nameKey": "clayPlasterFine",
+        "type": "volume",
+        "availableVolumes": [
+          598802395.21,
+          299401197.605
+        ],
+        "color": "#927d61",
+        "density": 1670
+      },
+      "material_concrete": {
+        "id": "material_concrete",
+        "name": "Concrete",
+        "nameKey": "concrete",
+        "type": "volume",
+        "color": "#97989d",
+        "availableVolumes": [],
+        "density": 2400
+      },
+      "material_impact_sound_insulation": {
+        "id": "material_impact_sound_insulation",
+        "name": "Impact sound insulation",
+        "nameKey": "impactSoundInsulation",
+        "type": "volume",
+        "availableVolumes": [],
+        "color": "#CCCC33",
+        "density": 40
+      },
+      "material_lime_plaster_base": {
+        "id": "material_lime_plaster_base",
+        "name": "Lime plaster (base)",
+        "nameKey": "limePlasterBase",
+        "type": "volume",
+        "availableVolumes": [
+          19800000
+        ],
+        "color": "#e5dbd3",
+        "density": 1262
+      },
+      "material_lime_plaster_fine": {
+        "id": "material_lime_plaster_fine",
+        "name": "Lime plaster (fine)",
+        "nameKey": "limePlasterFine",
+        "type": "volume",
+        "availableVolumes": [
+          19800000
+        ],
+        "color": "#e5dbd3",
+        "density": 1262
+      }
+    },
+    "timestamps": {
+      "material_batten": 1769693752984,
+      "material_aac_brick": 1769693752984,
+      "material_glt": 1769693752984,
+      "material_rough_wood": 1769693752984,
+      "material_structural_timber": 1769693752984,
+      "material_ecococon_box": 1769693752984,
+      "material_ecococon_braced": 1769693752984,
+      "material_ecococon_column": 1769693752984,
+      "material_ecococon_inclined": 1769693752984,
+      "material_ecococon_inclined_braced": 1769693752984,
+      "material_ecococon_lintel": 1769693752984,
+      "material_ecococon_sill": 1769693752984,
+      "material_ecococon_standard": 1769693752984,
+      "material_bitumen": 1769693752984,
+      "material_board": 1769693752984,
+      "material_clt": 1769693752984,
+      "material_cork": 1769693752984,
+      "material_dhf": 1769693752984,
+      "material_fire_boarding": 1769693752984,
+      "material_gypsum": 1769693752984,
+      "material_lvl": 1769693752984,
+      "material_osb": 1769693752984,
+      "material_reed": 1769693752984,
+      "material_wind_barrier": 1769693752984,
+      "material_woodwool": 1769693752984,
+      "material_strawbale": 1769693752984,
+      "material_cement_screed": 1769693752984,
+      "material_clay_plaster_base": 1769693752984,
+      "material_clay_plaster_fine": 1769693752984,
+      "material_concrete": 1769693752984,
+      "material_impact_sound_insulation": 1769693752984,
+      "material_lime_plaster_base": 1769693752984,
+      "material_lime_plaster_fine": 1769693752984
+    }
+  }
+}

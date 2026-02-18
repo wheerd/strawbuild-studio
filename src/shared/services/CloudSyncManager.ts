@@ -4,28 +4,32 @@ import { CURRENT_VERSION as MODEL_VERSION } from '@/building/store/migrations'
 import { getPersistenceActions } from '@/building/store/persistenceStore'
 import {
   getInitialModelState,
+  hydrateModelState,
   partializeState as partializeModelState,
-  regeneratePartializedState,
   useModelStore
 } from '@/building/store/store'
 import type { StoreState } from '@/building/store/types'
 import {
-  type ConfigState,
   getConfigState,
   getInitialConfigState,
-  setConfigState,
+  hydrateConfigState,
   subscribeToConfigChanges
 } from '@/construction/config/store'
 import { CURRENT_VERSION as CONFIG_VERSION } from '@/construction/config/store/migrations'
 import {
-  type MaterialsState,
   getInitialMaterialsState,
   getMaterialsState,
-  setMaterialsState,
+  hydrateMaterialsState,
   subscribeToMaterials
 } from '@/construction/materials/store'
 import { MATERIALS_STORE_VERSION } from '@/construction/materials/store/migrations'
-import { PARTS_STORE_VERSION, type PartializedPartsState, usePartsStore } from '@/construction/parts/store'
+import {
+  PARTS_STORE_VERSION,
+  type PartializedPartsState,
+  exportPartsState,
+  hydratePartsState,
+  usePartsStore
+} from '@/construction/parts/store'
 import { getProjectActions, getProjectMeta, useProjectsStore } from '@/projects/store'
 import type { ProjectData, ProjectId, ProjectListItem } from '@/projects/types'
 import { createProjectId, parseTimestamp, timestampNow } from '@/projects/types'
@@ -147,18 +151,10 @@ export class CloudSyncManager {
 
     const projectData = await service.loadProject(projectId)
 
-    const modelState = projectData.modelState as StoreState
-    regeneratePartializedState(modelState)
-    useModelStore.setState(modelState)
-
-    const configState = projectData.configState as ConfigState
-    setConfigState(configState)
-
-    const materialsState = projectData.materialsState as MaterialsState
-    setMaterialsState(materialsState)
-
-    const partsLabelState = projectData.partsState as PartializedPartsState
-    usePartsStore.setState(partsLabelState, false)
+    hydrateModelState(projectData.modelState as StoreState, projectData.modelVersion)
+    hydrateConfigState(projectData.configState, projectData.configVersion)
+    hydrateMaterialsState(projectData.materialsState, projectData.materialsVersion)
+    hydratePartsState(projectData.partsState as PartializedPartsState, projectData.partsVersion)
 
     const { loadProject } = getProjectActions()
     loadProject({
@@ -281,11 +277,7 @@ export class CloudSyncManager {
     const modelState = partializeModelState(useModelStore.getState())
     const configState = getConfigState()
     const materialsState = getMaterialsState()
-    const partsState = usePartsStore.getState()
-    const partsLabelState = {
-      labels: partsState.labels,
-      nextLabelIndexByGroup: partsState.nextLabelIndexByGroup
-    }
+    const partsState = exportPartsState()
 
     return {
       projectId,
@@ -297,7 +289,7 @@ export class CloudSyncManager {
       configVersion: CONFIG_VERSION,
       materialsState,
       materialsVersion: MATERIALS_STORE_VERSION,
-      partsState: partsLabelState,
+      partsState,
       partsVersion: PARTS_STORE_VERSION,
       createdAt: now,
       updatedAt: now
@@ -461,11 +453,7 @@ export class CloudSyncManager {
             break
           }
           case 'parts': {
-            const state = usePartsStore.getState()
-            data = {
-              labels: state.labels,
-              nextLabelIndexByGroup: state.nextLabelIndexByGroup
-            }
+            data = exportPartsState()
             version = PARTS_STORE_VERSION
             break
           }
