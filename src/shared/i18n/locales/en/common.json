@@ -9,6 +9,7 @@
     "strawbaler": "Strawbaler"
   },
   "auth": {
+    "accountMenu": "Account",
     "backToSignIn": "Back to Sign In",
     "checkEmailToConfirm": "Check your email to confirm your account",
     "confirmationSuccess": "Email confirmed successfully. You are now signed in.",
@@ -74,6 +75,7 @@
   },
   "currentLanguageWithLabel": "Current language: {{language}}",
   "projectMenu": {
+    "buttonTitle": "Project",
     "copyCurrent": "Copy current project",
     "create": "Create",
     "createSuccess": "Project created",

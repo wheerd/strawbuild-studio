@@ -55,14 +55,16 @@ export function UserMenu(): React.JSX.Element {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" size="icon" className="rounded-full">
+        <Button variant="outline" size="icon" className="rounded-full" title={t($ => $.auth.accountMenu)}>
           <PersonIcon />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" sideOffset={4}>
         {isAuthenticated ? (
           <>
-            <DropdownMenuLabel className="max-w-[200px] truncate">{email}</DropdownMenuLabel>
+            <DropdownMenuLabel className="max-w-[200px] truncate" data-testid="user-email">
+              {email}
+            </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={handleChangePassword} className="cursor-pointer">
               {t($ => $.auth.updatePassword)}

@@ -312,7 +312,11 @@ export function ProjectMenu(): React.JSX.Element {
         <Tooltip>
           <TooltipTrigger asChild>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className={cn('h-auto gap-2 px-2 py-1', statusInfo.colorClass)}>
+              <Button
+                variant="ghost"
+                className={cn('h-auto gap-2 px-2 py-1', statusInfo.colorClass)}
+                aria-label={t($ => $.projectMenu.buttonTitle)}
+              >
                 <span className="text-foreground text-sm font-medium">{projectName}</span>
                 <div className="flex items-center gap-0.5">
                   <SaveIcon className="h-3.5 w-3.5" />

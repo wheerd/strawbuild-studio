@@ -1137,6 +1137,28 @@ Quick project switcher component:
 
 ## Testing Strategy
 
+### E2E Tests (Playwright)
+
+**Auth tests** (`tests/auth.spec.ts`):
+
+- Sign in with valid/invalid credentials
+- Sign out
+- Sign up (password validation)
+- Forgot password flow
+- Session persistence across reload
+- Protected features visibility
+
+**Project management tests** (`tests/projects.spec.ts`):
+
+- Open/close projects modal
+- Edit project name/description
+- Create new project (empty or copy)
+- Switch between projects
+- Delete project with confirmation
+- Anonymous user restrictions
+
+Tests are skipped automatically when Supabase is not configured.
+
 ### Unit Tests
 
 1. **`regenerateDerivedState`**: Test that geometry and reverse index are correctly regenerated from base state
@@ -1256,11 +1278,54 @@ If cloud integration causes issues:
 
 ### Phase 4: Project Management UI
 
-- [ ] Create `ProjectsModal.tsx`
-- [ ] Create `ProjectSelector.tsx`
-- [ ] Integrate into app UI
+- [x] Create `ProjectsModal.tsx`
+- [x] Create `ProjectMenu.tsx`
+- [x] Create `EditProjectDialog.tsx`
+- [x] Create `ImportChoiceDialog.tsx`
+- [x] Integrate into app UI
 - [ ] Test project CRUD operations
 - [ ] Test project switching
+
+### Phase 4.5: E2E Testing
+
+#### Local Testing with Supabase
+
+1. Start local Supabase:
+
+   ```bash
+   supabase start
+   ```
+
+2. Create `.env.test.local` with the local Supabase credentials:
+
+   ```bash
+   VITE_SUPABASE_URL=http://localhost:54321
+   VITE_SUPABASE_PUBLISHABLE_KEY=<anon-key-from-supabase-start>
+   TEST_USER_PASSWORD=your-test-password
+   ```
+
+3. Run the tests:
+   ```bash
+   pnpm exec playwright test
+   ```
+
+#### CI Testing
+
+For CI, set these GitHub secrets:
+
+- `VITE_SUPABASE_URL` - Test Supabase project URL
+- `VITE_SUPABASE_PUBLISHABLE_KEY` - Test project anon key
+- `TEST_USER_PASSWORD` - Password for the seeded test user
+
+The test user email is hardcoded as `test@strawbaler.dev`.
+
+#### Test Files
+
+- `tests/fixtures/auth.ts` - Auth helpers for tests
+- `tests/auth.spec.ts` - Auth flow tests (sign in, sign out, forgot password)
+- `tests/projects.spec.ts` - Project management tests (CRUD, switch)
+
+Tests are automatically skipped when Supabase is not configured.
 
 ### Phase 5: Security & IaC
 

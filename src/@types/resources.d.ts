@@ -11,6 +11,7 @@ interface Resources {
       "strawbaler": "Strawbaler"
     },
     "auth": {
+      "accountMenu": "Account",
       "backToSignIn": "Back to Sign In",
       "checkEmailToConfirm": "Check your email to confirm your account",
       "confirmNewPassword": "Confirm New Password",
@@ -76,6 +77,7 @@ interface Resources {
     },
     "currentLanguageWithLabel": "Current language: {{language}}",
     "projectMenu": {
+      "buttonTitle": "Project",
       "copyCurrent": "Copy current project",
       "create": "Create",
       "createSuccess": "Project created",

@@ -1,12 +1,12 @@
 import { defineConfig, devices } from '@playwright/test'
-
 /**
  * Read environment variables from file.
  * https://github.com/motdotla/dotenv
  */
-// import dotenv from 'dotenv';
-// import path from 'path';
-// dotenv.config({ path: path.resolve(__dirname, '.env') });
+import dotenv from 'dotenv'
+import path from 'path'
+
+dotenv.config({ path: path.resolve(import.meta.dirname, '.env.test.local') })
 
 /**
  * See https://playwright.dev/docs/test-configuration.
@@ -79,6 +79,13 @@ export default defineConfig({
   webServer: {
     command: 'pnpm dev',
     url: 'http://localhost:5173/',
-    reuseExistingServer: !process.env.CI
+    reuseExistingServer: !process.env.CI,
+    env: {
+      ...(process.env.VITE_SUPABASE_URL ? { VITE_SUPABASE_URL: process.env.VITE_SUPABASE_URL } : {}),
+      ...(process.env.VITE_SUPABASE_PUBLISHABLE_KEY
+        ? { VITE_SUPABASE_PUBLISHABLE_KEY: process.env.VITE_SUPABASE_PUBLISHABLE_KEY }
+        : {}),
+      ...(process.env.TEST_USER_PASSWORD ? { TEST_USER_PASSWORD: process.env.TEST_USER_PASSWORD } : {})
+    }
   }
 })
