@@ -25,7 +25,6 @@ import { useProjectName } from '@/projects/store'
 import { SaveIcon } from '@/shared/components/Icons'
 import { useOfflineStatus } from '@/shared/hooks/useOfflineStatus'
 import { createProject } from '@/shared/services/CloudSyncManager'
-import { ProjectImportExportService } from '@/shared/services/ProjectImportExportService'
 import { FileInputCancelledError, createBinaryFileInput, createFileInput } from '@/shared/utils/createFileInput'
 import { downloadFile } from '@/shared/utils/downloadFile'
 
@@ -69,16 +68,15 @@ export function ProjectMenu(): React.JSX.Element {
     setExportError(null)
 
     try {
-      const result = await ProjectImportExportService.exportToString()
-      if (!result.success) {
-        setExportError(result.error)
-      } else {
-        const timestamp = new Date().toISOString().replace(/[:.]/g, '-').split('T')[0]
-        const filename = `strawbaler-project-${timestamp}.json`
-        downloadFile(result.content, filename)
-      }
+      const { ProjectImportExportService } = await import('@/shared/services/ProjectImportExportService')
+
+      const result = ProjectImportExportService.exportToString()
+      const timestamp = new Date().toISOString().replace(/[:.]/g, '-').split('T')[0]
+      const filename = `strawbaler-project-${timestamp}.json`
+      downloadFile(result, filename)
     } catch (error) {
-      setExportError(error instanceof Error ? error.message : t($ => $.autoSave.errors.failedExport))
+      console.error('Export failed', error)
+      setExportError(t($ => $.autoSave.errors.failedExport))
     } finally {
       setIsExporting(false)
     }
@@ -123,10 +121,8 @@ export function ProjectMenu(): React.JSX.Element {
   const performJsonImport = async (content: string, choice: 'current' | 'new', projectName?: string) => {
     clearSelection()
 
-    const result = await ProjectImportExportService.importFromString(content)
-    if (!result.success) {
-      throw new Error(result.error)
-    }
+    const { ProjectImportExportService } = await import('@/shared/services/ProjectImportExportService')
+    ProjectImportExportService.importFromString(content)
 
     if (choice === 'new') {
       await createProject({

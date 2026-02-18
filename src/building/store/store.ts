@@ -157,7 +157,7 @@ export const getInitialModelState = (): StoreState => {
   return partializeState(state) as StoreState
 }
 
-export function partializeState(state: Store): PartializedStoreState {
+function partializeState(state: Store): PartializedStoreState {
   const {
     actions: _actions,
     _perimeterGeometry,
@@ -171,7 +171,11 @@ export function partializeState(state: Store): PartializedStoreState {
   return rest
 }
 
-export function regeneratePartializedState(state: PartializedStoreState): void {
+export function exportModelState() {
+  return partializeState(useModelStore.getState())
+}
+
+function regeneratePartializedState(state: PartializedStoreState): void {
   const restoredState = state as StoreState
   restoredState._perimeterGeometry = {}
   restoredState._perimeterWallGeometry = {}

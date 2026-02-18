@@ -9,6 +9,7 @@ export {
   getUndoFunction,
   getModelActions,
   getInitialModelState,
-  regeneratePartializedState as regenerateDerivedState
+  exportModelState,
+  hydrateModelState
 } from './store'
-export type { StoreActions } from './types'
+export type { StoreActions, PartializedStoreState } from './types'

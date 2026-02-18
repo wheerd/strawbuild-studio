@@ -1,14 +1,14 @@
 import { useAuthStore } from '@/app/user/store'
 import { isSupabaseConfigured } from '@/app/user/supabaseClient'
-import { CURRENT_VERSION as MODEL_VERSION } from '@/building/store/migrations'
-import { getPersistenceActions } from '@/building/store/persistenceStore'
 import {
+  type PartializedStoreState,
+  exportModelState,
   getInitialModelState,
   hydrateModelState,
-  partializeState as partializeModelState,
-  useModelStore
-} from '@/building/store/store'
-import type { StoreState } from '@/building/store/types'
+  subscribeToModelChanges
+} from '@/building/store'
+import { CURRENT_VERSION as MODEL_VERSION } from '@/building/store/migrations'
+import { getPersistenceActions } from '@/building/store/persistenceStore'
 import {
   getConfigState,
   getInitialConfigState,
@@ -105,7 +105,7 @@ export class CloudSyncManager {
     setCloudSyncing(true)
     try {
       const projectMeta = getProjectMeta()
-      const modelState = partializeModelState(useModelStore.getState())
+      const modelState = exportModelState()
       const configState = getConfigState()
       const materialsState = getMaterialsState()
       const partsState = usePartsStore.getState()
@@ -151,7 +151,7 @@ export class CloudSyncManager {
 
     const projectData = await service.loadProject(projectId)
 
-    hydrateModelState(projectData.modelState as StoreState, projectData.modelVersion)
+    hydrateModelState(projectData.modelState as PartializedStoreState, projectData.modelVersion)
     hydrateConfigState(projectData.configState, projectData.configVersion)
     hydrateMaterialsState(projectData.materialsState, projectData.materialsVersion)
     hydratePartsState(projectData.partsState as PartializedPartsState, projectData.partsVersion)
@@ -274,7 +274,7 @@ export class CloudSyncManager {
     description: string | undefined,
     now: ReturnType<typeof timestampNow>
   ): ProjectData {
-    const modelState = partializeModelState(useModelStore.getState())
+    const modelState = exportModelState()
     const configState = getConfigState()
     const materialsState = getMaterialsState()
     const partsState = exportPartsState()
@@ -361,7 +361,7 @@ export class CloudSyncManager {
     if (this.subscriptions) return
 
     this.subscriptions = {
-      model: useModelStore.subscribe(() => {
+      model: subscribeToModelChanges(() => {
         this.queueSync('model')
       }),
 
@@ -437,8 +437,7 @@ export class CloudSyncManager {
 
         switch (item) {
           case 'model': {
-            const state = useModelStore.getState()
-            data = partializeModelState(state)
+            data = exportModelState()
             version = MODEL_VERSION
             break
           }
