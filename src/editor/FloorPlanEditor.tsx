@@ -12,7 +12,7 @@ import { MainToolbar } from './MainToolbar'
 import { SidePanel } from './SidePanel'
 import { ConstraintStatusOverlay } from './components/ConstraintStatusOverlay'
 import { ViewModeToggle } from './components/ViewModeToggle'
-import { useAutoFitOnHydration } from './hooks/useAutoFitOnHydration'
+import { useAutoFitOnProjectChange } from './hooks/useAutoFitOnProjectChange'
 import { FloorPlanStage } from './layers/FloorPlanStage'
 import { LengthInputComponent } from './services/length-input'
 import { StatusBar } from './status-bar/StatusBar'
@@ -20,7 +20,7 @@ import { keyboardShortcutManager } from './tools/system/KeyboardShortcutManager'
 
 export function FloorPlanEditor(): React.JSX.Element {
   useEffect(() => void initializeCloudSync(), [])
-  useAutoFitOnHydration()
+  useAutoFitOnProjectChange()
   const { isOpen, mode, openManually, handleAccept } = useWelcomeModal()
 
   const containerRef = useRef<HTMLDivElement>(null)

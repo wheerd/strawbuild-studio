@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import { devtools, persist } from 'zustand/middleware'
+import { devtools, persist, subscribeWithSelector } from 'zustand/middleware'
 
 import { type ProjectId, type ProjectListItem, type ProjectMeta, createProjectId, timestampNow } from './types'
 
@@ -41,97 +41,99 @@ const initialState: ProjectsState = {
 }
 
 export const useProjectsStore = create<ProjectsStore>()(
-  devtools(
-    persist(
-      set => ({
-        ...initialState,
+  subscribeWithSelector(
+    devtools(
+      persist(
+        set => ({
+          ...initialState,
 
-        actions: {
-          setProjectName: name =>
-            set(
-              state => ({
-                currentProject: {
-                  ...state.currentProject,
-                  name,
-                  updatedAt: timestampNow()
-                }
-              }),
-              false,
-              'projects/setProjectName'
-            ),
+          actions: {
+            setProjectName: name =>
+              set(
+                state => ({
+                  currentProject: {
+                    ...state.currentProject,
+                    name,
+                    updatedAt: timestampNow()
+                  }
+                }),
+                false,
+                'projects/setProjectName'
+              ),
 
-          setProjectDescription: description =>
-            set(
-              state => ({
-                currentProject: {
-                  ...state.currentProject,
-                  description,
-                  updatedAt: timestampNow()
-                }
-              }),
-              false,
-              'projects/setProjectDescription'
-            ),
+            setProjectDescription: description =>
+              set(
+                state => ({
+                  currentProject: {
+                    ...state.currentProject,
+                    description,
+                    updatedAt: timestampNow()
+                  }
+                }),
+                false,
+                'projects/setProjectDescription'
+              ),
 
-          touchUpdatedAt: () =>
-            set(
-              state => ({
-                currentProject: {
-                  ...state.currentProject,
-                  updatedAt: timestampNow()
-                }
-              }),
-              false,
-              'projects/touchUpdatedAt'
-            ),
+            touchUpdatedAt: () =>
+              set(
+                state => ({
+                  currentProject: {
+                    ...state.currentProject,
+                    updatedAt: timestampNow()
+                  }
+                }),
+                false,
+                'projects/touchUpdatedAt'
+              ),
 
-          loadProject: meta => set({ currentProject: meta }, false, 'projects/loadProject'),
+            loadProject: meta => set({ currentProject: meta }, false, 'projects/loadProject'),
 
-          resetToNew: () => set({ currentProject: createNewProjectMeta() }, false, 'projects/resetToNew'),
+            resetToNew: () => set({ currentProject: createNewProjectMeta() }, false, 'projects/resetToNew'),
 
-          setProjects: projects => set({ projects }, false, 'projects/setProjects'),
+            setProjects: projects => set({ projects }, false, 'projects/setProjects'),
 
-          addProject: project =>
-            set(
-              state => ({
-                projects: [...state.projects, project]
-              }),
-              false,
-              'projects/addProject'
-            ),
+            addProject: project =>
+              set(
+                state => ({
+                  projects: [...state.projects, project]
+                }),
+                false,
+                'projects/addProject'
+              ),
 
-          removeProject: projectId =>
-            set(
-              state => ({
-                projects: state.projects.filter(p => p.id !== projectId)
-              }),
-              false,
-              'projects/removeProject'
-            ),
+            removeProject: projectId =>
+              set(
+                state => ({
+                  projects: state.projects.filter(p => p.id !== projectId)
+                }),
+                false,
+                'projects/removeProject'
+              ),
 
-          updateProject: (projectId, updates) =>
-            set(
-              state => ({
-                projects: state.projects.map(p => (p.id === projectId ? { ...p, ...updates } : p))
-              }),
-              false,
-              'projects/updateProject'
-            ),
+            updateProject: (projectId, updates) =>
+              set(
+                state => ({
+                  projects: state.projects.map(p => (p.id === projectId ? { ...p, ...updates } : p))
+                }),
+                false,
+                'projects/updateProject'
+              ),
 
-          setLoading: isLoading => set({ isLoading }, false, 'projects/setLoading'),
+            setLoading: isLoading => set({ isLoading }, false, 'projects/setLoading'),
 
-          reset: () => set(initialState, false, 'projects/reset')
+            reset: () => set(initialState, false, 'projects/reset')
+          }
+        }),
+        {
+          name: 'strawbaler-project-meta',
+          version: CURRENT_VERSION,
+          partialize: state => ({
+            currentProject: state.currentProject
+          })
         }
-      }),
-      {
-        name: 'strawbaler-project-meta',
-        version: CURRENT_VERSION,
-        partialize: state => ({
-          currentProject: state.currentProject
-        })
-      }
-    ),
-    { name: 'projects-store' }
+      ),
+      { name: 'projects-store' }
+    )
   )
 )
 
@@ -149,3 +151,6 @@ export const setProjectMeta = (meta: ProjectMeta): void => {
 }
 export const getProjectActions = () => useProjectsStore.getState().actions
 export const getProjectId = () => useProjectsStore.getState().currentProject.projectId
+
+export const subscribeToProjectChanges = (cb: (newProjectId: ProjectId, previousProjectId: ProjectId) => void) =>
+  useProjectsStore.subscribe(state => state.currentProject.projectId, cb)

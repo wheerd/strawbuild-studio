@@ -4,7 +4,8 @@ import { create } from 'zustand'
 import { persist, subscribeWithSelector } from 'zustand/middleware'
 import { immer } from 'zustand/middleware/immer'
 
-import { type PerimeterId } from '@/building/model/ids'
+import { type PerimeterId, type StoreyId } from '@/building/model/ids'
+import { Bounds2D } from '@/shared/geometry'
 
 import { CURRENT_VERSION, applyMigrations } from './migrations'
 import { getPersistenceActions } from './persistenceStore'
@@ -63,6 +64,23 @@ export const useModelStore = create<Store>()(
               ...roofsSlice.actions,
               ...timestampsSlice.actions,
               ...constraintsSlice.actions,
+              getBounds: (storeyId: StoreyId): Bounds2D => {
+                const { getPerimetersByStorey, getFloorAreasByStorey, getRoofsByStorey } = get().actions
+
+                const perimeters = getPerimetersByStorey(storeyId)
+                const floorAreas = getFloorAreasByStorey(storeyId)
+                const roofs = getRoofsByStorey(storeyId)
+
+                if (perimeters.length === 0 && floorAreas.length === 0) {
+                  return Bounds2D.EMPTY
+                }
+
+                const perimeterPoints = perimeters.flatMap(p => p.outerPolygon.points)
+                const floorAreaPoints = floorAreas.flatMap(area => area.area.points)
+                const roofPoints = roofs.flatMap(roof => roof.overhangPolygon.points)
+                const allPoints = [...perimeterPoints, ...floorAreaPoints, ...roofPoints]
+                return Bounds2D.fromPoints(allPoints)
+              },
               reset: () => {
                 set(store.getInitialState())
               }

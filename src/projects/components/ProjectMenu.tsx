@@ -1,6 +1,7 @@
 import { CheckIcon, Cross2Icon, DownloadIcon, UpdateIcon, UploadIcon } from '@radix-ui/react-icons'
 import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { toast } from 'sonner'
 
 import { useIsAuthenticated } from '@/app/user/store'
 import { usePersistenceStore } from '@/building/store/persistenceStore'
@@ -23,12 +24,20 @@ import { cn } from '@/lib/utils'
 import { useProjectName } from '@/projects/store'
 import { SaveIcon } from '@/shared/components/Icons'
 import { useOfflineStatus } from '@/shared/hooks/useOfflineStatus'
+import { createProject } from '@/shared/services/CloudSyncManager'
 import { ProjectImportExportService } from '@/shared/services/ProjectImportExportService'
 import { FileInputCancelledError, createBinaryFileInput, createFileInput } from '@/shared/utils/createFileInput'
 import { downloadFile } from '@/shared/utils/downloadFile'
 
 import { EditProjectDialog } from './EditProjectDialog'
+import { ImportChoiceDialog } from './ImportChoiceDialog'
 import { ProjectsModal } from './ProjectsModal'
+
+interface ImportChoiceState {
+  open: boolean
+  defaultProjectName: string
+  handleConfirmChoice: (choice: 'current' | 'new', projectName?: string) => Promise<void>
+}
 
 export function ProjectMenu(): React.JSX.Element {
   const { t } = useTranslation('common')
@@ -49,6 +58,7 @@ export function ProjectMenu(): React.JSX.Element {
   const [importError, setImportError] = useState<string | null>(null)
   const [showEditDialog, setShowEditDialog] = useState(false)
   const [showProjectsModal, setShowProjectsModal] = useState(false)
+  const [importChoiceState, setImportChoiceState] = useState<ImportChoiceState | null>(null)
 
   const activeIsSaving = isAuthenticated ? isCloudSyncing : isSaving
   const activeLastSaved = isAuthenticated ? lastCloudSync : lastSaved
@@ -110,26 +120,78 @@ export function ProjectMenu(): React.JSX.Element {
     }
   }
 
+  const performJsonImport = async (content: string, choice: 'current' | 'new', projectName?: string) => {
+    clearSelection()
+
+    const result = await ProjectImportExportService.importFromString(content)
+    if (!result.success) {
+      throw new Error(result.error)
+    }
+
+    if (choice === 'new') {
+      await createProject({
+        name: projectName ?? t($ => $.projectMenu.untitled),
+        mode: 'copy'
+      })
+      toast.success(t($ => $.projectMenu.createSuccess))
+    }
+
+    pushTool('basic.fit-to-view')
+  }
+
+  const performIfcImport = async (content: ArrayBuffer, choice: 'current' | 'new', projectName?: string) => {
+    clearSelection()
+
+    const { importIfcIntoModel } = await import('@/importers/ifc/importService')
+    const result = await importIfcIntoModel(content)
+    if (!result.success) {
+      throw new Error(result.error ?? t($ => $.autoSave.errors.failedIFCImport))
+    }
+
+    if (choice === 'new') {
+      await createProject({
+        name: projectName ?? t($ => $.projectMenu.untitled),
+        mode: 'copy'
+      })
+      toast.success(t($ => $.projectMenu.createSuccess))
+    }
+
+    pushTool('basic.fit-to-view')
+  }
+
   const handleImport = async () => {
     setIsImporting(true)
     setImportError(null)
 
     try {
-      const content = await createFileInput()
-      clearSelection()
-      const result = await ProjectImportExportService.importFromString(content)
+      const fileResult = await createFileInput()
 
-      if (!result.success) {
-        setImportError(result.error)
+      if (isAuthenticated) {
+        setImportChoiceState({
+          open: true,
+          defaultProjectName: fileResult.filename,
+          handleConfirmChoice: async (choice, newProjectName) => {
+            setImportChoiceState(null)
+            try {
+              await performJsonImport(fileResult.content, choice, newProjectName)
+            } catch (error) {
+              console.error('Error while importing', error)
+              toast.error(t($ => $.autoSave.errors.failedImport))
+            } finally {
+              setIsImporting(false)
+            }
+          }
+        })
       } else {
-        pushTool('basic.fit-to-view')
+        await performJsonImport(fileResult.content, 'current')
+        setIsImporting(false)
       }
     } catch (error) {
       if (!(error instanceof FileInputCancelledError)) {
-        setImportError(error instanceof Error ? error.message : t($ => $.autoSave.errors.failedImport))
+        console.error('Error while importing', error)
+        setImportError(t($ => $.autoSave.errors.failedImport))
         console.error(error)
       }
-    } finally {
       setIsImporting(false)
     }
   }
@@ -139,21 +201,41 @@ export function ProjectMenu(): React.JSX.Element {
     setImportError(null)
 
     try {
-      await createBinaryFileInput(async (content: ArrayBuffer) => {
-        clearSelection()
-        const { importIfcIntoModel } = await import('@/importers/ifc/importService')
-        const result = await importIfcIntoModel(content)
-        if (!result.success) {
-          throw new Error(result.error ?? t($ => $.autoSave.errors.failedIFCImport))
+      await createBinaryFileInput(async (content: ArrayBuffer, file: File) => {
+        const filename = file.name.replace(/\.[^.]+$/, '')
+
+        if (isAuthenticated) {
+          setImportChoiceState({
+            open: true,
+            defaultProjectName: filename,
+            handleConfirmChoice: async (choice, newProjectName) => {
+              setImportChoiceState(null)
+              try {
+                await performIfcImport(content, choice, newProjectName)
+              } catch (error) {
+                console.error('Error while importing', error)
+                toast.error(t($ => $.autoSave.errors.failedIFCImport))
+              } finally {
+                setIsImporting(false)
+              }
+            }
+          })
         } else {
-          pushTool('basic.fit-to-view')
+          try {
+            await performIfcImport(content, 'current')
+          } catch (error) {
+            console.error('Error while importing', error)
+            toast.error(t($ => $.autoSave.errors.failedIFCImport))
+          } finally {
+            setIsImporting(false)
+          }
         }
       }, '.ifc')
     } catch (error) {
       if (!(error instanceof FileInputCancelledError)) {
-        setImportError(error instanceof Error ? error.message : t($ => $.autoSave.errors.failedIFCImport))
+        console.error('Error while importing', error)
+        setImportError(t($ => $.autoSave.errors.failedIFCImport))
       }
-    } finally {
       setIsImporting(false)
     }
   }
@@ -326,6 +408,20 @@ export function ProjectMenu(): React.JSX.Element {
       <EditProjectDialog open={showEditDialog} onOpenChange={setShowEditDialog} />
 
       {isAuthenticated && <ProjectsModal open={showProjectsModal} onOpenChange={setShowProjectsModal} />}
+
+      {importChoiceState && (
+        <ImportChoiceDialog
+          open={importChoiceState.open}
+          onOpenChange={open => {
+            if (!open) {
+              setImportChoiceState(null)
+              setIsImporting(false)
+            }
+          }}
+          defaultProjectName={importChoiceState.defaultProjectName}
+          onChoice={(choice, projectName) => void importChoiceState.handleConfirmChoice(choice, projectName)}
+        />
+      )}
     </>
   )
 }
