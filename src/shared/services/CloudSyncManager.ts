@@ -352,8 +352,13 @@ export class CloudSyncManager {
         this.queueSync('parts')
       }),
 
-      projectMeta: useProjectsStore.subscribe(() => {
-        this.queueSync('project_meta')
+      projectMeta: useProjectsStore.subscribe((current, previous) => {
+        if (
+          current.currentProject.name !== previous.currentProject.name ||
+          current.currentProject.description !== previous.currentProject.description
+        ) {
+          this.queueSync('project_meta')
+        }
       })
     }
   }
@@ -375,6 +380,7 @@ export class CloudSyncManager {
   }
 
   private queueSync(item: SyncQueueItem): void {
+    getPersistenceActions().setCloudSyncing(true)
     this.pendingSyncs.add(item)
 
     if (this.syncTimeout) {
@@ -390,9 +396,6 @@ export class CloudSyncManager {
     if (!this.syncService || this.pendingSyncs.size === 0) return
 
     const projectMeta = getProjectMeta()
-    const persistenceActions = getPersistenceActions()
-
-    persistenceActions.setCloudSyncing(true)
 
     try {
       for (const item of this.pendingSyncs) {
@@ -439,9 +442,9 @@ export class CloudSyncManager {
       }
 
       this.pendingSyncs.clear()
-      persistenceActions.setCloudSyncSuccess(new Date())
+      getPersistenceActions().setCloudSyncSuccess(new Date())
     } catch (error) {
-      persistenceActions.setCloudSyncError(error instanceof Error ? error.message : 'Sync failed')
+      getPersistenceActions().setCloudSyncError(error instanceof Error ? error.message : 'Sync failed')
     }
   }
 }
