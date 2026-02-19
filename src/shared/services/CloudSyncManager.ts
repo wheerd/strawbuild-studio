@@ -51,6 +51,7 @@ export class CloudSyncManager {
   private syncService: ICloudSyncService | null = null
   private syncTimeout: ReturnType<typeof setTimeout> | null = null
   private pendingSyncs = new Set<SyncQueueItem>()
+  private syncingEnabled = true
   private subscriptions: SyncSubscriptions | null = null
   private authUnsubscribe: (() => void) | null = null
 
@@ -149,21 +150,27 @@ export class CloudSyncManager {
       throw new Error('Sync service not available')
     }
 
-    const projectData = await service.loadProject(projectId)
+    try {
+      this.syncingEnabled = false // Prevent hydration triggering sync
+      const projectData = await service.loadProject(projectId)
 
-    hydrateModelState(projectData.modelState as PartializedStoreState, projectData.modelVersion)
-    hydrateConfigState(projectData.configState, projectData.configVersion)
-    hydrateMaterialsState(projectData.materialsState, projectData.materialsVersion)
-    hydratePartsState(projectData.partsState as PartializedPartsState, projectData.partsVersion)
+      hydrateModelState(projectData.modelState as PartializedStoreState, projectData.modelVersion)
+      hydrateConfigState(projectData.configState, projectData.configVersion)
+      hydrateMaterialsState(projectData.materialsState, projectData.materialsVersion)
+      hydratePartsState(projectData.partsState as PartializedPartsState, projectData.partsVersion)
 
-    const { loadProject } = getProjectActions()
-    loadProject({
-      projectId,
-      name: projectData.name,
-      description: projectData.description,
-      createdAt: parseTimestamp(projectData.createdAt),
-      updatedAt: parseTimestamp(projectData.updatedAt)
-    })
+      getProjectActions().loadProject({
+        projectId,
+        name: projectData.name,
+        description: projectData.description,
+        createdAt: parseTimestamp(projectData.createdAt),
+        updatedAt: parseTimestamp(projectData.updatedAt)
+      })
+    } finally {
+      this.syncingEnabled = true
+    }
+
+    getPersistenceActions().setCloudSyncSuccess(new Date())
   }
 
   async flushSyncQueue(): Promise<void> {
@@ -349,12 +356,12 @@ export class CloudSyncManager {
         }
       } else if (localTime > cloudTime) {
         await this.syncLocalProjectToCloud()
+      } else {
+        persistenceActions.setCloudSyncSuccess(new Date())
       }
     } else {
       await this.syncLocalProjectToCloud()
     }
-
-    persistenceActions.setCloudSyncSuccess(new Date())
   }
 
   private setupStoreSubscriptions(): void {
@@ -405,6 +412,7 @@ export class CloudSyncManager {
   }
 
   private queueSync(item: SyncQueueItem): void {
+    if (!this.syncingEnabled) return
     getPersistenceActions().setCloudSyncing(true)
     this.pendingSyncs.add(item)
 
@@ -418,7 +426,7 @@ export class CloudSyncManager {
   }
 
   private async flushSyncQueueInternal(): Promise<void> {
-    if (!this.syncService || this.pendingSyncs.size === 0) return
+    if (!this.syncingEnabled || !this.syncService || this.pendingSyncs.size === 0) return
 
     const projectMeta = getProjectMeta()
 
