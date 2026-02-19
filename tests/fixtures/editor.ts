@@ -8,7 +8,7 @@ export async function setupEditorPage(page: Page): Promise<void> {
   // Set localStorage before navigation to avoid reload
   await page.addInitScript(() => {
     localStorage.setItem(
-      'strawbaler-welcome-state',
+      'strawbuild-welcome-state',
       '{"accepted":true,"acceptedAt":"2025-10-22T06:21:42.893Z","version":"0.2"}'
     )
   })

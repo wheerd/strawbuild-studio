@@ -83,8 +83,8 @@ $$ LANGUAGE plpgsql;
 -- Create test user if not exists
 DO $$
 BEGIN
-    IF NOT EXISTS (SELECT 1 FROM auth.users WHERE email = 'test@strawbaler.dev') THEN
-        PERFORM public.create_test_user('test@strawbaler.dev', 'test-password-123', 'Test User');
+    IF NOT EXISTS (SELECT 1 FROM auth.users WHERE email = 'test@strawbuild.app') THEN
+        PERFORM public.create_test_user('test@strawbuild.app', 'test-password-123', 'Test User');
     END IF;
 END $$;
 

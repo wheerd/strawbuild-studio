@@ -72,7 +72,7 @@ export function ProjectMenu(): React.JSX.Element {
 
       const result = ProjectImportExportService.exportToString()
       const timestamp = new Date().toISOString().replace(/[:.]/g, '-').split('T')[0]
-      const filename = `strawbaler-project-${timestamp}.json`
+      const filename = `strawbuild-project-${timestamp}.json`
       downloadFile(result, filename)
     } catch (error) {
       console.error('Export failed', error)

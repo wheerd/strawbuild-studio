@@ -69,7 +69,7 @@ const useConfigStore = create<ConfigStore>()(
         }
       },
       {
-        name: 'strawbaler-config',
+        name: 'strawbuild-config',
         version: CONFIG_STORE_VERSION,
         partialize: state => ({
           defaultStrawMaterial: state.defaultStrawMaterial,
@@ -174,7 +174,7 @@ export const useConfigActions = (): ConfigActions => useConfigStore(state => sta
 export const getConfigActions = (): ConfigActions => useConfigStore.getState().actions
 
 export const clearPersistence = (): void => {
-  localStorage.removeItem('strawbaler-config')
+  localStorage.removeItem('strawbuild-config')
 }
 
 export const getInitialConfigState = (): ConfigState => {

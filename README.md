@@ -1,18 +1,17 @@
-# <img src="public/assets/inline-logo.svg" alt="Strawbaler Logo" height="40"/> Strawbaler
+# <img src="public/assets/inline-logo.svg" alt="StrawBuild Studio Logo" height="40"/> StrawBuild Studio
 
-[![CI](https://github.com/wheerd/strawbaler-online/workflows/CI/badge.svg)](https://github.com/wheerd/strawbaler-online/actions/workflows/ci.yml)
-[![Security](https://github.com/wheerd/strawbaler-online/workflows/Security%20&%20Dependencies/badge.svg)](https://github.com/wheerd/strawbaler-online/actions/workflows/security.yml)
-[![Netlify Status](https://api.netlify.com/api/v1/badges/0c31f906-f421-426d-b6af-d0f69ae3ea83/deploy-status)](https://strawbaler.netlify.app/)
-[![Netlify Status (DEV)](https://api.netlify.com/api/v1/badges/0c31f906-f421-426d-b6af-d0f69ae3ea83/deploy-status?branch=development)](https://development--strawbaler.netlify.app/)
+[![CI](https://github.com/wheerd/strawbuild-studio/workflows/CI/badge.svg)](https://github.com/wheerd/strawbuild-studio/actions/workflows/ci.yml)
+[![Security](https://github.com/wheerd/strawbuild-studio/workflows/Security%20&%20Dependencies/badge.svg)](https://github.com/wheerd/strawbuild-studio/actions/workflows/security.yml)
+[![Netlify Status](https://api.netlify.com/api/v1/badges/0c31f906-f421-426d-b6af-d0f69ae3ea83/deploy-status)](https://strawbuild.app/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 A modern web-based floor plan editor specifically designed for strawbale construction planning.
 
 ## 🌐 Try It Online
 
-**➡️ [Launch Strawbaler](https://strawbaler.netlify.app/)** - Start designing your strawbale building now!
+**➡️ [Launch StrawBuild Studio](https://strawbuild.app/)** - Start designing your strawbale building now!
 
-> **Development version:** [development--strawbaler.netlify.app](https://development--strawbaler.netlify.app/) (latest features, may be unstable)
+> **Development version:** [development--strawbuild.netlify.app](https://development--strawbuild.netlify.app/) (latest features, may be unstable)
 
 **🎥 Watch the Tool in Action: [Demo Video 0.1](https://www.youtube.com/watch?v=oe9VnhEW0JE) - [Demo Video 0.2](https://youtu.be/7Ed09YNGSn8)**
 
@@ -67,8 +66,8 @@ A modern web-based floor plan editor specifically designed for strawbale constru
 
 ```bash
 # Clone the repository
-git clone https://github.com/wheerd/strawbaler-online.git
-cd strawbaler-online
+git clone https://github.com/wheerd/strawbuild-studio.git
+cd strawbuild-studio
 
 # Install dependencies
 pnpm install
@@ -130,7 +129,7 @@ src/
 
 ## ⚠️ Disclaimer
 
-Strawbaler is under active development and provided as-is:
+StrawBuild Studio is under active development and provided as-is:
 
 - No guarantees for the precision of calculations, generated plans, or 3D models
 - Breaking changes may occur between releases

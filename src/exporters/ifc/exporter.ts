@@ -82,8 +82,8 @@ class IfcExporter {
 
     this.modelID = this.api.CreateModel({
       schema: 'IFC4',
-      name: 'Strawbaler Online Model',
-      authors: ['Strawbaler User'],
+      name: 'StrawBuild Studio Model',
+      authors: ['StrawBuild Studio User'],
       organizations: [`???`],
       authorization: 'none',
       description: ['ViewDefinition [ReferenceView_V1.2]']
@@ -146,7 +146,7 @@ class IfcExporter {
 
   getFilename(): string {
     const timestamp = new Date().toISOString().split('T')[0]
-    return `strawbaler-${timestamp}.ifc`
+    return `strawbuild-${timestamp}.ifc`
   }
 
   // --- context and setup ---
@@ -159,10 +159,12 @@ class IfcExporter {
 
   private createOwnerHistory(): Handle<IFC4.IfcOwnerHistory> {
     const person = this.writeEntity(
-      new IFC4.IfcPerson(null, this.label('Strawbaler'), this.label('User'), null, null, null, null, null)
+      new IFC4.IfcPerson(null, this.label('StrawBuild Studio'), this.label('User'), null, null, null, null, null)
     )
 
-    const organisation = this.writeEntity(new IFC4.IfcOrganization(null, this.label('Strawbaler'), null, null, null))
+    const organisation = this.writeEntity(
+      new IFC4.IfcOrganization(null, this.label('StrawBuild Studio'), null, null, null)
+    )
 
     const personOrg = this.writeEntity(new IFC4.IfcPersonAndOrganization(person, organisation, null))
 
@@ -170,8 +172,8 @@ class IfcExporter {
       new IFC4.IfcApplication(
         organisation,
         this.label(getVersionString()),
-        this.label('Strawbaler Online'),
-        this.identifier(`Strawbaler - Strawbaler-Online - ${getVersionString()}`)
+        this.label('StrawBuild Studio'),
+        this.identifier(`StrawBuild-Studio-${getVersionString()}`)
       )
     )
 
@@ -237,7 +239,7 @@ class IfcExporter {
       new IFC4.IfcProject(
         this.globalId(),
         this.ownerHistory,
-        this.label('Strawbaler Project'),
+        this.label('StrawBuild Studio Project'),
         null,
         null,
         null,
@@ -334,7 +336,7 @@ class IfcExporter {
         null,
         [this.label('Main Office')],
         null,
-        this.label('Strawbaler Town'),
+        this.label('Unknown City'),
         null,
         null,
         this.label('Unknown Country')
@@ -478,7 +480,7 @@ class IfcExporter {
     )
 
     const propertySet = this.writeEntity(
-      new IFC4.IfcPropertySet(this.globalId(), this.ownerHistory, this.label('StrawbalerWall'), null, [
+      new IFC4.IfcPropertySet(this.globalId(), this.ownerHistory, this.label('StrawBuildWall'), null, [
         thicknessProperty,
         assemblyProperty
       ])
@@ -574,7 +576,7 @@ class IfcExporter {
     )
 
     const propertySet = this.writeEntity(
-      new IFC4.IfcPropertySet(this.globalId(), this.ownerHistory, this.label('StrawbalerOpening'), null, [
+      new IFC4.IfcPropertySet(this.globalId(), this.ownerHistory, this.label('StrawBuildOpening'), null, [
         widthProp,
         heightProp,
         sillProp,
@@ -627,7 +629,7 @@ class IfcExporter {
     )
 
     const propertySet = this.writeEntity(
-      new IFC4.IfcPropertySet(this.globalId(), this.ownerHistory, this.label('StrawbalerFloor'), null, [
+      new IFC4.IfcPropertySet(this.globalId(), this.ownerHistory, this.label('StrawBuildFloor'), null, [
         thicknessProperty
       ])
     )

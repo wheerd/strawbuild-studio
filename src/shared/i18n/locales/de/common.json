@@ -3,10 +3,10 @@
     "cancel": "Abbrechen"
   },
   "app": {
+    "appName": "StrawBuild Studio",
     "changeLanguage": "Sprache ändern",
     "constructionPlanning": "Konstruktionsplanung",
-    "fitToContent": "An Inhalt anpassen",
-    "strawbaler": "Strawbaler"
+    "fitToContent": "An Inhalt anpassen"
   },
   "auth": {
     "accountMenu": "Konto",

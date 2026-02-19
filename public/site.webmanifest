@@ -1,7 +1,7 @@
 {
-  "name": "Strawbaler Online",
-  "short_name": "Strawbaler",
-  "description": "Online floor plan editor for strawbale construction",
+  "name": "StrawBuild Studio",
+  "short_name": "StrawBuild",
+  "description": "Floor plan editor for strawbale construction",
   "icons": [
     {
       "src": "/favicon.svg",

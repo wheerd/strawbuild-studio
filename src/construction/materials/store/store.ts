@@ -293,7 +293,7 @@ const useMaterialsStore = create<MaterialsStore>()(
         { name: 'materials-store' }
       ),
       {
-        name: 'strawbaler-materials',
+        name: 'strawbuild-materials',
         version: MATERIALS_STORE_VERSION,
         partialize: state => ({
           materials: state.materials,

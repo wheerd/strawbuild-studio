@@ -135,9 +135,9 @@ export class GeometryIfcExporter {
 
     this.modelID = this.api.CreateModel({
       schema: 'IFC4',
-      name: 'Strawbaler Online Construction Model',
-      authors: ['Strawbaler User'],
-      organizations: ['Strawbaler'],
+      name: 'StrawBuild Studio Construction Model',
+      authors: ['StrawBuild Studio User'],
+      organizations: ['StrawBuild Studio'],
       authorization: 'none',
       description: ['ViewDefinition [ReferenceView_V1.2]']
     })
@@ -163,7 +163,7 @@ export class GeometryIfcExporter {
 
   getFilename(): string {
     const timestamp = new Date().toISOString().split('T')[0]
-    return `strawbaler-geometry-${timestamp}.ifc`
+    return `strawbuild-geometry-${timestamp}.ifc`
   }
 
   // --- Initialization (reused from existing exporter) ---
@@ -176,10 +176,12 @@ export class GeometryIfcExporter {
 
   private createOwnerHistory(): Handle<IFC4.IfcOwnerHistory> {
     const person = this.writeEntity(
-      new IFC4.IfcPerson(null, this.label('Strawbaler'), this.label('User'), null, null, null, null, null)
+      new IFC4.IfcPerson(null, this.label('StrawBuild Studio'), this.label('User'), null, null, null, null, null)
     )
 
-    const organisation = this.writeEntity(new IFC4.IfcOrganization(null, this.label('Strawbaler'), null, null, null))
+    const organisation = this.writeEntity(
+      new IFC4.IfcOrganization(null, this.label('StrawBuild Studio'), null, null, null)
+    )
 
     const personOrg = this.writeEntity(new IFC4.IfcPersonAndOrganization(person, organisation, null))
 
@@ -187,8 +189,8 @@ export class GeometryIfcExporter {
       new IFC4.IfcApplication(
         organisation,
         this.label(getVersionString()),
-        this.label('Strawbaler Online'),
-        this.identifier(`Strawbaler - Strawbaler-Online - ${getVersionString()}`)
+        this.label('StrawBuild Studio'),
+        this.identifier(`StrawBuild-Studio-${getVersionString()}`)
       )
     )
 
@@ -278,7 +280,7 @@ export class GeometryIfcExporter {
       new IFC4.IfcProject(
         this.globalId(),
         this.ownerHistory,
-        this.label('Strawbaler Project'),
+        this.label('StrawBuild Studio Project'),
         null,
         null,
         null,
@@ -666,7 +668,7 @@ export class GeometryIfcExporter {
     // Associate material (with enhanced properties and color)
     this.associateMaterial(ifcElement, element.material)
 
-    // Add custom Strawbaler properties
+    // Add custom StrawBuild Studio properties
     this.addElementProperties(ifcElement, element)
 
     // Add standard IFC base quantities
@@ -1005,7 +1007,7 @@ export class GeometryIfcExporter {
       this.writeEntity(
         new IFC4.IfcPropertySingleValue(
           this.identifier('MaterialType'),
-          this.label('Strawbaler material type classification'),
+          this.label('StrawBuild Studio material type classification'),
           this.label(materialData.type),
           null
         )
@@ -1095,7 +1097,7 @@ export class GeometryIfcExporter {
       this.writeEntity(
         new IFC4.IfcMaterialProperties(
           this.identifier(`${materialData.name}_Properties`),
-          this.label('Strawbaler material properties'),
+          this.label('StrawBuild Studio material properties'),
           properties,
           material as Handle<IFC4.IfcMaterialDefinition>
         )
@@ -1247,7 +1249,7 @@ export class GeometryIfcExporter {
     }
 
     const pset = this.writeEntity(
-      new IFC4.IfcPropertySet(this.globalId(), this.ownerHistory, this.label('Strawbaler_Properties'), null, properties)
+      new IFC4.IfcPropertySet(this.globalId(), this.ownerHistory, this.label('StrawBuild_Properties'), null, properties)
     )
 
     this.writeEntity(
