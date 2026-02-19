@@ -1,11 +1,9 @@
 import { expect, test } from '@playwright/test'
 
-import { TEST_USER_EMAIL, TEST_USER_PASSWORD, isSupabaseConfiguredForTests, setupAnonymousPage } from './fixtures/auth'
+import { TEST_USER_EMAIL, TEST_USER_PASSWORD, setupAnonymousPage } from './fixtures/auth'
 import { loadTestData } from './fixtures/editor'
 
-const authDescribe = isSupabaseConfiguredForTests() ? test.describe : test.describe.skip
-
-authDescribe('Project Management', () => {
+test.describe('Project Management', () => {
   test('complete journey: anonymous rename, sign-in sync, CRUD operations', async ({ page }) => {
     test.setTimeout(180000)
 

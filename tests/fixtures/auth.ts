@@ -2,7 +2,7 @@ import { type Page, expect } from '@playwright/test'
 
 import { setupEditorPage } from './editor'
 
-export const TEST_USER_EMAIL = 'test@strawbaler.dev'
+export const TEST_USER_EMAIL = process.env.TEST_USER_EMAIL ?? 'test@strawbaler.dev'
 export const TEST_USER_PASSWORD = process.env.TEST_USER_PASSWORD ?? 'test-password-123'
 
 export interface SupabaseConfig {
@@ -10,19 +10,15 @@ export interface SupabaseConfig {
   anonKey: string
 }
 
-export function getSupabaseConfig(): SupabaseConfig | null {
+export function getSupabaseConfig(): SupabaseConfig {
   const url = process.env.VITE_SUPABASE_URL
   const anonKey = process.env.VITE_SUPABASE_PUBLISHABLE_KEY
 
   if (!url || !anonKey) {
-    return null
+    throw new Error('Supabase not configured for tests')
   }
 
   return { url, anonKey }
-}
-
-export function isSupabaseConfiguredForTests(): boolean {
-  return getSupabaseConfig() !== null
 }
 
 async function signInViaApi(
@@ -85,9 +81,6 @@ async function injectAuthSession(
 
 export async function setupAuthenticatedPage(page: Page): Promise<void> {
   const config = getSupabaseConfig()
-  if (!config) {
-    throw new Error('Supabase not configured for tests')
-  }
   const session = await signInViaApi(config, TEST_USER_EMAIL, TEST_USER_PASSWORD)
   await injectAuthSession(page, session)
   await setupEditorPage(page)
@@ -101,10 +94,6 @@ export async function setupAnonymousPage(page: Page): Promise<void> {
 
 export async function cleanupTestProjects(namePrefix: string): Promise<void> {
   const config = getSupabaseConfig()
-  if (!config) {
-    return
-  }
-
   const session = await signInViaApi(config, TEST_USER_EMAIL, TEST_USER_PASSWORD)
 
   const listResponse = await fetch(`${config.url}/rest/v1/projects?name=like.${namePrefix}*&select=id,name`, {
@@ -120,7 +109,7 @@ export async function cleanupTestProjects(namePrefix: string): Promise<void> {
     return
   }
 
-  const projects = (await listResponse.json()) as Array<{ id: string; name: string }>
+  const projects = (await listResponse.json()) as { id: string; name: string }[]
 
   for (const project of projects) {
     const deleteResponse = await fetch(`${config.url}/rest/v1/projects?id=eq.${project.id}`, {
