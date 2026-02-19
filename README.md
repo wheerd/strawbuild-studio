@@ -1,4 +1,4 @@
-# <img src="public/assets/inline-logo.svg" alt="StrawBuild Studio Logo" height="40"/> StrawBuild Studio
+# <img src="public/favicon.svg" alt="StrawBuild Studio Logo" height="40"/> StrawBuild Studio
 
 [![CI](https://github.com/wheerd/strawbuild-studio/workflows/CI/badge.svg)](https://github.com/wheerd/strawbuild-studio/actions/workflows/ci.yml)
 [![Security](https://github.com/wheerd/strawbuild-studio/workflows/Security%20&%20Dependencies/badge.svg)](https://github.com/wheerd/strawbuild-studio/actions/workflows/security.yml)

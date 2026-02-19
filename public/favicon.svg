@@ -26,9 +26,7 @@
   <rect x="19" y="6" width="5" height="24" stroke="#d37c37" fill="#ed913e" stroke-width="0.2" />
   <rect x="23" y="6" width="1" height="24" fill="#d37c37" />
 
-  <rect x="2" y="7.5" width="4" height="8" fill="#fdc362" />
-  <rect x="7" y="7.5" width="10.5" height="8" fill="#fdc362" />
-  <rect x="2" y="17" width="15.5" height="12" fill="#fec463" />
-
-  <rect x="25.5" y="7.5" width="4" height="21.5" fill="#e0ab4f" />
+  <rect x="3" y="8" width="14" height="10" fill="#fdc362" />
+  <rect x="3" y="19.5" width="14" height="9" fill="#e0ab4f" />
+  <rect x="25.5" y="7" width="3" height="21.5" fill="#e0ab4f" />
 </svg>

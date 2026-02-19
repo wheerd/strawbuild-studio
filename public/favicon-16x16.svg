@@ -1,44 +1,32 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="-2.5 7.5 27.5 22">
+<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="-3 -3 37 37">
   <defs>
-    <rect id="logo-strawbale" x="0" y="0" width="3.5" height="2.5" stroke="#000000" fill="#daa520" stroke-width="0.3" />
-    <rect id="logo-post" x="0" y="0" width="0.5" height="12.5" stroke="#000000" fill="#cd853f" stroke-width="0.3" />
-
-    <g id="logo-infill-section">
-      <use x="0" y="0" href="#logo-post" />
-      <use x="0.5" y="0" href="#logo-strawbale" />
-      <use x="0.5" y="2.5" href="#logo-strawbale" />
-      <use x="0.5" y="5" href="#logo-strawbale" />
-      <use x="0.5" y="7.5" href="#logo-strawbale" />
-      <use x="0.5" y="10" href="#logo-strawbale" />
-      <use x="4" y="0" href="#logo-post" />
-    </g>
-
-    <g id="logo-window-section">
-      <use x="0" y="0" href="#logo-post" />
-      <use x="0.5" y="0" href="#logo-strawbale" />
-      <rect x="0.5" y="2.5" width="3.5" height="5" stroke="#000000" fill="#87ceeb" stroke-width="0.3" />
-      <use x="0.5" y="7.5" href="#logo-strawbale" />
-      <use x="0.5" y="10" href="#logo-strawbale" />
-      <use x="4" y="0" href="#logo-post" />
-    </g>
-
-    <g id="logo-door-section">
-      <use x="0" y="0" href="#logo-post" />
-      <use x="0.5" y="0" href="#logo-strawbale" />
-      <rect x="0.5" y="2.5" width="3.5" height="10" stroke="#000000" fill="#8b4513" stroke-width="0.3" />
-      <use x="4" y="0" href="#logo-post" />
-    </g>
+    <filter id="inset-shadow">
+      <feColorMatrix
+        in="SourceGraphic"
+        type="matrix"
+        values="0 0 0 0 0 
+                0 0 0 0 0 
+                0 0 0 0 0 
+                0 0 0 100 0"
+        result="opaque-source"
+      />
+      <feGaussianBlur stdDeviation="2" />
+      <feComposite operator="xor" in2="opaque-source" />
+      <feComposite operator="in" in2="opaque-source" />
+      <feComposite operator="over" in2="SourceGraphic" />
+    </filter>
   </defs>
 
-  <rect x="1" y="28" width="20.5" height="1" fill="#8b4513" stroke="#000000" stroke-width="0.3" />
+  <rect x="-2" y="-2" width="35" height="35" fill="#2b4d4c" rx="4" ry="4"
+    filter="url(#inset-shadow)" />
 
-  <use x="1" y="15.5" href="#logo-infill-section" />
-  <use x="5" y="15.5" href="#logo-window-section" />
-  <use x="9" y="15.5" href="#logo-infill-section" />
-  <use x="13" y="15.5" href="#logo-door-section" />
-  <use x="17" y="15.5" href="#logo-infill-section" />
+  <rect x="1" y="2" width="29" height="4" stroke="#d37c37" fill="#ed913e" stroke-width="0.2" />
+  <rect x="1" y="5" width="29" height="1" fill="#ab6a32" />
 
-  <rect x="1" y="14.5" width="20.5" height="1" fill="#8b4513" stroke="#000000" stroke-width="0.3" />
+  <rect x="19" y="6" width="5" height="24" stroke="#d37c37" fill="#ed913e" stroke-width="0.2" />
+  <rect x="23" y="6" width="1" height="24" fill="#d37c37" />
 
-  <path d="M -2,14.5 h 26.5 L 10.75,8 Z" fill="#cd853f" stroke="#000000" stroke-width="0.4" />
+  <rect x="3" y="8" width="14" height="10" fill="#fdc362" />
+  <rect x="3" y="19.5" width="14" height="9" fill="#e0ab4f" />
+  <rect x="25.5" y="7" width="3" height="21.5" fill="#e0ab4f" />
 </svg>

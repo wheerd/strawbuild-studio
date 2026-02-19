@@ -1,7 +1,7 @@
 {
   "name": "StrawBuild Studio",
   "short_name": "StrawBuild",
-  "description": "Floor plan editor for strawbale construction",
+  "description": "Strawbale construction planner",
   "icons": [
     {
       "src": "/favicon.svg",
