@@ -71,7 +71,7 @@ export async function activateTool(
 /**
  * Load test data from the test data tool
  */
-export async function loadTestData(page: Page, presetName: string): Promise<void> {
+export async function loadTestData(page: Page, presetName: string | RegExp): Promise<void> {
   await activateTool(page, 'Test Data')
   await page.getByRole('button', { name: presetName }).click()
 }

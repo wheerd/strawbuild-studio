@@ -6,7 +6,7 @@ import { migrateToVersion12 } from './toVersion12'
 import { migrateToVersion13 } from './toVersion13'
 import { migrateToVersion14 } from './toVersion14'
 
-export const CURRENT_VERSION = 14
+export const MODEL_STORE_VERSION = 14
 
 const migrations: Migration[] = [
   migrateToVersion9,

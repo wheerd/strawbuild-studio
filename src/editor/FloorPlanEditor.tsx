@@ -4,21 +4,24 @@ import { ErrorBoundary } from 'react-error-boundary'
 import { ConfigurationModal } from '@/construction/config/components/ConfigurationModal'
 import { type ConfigTab, ConfigurationModalContext } from '@/construction/config/context/ConfigurationModalContext'
 import { FeatureErrorFallback } from '@/shared/components/ErrorBoundary'
+import { InitialSyncOverlay } from '@/shared/components/InitialSyncOverlay'
 import { WelcomeModal } from '@/shared/components/WelcomeModal'
 import { useWelcomeModal } from '@/shared/hooks/useWelcomeModal'
+import { initializeCloudSync } from '@/shared/services/CloudSyncManager'
 
 import { MainToolbar } from './MainToolbar'
 import { SidePanel } from './SidePanel'
 import { ConstraintStatusOverlay } from './components/ConstraintStatusOverlay'
 import { ViewModeToggle } from './components/ViewModeToggle'
-import { useAutoFitOnHydration } from './hooks/useAutoFitOnHydration'
+import { useAutoFitOnProjectChange } from './hooks/useAutoFitOnProjectChange'
 import { FloorPlanStage } from './layers/FloorPlanStage'
 import { LengthInputComponent } from './services/length-input'
 import { StatusBar } from './status-bar/StatusBar'
 import { keyboardShortcutManager } from './tools/system/KeyboardShortcutManager'
 
 export function FloorPlanEditor(): React.JSX.Element {
-  useAutoFitOnHydration()
+  useEffect(() => void initializeCloudSync(), [])
+  useAutoFitOnProjectChange()
   const { isOpen, mode, openManually, handleAccept } = useWelcomeModal()
 
   const containerRef = useRef<HTMLDivElement>(null)
@@ -40,7 +43,7 @@ export function FloorPlanEditor(): React.JSX.Element {
       // Don't intercept keyboard events when user is typing in input fields
       const target = event.target as HTMLElement
       const isInputElement = target.matches(
-        'input[type=text], input[type=number], input:not([type]), select, textarea, [contenteditable="true"]'
+        'input[type=text], input[type=email], input[type=password], input[type=number], input:not([type]), select, textarea, [contenteditable="true"]'
       )
 
       if (isInputElement) {
@@ -150,7 +153,8 @@ export function FloorPlanEditor(): React.JSX.Element {
         <WelcomeModal isOpen={isOpen} mode={mode} onAccept={handleAccept} />
 
         {/* Main Content Area - Editor + Side Panel */}
-        <div className="grid grid-cols-[1fr_320px] gap-0 overflow-hidden p-0">
+        <div className="relative grid grid-cols-[1fr_320px] gap-0 overflow-hidden p-0">
+          <InitialSyncOverlay />
           {/* Editor Area */}
           <div className="bg-background border-border relative overflow-hidden border-r">
             <ErrorBoundary FallbackComponent={FeatureErrorFallback}>

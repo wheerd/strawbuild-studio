@@ -2,16 +2,18 @@ import { useMemo } from 'react'
 import { create } from 'zustand'
 import { devtools, persist, subscribeWithSelector } from 'zustand/middleware'
 
-import type {
-  DimensionalMaterial,
-  Material,
-  MaterialId,
-  SheetMaterial,
-  StrawbaleMaterial,
-  VolumeMaterial
-} from './material'
-import { DEFAULT_MATERIALS, createMaterialId } from './material'
-import { MATERIALS_STORE_VERSION, migrateMaterialsState } from './store/migrations'
+import {
+  DEFAULT_MATERIALS,
+  type DimensionalMaterial,
+  type Material,
+  type MaterialId,
+  type SheetMaterial,
+  type StrawbaleMaterial,
+  type VolumeMaterial,
+  createMaterialId
+} from '@/construction/materials/material'
+
+import { MATERIALS_STORE_VERSION, migrateMaterialsState } from './migrations'
 
 export interface MaterialsState {
   materials: Record<MaterialId, Material>
@@ -327,8 +329,16 @@ export const useMaterialActions = (): MaterialsActions => useMaterialsStore(stat
 // For non-reactive contexts
 export const getMaterialsActions = (): MaterialsActions => useMaterialsStore.getState().actions
 
+export const getInitialMaterialsState = (): MaterialsState => {
+  const state = useMaterialsStore.getInitialState()
+  return {
+    materials: state.materials,
+    timestamps: state.timestamps
+  }
+}
+
 // Export materials state for persistence/debugging
-export const getMaterialsState = () => {
+export const getMaterialsState = (): MaterialsState => {
   const state = useMaterialsStore.getState()
   return {
     materials: state.materials,
@@ -341,11 +351,21 @@ export const setMaterialsState = (data: {
   materials: Record<MaterialId, Material>
   timestamps?: Record<MaterialId, number>
 }) => {
-  useMaterialsStore.setState({
-    materials: data.materials,
-    timestamps: data.timestamps ?? {}
-  })
+  useMaterialsStore.setState(
+    {
+      materials: data.materials,
+      timestamps: data.timestamps ?? {}
+    },
+    false
+  )
 }
+
+export function hydrateMaterialsState(state: unknown, version: number): MaterialsState {
+  const migratedState = migrateMaterialsState(state, version)
+  useMaterialsStore.setState(migratedState)
+  return migratedState
+}
+
 // For non-reactive material resolution in construction functions
 export const getMaterialById = (id: MaterialId): Material | null => {
   const state = useMaterialsStore.getState()

@@ -1,11 +1,13 @@
 import { ExclamationTriangleIcon, Pencil1Icon, PinBottomIcon, PinTopIcon } from '@radix-ui/react-icons'
 import * as d3 from 'd3-array'
-import React, { useCallback, useMemo, useRef } from 'react'
+import React, { Suspense, useCallback, useMemo, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
+import { Skeleton } from '@/components/ui/skeleton'
+import { Spinner } from '@/components/ui/spinner'
 import { Table } from '@/components/ui/table'
 import { Tooltip } from '@/components/ui/tooltip'
 import DimensionalPartsTable from '@/construction/components/parts/DimensionalPartsTable'
@@ -223,30 +225,32 @@ export function ConstructionPartsList({ modelId, onViewInPlan }: ConstructionPar
     )
   }
   return (
-    <div className="flex w-full flex-col gap-4">
-      <SummaryTable
-        setTopRef={r => {
-          topRef.current = r
-        }}
-        scrollToGroup={scrollToGroup}
-        groups={sortedGroups}
-      />
+    <Suspense fallback={<PartsSkeleton />}>
+      <div className="flex w-full flex-col gap-4">
+        <SummaryTable
+          setTopRef={r => {
+            topRef.current = r
+          }}
+          scrollToGroup={scrollToGroup}
+          groups={sortedGroups}
+        />
 
-      <div className="flex flex-col gap-4">
-        {sortedGroups
-          .flatMap(g => g.subGroups.map(s => [g.material, s] as const))
-          .map(([material, group]) => (
-            <div key={group.key} ref={setDetailRef(group.key)}>
-              <MaterialGroupCard
-                material={material}
-                group={group}
-                onBackToTop={scrollToTop}
-                onViewInPlan={onViewInPlan}
-              />
-            </div>
-          ))}
+        <div className="flex flex-col gap-4">
+          {sortedGroups
+            .flatMap(g => g.subGroups.map(s => [g.material, s] as const))
+            .map(([material, group]) => (
+              <div key={group.key} ref={setDetailRef(group.key)}>
+                <MaterialGroupCard
+                  material={material}
+                  group={group}
+                  onBackToTop={scrollToTop}
+                  onViewInPlan={onViewInPlan}
+                />
+              </div>
+            ))}
+        </div>
       </div>
-    </div>
+    </Suspense>
   )
 }
 
@@ -323,4 +327,18 @@ function SummaryTable({
       </CardContent>
     </Card>
   )
+}
+
+function PartsSkeleton() {
+  return (
+    <div className="flex flex-col gap-4">
+      <CardSkeleton />
+      <CardSkeleton />
+      <Spinner className="self-center" />
+    </div>
+  )
+}
+
+function CardSkeleton() {
+  return <Skeleton className="h-[160px] rounded-lg" />
 }

@@ -1,9 +1,12 @@
+import { useEffect } from 'react'
+
 import type { PerimeterCornerGeometry, PerimeterCornerWithGeometry, RoofOverhang } from '@/building/model'
 import type { SelectableId } from '@/building/model/ids'
 import { isPerimeterCornerId, isRoofOverhangId } from '@/building/model/ids'
 import { useModelEntityById } from '@/building/store'
-import { useCurrentSelection } from '@/editor/hooks/useSelectionStore'
+import { useCurrentSelection, useSelectionStore } from '@/editor/hooks/useSelectionStore'
 import { SelectionOutline } from '@/editor/utils/SelectionOutline'
+import { subscribeToProjectChanges } from '@/projects/store'
 import { type Vec2, direction, perpendicular, scaleAddVec2 } from '@/shared/geometry'
 
 function useSelectionOutlinePoints(currentSelection: SelectableId | null): Vec2[] | null {
@@ -30,8 +33,17 @@ function useSelectionOutlinePoints(currentSelection: SelectableId | null): Vec2[
 }
 
 export function SelectionOverlay(): React.JSX.Element | null {
+  const clearSelection = useSelectionStore(s => s.clearSelection)
   const currentSelection = useCurrentSelection()
   const outlinePoints = useSelectionOutlinePoints(currentSelection)
+
+  useEffect(
+    () =>
+      subscribeToProjectChanges(() => {
+        clearSelection()
+      }),
+    [clearSelection]
+  )
 
   if (!outlinePoints || outlinePoints.length === 0) {
     return null

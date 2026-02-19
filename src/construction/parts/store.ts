@@ -14,6 +14,8 @@ import type { LocationFilter, PartDefinition, PartId, PartsStore, PartsStoreStat
 export const getLabelGroupId = (definition: Pick<PartDefinition, 'source' | 'materialId'>): string =>
   definition.source === 'group' ? 'virtual' : `material:${definition.materialId}`
 
+export const PARTS_STORE_VERSION = 1
+
 export const usePartsStore = create<PartsStore>()(
   persist(
     (set, get) => ({
@@ -78,14 +80,28 @@ export const usePartsStore = create<PartsStore>()(
       name: 'strawbaler-parts',
       partialize: state => ({
         labels: state.labels,
-        usedLabelsByGroup: state.usedLabelsByGroup,
         nextLabelIndexByGroup: state.nextLabelIndexByGroup
-      })
+      }),
+      version: PARTS_STORE_VERSION
     }
   )
 )
 
 export type LabelState = Pick<PartsStoreState, 'labels' | 'usedLabelsByGroup' | 'nextLabelIndexByGroup'>
+
+export type PartializedPartsState = Pick<PartsStoreState, 'labels' | 'nextLabelIndexByGroup'>
+
+export function exportPartsState(): PartializedPartsState {
+  const state = usePartsStore.getState()
+  return {
+    labels: state.labels,
+    nextLabelIndexByGroup: state.nextLabelIndexByGroup
+  }
+}
+
+export function hydratePartsState(state: PartializedPartsState, _version: number): void {
+  usePartsStore.setState(state, false)
+}
 
 export function regenerateLabels(groupId: string | undefined, state: PartsStoreState): LabelState {
   const newLabels: Partial<Record<PartId, string>> = {}

@@ -1,377 +1,386 @@
-import { describe, expect, it, vi } from 'vitest'
+import type { Mock } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import type {
-  Constraint,
-  OpeningWithGeometry,
-  PerimeterCornerId,
-  PerimeterCornerWithGeometry,
-  PerimeterId,
-  PerimeterWallId,
-  PerimeterWallWithGeometry,
-  PerimeterWithGeometry,
-  Storey,
-  StoreyId,
-  StoreyLevel
-} from '@/building/model'
-import type { StoreActions } from '@/building/store'
-import { ZERO_VEC2, newVec2 } from '@/shared/geometry'
-import { partial } from '@/test/helpers'
+import type { PartializedStoreState } from '@/building/store'
+import { MODEL_STORE_VERSION, exportModelState, hydrateModelState } from '@/building/store'
+import type { StoreState } from '@/building/store/types'
+import type { ConfigState } from '@/construction/config/store'
+import { CONFIG_STORE_VERSION, getConfigState, hydrateConfigState } from '@/construction/config/store'
+import { MATERIALS_STORE_VERSION, getMaterialsState, hydrateMaterialsState } from '@/construction/materials/store'
+import type { MaterialsState } from '@/construction/materials/store'
+import type { PartializedPartsState } from '@/construction/parts/store'
+import { PARTS_STORE_VERSION, exportPartsState, hydratePartsState } from '@/construction/parts/store'
+import type { ExportedProjectMeta } from '@/projects/store'
+import { PROJECTS_STORE_VERSION, exportProjectMeta, hydrateProjectMeta } from '@/projects/store'
 
+import { LegacyProjectImportService } from './LegacyProjectImportService'
+import type { ExportDataV2 } from './ProjectImportExportService'
 import { ProjectImportExportService } from './ProjectImportExportService'
 
-// Create a shared mock that we can control
-const mockStorey = partial<Storey>({
-  id: 'storey_ground',
-  name: 'Ground Floor',
-  level: 0 as StoreyLevel,
-  floorHeight: 2500,
-  floorAssemblyId: 'fa_1'
-})
-
-const corners = [
-  partial<PerimeterCornerWithGeometry>({
-    id: 'outcorner_1',
-    insidePoint: ZERO_VEC2,
-    outsidePoint: newVec2(-200, 0),
-    constructedByWall: 'next',
-    interiorAngle: 90,
-    exteriorAngle: 270
-  }),
-  partial<PerimeterCornerWithGeometry>({
-    id: 'outcorner_2',
-    insidePoint: newVec2(100, 0),
-    outsidePoint: newVec2(100, -200),
-    constructedByWall: 'next',
-    interiorAngle: 90,
-    exteriorAngle: 270
-  }),
-  partial<PerimeterCornerWithGeometry>({
-    id: 'outcorner_3',
-    insidePoint: newVec2(100, 100),
-    outsidePoint: newVec2(300, 100),
-    constructedByWall: 'next',
-    interiorAngle: 90,
-    exteriorAngle: 270
-  }),
-  partial<PerimeterCornerWithGeometry>({
-    id: 'outcorner_4',
-    insidePoint: newVec2(0, 100),
-    outsidePoint: newVec2(0, 300),
-    constructedByWall: 'next',
-    interiorAngle: 90,
-    exteriorAngle: 270
-  })
-]
-
-const openings = [
-  partial<OpeningWithGeometry>({
-    id: 'opening_1',
-    openingType: 'door',
-    centerOffsetFromWallStart: 500,
-    width: 900,
-    height: 2100,
-    sillHeight: undefined
-  })
-]
-
-const walls = [
-  partial<PerimeterWallWithGeometry>({
-    id: 'outwall_1',
-    thickness: 200,
-    wallAssemblyId: 'assembly_1' as any,
-    entityIds: openings.map(o => o.id)
-  })
-]
-
-const constraints = [
-  partial<Constraint>({
-    id: 'constraint_1',
-    type: 'horizontalWall',
-    wall: 'outwall_1'
-  })
-]
-
-const mockActions = partial<StoreActions>({
-  getStoreysOrderedByLevel: vi.fn(() => [mockStorey]),
-  getStoreyAbove: vi.fn(() => null),
-  getPerimeterCornersById: vi.fn(() => corners),
-  getPerimeterWallsById: vi.fn(() => walls),
-  getWallOpeningsById: vi.fn(() => openings),
-  getWallPostsById: vi.fn(() => []),
-  getPerimetersByStorey: vi.fn(() => [
-    partial<PerimeterWithGeometry>({
-      id: 'perimeter_1',
-      referenceSide: 'inside' as const,
-      innerPolygon: { points: [newVec2(0, 0), newVec2(100, 0), newVec2(100, 100), newVec2(0, 100)] },
-      cornerIds: corners.map(c => c.id),
-      wallIds: walls.map(w => w.id)
-    })
-  ]),
-  getAllBuildingConstraints: vi.fn(() => constraints),
-  getFloorAreasByStorey: vi.fn(() => []),
-  getFloorOpeningsByStorey: vi.fn(() => []),
-  getRoofsByStorey: vi.fn(() => []),
-  reset: vi.fn(),
-  updateStoreyName: vi.fn(),
-  updateStoreyFloorHeight: vi.fn(),
-  updateStoreyFloorAssembly: vi.fn(),
-  adjustAllLevels: vi.fn(),
-  addStorey: vi.fn((name, floorHeight) =>
-    partial<Storey>({
-      id: 'new_storey' as StoreyId,
-      name,
-      level: 1 as StoreyLevel,
-      floorHeight
-    })
-  ),
-  addPerimeter: vi.fn(() =>
-    partial<PerimeterWithGeometry>({
-      id: 'new_perimeter' as PerimeterId,
-      referenceSide: 'inside' as const,
-      wallIds: ['new_wall_1' as PerimeterWallId],
-      cornerIds: ['new_corner_1' as PerimeterCornerId]
-    })
-  ),
-  updatePerimeterWallThickness: vi.fn(),
-  updatePerimeterWallAssembly: vi.fn(),
-  addWallOpening: vi.fn(),
-  updatePerimeterCornerConstructedByWall: vi.fn(),
-  addFloorArea: vi.fn(),
-  addFloorOpening: vi.fn()
-})
-
-// Mock the stores and dependencies
 vi.mock('@/building/store', () => ({
-  getModelActions: () => mockActions
+  exportModelState: vi.fn(),
+  hydrateModelState: vi.fn(),
+  MODEL_STORE_VERSION: 5
 }))
 
 vi.mock('@/construction/config/store', () => ({
-  getConfigState: vi.fn(() => ({
-    straw: {
-      baleMinLength: 800,
-      baleMaxLength: 900,
-      baleHeight: 500,
-      baleWidth: 360,
-      material: 'material_straw',
-      tolerance: 2,
-      topCutoffLimit: 50,
-      flakeSize: 70
-    },
-    ringBeamAssemblyConfigs: {
-      beam_1: {
-        id: 'beam_1',
-        name: 'Test Beam',
-        type: 'full',
-        material: 'material_wood',
-        height: 60,
-        width: 360,
-        offsetFromEdge: 30
-      }
-    },
-    wallAssemblyConfigs: {
-      assembly_1: {
-        id: 'assembly_1',
-        name: 'Test Assembly',
-        type: 'non-strawbale',
-        thickness: 200,
-        material: 'material_wall',
-        layers: {
-          insideThickness: 30,
-          outsideThickness: 30
-        }
-      }
-    },
-    floorAssemblyConfigs: {
-      fa_1: {
-        id: 'fa_1',
-        name: 'Test Floor',
-        type: 'monolithic',
-        thickness: 200,
-        material: 'material_floor',
-        layers: {
-          topThickness: 60,
-          bottomThickness: 0
-        }
-      }
-    },
-    defaultStrawMaterial: 'material_straw',
-    defaultWallAssemblyId: 'assembly_1',
-    defaultFloorAssemblyId: 'fa_1'
-  })),
-  setConfigState: vi.fn()
+  getConfigState: vi.fn(),
+  hydrateConfigState: vi.fn(),
+  CONFIG_STORE_VERSION: 3
 }))
 
-// DOM operations are now handled by utilities, not the service
+vi.mock('@/construction/materials/store', () => ({
+  getMaterialsState: vi.fn(),
+  hydrateMaterialsState: vi.fn(),
+  MATERIALS_STORE_VERSION: 2
+}))
+
+vi.mock('@/construction/parts/store', () => ({
+  exportPartsState: vi.fn(),
+  hydratePartsState: vi.fn(),
+  PARTS_STORE_VERSION: 1
+}))
+
+vi.mock('@/projects/store', () => ({
+  exportProjectMeta: vi.fn(),
+  hydrateProjectMeta: vi.fn(),
+  PROJECTS_STORE_VERSION: 1
+}))
+
+vi.mock('./LegacyProjectImportService', () => ({
+  LegacyProjectImportService: {
+    importFromString: vi.fn()
+  }
+}))
+
+const mockExportModelState = exportModelState as Mock
+const mockHydrateModelState = hydrateModelState as Mock
+const mockGetConfigState = getConfigState as Mock
+const mockHydrateConfigState = hydrateConfigState as Mock
+const mockGetMaterialsState = getMaterialsState as Mock
+const mockHydrateMaterialsState = hydrateMaterialsState as Mock
+const mockExportPartsState = exportPartsState as Mock
+const mockHydratePartsState = hydratePartsState as Mock
+const mockExportProjectMeta = exportProjectMeta as Mock
+const mockHydrateProjectMeta = hydrateProjectMeta as Mock
+const mockLegacyImportFromString = LegacyProjectImportService.importFromString as Mock
+
+function createMockExportData(): ExportDataV2 {
+  return {
+    version: '2.0.0',
+    timestamp: '2024-01-15T10:30:00.000Z',
+    stores: {
+      project: {
+        state: { name: 'Test Project' } as ExportedProjectMeta,
+        version: 1
+      },
+      model: {
+        state: { storeys: [] } as unknown as PartializedStoreState,
+        version: 5
+      },
+      config: {
+        state: { defaultWallAssemblyId: 'wall-1' } as unknown as ConfigState,
+        version: 3
+      },
+      materials: {
+        state: { materials: {} } as unknown as MaterialsState,
+        version: 2
+      },
+      parts: {
+        state: { parts: [] } as unknown as PartializedPartsState,
+        version: 1
+      }
+    }
+  }
+}
 
 describe('ProjectImportExportService', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date('2024-06-20T14:30:00.000Z'))
+  })
+
+  afterEach(() => {
+    vi.useRealTimers()
+  })
+
   describe('exportToString', () => {
-    it('successfully exports project to string using store getters', async () => {
-      const result = await ProjectImportExportService.exportToString()
-      expect('error' in result ? result.error : '').toEqual('')
-      expect(result.success).toBe(true)
-      expect.assert(result.success)
-      expect(result.content).toBeDefined()
-      expect(typeof result.content).toBe('string')
+    it('should export valid JSON with V2 format', () => {
+      mockExportProjectMeta.mockReturnValue({ name: 'Test Project' } as ExportedProjectMeta)
+      mockExportModelState.mockReturnValue({ storeys: [] } as unknown as PartializedStoreState)
+      mockGetConfigState.mockReturnValue({ defaultWallAssemblyId: 'wall-1' } as unknown as ConfigState)
+      mockGetMaterialsState.mockReturnValue({ materials: {} } as unknown as MaterialsState)
+      mockExportPartsState.mockReturnValue({ parts: [] } as unknown as PartializedPartsState)
 
-      // Verify the content is valid JSON
-      const parsed = JSON.parse(result.content)
-      expect(parsed.version).toBeDefined()
-      expect(parsed.timestamp).toBeDefined()
-      expect(parsed.modelStore).toBeDefined()
-      expect(parsed.modelStore.storeys).toBeDefined()
-      expect(parsed.modelStore.minLevel).toBeDefined()
-      expect(parsed.configStore).toBeDefined()
-      expect(parsed.configStore.defaultStrawMaterial).toBe('material_straw')
+      const result = ProjectImportExportService.exportToString()
+      const parsed = JSON.parse(result) as ExportDataV2
 
-      const exportedStorey = parsed.modelStore.storeys[0]
-      expect(exportedStorey).toBeDefined()
-      expect.assert(exportedStorey.perimeters.length > 0)
-      expect(exportedStorey.perimeters[0].referenceSide).toBeDefined()
+      expect(parsed.version).toBe('2.0.0')
+      expect(parsed.timestamp).toBe('2024-06-20T14:30:00.000Z')
     })
 
-    it('uses store getters for proper encapsulation', async () => {
-      const { getModelActions } = await import('@/building/store')
-      const mockActions = getModelActions()
+    it('should include current timestamp in ISO format', () => {
+      mockExportProjectMeta.mockReturnValue({ name: 'Test' } as ExportedProjectMeta)
+      mockExportModelState.mockReturnValue({} as unknown as PartializedStoreState)
+      mockGetConfigState.mockReturnValue({} as unknown as ConfigState)
+      mockGetMaterialsState.mockReturnValue({} as unknown as MaterialsState)
+      mockExportPartsState.mockReturnValue({} as unknown as PartializedPartsState)
 
-      // Clear previous calls
-      vi.clearAllMocks()
+      const result = ProjectImportExportService.exportToString()
+      const parsed = JSON.parse(result) as ExportDataV2
 
-      await ProjectImportExportService.exportToString()
+      expect(parsed.timestamp).toBe('2024-06-20T14:30:00.000Z')
+    })
 
-      expect(mockActions.getStoreysOrderedByLevel).toHaveBeenCalled()
-      expect(mockActions.getPerimetersByStorey).toHaveBeenCalled()
-      expect(mockActions.getFloorAreasByStorey).toHaveBeenCalled()
-      expect(mockActions.getFloorOpeningsByStorey).toHaveBeenCalled()
+    it('should include all store states with correct versions', () => {
+      const mockProjectMeta = { name: 'My Project' } as ExportedProjectMeta
+      const mockModelState = { storeys: [{ id: 's1' }] } as unknown as PartializedStoreState
+      const mockConfigState = { defaultWallAssemblyId: 'wall-assembly-1' } as unknown as ConfigState
+      const mockMaterialsState = { materials: { m1: {} } } as unknown as MaterialsState
+      const mockPartsState = { parts: [{ id: 'p1' }] } as unknown as PartializedPartsState
+
+      mockExportProjectMeta.mockReturnValue(mockProjectMeta)
+      mockExportModelState.mockReturnValue(mockModelState)
+      mockGetConfigState.mockReturnValue(mockConfigState)
+      mockGetMaterialsState.mockReturnValue(mockMaterialsState)
+      mockExportPartsState.mockReturnValue(mockPartsState)
+
+      const result = ProjectImportExportService.exportToString()
+      const parsed = JSON.parse(result) as ExportDataV2
+
+      expect(parsed.stores.project.state).toEqual(mockProjectMeta)
+      expect(parsed.stores.project.version).toBe(PROJECTS_STORE_VERSION)
+      expect(parsed.stores.model.state).toEqual(mockModelState)
+      expect(parsed.stores.model.version).toBe(MODEL_STORE_VERSION)
+      expect(parsed.stores.config.state).toEqual(mockConfigState)
+      expect(parsed.stores.config.version).toBe(CONFIG_STORE_VERSION)
+      expect(parsed.stores.materials.state).toEqual(mockMaterialsState)
+      expect(parsed.stores.materials.version).toBe(MATERIALS_STORE_VERSION)
+      expect(parsed.stores.parts.state).toEqual(mockPartsState)
+      expect(parsed.stores.parts.version).toBe(PARTS_STORE_VERSION)
+    })
+
+    it('should call all export functions', () => {
+      mockExportProjectMeta.mockReturnValue({} as ExportedProjectMeta)
+      mockExportModelState.mockReturnValue({} as PartializedStoreState)
+      mockGetConfigState.mockReturnValue({} as ConfigState)
+      mockGetMaterialsState.mockReturnValue({} as MaterialsState)
+      mockExportPartsState.mockReturnValue({} as PartializedPartsState)
+
+      ProjectImportExportService.exportToString()
+
+      expect(mockExportProjectMeta).toHaveBeenCalledOnce()
+      expect(mockExportModelState).toHaveBeenCalledOnce()
+      expect(mockGetConfigState).toHaveBeenCalledOnce()
+      expect(mockGetMaterialsState).toHaveBeenCalledOnce()
+      expect(mockExportPartsState).toHaveBeenCalledOnce()
     })
   })
 
   describe('importFromString', () => {
-    it('calls the correct store assemblies on import', async () => {
-      // Create simple valid import data
-      const validImportData = {
-        version: '1.11.0',
-        timestamp: new Date().toISOString(),
-        modelStore: {
-          storeys: [
-            {
-              name: 'Test Floor',
-              floorHeight: 2500,
-              perimeters: [],
-              floorAssemblyId: 'fa_1',
-              floorAreas: [
-                {
-                  points: [
-                    { x: 0, y: 0 },
-                    { x: 2000, y: 0 },
-                    { x: 2000, y: 2000 },
-                    { x: 0, y: 2000 }
-                  ]
-                }
-              ],
-              floorOpenings: [
-                {
-                  points: [
-                    { x: 500, y: 500 },
-                    { x: 1000, y: 500 },
-                    { x: 1000, y: 1000 },
-                    { x: 500, y: 1000 }
-                  ]
-                }
-              ]
-            }
-          ],
-          minLevel: 0
-        },
-        configStore: {
-          straw: {
-            baleMinLength: 750,
-            baleMaxLength: 950,
-            baleHeight: 500,
-            baleWidth: 360,
-            material: 'material_straw',
-            tolerance: 1.5,
-            topCutoffLimit: 45,
-            flakeSize: 60
-          },
-          ringBeamAssemblyConfigs: { beam_1: { id: 'beam_1', name: 'Test Beam' } },
-          wallAssemblyConfigs: { assembly_1: { id: 'assembly_1', name: 'Test Assembly' } },
-          floorAssemblyConfigs: { fa_1: { id: 'fa_1', name: 'Test Floor' } },
-          defaultWallAssemblyId: 'assembly_1',
-          defaultFloorAssemblyId: 'fa_1'
-        },
-        materialsStore: {
-          materials: { material_1: { id: 'material_1', name: 'Test Material' } }
-        }
+    describe('V2 format', () => {
+      it('should parse and hydrate all stores', () => {
+        const exportData = createMockExportData()
+        const content = JSON.stringify(exportData)
+
+        ProjectImportExportService.importFromString(content)
+
+        expect(mockHydrateProjectMeta).toHaveBeenCalledWith(exportData.stores.project.state)
+        expect(mockHydrateModelState).toHaveBeenCalledWith(
+          exportData.stores.model.state,
+          exportData.stores.model.version
+        )
+        expect(mockHydrateConfigState).toHaveBeenCalledWith(
+          exportData.stores.config.state,
+          exportData.stores.config.version
+        )
+        expect(mockHydrateMaterialsState).toHaveBeenCalledWith(
+          exportData.stores.materials.state,
+          exportData.stores.materials.version
+        )
+        expect(mockHydratePartsState).toHaveBeenCalledWith(
+          exportData.stores.parts.state,
+          exportData.stores.parts.version
+        )
+      })
+
+      it('should pass correct versions to hydrate functions', () => {
+        const exportData = createMockExportData()
+        exportData.stores.model.version = 3
+        exportData.stores.config.version = 2
+        exportData.stores.materials.version = 1
+        exportData.stores.parts.version = 4
+        const content = JSON.stringify(exportData)
+
+        ProjectImportExportService.importFromString(content)
+
+        expect(mockHydrateModelState).toHaveBeenCalledWith(expect.anything(), 3)
+        expect(mockHydrateConfigState).toHaveBeenCalledWith(expect.anything(), 2)
+        expect(mockHydrateMaterialsState).toHaveBeenCalledWith(expect.anything(), 1)
+        expect(mockHydratePartsState).toHaveBeenCalledWith(expect.anything(), 4)
+      })
+
+      it('should not call legacy import for V2 format', () => {
+        const exportData = createMockExportData()
+        const content = JSON.stringify(exportData)
+
+        ProjectImportExportService.importFromString(content)
+
+        expect(mockLegacyImportFromString).not.toHaveBeenCalled()
+      })
+    })
+
+    describe('Legacy format', () => {
+      it('should delegate to LegacyProjectImportService', () => {
+        const legacyContent = JSON.stringify({
+          version: '1.14.0',
+          timestamp: '2023-01-01T00:00:00.000Z',
+          modelStore: { storeys: [], minLevel: 0 },
+          configStore: { wallAssemblyConfigs: {}, defaultWallAssemblyId: 'w1' }
+        })
+
+        mockLegacyImportFromString.mockReturnValue({ success: true, data: {} as never })
+
+        ProjectImportExportService.importFromString(legacyContent)
+
+        expect(mockLegacyImportFromString).toHaveBeenCalledWith(legacyContent)
+      })
+
+      it('should throw error when legacy import fails', () => {
+        const legacyContent = JSON.stringify({
+          version: '1.14.0',
+          timestamp: '2023-01-01T00:00:00.000Z',
+          modelStore: { storeys: [], minLevel: 0 },
+          configStore: { wallAssemblyConfigs: {}, defaultWallAssemblyId: 'w1' }
+        })
+
+        mockLegacyImportFromString.mockReturnValue({
+          success: false,
+          error: 'Invalid file format'
+        })
+
+        expect(() => {
+          ProjectImportExportService.importFromString(legacyContent)
+        }).toThrow('Invalid file format')
+      })
+
+      it('should not call V2 hydrate functions for legacy format', () => {
+        const legacyContent = JSON.stringify({
+          version: '1.14.0',
+          timestamp: '2023-01-01T00:00:00.000Z',
+          modelStore: { storeys: [], minLevel: 0 },
+          configStore: { wallAssemblyConfigs: {}, defaultWallAssemblyId: 'w1' }
+        })
+
+        mockLegacyImportFromString.mockReturnValue({ success: true, data: {} as never })
+
+        ProjectImportExportService.importFromString(legacyContent)
+
+        expect(mockHydrateProjectMeta).not.toHaveBeenCalled()
+        expect(mockHydrateModelState).not.toHaveBeenCalled()
+        expect(mockHydrateConfigState).not.toHaveBeenCalled()
+        expect(mockHydrateMaterialsState).not.toHaveBeenCalled()
+        expect(mockHydratePartsState).not.toHaveBeenCalled()
+      })
+    })
+  })
+
+  describe('round-trip', () => {
+    it('should export data that can be imported again', () => {
+      const mockProjectMeta = { name: 'Round Trip Test', id: 'proj-1' } as ExportedProjectMeta
+      const mockModelState = { storeys: [{ id: 'storey-1', level: 0 }] } as unknown as PartializedStoreState
+      const mockConfigState = {
+        defaultWallAssemblyId: 'wall-1',
+        wallAssemblyConfigs: {}
+      } as unknown as ConfigState
+      const mockMaterialsState = { materials: { mat1: { name: 'Straw' } } } as unknown as MaterialsState
+      const mockPartsState = { parts: [{ id: 'part-1' }] } as unknown as PartializedPartsState
+
+      mockExportProjectMeta.mockReturnValue(mockProjectMeta)
+      mockExportModelState.mockReturnValue(mockModelState)
+      mockGetConfigState.mockReturnValue(mockConfigState)
+      mockGetMaterialsState.mockReturnValue(mockMaterialsState)
+      mockExportPartsState.mockReturnValue(mockPartsState)
+
+      const exported = ProjectImportExportService.exportToString()
+
+      const hydrateCalls = {
+        project: null as ExportedProjectMeta | null,
+        model: { state: null as PartializedStoreState | null, version: null as number | null },
+        config: { state: null as ConfigState | null, version: null as number | null },
+        materials: { state: null as MaterialsState | null, version: null as number | null },
+        parts: { state: null as PartializedPartsState | null, version: null as number | null }
       }
 
-      // Clear previous calls
-      vi.clearAllMocks()
+      mockHydrateProjectMeta.mockImplementation(state => {
+        hydrateCalls.project = state
+      })
+      mockHydrateModelState.mockImplementation((state, version) => {
+        hydrateCalls.model = { state: state as PartializedStoreState, version }
+        return {} as StoreState
+      })
+      mockHydrateConfigState.mockImplementation((state, version) => {
+        hydrateCalls.config = { state: state as ConfigState, version }
+        return {} as ConfigState
+      })
+      mockHydrateMaterialsState.mockImplementation((state, version) => {
+        hydrateCalls.materials = { state: state as MaterialsState, version }
+        return {} as MaterialsState
+      })
+      mockHydratePartsState.mockImplementation((state, version) => {
+        hydrateCalls.parts = { state: state as PartializedPartsState, version }
+      })
 
-      const result = await ProjectImportExportService.importFromString(JSON.stringify(validImportData))
+      ProjectImportExportService.importFromString(exported)
 
-      expect(result.success).toBeTruthy()
-
-      // Should have called reset and basic store assemblies
-      expect(mockActions.reset).toHaveBeenCalled()
-
-      // For a storey with no perimeters, should still call updateStoreyName
-      expect(mockActions.updateStoreyName).toHaveBeenCalled()
-      expect(mockActions.updateStoreyFloorHeight).toHaveBeenCalled()
-      expect(mockActions.updateStoreyFloorAssembly).toHaveBeenCalled()
-      expect(mockActions.addFloorArea).toHaveBeenCalled()
-      expect(mockActions.addFloorOpening).toHaveBeenCalled()
+      expect(hydrateCalls.project).toEqual(mockProjectMeta)
+      expect(hydrateCalls.model.state).toEqual(mockModelState)
+      expect(hydrateCalls.config.state).toEqual(mockConfigState)
+      expect(hydrateCalls.materials.state).toEqual(mockMaterialsState)
+      expect(hydrateCalls.parts.state).toEqual(mockPartsState)
     })
 
-    it('supports legacy imports without straw config', async () => {
-      const legacyImportData = {
-        version: '1.4.0',
-        timestamp: new Date().toISOString(),
-        modelStore: {
-          storeys: [],
-          minLevel: 0
-        },
-        configStore: {
-          ringBeamAssemblyConfigs: { beam_legacy: { id: 'beam_legacy', name: 'Legacy Beam' } },
-          wallAssemblyConfigs: {
-            assembly_1: {
-              id: 'assembly_1',
-              name: 'Legacy Assembly',
-              type: 'non-strawbale',
-              thickness: 200,
-              material: 'material_wall',
-              layers: {
-                insideThickness: 0,
-                outsideThickness: 0
-              }
-            }
-          },
-          defaultWallAssemblyId: 'assembly_1'
-        },
-        materialsStore: {
-          materials: {}
-        }
+    it('should preserve store versions during round-trip', () => {
+      mockExportProjectMeta.mockReturnValue({} as ExportedProjectMeta)
+      mockExportModelState.mockReturnValue({} as PartializedStoreState)
+      mockGetConfigState.mockReturnValue({} as ConfigState)
+      mockGetMaterialsState.mockReturnValue({} as MaterialsState)
+      mockExportPartsState.mockReturnValue({} as PartializedPartsState)
+
+      const exported = ProjectImportExportService.exportToString()
+      const parsed = JSON.parse(exported) as ExportDataV2
+
+      const versionCalls = {
+        model: null as number | null,
+        config: null as number | null,
+        materials: null as number | null,
+        parts: null as number | null
       }
 
-      const result = await ProjectImportExportService.importFromString(JSON.stringify(legacyImportData))
+      mockHydrateProjectMeta.mockReturnValue(undefined)
+      mockHydrateModelState.mockImplementation((_, version) => {
+        versionCalls.model = version
+        return {} as StoreState
+      })
+      mockHydrateConfigState.mockImplementation((_, version) => {
+        versionCalls.config = version
+        return {} as ConfigState
+      })
+      mockHydrateMaterialsState.mockImplementation((_, version) => {
+        versionCalls.materials = version
+        return {} as MaterialsState
+      })
+      mockHydratePartsState.mockImplementation((_, version) => {
+        versionCalls.parts = version
+      })
 
-      expect(result.success).toBe(true)
-    })
+      ProjectImportExportService.importFromString(exported)
 
-    it('handles invalid JSON gracefully', async () => {
-      const result = await ProjectImportExportService.importFromString('invalid json')
-
-      expect(result.success).toBe(false)
-      expect.assert(!result.success)
-      expect(result.error).toContain('JSON')
-    })
-
-    it('validates file format', async () => {
-      const invalidData = JSON.stringify({ invalid: 'format' })
-      const result = await ProjectImportExportService.importFromString(invalidData)
-
-      expect(result.success).toBe(false)
-      expect.assert(!result.success)
-      expect(result.error).toContain('Invalid file format')
+      expect(versionCalls.model).toBe(parsed.stores.model.version)
+      expect(versionCalls.config).toBe(parsed.stores.config.version)
+      expect(versionCalls.materials).toBe(parsed.stores.materials.version)
+      expect(versionCalls.parts).toBe(parsed.stores.parts.version)
     })
   })
 })

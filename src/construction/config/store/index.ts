@@ -29,9 +29,10 @@ import type {
 import type { MaterialId } from '@/construction/materials/material'
 import { subscribeRecords } from '@/shared/utils/subscription'
 
-import { CURRENT_VERSION, applyMigrations } from './migrations'
+import { CONFIG_STORE_VERSION, applyMigrations } from './migrations'
 
 export * from './types'
+export { CONFIG_STORE_VERSION } from './migrations'
 
 const useConfigStore = create<ConfigStore>()(
   subscribeWithSelector(
@@ -69,7 +70,7 @@ const useConfigStore = create<ConfigStore>()(
       },
       {
         name: 'strawbaler-config',
-        version: CURRENT_VERSION,
+        version: CONFIG_STORE_VERSION,
         partialize: state => ({
           defaultStrawMaterial: state.defaultStrawMaterial,
           ringBeamAssemblyConfigs: state.ringBeamAssemblyConfigs,
@@ -86,7 +87,7 @@ const useConfigStore = create<ConfigStore>()(
           timestamps: state.timestamps
         }),
         migrate: (persistedState: unknown, version: number) => {
-          if (version === CURRENT_VERSION) {
+          if (version === CONFIG_STORE_VERSION) {
             return persistedState as ConfigState
           }
 
@@ -176,6 +177,12 @@ export const clearPersistence = (): void => {
   localStorage.removeItem('strawbaler-config')
 }
 
+export const getInitialConfigState = (): ConfigState => {
+  const state = useConfigStore.getInitialState()
+  const { actions: _actions, ...rest } = state
+  return rest
+}
+
 // Export config state for persistence
 export const getConfigState = () => {
   const state = useConfigStore.getState()
@@ -245,6 +252,13 @@ export const subscribeToRoofAssemblies = (
 ) => subscribeRecords(useConfigStore, s => s.roofAssemblyConfigs, cb)
 
 export const subscribeToConfigChanges = useConfigStore.subscribe
+
+export function hydrateConfigState(state: unknown, version: number): ConfigState {
+  const migratedState =
+    version < CONFIG_STORE_VERSION ? (applyMigrations(state) as ConfigState) : (state as ConfigState)
+  useConfigStore.setState(migratedState)
+  return migratedState
+}
 
 // Only for the tests
 export const _clearAllAssemblies = () =>

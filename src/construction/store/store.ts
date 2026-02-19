@@ -8,6 +8,7 @@ import { subscribeToMaterials } from '@/construction/materials/store'
 import { type ConstructionModel, mergeModels, transformModel } from '@/construction/model'
 import { createPerimeterMeasurementsModel } from '@/construction/perimeters/construction'
 import { constructBasePlate, constructTopPlate } from '@/construction/ringBeams/construction'
+import { subscribeToProjectChanges } from '@/projects/store'
 import { IDENTITY } from '@/shared/geometry'
 
 import {
@@ -203,6 +204,9 @@ function setupSubscriptions() {
     subscribeToModelChanges(updateLastSourceChange)
     subscribeToConfigChanges(updateLastSourceChange)
     subscribeToMaterials(updateLastSourceChange)
+    subscribeToProjectChanges(() => {
+      useConstructionStore.getState().actions.rebuildModel()
+    })
     subscribed = true
   }
 }

@@ -1,8 +1,9 @@
-import { FileTextIcon, GearIcon, InfoCircledIcon } from '@radix-ui/react-icons'
+import { FileTextIcon, GearIcon } from '@radix-ui/react-icons'
 import * as Toolbar from '@radix-ui/react-toolbar'
 import React, { useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 
+import { UserMenu } from '@/app/user'
 import { useActiveStoreyId, useModelActions } from '@/building/store'
 import { Button } from '@/components/ui/button'
 import { Kbd } from '@/components/ui/kbd'
@@ -15,6 +16,7 @@ import { ConstructionViewer3DModal } from '@/construction/viewer3d/ConstructionV
 import { TOOL_GROUPS, getToolInfoById } from '@/editor/tools/system/metadata'
 import { pushTool, useActiveToolId } from '@/editor/tools/system/store'
 import type { ToolId } from '@/editor/tools/system/types'
+import { ProjectMenu } from '@/projects/components'
 import { ConstructionPlanIcon, Model3DIcon } from '@/shared/components/Icons'
 import { Logo } from '@/shared/components/Logo'
 
@@ -36,8 +38,13 @@ export function MainToolbar({ onInfoClick }: MainToolbarProps): React.JSX.Elemen
 
   return (
     <div className="border-border flex items-center gap-4 border-b p-2" data-testid="main-toolbar">
-      {/* Logo - Compact version */}
-      <Logo />
+      {/* Logo + Project Menu */}
+      <div className="flex items-center gap-1">
+        <div onClick={onInfoClick} className="cursor-pointer" role="button" title={t($ => $.about)}>
+          <Logo compact />
+        </div>
+        <ProjectMenu />
+      </div>
       {/* Tools positioned next to logo on the left */}
       <Toolbar.Root>
         <div className="flex items-center gap-2">
@@ -127,9 +134,7 @@ export function MainToolbar({ onInfoClick }: MainToolbarProps): React.JSX.Elemen
         >
           <GearIcon width={20} height={20} aria-hidden />
         </Button>
-        <Button title={t($ => $.about)} variant="ghost" size="icon-sm" onClick={onInfoClick} className="h-6 w-6">
-          <InfoCircledIcon aria-hidden />
-        </Button>
+        <UserMenu />
       </div>
     </div>
   )

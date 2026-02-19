@@ -1,3 +1,6 @@
+import type { StoreyId } from '@/building/model/ids'
+import type { Bounds2D } from '@/shared/geometry'
+
 import type { ConstraintsActions, ConstraintsState } from './slices/constraintsSlice'
 import type { FloorsActions, FloorsState } from './slices/floorsSlice'
 import type { PerimetersActions, PerimetersState } from './slices/perimeterSlice'
@@ -11,6 +14,18 @@ export interface StoreState
 export interface StoreActions
   extends StoreysActions, PerimetersActions, FloorsActions, RoofsActions, TimestampsActions, ConstraintsActions {
   reset: () => void
+  getBounds: (storeyId: StoreyId) => Bounds2D
 }
 
 export type Store = StoreState & { actions: StoreActions }
+
+export type PartializedStoreState = Omit<
+  Store,
+  | 'actions'
+  | '_perimeterGeometry'
+  | '_perimeterWallGeometry'
+  | '_perimeterCornerGeometry'
+  | '_openingGeometry'
+  | '_wallPostGeometry'
+  | '_constraintsByEntity'
+>

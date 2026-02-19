@@ -76,6 +76,26 @@ function removeFromReverseIndex(
   }
 }
 
+export function rebuildReverseIndex(state: ConstraintsState) {
+  for (const constraint of Object.values(state.buildingConstraints)) {
+    const cornerIds = getReferencedCornerIds(constraint)
+    const wallIds = getReferencedWallIds(constraint)
+    const wallEntityIds = getReferencedWallEntityIds(constraint)
+    const entityIds = [...cornerIds, ...wallIds, ...wallEntityIds]
+
+    for (const entityId of entityIds) {
+      const list = state._constraintsByEntity[entityId]
+      if (list) {
+        if (!list.includes(constraint.id)) {
+          list.push(constraint.id)
+        }
+      } else {
+        state._constraintsByEntity[entityId] = [constraint.id]
+      }
+    }
+  }
+}
+
 /**
  * Remove a single constraint from state and the reverse index.
  * Operates on the immer draft.

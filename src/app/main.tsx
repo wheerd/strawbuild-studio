@@ -2,7 +2,10 @@ import { ThemeProvider } from 'next-themes'
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { ErrorBoundary } from 'react-error-boundary'
+import { RouterProvider } from 'react-router-dom'
 
+import { router } from '@/app/router'
+import { Toaster } from '@/components/ui/sonner.tsx'
 import { TooltipProvider } from '@/components/ui/tooltip'
 import { injectMaterialCSS } from '@/construction/materials/materialCSS'
 import { getAllMaterials, subscribeToMaterials } from '@/construction/materials/store'
@@ -13,7 +16,6 @@ import { ensureManifoldModule } from '@/shared/geometry/manifoldInstance'
 import '@/shared/i18n/config'
 import { registerServiceWorker } from '@/shared/services/serviceWorkerRegistration'
 
-import App from './App.tsx'
 import './index.css'
 
 function removeInitialLoadingScreen() {
@@ -46,7 +48,8 @@ async function bootstrap() {
         <ThemeProvider attribute="class">
           <TooltipProvider>
             <ErrorBoundary FallbackComponent={ErrorFallback}>
-              <App />
+              <Toaster />
+              <RouterProvider router={router} />
             </ErrorBoundary>
           </TooltipProvider>
         </ThemeProvider>

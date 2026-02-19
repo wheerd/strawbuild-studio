@@ -5,7 +5,12 @@ export class FileInputCancelledError extends Error {
   }
 }
 
-export function createFileInput(accept = '.json'): Promise<string> {
+export interface FileInputResult {
+  content: string
+  filename: string
+}
+
+export function createFileInput(accept = '.json'): Promise<FileInputResult> {
   return new Promise((resolve, reject) => {
     const input = document.createElement('input')
     input.type = 'file'
@@ -23,7 +28,8 @@ export function createFileInput(accept = '.json'): Promise<string> {
       reader.onload = e => {
         const content = e.target?.result
         if (typeof content === 'string') {
-          resolve(content)
+          const filename = file.name.replace(/\.[^.]+$/, '')
+          resolve({ content, filename })
         } else {
           reject(new Error('Failed to read file content'))
         }

@@ -3,7 +3,6 @@ import React from 'react'
 import { PlanOverlayControls } from '@/editor/plan-overlay/components/PlanOverlayControls'
 import { LanguageSwitcher } from '@/shared/components/LanguageSwitcher'
 
-import { AutoSaveIndicator } from './AutoSaveIndicator'
 import { GridSizeDisplay } from './GridSizeDisplay'
 import { OfflineStatusIndicator } from './OfflineStatusIndicator'
 import { PointerPositionDisplay } from './PointerPositionDisplay'
@@ -19,7 +18,6 @@ export function StatusBar(): React.JSX.Element {
       <div className="pointer-events-auto grid h-full grid-cols-[1fr_1fr_2fr] items-center gap-4 p-0.5">
         <div className="flex items-center gap-3 p-0">
           <OfflineStatusIndicator />
-          <AutoSaveIndicator />
           <ThemeToggle />
           <LanguageSwitcher size="sm" />
         </div>

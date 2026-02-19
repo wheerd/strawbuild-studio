@@ -8,7 +8,8 @@ test('Test Data Screenshot', async ({ page }) => {
   await expect(page.getByText('Important Disclaimer')).toBeVisible({ timeout: 15000 })
   await page.getByRole('button', { name: 'I Understand & Continue' }).click()
   await expect(page.getByTestId('main-toolbar')).toMatchAriaSnapshot(`
-    - text: Strawbaler Construction Planning
+    - button "About Strawbaler"
+    - button "Project": My Project
     - toolbar:
       - button "Select"
       - button "Move"
@@ -17,6 +18,7 @@ test('Test Data Screenshot', async ({ page }) => {
       - button "Building Perimeter"
       - button "Perimeter Presets"
       - button "Add Opening"
+      - button "Add Post"
       - button "Split Wall"
       - separator
       - button "Floor Opening"
@@ -28,10 +30,10 @@ test('Test Data Screenshot', async ({ page }) => {
     - button "View Parts List"
     - button "View 3D Construction"
     - button "Configuration"
-    - button "About"
+    - button "Account"
     `)
   await page.getByRole('button', { name: 'Test Data' }).click()
-  await page.getByRole('button', { name: '📐 Cross/T-Shape Perimeter' }).click()
+  await page.getByRole('button', { name: /Cross\/T-Shape Perimeter/ }).click()
   await expect(page.getByTestId('editor-svg')).toHaveScreenshot({
     animations: 'disabled',
     scale: 'css',
