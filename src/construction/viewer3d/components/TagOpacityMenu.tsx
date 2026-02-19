@@ -1,4 +1,4 @@
-import { EyeClosedIcon, EyeOpenIcon } from '@radix-ui/react-icons'
+import { Eye, EyeOff } from 'lucide-react'
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -85,22 +85,22 @@ export function TagOpacityMenu({ model }: TagOpacityMenuProps): React.JSX.Elemen
 
   const renderOpacityIcon = (opacity: number) => {
     if (opacity === 1.0) {
-      return <EyeOpenIcon />
+      return <Eye className="size-8" />
     } else if (opacity === 0.5) {
-      return <EyeOpenIcon className="opacity-50" />
+      return <Eye className="size-8 opacity-50" />
     } else {
-      return <EyeClosedIcon />
+      return <EyeOff className="size-8" />
     }
   }
 
   const renderStateIcon = (state: 'visible' | 'partial' | 'hidden') => {
     switch (state) {
       case 'visible':
-        return <EyeOpenIcon />
+        return <Eye className="size-8" />
       case 'partial':
-        return <EyeOpenIcon className="opacity-50" />
+        return <Eye className="size-8 opacity-50" />
       case 'hidden':
-        return <EyeClosedIcon />
+        return <EyeOff className="size-8" />
     }
   }
 
@@ -109,7 +109,7 @@ export function TagOpacityMenu({ model }: TagOpacityMenuProps): React.JSX.Elemen
       <DropdownMenu>
         <DropdownMenu.Trigger asChild>
           <Button size="icon-sm" variant="outline" title={t($ => $.tagOpacity.title)} disabled>
-            <EyeOpenIcon />
+            <Eye />
           </Button>
         </DropdownMenu.Trigger>
         <DropdownMenu.Content>
@@ -125,7 +125,7 @@ export function TagOpacityMenu({ model }: TagOpacityMenuProps): React.JSX.Elemen
     <DropdownMenu>
       <DropdownMenu.Trigger asChild>
         <Button size="icon-sm" variant="default" title={t($ => $.tagOpacity.title)}>
-          <EyeOpenIcon />
+          <Eye />
         </Button>
       </DropdownMenu.Trigger>
       <DropdownMenu.Content>
@@ -148,19 +148,13 @@ export function TagOpacityMenu({ model }: TagOpacityMenuProps): React.JSX.Elemen
                 {/* Category-wide opacity cycle */}
                 <DropdownMenu.Item
                   onSelect={e => {
-                    e.preventDefault()
+                    e.stopPropagation()
+                    cycleTagOrCategoryOpacity(categoryId)
                   }}
+                  className="flex w-full items-center justify-between gap-2"
                 >
-                  <div
-                    className="flex w-full items-center justify-between gap-2"
-                    onClick={e => {
-                      e.stopPropagation()
-                      cycleTagOrCategoryOpacity(categoryId)
-                    }}
-                  >
-                    <span className="text-sm font-bold">{getOpacityLabel(categoryOpacity)}</span>
-                    {renderOpacityIcon(categoryOpacity)}
-                  </div>
+                  <span className="text-sm font-bold">{getOpacityLabel(categoryOpacity)}</span>
+                  {renderOpacityIcon(categoryOpacity)}
                 </DropdownMenu.Item>
                 <DropdownMenu.Separator />
                 {/* Individual tag opacity controls */}
@@ -171,20 +165,14 @@ export function TagOpacityMenu({ model }: TagOpacityMenuProps): React.JSX.Elemen
                       key={tag.id}
                       onSelect={e => {
                         e.preventDefault()
+                        cycleTagOrCategoryOpacity(tag.id)
                       }}
+                      className="flex w-full items-center justify-between gap-2"
                     >
-                      <div
-                        className="flex w-full items-center justify-between gap-2"
-                        onClick={e => {
-                          e.stopPropagation()
-                          cycleTagOrCategoryOpacity(tag.id)
-                        }}
-                      >
-                        <span className="text-sm">
-                          <TagLabel tag={tag} />
-                        </span>
-                        {renderOpacityIcon(tagOpacity)}
-                      </div>
+                      <span className="text-sm">
+                        <TagLabel tag={tag} />
+                      </span>
+                      {renderOpacityIcon(tagOpacity)}
                     </DropdownMenu.Item>
                   )
                 })}

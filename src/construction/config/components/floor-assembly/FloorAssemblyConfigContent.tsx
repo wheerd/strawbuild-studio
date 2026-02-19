@@ -1,5 +1,5 @@
-import { CopyIcon, PlusIcon, ResetIcon, TrashIcon } from '@radix-ui/react-icons'
 import * as Label from '@radix-ui/react-label'
+import { Copy, Plus, Trash, Undo2 } from 'lucide-react'
 import React, { useCallback, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -206,7 +206,7 @@ export function FloorAssemblyConfigContent({ initialSelectionId }: FloorAssembly
           <DropdownMenu>
             <DropdownMenu.Trigger asChild>
               <Button size="icon" title={t($ => $.common.addNew)}>
-                <PlusIcon />
+                <Plus />
               </Button>
             </DropdownMenu.Trigger>
             <DropdownMenu.Content>
@@ -260,7 +260,7 @@ export function FloorAssemblyConfigContent({ initialSelectionId }: FloorAssembly
             title={t($ => $.common.duplicate)}
             variant="soft"
           >
-            <CopyIcon />
+            <Copy />
           </Button>
 
           <AlertDialog.Root>
@@ -279,7 +279,7 @@ export function FloorAssemblyConfigContent({ initialSelectionId }: FloorAssembly
                         : t($ => $.common.delete)
                 }
               >
-                <TrashIcon />
+                <Trash />
               </Button>
             </AlertDialog.Trigger>
             <AlertDialog.Content>
@@ -305,7 +305,7 @@ export function FloorAssemblyConfigContent({ initialSelectionId }: FloorAssembly
           <AlertDialog.Root>
             <AlertDialog.Trigger asChild>
               <Button size="icon" variant="destructive" title={t($ => $.common.resetToDefaults)}>
-                <ResetIcon />
+                <Undo2 />
               </Button>
             </AlertDialog.Trigger>
             <AlertDialog.Content>

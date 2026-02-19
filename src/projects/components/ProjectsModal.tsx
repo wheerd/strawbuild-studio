@@ -1,4 +1,4 @@
-import { Cross2Icon, PlusIcon, TrashIcon } from '@radix-ui/react-icons'
+import { Plus, Trash, X } from 'lucide-react'
 import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
@@ -93,7 +93,7 @@ export function ProjectsModal({ open, onOpenChange }: ProjectsModalProps): React
           >
             {isLoading ? (
               <li className="flex items-center justify-center py-8">
-                <Cross2Icon className="h-6 w-6 animate-spin" />
+                <X className="h-6 w-6 animate-spin" />
               </li>
             ) : projects.length === 0 ? (
               <li className="text-muted-foreground py-8 text-center">{t($ => $.projectMenu.noProjects)}</li>
@@ -151,7 +151,7 @@ export function ProjectsModal({ open, onOpenChange }: ProjectsModalProps): React
                           })}
                           className="text-muted-foreground hover:text-destructive"
                         >
-                          <TrashIcon className="h-4 w-4" />
+                          <Trash className="h-4 w-4" />
                         </Button>
                       </AlertDialogTrigger>
                       <AlertDialogContent maxWidth="400px">
@@ -195,7 +195,7 @@ export function ProjectsModal({ open, onOpenChange }: ProjectsModalProps): React
               }}
               disabled={!isOnline}
             >
-              <PlusIcon className="mr-2 h-4 w-4" />
+              <Plus className="mr-2 h-4 w-4" />
               {t($ => $.projectMenu.newProject)}
             </Button>
           </DialogFooter>

@@ -1,4 +1,4 @@
-import { ExclamationTriangleIcon } from '@radix-ui/react-icons'
+import { TriangleAlert } from 'lucide-react'
 import { OrbitControls } from '@react-three/drei'
 import { Canvas, useThree } from '@react-three/fiber'
 import { useTheme } from 'next-themes'
@@ -175,7 +175,7 @@ function ConstructionViewer3D({ model, containerSize }: ConstructionViewer3DProp
         <AlertDialog.Content maxWidth="450px">
           <AlertDialog.Title>
             <div className="flex items-center gap-2">
-              <ExclamationTriangleIcon color="var(--color-red-600)" />
+              <TriangleAlert color="var(--color-red-600)" />
               <span className="text-red-800">{t($ => $.export.exportError.title)}</span>
             </div>
           </AlertDialog.Title>

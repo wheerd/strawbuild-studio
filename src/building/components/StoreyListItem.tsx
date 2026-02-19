@@ -1,4 +1,4 @@
-import { ChevronDownIcon, ChevronUpIcon, CopyIcon, EnterIcon, HeightIcon, TrashIcon } from '@radix-ui/react-icons'
+import { ChevronDown, ChevronUp, Copy, LogIn, MoveVertical, Trash } from 'lucide-react'
 import React, { useCallback, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -201,7 +201,7 @@ export function StoreyListItem({
             title={`Floor height: ${formatLength(storey.floorHeight)}`}
           >
             <TextField.Slot side="left" className="pr-0 pl-1">
-              <HeightIcon />
+              <MoveVertical className="size-5" />
             </TextField.Slot>
           </LengthField>
         </div>
@@ -223,12 +223,12 @@ export function StoreyListItem({
         {/* Action buttons */}
         <div className="flex items-center gap-1">
           <div className="flex flex-col gap-1">
-            <Button size="icon-sm" onClick={handleMoveUp} disabled={!canMoveUp} title={t($ => $.storeys.moveUp)}>
-              <ChevronUpIcon />
+            <Button size="icon-xs" onClick={handleMoveUp} disabled={!canMoveUp} title={t($ => $.storeys.moveUp)}>
+              <ChevronUp />
             </Button>
 
-            <Button size="icon-sm" onClick={handleMoveDown} disabled={!canMoveDown} title={t($ => $.storeys.moveDown)}>
-              <ChevronDownIcon />
+            <Button size="icon-xs" onClick={handleMoveDown} disabled={!canMoveDown} title={t($ => $.storeys.moveDown)}>
+              <ChevronDown />
             </Button>
           </div>
 
@@ -238,14 +238,14 @@ export function StoreyListItem({
             onConfirm={handleDuplicateConfirm}
           >
             <Button size="icon" onClick={handleDuplicate} title={t($ => $.storeys.duplicateFloor)} variant="soft">
-              <CopyIcon />
+              <Copy />
             </Button>
           </DuplicateStoreyDialog>
 
           <AlertDialog.Root>
             <AlertDialog.Trigger asChild>
               <Button size="icon" variant="destructive" disabled={isOnlyStorey} title={t($ => $.storeys.deleteFloor)}>
-                <TrashIcon />
+                <Trash />
               </Button>
             </AlertDialog.Trigger>
             <AlertDialog.Content>
@@ -276,7 +276,7 @@ export function StoreyListItem({
             title={t($ => $.storeys.switchToFloor)}
             color="green"
           >
-            <EnterIcon />
+            <LogIn />
           </Button>
         </div>
       </div>

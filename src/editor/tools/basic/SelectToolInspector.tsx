@@ -1,4 +1,4 @@
-import { ExclamationTriangleIcon } from '@radix-ui/react-icons'
+import { TriangleAlert } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 
 import {
@@ -65,7 +65,7 @@ export function SelectToolInspector(): React.JSX.Element {
         !isRoofOverhangId(selectedId) && (
           <Callout color="yellow">
             <CalloutIcon>
-              <ExclamationTriangleIcon />
+              <TriangleAlert />
             </CalloutIcon>
             <CalloutText>
               <span className="font-bold">{t($ => $.select.unknownEntityType)}</span>

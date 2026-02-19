@@ -1,5 +1,5 @@
-import { InfoCircledIcon } from '@radix-ui/react-icons'
 import * as Label from '@radix-ui/react-label'
+import { Info } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 
 import { Button } from '@/components/ui/button'
@@ -27,7 +27,7 @@ export function FilledConfigForm({ config, onUpdate }: FilledConfigFormProps) {
           </Label.Root>
           <Tooltip content={t($ => $.floors.tips.constructionHeight)}>
             <Button size="icon-xs" className="cursor-help rounded-full" variant="ghost">
-              <InfoCircledIcon />
+              <Info />
             </Button>
           </Tooltip>
         </div>
@@ -206,7 +206,7 @@ export function FilledConfigForm({ config, onUpdate }: FilledConfigFormProps) {
           </Label.Root>
           <Tooltip content={t($ => $.floors.tips.strawMaterialOverride)}>
             <Button size="icon-xs" className="cursor-help rounded-full" variant="ghost">
-              <InfoCircledIcon width={12} height={12} />
+              <Info />
             </Button>
           </Tooltip>
         </div>

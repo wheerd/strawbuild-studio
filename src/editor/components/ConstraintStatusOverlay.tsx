@@ -1,4 +1,4 @@
-import { ExclamationTriangleIcon } from '@radix-ui/react-icons'
+import { TriangleAlert } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 
 import { useAllConstraintStatus } from '@/editor/gcs/store'
@@ -26,7 +26,7 @@ export function ConstraintStatusOverlay(): React.JSX.Element | null {
 
   return (
     <div className={`absolute top-2 right-2 rounded-lg p-2 ${colorClass} cursor-help select-none`} title={tooltipText}>
-      <ExclamationTriangleIcon className="h-6 w-6" />
+      <TriangleAlert className="h-6 w-6" />
     </div>
   )
 }

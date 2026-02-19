@@ -1,5 +1,5 @@
 import * as DialogPrimitive from '@radix-ui/react-dialog'
-import { Cross2Icon } from '@radix-ui/react-icons'
+import { X } from 'lucide-react'
 import * as React from 'react'
 import { ErrorBoundary } from 'react-error-boundary'
 
@@ -67,7 +67,7 @@ export function FullScreenModal({
             </div>
 
             <DialogPrimitive.Close className="inline-flex h-8 w-8 items-center justify-center rounded-sm opacity-70 transition-opacity hover:opacity-100">
-              <Cross2Icon className="h-4 w-4" />
+              <X className="h-4 w-4" />
               <span className="sr-only">Close</span>
             </DialogPrimitive.Close>
           </div>

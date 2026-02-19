@@ -1,5 +1,5 @@
-import { ExclamationTriangleIcon, TrashIcon } from '@radix-ui/react-icons'
 import * as Label from '@radix-ui/react-label'
+import { Trash, TriangleAlert } from 'lucide-react'
 import React, { useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -91,7 +91,7 @@ function detectMixedRingBeams(
 function MixedStateIndicator({ tooltip }: { tooltip: string }) {
   return (
     <Tooltip content={tooltip}>
-      <ExclamationTriangleIcon className="text-orange-900" width={14} height={14} />
+      <TriangleAlert className="text-orange-900" width={14} height={14} />
     </Tooltip>
   )
 }
@@ -242,7 +242,7 @@ export function PerimeterInspector({ selectedId }: PerimeterInspectorProps): Rea
       {hasNonStandardAngles && (
         <Callout color="orange">
           <CalloutIcon>
-            <ExclamationTriangleIcon />
+            <TriangleAlert />
           </CalloutIcon>
           <CalloutText>
             <span className="font-bold">{t($ => $.perimeter.nonRightAnglesWarning)}</span>
@@ -445,7 +445,7 @@ export function PerimeterInspector({ selectedId }: PerimeterInspectorProps): Rea
           <FitToViewIcon />
         </Button>
         <Button variant="destructive" size="icon-sm" title={t($ => $.perimeter.deletePerimeter)} onClick={handleDelete}>
-          <TrashIcon />
+          <Trash />
         </Button>
       </div>
     </div>

@@ -1,5 +1,5 @@
-import { InfoCircledIcon } from '@radix-ui/react-icons'
 import * as Label from '@radix-ui/react-label'
+import { Info } from 'lucide-react'
 import React from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -91,7 +91,7 @@ export function InfillConfigForm({ config, onUpdate }: InfillConfigFormProps): R
             <div className="flex items-center gap-1">
               <span className="text-sm font-medium">{t($ => $.walls.infillMaterial)}</span>
               <Tooltip content={t($ => $.walls.infillMaterialTooltip)}>
-                <InfoCircledIcon cursor="help" width={12} height={12} style={{ color: 'var(--color-gray-900)' }} />
+                <Info className="text-muted-foreground cursor-help" />
               </Tooltip>
             </div>
             <MaterialSelectWithEdit

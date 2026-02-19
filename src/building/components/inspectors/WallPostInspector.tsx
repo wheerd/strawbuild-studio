@@ -1,5 +1,5 @@
-import { InfoCircledIcon, TrashIcon } from '@radix-ui/react-icons'
 import * as Label from '@radix-ui/react-label'
+import { Info, Trash } from 'lucide-react'
 import { useCallback } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 
@@ -169,12 +169,12 @@ export function WallPostInspector({ postId }: { postId: WallPostId }): React.JSX
           <FitToViewIcon />
         </Button>
         <Button size="icon" variant="destructive" title={t($ => $.wallPost.deletePost)} onClick={handleRemovePost}>
-          <TrashIcon />
+          <Trash />
         </Button>
       </div>
       <Callout color="blue">
         <CalloutIcon>
-          <InfoCircledIcon />
+          <Info />
         </CalloutIcon>
         <CalloutText>
           <span className="text-sm">

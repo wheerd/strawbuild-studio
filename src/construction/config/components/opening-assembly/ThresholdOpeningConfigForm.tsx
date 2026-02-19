@@ -1,5 +1,5 @@
-import { PlusIcon, TrashIcon } from '@radix-ui/react-icons'
 import * as Label from '@radix-ui/react-label'
+import { Plus, Trash } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 
 import type { OpeningAssemblyId } from '@/building/model/ids'
@@ -113,7 +113,7 @@ export function ThresholdOpeningConfigForm({ config, update }: ThresholdOpeningC
                     handleRemoveThreshold(originalIndex)
                   }}
                 >
-                  <TrashIcon />
+                  <Trash />
                 </Button>
               </div>
             </div>
@@ -121,7 +121,7 @@ export function ThresholdOpeningConfigForm({ config, update }: ThresholdOpeningC
         })}
 
         <Button size="default" onClick={handleAddThreshold}>
-          <PlusIcon />
+          <Plus />
           {t($ => $.openings.labels.addThreshold)}
         </Button>
       </div>

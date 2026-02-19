@@ -1,4 +1,4 @@
-import { ChevronDownIcon, ChevronUpIcon } from '@radix-ui/react-icons'
+import { ChevronDown, ChevronUp } from 'lucide-react'
 import { forwardRef } from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -123,7 +123,7 @@ export const LengthField = forwardRef<HTMLInputElement, LengthFieldProps>(functi
             className="border-input h-1/2 w-6 rounded-l-none rounded-br-none border-b-[0.5px] border-l focus-visible:relative"
             tabIndex={-1}
           >
-            <ChevronUpIcon />
+            <ChevronUp />
           </Button>
 
           <Button
@@ -135,7 +135,7 @@ export const LengthField = forwardRef<HTMLInputElement, LengthFieldProps>(functi
             onClick={stepDown}
             tabIndex={-1}
           >
-            <ChevronDownIcon />
+            <ChevronDown />
           </Button>
         </div>
       </div>

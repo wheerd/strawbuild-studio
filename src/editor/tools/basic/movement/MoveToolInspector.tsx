@@ -1,4 +1,4 @@
-import { InfoCircledIcon } from '@radix-ui/react-icons'
+import { Info } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 
 import { Callout, CalloutIcon, CalloutText } from '@/components/ui/callout'
@@ -19,7 +19,7 @@ export function MoveToolInspector({ tool }: ToolInspectorProps<MoveTool>): React
         {toolState.hoveredBehavior && !toolState.canMoveHoveredEntity && (
           <Callout color="orange">
             <CalloutIcon>
-              <InfoCircledIcon />
+              <Info />
             </CalloutIcon>
             <CalloutText>
               <span className="text-xs">{t($ => $.move.constrainedEntity)}</span>
@@ -30,7 +30,7 @@ export function MoveToolInspector({ tool }: ToolInspectorProps<MoveTool>): React
         {/* Informational Note */}
         <Callout color="blue">
           <CalloutIcon>
-            <InfoCircledIcon />
+            <Info />
           </CalloutIcon>
           <CalloutText>
             <span className="text-xs">{t($ => $.move.info)}</span>

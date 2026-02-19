@@ -1,4 +1,4 @@
-import { CopyIcon, InfoCircledIcon } from '@radix-ui/react-icons'
+import { Copy, Info } from 'lucide-react'
 import * as Label from '@radix-ui/react-label'
 import type { Resources } from 'i18next'
 import { useCallback, useMemo, useState } from 'react'
@@ -240,7 +240,7 @@ function AddOpeningToolInspectorImpl({ tool }: AddOpeningToolInspectorImplProps)
       {/* Informational Note */}
       <Callout color="blue">
         <CalloutIcon>
-          <InfoCircledIcon />
+          <Info />
         </CalloutIcon>
         <CalloutText>
           <span className="text-sm">{t($ => $.addOpening.info)}</span>
@@ -257,7 +257,7 @@ function AddOpeningToolInspectorImpl({ tool }: AddOpeningToolInspectorImplProps)
                 : t($ => $.addOpening.dimensionModeFittingTooltip)
             }
           >
-            <InfoCircledIcon cursor="help" width={12} height={12} style={{ color: 'var(--color-gray-900)' }} />
+            <Info cursor="help" width={12} height={12} style={{ color: 'var(--color-gray-900)' }} />
           </Tooltip>
         </div>
         <ToggleGroup
@@ -429,7 +429,7 @@ function AddOpeningToolInspectorImpl({ tool }: AddOpeningToolInspectorImplProps)
         <DropdownMenu>
           <DropdownMenu.Trigger disabled={allOpeningConfigs.length === 0}>
             <Button size="icon-sm" title={t($ => $.addOpening.copyConfigurationTooltip)}>
-              <CopyIcon />
+              <Copy />
             </Button>
           </DropdownMenu.Trigger>
           <DropdownMenu.Content>
@@ -488,7 +488,7 @@ function AddOpeningToolInspectorImpl({ tool }: AddOpeningToolInspectorImplProps)
         <div className="flex items-center gap-1">
           <span className="text-sm font-medium">{t($ => $.addOpening.openingAssembly)}</span>
           <Tooltip content={t($ => $.addOpening.openingAssemblyTooltip)}>
-            <InfoCircledIcon cursor="help" width={12} height={12} style={{ color: 'var(--color-gray-900)' }} />
+            <Info cursor="help" width={12} height={12} style={{ color: 'var(--color-gray-900)' }} />
           </Tooltip>
         </div>
         <OpeningAssemblySelectWithEdit

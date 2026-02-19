@@ -1,4 +1,4 @@
-import { BoxModelIcon, CircleIcon, CubeIcon, LayersIcon, OpacityIcon } from '@radix-ui/react-icons'
+import { Box, Circle, Droplet, Layers } from 'lucide-react'
 import React from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -52,19 +52,19 @@ function StrawbaleIcon(props: IconProps) {
 export function getMaterialTypeIcon(type: Material['type']): IconComponent {
   switch (type) {
     case 'dimensional':
-      return CubeIcon
+      return Box
     case 'sheet':
-      return LayersIcon
+      return Layers
     case 'volume':
-      return OpacityIcon
+      return Droplet
     case 'generic':
-      return CircleIcon
+      return Circle
     case 'strawbale':
       return StrawbaleIcon
     case 'prefab':
-      return BoxModelIcon
+      return Box
     default:
-      return CircleIcon
+      return Circle
   }
 }
 

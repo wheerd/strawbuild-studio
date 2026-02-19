@@ -1,4 +1,4 @@
-import { EnterIcon, ExitIcon, PersonIcon } from '@radix-ui/react-icons'
+import { LogIn, LogOut, User } from 'lucide-react'
 import * as React from 'react'
 import { useTranslation } from 'react-i18next'
 import { useLocation, useNavigate } from 'react-router-dom'
@@ -56,7 +56,7 @@ export function UserMenu(): React.JSX.Element {
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="outline" size="icon" className="rounded-full" title={t($ => $.auth.accountMenu)}>
-          <PersonIcon aria-hidden />
+          <User aria-hidden />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" sideOffset={4}>
@@ -70,13 +70,13 @@ export function UserMenu(): React.JSX.Element {
               {t($ => $.auth.updatePassword)}
             </DropdownMenuItem>
             <DropdownMenuItem onClick={() => void handleSignOut()} className="cursor-pointer">
-              <ExitIcon className="mr-2 h-4 w-4" />
+              <LogOut className="mr-2 h-4 w-4" />
               {t($ => $.auth.signOut)}
             </DropdownMenuItem>
           </>
         ) : (
           <DropdownMenuItem onClick={handleSignIn} className="cursor-pointer">
-            <EnterIcon className="mr-2 h-4 w-4" />
+            <LogIn className="mr-2 h-4 w-4" />
             {t($ => $.auth.signIn)}
           </DropdownMenuItem>
         )}

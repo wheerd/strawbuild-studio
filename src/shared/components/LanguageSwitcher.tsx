@@ -1,4 +1,4 @@
-import { GlobeIcon } from '@radix-ui/react-icons'
+import { Languages } from 'lucide-react'
 import React from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -54,7 +54,7 @@ export function LanguageSwitcher({ size }: { size: 'sm' | 'lg' }): React.JSX.Ele
           })}
           aria-label={t($ => $.app.changeLanguage)}
         >
-          <GlobeIcon
+          <Languages
             className={size === 'sm' ? undefined : 'h-9! w-9!'}
             width={size === 'sm' ? '14' : '30'}
             height={size === 'sm' ? '14' : '30'}

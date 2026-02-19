@@ -1,4 +1,4 @@
-import { CubeIcon, ExclamationTriangleIcon, GroupIcon, RulerHorizontalIcon } from '@radix-ui/react-icons'
+import { Box, TriangleAlert, Group, Ruler } from 'lucide-react'
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -425,7 +425,7 @@ export function ConstructionPlan({
                   setHideAreas(!hideAreas)
                 }}
               >
-                <GroupIcon />
+                <Group />
               </Button>
 
               {/* Issues toggle */}
@@ -437,7 +437,7 @@ export function ConstructionPlan({
                   setHideIssues(!hideIssues)
                 }}
               >
-                <ExclamationTriangleIcon />
+                <TriangleAlert />
               </Button>
 
               {/* Measurements toggle */}
@@ -449,7 +449,7 @@ export function ConstructionPlan({
                   setHideMeasurements(!hideMeasurements)
                 }}
               >
-                <RulerHorizontalIcon />
+                <Ruler />
               </Button>
 
               {/* Straw types toggle */}
@@ -461,7 +461,7 @@ export function ConstructionPlan({
                   setShowStrawTypes(!showStrawTypes)
                 }}
               >
-                <CubeIcon />
+                <Box />
               </Button>
 
               {/* Tag visibility menu */}

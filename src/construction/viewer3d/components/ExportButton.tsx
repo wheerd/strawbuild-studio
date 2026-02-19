@@ -1,4 +1,4 @@
-import { DownloadIcon } from '@radix-ui/react-icons'
+import { Download } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 
 import { Button } from '@/components/ui/button'
@@ -18,7 +18,7 @@ function ExportButton({ onExport }: ExportButtonProps): React.JSX.Element {
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="outline" size="icon-sm" title={t($ => $.export.title)}>
-          <DownloadIcon />
+          <Download />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent>

@@ -1,4 +1,4 @@
-import { CursorArrowIcon } from '@radix-ui/react-icons'
+import { MousePointer } from 'lucide-react'
 import React from 'react'
 
 import { usePointerWorldPosition } from '@/editor/hooks/usePointerPosition'
@@ -9,7 +9,7 @@ export function PointerPositionDisplay(): React.JSX.Element {
   const pointer = usePointerWorldPosition()
   return (
     <div className="flex items-center gap-2">
-      <CursorArrowIcon className="h-4 w-4" />
+      <MousePointer className="h-4 w-4" />
       <span className="text-muted-foreground font-mono text-xs">
         {pointer ? `${formatLength(pointer[0])},${formatLength(pointer[1])}` : '--'}
       </span>

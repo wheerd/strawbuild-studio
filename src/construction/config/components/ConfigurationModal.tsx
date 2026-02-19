@@ -1,4 +1,4 @@
-import { GearIcon } from '@radix-ui/react-icons'
+import { Settings } from 'lucide-react'
 import React from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -34,7 +34,7 @@ export function ConfigurationModal({
   }
 
   return (
-    <FullScreenModal open={open} onOpenChange={onOpenChange} titleIcon={<GearIcon />} title={t($ => $.modal.title)}>
+    <FullScreenModal open={open} onOpenChange={onOpenChange} titleIcon={<Settings />} title={t($ => $.modal.title)}>
       <Tabs value={activeTab} onValueChange={setActiveTab} className="flex h-full w-full flex-col">
         <TabsList>
           <TabsTrigger value="materials">{t($ => $.modal.tabMaterials)}</TabsTrigger>

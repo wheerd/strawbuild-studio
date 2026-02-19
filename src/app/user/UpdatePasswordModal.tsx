@@ -1,4 +1,4 @@
-import { LockClosedIcon } from '@radix-ui/react-icons'
+import { Lock } from 'lucide-react'
 import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -67,7 +67,7 @@ export function UpdatePasswordModal({ isOpen, onOpenChange }: UpdatePasswordModa
       <DialogContent className="max-w-sm" aria-describedby={undefined}>
         <div className="mb-4 flex items-center justify-center">
           <div className="bg-primary/10 rounded-full p-3">
-            <LockClosedIcon className="text-primary h-6 w-6" />
+            <Lock className="text-primary h-6 w-6" />
           </div>
         </div>
 

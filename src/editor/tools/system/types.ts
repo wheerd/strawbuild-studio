@@ -1,4 +1,3 @@
-import type { IconProps } from '@radix-ui/react-icons/dist/types'
 import type { Resources } from 'i18next'
 import React from 'react'
 
@@ -34,7 +33,8 @@ type ToolNameKey = keyof Resources['toolbar']['tools']
 
 export interface ToolMetadata {
   nameKey: ToolNameKey
-  iconComponent: React.ComponentType<IconProps>
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  iconComponent: React.ComponentType<any>
   hotkey?: string
 }
 

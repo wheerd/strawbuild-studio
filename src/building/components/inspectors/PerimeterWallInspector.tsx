@@ -1,5 +1,5 @@
-import { TrashIcon } from '@radix-ui/react-icons'
 import * as Label from '@radix-ui/react-label'
+import { Trash } from 'lucide-react'
 import { useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -275,7 +275,7 @@ export function PerimeterWallInspector({ wallId }: { wallId: PerimeterWallId }):
             onClick={handleDelete}
             disabled={!canDeleteWall.canDelete}
           >
-            <TrashIcon width={20} height={20} />
+            <Trash width={20} height={20} />
           </Button>
         </div>
       </div>

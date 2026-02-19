@@ -1,4 +1,4 @@
-import { ExclamationTriangleIcon, ReloadIcon } from '@radix-ui/react-icons'
+import { TriangleAlert, RefreshCw } from 'lucide-react'
 import type { FallbackProps } from 'react-error-boundary'
 import { useTranslation } from 'react-i18next'
 
@@ -13,7 +13,7 @@ export function ModalErrorFallback({ error, resetErrorBoundary }: FallbackProps)
     <div className="flex min-h-[150px] flex-col items-center justify-center gap-3 p-4">
       <Callout className="text-destructive w-full">
         <CalloutIcon>
-          <ExclamationTriangleIcon />
+          <TriangleAlert />
         </CalloutIcon>
         <CalloutText>
           <span className="text-sm">
@@ -23,7 +23,7 @@ export function ModalErrorFallback({ error, resetErrorBoundary }: FallbackProps)
       </Callout>
 
       <Button size="sm" onClick={resetErrorBoundary}>
-        <ReloadIcon />
+        <RefreshCw />
         {t($ => $.modal.retry)}
       </Button>
     </div>

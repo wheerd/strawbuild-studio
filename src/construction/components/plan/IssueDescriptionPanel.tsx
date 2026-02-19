@@ -1,4 +1,4 @@
-import { CheckCircledIcon, CrossCircledIcon, ExclamationTriangleIcon } from '@radix-ui/react-icons'
+import { CircleCheck, CircleX, TriangleAlert } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 
 import { Callout, CalloutIcon } from '@/components/ui/callout'
@@ -19,7 +19,7 @@ export const IssueDescriptionPanel = ({ model }: IssueDescriptionPanelProps) => 
       {model.errors.length > 0 && (
         <Callout className="text-destructive" size="sm">
           <CalloutIcon>
-            <CrossCircledIcon />
+            <CircleX />
           </CalloutIcon>
           <div className="flex flex-col gap-2">
             <span className="text-base font-medium">
@@ -56,7 +56,7 @@ export const IssueDescriptionPanel = ({ model }: IssueDescriptionPanelProps) => 
       {model.warnings.length > 0 && (
         <Callout color="orange" size="sm">
           <CalloutIcon>
-            <ExclamationTriangleIcon />
+            <TriangleAlert />
           </CalloutIcon>
           <div className="flex flex-col gap-2">
             <span className="text-base font-medium">
@@ -93,7 +93,7 @@ export const IssueDescriptionPanel = ({ model }: IssueDescriptionPanelProps) => 
       {model.errors.length === 0 && model.warnings.length === 0 && (
         <Callout color="green" size="sm">
           <CalloutIcon>
-            <CheckCircledIcon />
+            <CircleCheck />
           </CalloutIcon>
           <div className="flex flex-col gap-1">
             <span className="text-base font-medium">{t($ => $.planModal.issuesPanel.noIssuesTitle)}</span>

@@ -1,4 +1,4 @@
-import { CheckIcon, Cross2Icon, DownloadIcon, UpdateIcon, UploadIcon } from '@radix-ui/react-icons'
+import { Check, X, Download, RefreshCw, Upload } from 'lucide-react'
 import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
@@ -240,7 +240,7 @@ export function ProjectMenu(): React.JSX.Element {
     if (exportError || importError) {
       return {
         text: exportError ?? importError ?? t($ => $.autoSave.exportFailed),
-        icon: <Cross2Icon className="h-3 w-3" aria-hidden />,
+        icon: <X className="h-3 w-3" aria-hidden />,
         colorClass: 'text-red-600 dark:text-red-400'
       }
     }
@@ -248,7 +248,7 @@ export function ProjectMenu(): React.JSX.Element {
     if (isExporting || isImporting) {
       return {
         text: isExporting ? t($ => $.autoSave.exporting) : t($ => $.autoSave.importing),
-        icon: <UpdateIcon className="h-3 w-3 animate-spin" aria-hidden />,
+        icon: <RefreshCw className="h-3 w-3 animate-spin" aria-hidden />,
         colorClass: 'text-blue-600 dark:text-blue-400'
       }
     }
@@ -256,7 +256,7 @@ export function ProjectMenu(): React.JSX.Element {
     if (activeError) {
       return {
         text: isAuthenticated ? t($ => $.projectMenu.syncFailed) : t($ => $.projectMenu.saveFailed),
-        icon: <Cross2Icon className="h-3 w-3" aria-hidden />,
+        icon: <X className="h-3 w-3" aria-hidden />,
         colorClass: 'text-red-600 dark:text-red-400'
       }
     }
@@ -264,7 +264,7 @@ export function ProjectMenu(): React.JSX.Element {
     if (activeIsSaving) {
       return {
         text: isAuthenticated ? t($ => $.projectMenu.syncing) : t($ => $.projectMenu.saving),
-        icon: <UpdateIcon className="h-3 w-3 animate-spin" aria-hidden />,
+        icon: <RefreshCw className="h-3 w-3 animate-spin" aria-hidden />,
         colorClass: 'text-blue-600 dark:text-blue-400'
       }
     }
@@ -288,14 +288,14 @@ export function ProjectMenu(): React.JSX.Element {
         text: isAuthenticated
           ? `${t($ => $.projectMenu.synced)} ${timeText}`
           : `${t($ => $.projectMenu.saved)} ${timeText}`,
-        icon: <CheckIcon className="h-3 w-3" aria-hidden />,
+        icon: <Check className="h-3 w-3" aria-hidden />,
         colorClass: 'text-green-600 dark:text-green-400'
       }
     }
 
     return {
       text: t($ => $.autoSave.notSaved),
-      icon: <Cross2Icon className="h-3 w-3" aria-hidden />,
+      icon: <X className="h-3 w-3" aria-hidden />,
       colorClass: 'text-muted-foreground'
     }
   }
@@ -348,7 +348,7 @@ export function ProjectMenu(): React.JSX.Element {
                 }}
                 disabled={isExporting || isImporting}
               >
-                <DownloadIcon className="mr-2 h-4 w-4" />
+                <Download className="mr-2 h-4 w-4" />
                 {t($ => $.autoSave.exportBuildingModel)}
               </DropdownMenuItem>
 
@@ -358,7 +358,7 @@ export function ProjectMenu(): React.JSX.Element {
                 }}
                 disabled={isExporting || isImporting}
               >
-                <DownloadIcon className="mr-2 h-4 w-4" />
+                <Download className="mr-2 h-4 w-4" />
                 {t($ => $.autoSave.exportConstructionModel)}
               </DropdownMenuItem>
 
@@ -368,7 +368,7 @@ export function ProjectMenu(): React.JSX.Element {
                 }}
                 disabled={isExporting || isImporting}
               >
-                <UploadIcon className="mr-2 h-4 w-4" />
+                <Upload className="mr-2 h-4 w-4" />
                 {t($ => $.autoSave.import)}
               </DropdownMenuItem>
             </DropdownMenuSubContent>
@@ -380,7 +380,7 @@ export function ProjectMenu(): React.JSX.Element {
             }}
             disabled={isExporting || isImporting}
           >
-            <DownloadIcon className="mr-2 h-4 w-4" />
+            <Download className="mr-2 h-4 w-4" />
             {t($ => $.autoSave.saveToFile)}
           </DropdownMenuItem>
 
@@ -390,7 +390,7 @@ export function ProjectMenu(): React.JSX.Element {
             }}
             disabled={isExporting || isImporting}
           >
-            <UploadIcon className="mr-2 h-4 w-4" />
+            <Upload className="mr-2 h-4 w-4" />
             {t($ => $.autoSave.loadFromFile)}
           </DropdownMenuItem>
 

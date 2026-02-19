@@ -1,4 +1,4 @@
-import { InfoCircledIcon } from '@radix-ui/react-icons'
+import { Info } from 'lucide-react'
 import * as Label from '@radix-ui/react-label'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -42,7 +42,7 @@ export function RoofToolInspector({ tool }: ToolInspectorProps<RoofTool>): React
         {/* Informational Note */}
         <Callout color="blue">
           <CalloutIcon>
-            <InfoCircledIcon />
+            <Info />
           </CalloutIcon>
           <CalloutText>
             <span className="text-xs">{t($ => $.roof.info)}</span>

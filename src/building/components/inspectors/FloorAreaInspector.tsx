@@ -1,4 +1,4 @@
-import { TrashIcon } from '@radix-ui/react-icons'
+import { Trash } from 'lucide-react'
 import { useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -77,7 +77,7 @@ export function FloorAreaInspector({ floorAreaId }: FloorAreaInspectorProps): Re
               popSelection()
             }}
           >
-            <TrashIcon />
+            <Trash />
           </Button>
         </div>
       </div>

@@ -1,4 +1,4 @@
-import { InfoCircledIcon } from '@radix-ui/react-icons'
+import { Info } from 'lucide-react'
 import { type ComponentProps, type JSX, useId } from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -975,12 +975,12 @@ export function MeasurementInfo(config: MeasurementDisplayConfig): React.JSX.Ele
     <HoverCard.Root>
       <HoverCard.Trigger asChild>
         <Button
-          size="icon-sm"
-          className="h-6 w-6 cursor-help rounded-full text-gray-500"
+          size="icon-xs"
+          className="text-muted-foreground cursor-help rounded-full"
           title={t($ => $.measurements.measurements)}
           variant="ghost"
         >
-          <InfoCircledIcon width={12} height={12} />
+          <Info />
         </Button>
       </HoverCard.Trigger>
       <HoverCard.Content side="right">

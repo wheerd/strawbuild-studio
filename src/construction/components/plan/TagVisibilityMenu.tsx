@@ -1,4 +1,4 @@
-import { EyeClosedIcon, EyeOpenIcon } from '@radix-ui/react-icons'
+import { Eye, EyeOff } from 'lucide-react'
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -87,11 +87,11 @@ export function TagVisibilityMenu({ model }: TagVisibilityMenuProps): React.JSX.
   const renderVisibilityIcon = (state: 'visible' | 'partial' | 'hidden') => {
     switch (state) {
       case 'visible':
-        return <EyeOpenIcon />
+        return <Eye />
       case 'partial':
-        return <EyeOpenIcon className="opacity-50" />
+        return <Eye className="opacity-50" />
       case 'hidden':
-        return <EyeClosedIcon />
+        return <EyeOff />
     }
   }
 
@@ -100,7 +100,7 @@ export function TagVisibilityMenu({ model }: TagVisibilityMenuProps): React.JSX.
       <DropdownMenu>
         <DropdownMenu.Trigger asChild>
           <Button size="icon-xs" variant="outline" title={t($ => $.tagVisibility.title)} disabled>
-            <EyeOpenIcon />
+            <Eye />
           </Button>
         </DropdownMenu.Trigger>
         <DropdownMenu.Content>
@@ -116,7 +116,7 @@ export function TagVisibilityMenu({ model }: TagVisibilityMenuProps): React.JSX.
     <DropdownMenu>
       <DropdownMenu.Trigger asChild>
         <Button size="icon-xs" variant="default" title={t($ => $.tagVisibility.title)}>
-          <EyeOpenIcon />
+          <Eye />
         </Button>
       </DropdownMenu.Trigger>
       <DropdownMenu.Content>
@@ -139,22 +139,16 @@ export function TagVisibilityMenu({ model }: TagVisibilityMenuProps): React.JSX.
                 <DropdownMenu.Item
                   onSelect={e => {
                     e.preventDefault()
+                    toggleTagOrCategory(categoryId)
                   }}
+                  className="flex w-full items-center justify-between gap-2"
                 >
-                  <div
-                    className="flex w-full items-center justify-between gap-2"
-                    onClick={e => {
-                      e.stopPropagation()
-                      toggleTagOrCategory(categoryId)
-                    }}
-                  >
-                    <span className="text-sm font-bold">
-                      {isTagOrCategoryVisible(categoryId)
-                        ? t($ => $.tagVisibility.hideCategory)
-                        : t($ => $.tagVisibility.showCategory)}
-                    </span>
-                    {isTagOrCategoryVisible(categoryId) ? <EyeOpenIcon /> : <EyeClosedIcon />}
-                  </div>
+                  <span className="text-sm font-bold">
+                    {isTagOrCategoryVisible(categoryId)
+                      ? t($ => $.tagVisibility.hideCategory)
+                      : t($ => $.tagVisibility.showCategory)}
+                  </span>
+                  {isTagOrCategoryVisible(categoryId) ? <Eye /> : <EyeOff />}
                 </DropdownMenu.Item>
                 <DropdownMenu.Separator />
                 {/* Individual tag toggles */}
@@ -163,20 +157,14 @@ export function TagVisibilityMenu({ model }: TagVisibilityMenuProps): React.JSX.
                     key={tag.id}
                     onSelect={e => {
                       e.preventDefault()
+                      toggleTagOrCategory(tag.id)
                     }}
+                    className="flex w-full items-center justify-between gap-2"
                   >
-                    <div
-                      className="flex w-full items-center justify-between gap-2"
-                      onClick={e => {
-                        e.stopPropagation()
-                        toggleTagOrCategory(tag.id)
-                      }}
-                    >
-                      <span className="text-sm">
-                        <TagLabel tag={tag} />
-                      </span>
-                      {isTagOrCategoryVisible(tag.id) ? <EyeOpenIcon /> : <EyeClosedIcon />}
-                    </div>
+                    <span className="text-sm">
+                      <TagLabel tag={tag} />
+                    </span>
+                    {isTagOrCategoryVisible(tag.id) ? <Eye /> : <EyeOff />}
                   </DropdownMenu.Item>
                 ))}
               </DropdownMenu.SubContent>

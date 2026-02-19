@@ -1,4 +1,4 @@
-import { Cross2Icon, InfoCircledIcon } from '@radix-ui/react-icons'
+import { X, Info } from 'lucide-react'
 import * as Label from '@radix-ui/react-label'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -48,7 +48,7 @@ export function PerimeterToolInspector({ tool }: ToolInspectorProps<PerimeterToo
         {/* Informational Note */}
         <Callout color="blue">
           <CalloutIcon>
-            <InfoCircledIcon />
+            <Info />
           </CalloutIcon>
           <CalloutText>
             <span className="text-xs">
@@ -173,7 +173,7 @@ export function PerimeterToolInspector({ tool }: ToolInspectorProps<PerimeterToo
                   }}
                   title={t($ => $.perimeter.clearLengthOverride)}
                 >
-                  <Cross2Icon />
+                  <X />
                 </Button>
               </div>
             </div>

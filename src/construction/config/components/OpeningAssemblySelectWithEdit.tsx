@@ -1,4 +1,4 @@
-import { Pencil1Icon } from '@radix-ui/react-icons'
+import { Pencil } from 'lucide-react'
 import React from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -24,7 +24,7 @@ export function OpeningAssemblySelectWithEdit(props: OpeningAssemblySelectProps)
           openConfiguration('openings', props.value ?? undefined)
         }}
       >
-        <Pencil1Icon />
+        <Pencil />
       </Button>
     </div>
   )

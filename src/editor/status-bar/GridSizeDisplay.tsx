@@ -1,4 +1,4 @@
-import { FrameIcon } from '@radix-ui/react-icons'
+import { Frame } from 'lucide-react'
 import React from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -25,7 +25,7 @@ export function GridSizeDisplay(): React.JSX.Element {
     >
       <span className="flex items-center justify-end gap-2">
         <span className="text-xs">{showGrid ? formatLength(gridSize) : t($ => $.gridSizeDisplay.off)}</span>
-        <FrameIcon className="h-4 w-4" />
+        <Frame className="h-4 w-4" />
       </span>
     </Button>
   )

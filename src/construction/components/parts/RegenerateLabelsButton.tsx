@@ -1,4 +1,4 @@
-import { ExclamationTriangleIcon, ReloadIcon } from '@radix-ui/react-icons'
+import { TriangleAlert, RefreshCw } from 'lucide-react'
 import type React from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -25,7 +25,7 @@ export function RegenerateLabelsButton({ groupId, compact }: RegenerateLabelsBut
     <div className="flex items-center gap-2 text-sm">
       {hasUnusedLabels && (
         <Tooltip content={tooltipContent}>
-          <ExclamationTriangleIcon width={18} height={18} className="text-yellow-500" />
+          <TriangleAlert width={18} height={18} className="text-yellow-500" />
         </Tooltip>
       )}
       <Tooltip content={compact ? tooltipContent : undefined}>
@@ -38,7 +38,7 @@ export function RegenerateLabelsButton({ groupId, compact }: RegenerateLabelsBut
           className={hasUnusedLabels ? 'text-destructive-foreground bg-yellow-500 hover:bg-yellow-500/80' : undefined}
           title={compact ? label : undefined}
         >
-          <ReloadIcon className={compact ? '' : 'mr-1'} />
+          <RefreshCw className={compact ? '' : 'mr-1'} />
           {!compact && label}
         </Button>
       </Tooltip>

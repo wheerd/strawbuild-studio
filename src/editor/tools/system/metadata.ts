@@ -1,4 +1,4 @@
-import { CursorArrowIcon, MoveIcon, RocketIcon, StretchVerticallyIcon } from '@radix-ui/react-icons'
+import { BetweenVerticalStart, MousePointer, Move, Rocket } from 'lucide-react'
 
 import {
   FitToViewIcon,
@@ -16,12 +16,12 @@ import type { ToolGroup, ToolId, ToolMetadata } from './types'
 export const TOOL_METADATA: Record<ToolId, ToolMetadata> = {
   'basic.select': {
     nameKey: 'basicSelect',
-    iconComponent: CursorArrowIcon,
+    iconComponent: MousePointer,
     hotkey: 'v'
   },
   'basic.move': {
     nameKey: 'basicMove',
-    iconComponent: MoveIcon,
+    iconComponent: Move,
     hotkey: 'm'
   },
   'basic.fit-to-view': {
@@ -54,7 +54,7 @@ export const TOOL_METADATA: Record<ToolId, ToolMetadata> = {
   },
   'perimeter.add-post': {
     nameKey: 'perimeterAddPost',
-    iconComponent: StretchVerticallyIcon,
+    iconComponent: BetweenVerticalStart,
     hotkey: 'shift+p'
   },
   'perimeter.split-wall': {
@@ -69,7 +69,7 @@ export const TOOL_METADATA: Record<ToolId, ToolMetadata> = {
   },
   'test.data': {
     nameKey: 'testData',
-    iconComponent: RocketIcon,
+    iconComponent: Rocket,
     hotkey: 't'
   }
 } as const

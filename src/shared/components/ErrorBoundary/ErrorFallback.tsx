@@ -1,4 +1,4 @@
-import { ExclamationTriangleIcon, ReloadIcon } from '@radix-ui/react-icons'
+import { TriangleAlert, RefreshCw } from 'lucide-react'
 import { useState } from 'react'
 import type { FallbackProps } from 'react-error-boundary'
 import { useTranslation } from 'react-i18next'
@@ -33,14 +33,14 @@ export function ErrorFallback({ error, resetErrorBoundary }: FallbackProps): Rea
     <div className="bg-muted flex min-h-screen flex-col items-center justify-center p-4">
       <div className="flex w-full max-w-[600px] flex-col gap-4">
         <div className="flex flex-col items-center gap-2">
-          <ExclamationTriangleIcon className="h-12 w-12 text-red-500" />
+          <TriangleAlert className="h-12 w-12 text-red-500" />
           <h1 className="text-2xl font-bold">{t($ => $.boundary.title)}</h1>
           <p className="text-muted-foreground text-center">{t($ => $.boundary.description)}</p>
         </div>
 
         <Callout className="text-destructive">
           <CalloutIcon>
-            <ExclamationTriangleIcon />
+            <TriangleAlert />
           </CalloutIcon>
           <CalloutText>
             <strong>{message}</strong>
@@ -63,7 +63,7 @@ export function ErrorFallback({ error, resetErrorBoundary }: FallbackProps): Rea
               window.location.reload()
             }}
           >
-            <ReloadIcon className="mr-2" />
+            <RefreshCw className="mr-2" />
             {t($ => $.boundary.reloadPage)}
           </Button>
 
@@ -87,7 +87,7 @@ export function ErrorFallback({ error, resetErrorBoundary }: FallbackProps): Rea
 
         <Callout color="orange">
           <CalloutIcon>
-            <ExclamationTriangleIcon />
+            <TriangleAlert />
           </CalloutIcon>
           <CalloutText>
             <div className="flex flex-col gap-2">

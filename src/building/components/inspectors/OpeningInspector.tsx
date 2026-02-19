@@ -1,5 +1,5 @@
-import { InfoCircledIcon, TrashIcon } from '@radix-ui/react-icons'
 import * as Label from '@radix-ui/react-label'
+import { Info, Trash } from 'lucide-react'
 import { useCallback, useMemo, useState } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 
@@ -191,7 +191,7 @@ export function OpeningInspector({ openingId }: { openingId: OpeningId }): React
           <div className="flex items-center gap-1">
             <span className="text-sm font-medium">{t($ => $.opening.type)}</span>
             <Tooltip content={t($ => $.opening.typeTooltip)}>
-              <InfoCircledIcon className="cursor-help text-gray-900" width={12} height={12} />
+              <Info className="cursor-help text-gray-900" width={12} height={12} />
             </Tooltip>
           </div>
           <ToggleGroup
@@ -241,7 +241,7 @@ export function OpeningInspector({ openingId }: { openingId: OpeningId }): React
                   : t($ => $.opening.dimensionModeFinishedTooltip)
               }
             >
-              <InfoCircledIcon className="cursor-help text-gray-900" width={12} height={12} />
+              <Info className="cursor-help text-gray-900" width={12} height={12} />
             </Tooltip>
           </div>
           <ToggleGroup
@@ -382,7 +382,7 @@ export function OpeningInspector({ openingId }: { openingId: OpeningId }): React
             <span className="text-sm font-medium">{t($ => $.opening.openingAssembly)}</span>
           </Label.Root>
           <Tooltip content={t($ => $.opening.openingAssemblyTooltip)}>
-            <InfoCircledIcon className="cursor-help text-gray-900" width={12} height={12} />
+            <Info className="cursor-help text-gray-900" width={12} height={12} />
           </Tooltip>
         </div>
         <OpeningAssemblySelectWithEdit
@@ -404,12 +404,12 @@ export function OpeningInspector({ openingId }: { openingId: OpeningId }): React
           <FitToViewIcon />
         </Button>
         <Button size="icon" variant="destructive" title={t($ => $.opening.deleteOpening)} onClick={handleRemoveOpening}>
-          <TrashIcon />
+          <Trash />
         </Button>
       </div>
       <Callout color="blue">
         <CalloutIcon>
-          <InfoCircledIcon />
+          <Info />
         </CalloutIcon>
         <CalloutText>
           <span className="text-sm">

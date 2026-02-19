@@ -1,4 +1,4 @@
-import { ArrowLeftIcon } from '@radix-ui/react-icons'
+import { ArrowLeft } from 'lucide-react'
 import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -87,7 +87,7 @@ export function ForgotPasswordForm({ onSuccess, onBackToSignIn }: ForgotPassword
         </Button>
 
         <Button variant="ghost" onClick={onBackToSignIn} className="w-full">
-          <ArrowLeftIcon className="mr-2 h-4 w-4" />
+          <ArrowLeft className="mr-2 h-4 w-4" />
           {t($ => $.auth.backToSignIn)}
         </Button>
       </form>

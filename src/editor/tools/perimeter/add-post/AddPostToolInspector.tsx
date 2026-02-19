@@ -1,4 +1,4 @@
-import { CopyIcon, InfoCircledIcon } from '@radix-ui/react-icons'
+import { Copy, Info } from 'lucide-react'
 import * as Label from '@radix-ui/react-label'
 import { useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -159,7 +159,7 @@ function AddPostToolInspectorImpl({ tool }: AddPostToolInspectorImplProps): Reac
       {/* Informational Note */}
       <Callout color="blue">
         <CalloutIcon>
-          <InfoCircledIcon />
+          <Info />
         </CalloutIcon>
         <CalloutText>
           <span className="text-sm">{t($ => $.addPost.info)}</span>
@@ -245,7 +245,7 @@ function AddPostToolInspectorImpl({ tool }: AddPostToolInspectorImplProps): Reac
           <DropdownMenu>
             <DropdownMenuTrigger disabled={allPostConfigs.length === 0} asChild>
               <Button size="icon" title={t($ => $.addPost.copyConfigurationTooltip)}>
-                <CopyIcon />
+                <Copy />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent>

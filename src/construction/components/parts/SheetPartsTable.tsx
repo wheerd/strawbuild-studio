@@ -1,4 +1,4 @@
-import { ExclamationTriangleIcon, EyeOpenIcon } from '@radix-ui/react-icons'
+import { TriangleAlert, Eye } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 
 import { Button } from '@/components/ui/button'
@@ -133,7 +133,7 @@ function SheetPartsTableRow({
         <div className="flex items-center justify-end gap-2">
           {part.issue === 'ThicknessMismatch' && (
             <Tooltip key="thickness-missmatch" content={t($ => $.partsList.issues.dimensionsMismatchThickness)}>
-              <ExclamationTriangleIcon className="text-red-600" />
+              <TriangleAlert className="text-red-600" />
             </Tooltip>
           )}
           {part.issue === 'SheetSizeExceeded' && (
@@ -145,7 +145,7 @@ function SheetPartsTableRow({
                   : t($ => $.partsList.issues.dimensionsExceedSizeMultiple)
               }
             >
-              <ExclamationTriangleIcon
+              <TriangleAlert
                 aria-hidden
                 className={part.requiresSinglePiece ? 'text-red-600' : 'text-orange-500'}
               />
@@ -174,7 +174,7 @@ function SheetPartsTableRow({
             title={t($ => $.partsList.actions.viewInPlan)}
             className="-my-2"
           >
-            <EyeOpenIcon />
+            <Eye />
           </Button>
         )}
       </Table.Cell>

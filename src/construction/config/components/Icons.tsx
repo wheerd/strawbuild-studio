@@ -1,4 +1,4 @@
-import { SquareIcon, ViewVerticalIcon } from '@radix-ui/react-icons'
+import { Square, Columns } from 'lucide-react'
 import React, { type ComponentType } from 'react'
 
 import type { WallAssemblyConfig } from '@/construction/config/types'
@@ -168,9 +168,9 @@ export function BrickIcon({ className, width = 15, height = 15, style }: IconPro
 export function getRingBeamTypeIcon(type: 'full' | 'double' | 'brick') {
   switch (type) {
     case 'full':
-      return SquareIcon
+      return Square
     case 'double':
-      return ViewVerticalIcon
+      return Columns
     case 'brick':
       return BrickIcon
   }

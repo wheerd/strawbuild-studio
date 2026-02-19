@@ -1,5 +1,5 @@
-import { FileTextIcon, GearIcon } from '@radix-ui/react-icons'
 import * as Toolbar from '@radix-ui/react-toolbar'
+import { FileText, Settings } from 'lucide-react'
 import React, { useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -103,7 +103,7 @@ export function MainToolbar({ onInfoClick }: MainToolbarProps): React.JSX.Elemen
           modelId={activeStoreyId}
           trigger={
             <Button title={t($ => $.viewConstructionPlan)} size="icon" variant="default">
-              <ConstructionPlanIcon width={20} height={20} aria-hidden />
+              <ConstructionPlanIcon aria-hidden />
             </Button>
           }
         />
@@ -112,7 +112,7 @@ export function MainToolbar({ onInfoClick }: MainToolbarProps): React.JSX.Elemen
           modelId={undefined}
           trigger={
             <Button title={t($ => $.viewPartsList)} size="icon" variant="default">
-              <FileTextIcon width={20} height={20} aria-hidden />
+              <FileText aria-hidden />
             </Button>
           }
         />
@@ -120,7 +120,7 @@ export function MainToolbar({ onInfoClick }: MainToolbarProps): React.JSX.Elemen
           modelId={undefined}
           trigger={
             <Button title={t($ => $.view3DConstruction)} size="icon" variant="default">
-              <Model3DIcon width={20} height={20} aria-hidden />
+              <Model3DIcon aria-hidden />
             </Button>
           }
         />
@@ -132,7 +132,7 @@ export function MainToolbar({ onInfoClick }: MainToolbarProps): React.JSX.Elemen
             openConfiguration('materials')
           }}
         >
-          <GearIcon width={20} height={20} aria-hidden />
+          <Settings aria-hidden />
         </Button>
         <UserMenu />
       </div>

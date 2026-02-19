@@ -1,4 +1,4 @@
-import { ExclamationTriangleIcon, ReloadIcon } from '@radix-ui/react-icons'
+import { TriangleAlert, RefreshCw } from 'lucide-react'
 import type React from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -18,7 +18,7 @@ export function ConstructionModelRegenerateButton({ compact }: { compact?: boole
     <div className="flex items-center gap-2 text-sm">
       {isOutdated && (
         <Tooltip content={t($ => $.modelStatus.outdatedWarning)}>
-          <ExclamationTriangleIcon width={20} height={20} className="text-orange-500" />
+          <TriangleAlert width={20} height={20} className="text-orange-500" />
         </Tooltip>
       )}
       <Button
@@ -31,7 +31,7 @@ export function ConstructionModelRegenerateButton({ compact }: { compact?: boole
         disabled={!hasModel}
         title={compact ? label : undefined}
       >
-        {hasModel ? <ReloadIcon className="mr-1" /> : <Spinner size="sm" />}
+        {hasModel ? <RefreshCw className="mr-1" /> : <Spinner size="sm" />}
         {!compact && label}
       </Button>
     </div>

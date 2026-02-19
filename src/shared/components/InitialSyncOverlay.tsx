@@ -1,4 +1,4 @@
-import { UpdateIcon } from '@radix-ui/react-icons'
+import { RefreshCw } from 'lucide-react'
 import React, { useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
@@ -26,7 +26,7 @@ export function InitialSyncOverlay(): React.JSX.Element | null {
   return (
     <div className="bg-background/80 absolute inset-0 z-50 flex items-center justify-center backdrop-blur-sm">
       <div className="flex flex-col items-center gap-4">
-        <UpdateIcon className="h-8 w-8 animate-spin" />
+        <RefreshCw className="h-8 w-8 animate-spin" />
         <p className="text-lg font-medium">{t($ => $.projectMenu.loadingProject)}</p>
       </div>
     </div>

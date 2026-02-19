@@ -1,4 +1,4 @@
-import { AllSidesIcon } from '@radix-ui/react-icons'
+import { Expand } from 'lucide-react'
 import React, { type RefAttributes, useCallback, useEffect, useImperativeHandle, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -381,7 +381,7 @@ export function SVGViewport({
 
       <div className={`absolute ${getResetButtonPosition(resetButtonPosition)}`}>
         <Button variant="outline" size="icon" onClick={fitToContent} title={t($ => $.app.fitToContent)}>
-          <AllSidesIcon />
+          <Expand />
         </Button>
       </div>
     </div>

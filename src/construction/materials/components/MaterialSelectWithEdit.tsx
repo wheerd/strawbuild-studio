@@ -1,4 +1,4 @@
-import { Pencil1Icon } from '@radix-ui/react-icons'
+import { Pencil } from 'lucide-react'
 import React from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -26,7 +26,7 @@ export function MaterialSelectWithEdit(props: MaterialSelectWithEditProps): Reac
           openConfiguration('materials', props.value ?? undefined)
         }}
       >
-        <Pencil1Icon />
+        <Pencil />
       </Button>
     </div>
   )

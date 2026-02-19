@@ -1,5 +1,5 @@
-import { ComponentInstanceIcon, CopyIcon, PlusIcon, ResetIcon, SquareIcon, TrashIcon } from '@radix-ui/react-icons'
 import * as Label from '@radix-ui/react-label'
+import { Component, Copy, Plus, Square, Trash, Undo2 } from 'lucide-react'
 import React, { useCallback, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -163,7 +163,7 @@ export function RoofAssemblyConfigContent({ initialSelectionId }: RoofAssemblyCo
             <DropdownMenu>
               <DropdownMenu.Trigger asChild>
                 <Button size="icon" title={t($ => $.common.addNew)}>
-                  <PlusIcon />
+                  <Plus />
                 </Button>
               </DropdownMenu.Trigger>
               <DropdownMenu.Content>
@@ -173,7 +173,7 @@ export function RoofAssemblyConfigContent({ initialSelectionId }: RoofAssemblyCo
                   }}
                 >
                   <div className="flex items-center gap-1">
-                    <SquareIcon />
+                    <Square />
                     {t($ => $.roofs.types.monolithic)}
                   </div>
                 </DropdownMenu.Item>
@@ -183,7 +183,7 @@ export function RoofAssemblyConfigContent({ initialSelectionId }: RoofAssemblyCo
                   }}
                 >
                   <div className="flex items-center gap-1">
-                    <ComponentInstanceIcon />
+                    <Component />
                     {t($ => $.roofs.types.purlin)}
                   </div>
                 </DropdownMenu.Item>
@@ -197,7 +197,7 @@ export function RoofAssemblyConfigContent({ initialSelectionId }: RoofAssemblyCo
               title={t($ => $.common.duplicate)}
               variant="soft"
             >
-              <CopyIcon />
+              <Copy />
             </Button>
 
             <AlertDialog.Root>
@@ -208,7 +208,7 @@ export function RoofAssemblyConfigContent({ initialSelectionId }: RoofAssemblyCo
                   variant="destructive"
                   title={usage.isUsed ? t($ => $.common.inUseCannotDelete) : t($ => $.common.delete)}
                 >
-                  <TrashIcon />
+                  <Trash />
                 </Button>
               </AlertDialog.Trigger>
               <AlertDialog.Content>
@@ -239,7 +239,7 @@ export function RoofAssemblyConfigContent({ initialSelectionId }: RoofAssemblyCo
                   variant="outline"
                   title={t($ => $.common.resetToDefaults)}
                 >
-                  <ResetIcon />
+                  <Undo2 />
                 </Button>
               </AlertDialog.Trigger>
               <AlertDialog.Content>

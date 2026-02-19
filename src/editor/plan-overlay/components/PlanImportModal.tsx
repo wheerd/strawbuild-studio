@@ -1,4 +1,4 @@
-import { ExclamationTriangleIcon } from '@radix-ui/react-icons'
+import { TriangleAlert } from 'lucide-react'
 import { Label } from '@radix-ui/react-label'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -286,7 +286,7 @@ export function PlanImportModal({
                 </span>
                 {pixelDistanceWarning && (
                   <Tooltip content={pixelDistanceWarning}>
-                    <ExclamationTriangleIcon width={20} height={20} style={{ color: 'var(--color-orange-900)' }} />
+                    <TriangleAlert width={20} height={20} style={{ color: 'var(--color-orange-900)' }} />
                   </Tooltip>
                 )}
               </div>

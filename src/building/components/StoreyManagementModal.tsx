@@ -1,4 +1,4 @@
-import { PlusIcon } from '@radix-ui/react-icons'
+import { Plus } from 'lucide-react'
 import React, { useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -52,7 +52,7 @@ export function StoreyManagementModal({ trigger }: StoreyManagementModalProps): 
         )}
 
         <Button onClick={handleAddEmptyStorey}>
-          <PlusIcon />
+          <Plus />
           {t($ => $.storeys.addNewFloor)}
         </Button>
       </div>

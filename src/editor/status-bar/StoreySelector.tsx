@@ -1,4 +1,4 @@
-import { Pencil1Icon } from '@radix-ui/react-icons'
+import { Pencil } from 'lucide-react'
 import React, { useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -72,7 +72,7 @@ export function StoreySelector(): React.JSX.Element {
             type="button"
             variant="secondary"
           >
-            <Pencil1Icon />
+            <Pencil />
           </Button>
         }
       />

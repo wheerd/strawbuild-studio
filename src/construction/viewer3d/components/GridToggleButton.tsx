@@ -1,4 +1,4 @@
-import { FrameIcon } from '@radix-ui/react-icons'
+import { Frame } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 
 import { Button } from '@/components/ui/button'
@@ -12,12 +12,11 @@ export function GridToggleButton(): React.JSX.Element {
   return (
     <Button
       variant={showGrid ? 'default' : 'outline'}
-      size="icon"
-      className="h-8 w-8"
+      size="icon-sm"
       title={showGrid ? t($ => $.grid.hide) : t($ => $.grid.show)}
       onClick={toggleGrid}
     >
-      <FrameIcon />
+      <Frame />
     </Button>
   )
 }

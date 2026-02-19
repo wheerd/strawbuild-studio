@@ -1,17 +1,5 @@
-import {
-  BoxModelIcon,
-  CircleIcon,
-  CopyIcon,
-  Cross2Icon,
-  CubeIcon,
-  ExclamationTriangleIcon,
-  LayersIcon,
-  OpacityIcon,
-  PlusIcon,
-  ResetIcon,
-  TrashIcon
-} from '@radix-ui/react-icons'
 import * as Label from '@radix-ui/react-label'
+import { Box, Circle, Copy, Droplet, Layers, Plus, Trash, TriangleAlert, Undo2, X } from 'lucide-react'
 import React, { useCallback, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -217,7 +205,7 @@ export function MaterialsConfigContent({ initialSelectionId }: MaterialsConfigCo
           <DropdownMenu>
             <DropdownMenu.Trigger asChild>
               <Button size="icon" title={t($ => $.common.addNew)}>
-                <PlusIcon />
+                <Plus />
               </Button>
             </DropdownMenu.Trigger>
             <DropdownMenu.Content>
@@ -227,7 +215,7 @@ export function MaterialsConfigContent({ initialSelectionId }: MaterialsConfigCo
                 }}
               >
                 <div className="flex items-center gap-1">
-                  <CubeIcon />
+                  <Box />
                   {t($ => $.materials.typeDimensional)}
                 </div>
               </DropdownMenu.Item>
@@ -237,7 +225,7 @@ export function MaterialsConfigContent({ initialSelectionId }: MaterialsConfigCo
                 }}
               >
                 <div className="flex items-center gap-1">
-                  <CubeIcon />
+                  <Box />
                   {t($ => $.materials.typeStrawbale)}
                 </div>
               </DropdownMenu.Item>
@@ -247,7 +235,7 @@ export function MaterialsConfigContent({ initialSelectionId }: MaterialsConfigCo
                 }}
               >
                 <div className="flex items-center gap-1">
-                  <LayersIcon />
+                  <Layers />
                   {t($ => $.materials.typeSheet)}
                 </div>
               </DropdownMenu.Item>
@@ -257,7 +245,7 @@ export function MaterialsConfigContent({ initialSelectionId }: MaterialsConfigCo
                 }}
               >
                 <div className="flex items-center gap-1">
-                  <OpacityIcon />
+                  <Droplet />
                   {t($ => $.materials.typeVolume)}
                 </div>
               </DropdownMenu.Item>
@@ -267,7 +255,7 @@ export function MaterialsConfigContent({ initialSelectionId }: MaterialsConfigCo
                 }}
               >
                 <div className="flex items-center gap-1">
-                  <CircleIcon />
+                  <Circle />
                   {t($ => $.materials.typeGeneric)}
                 </div>
               </DropdownMenu.Item>
@@ -277,7 +265,7 @@ export function MaterialsConfigContent({ initialSelectionId }: MaterialsConfigCo
                 }}
               >
                 <div className="flex items-center gap-1">
-                  <BoxModelIcon />
+                  <Box />
                   {t($ => $.materials.typePrefab)}
                 </div>
               </DropdownMenu.Item>
@@ -290,7 +278,7 @@ export function MaterialsConfigContent({ initialSelectionId }: MaterialsConfigCo
             title={t($ => $.common.duplicate)}
             variant="soft"
           >
-            <CopyIcon />
+            <Copy />
           </Button>
           <AlertDialog.Root>
             <AlertDialog.Trigger asChild>
@@ -300,7 +288,7 @@ export function MaterialsConfigContent({ initialSelectionId }: MaterialsConfigCo
                 disabled={!selectedMaterial || usage.isUsed}
                 title={usage.isUsed ? t($ => $.common.inUseCannotDelete) : t($ => $.common.delete)}
               >
-                <TrashIcon />
+                <Trash />
               </Button>
             </AlertDialog.Trigger>
             <AlertDialog.Content>
@@ -332,7 +320,7 @@ export function MaterialsConfigContent({ initialSelectionId }: MaterialsConfigCo
                 variant="outline"
                 title={t($ => $.common.resetToDefaults)}
               >
-                <ResetIcon />
+                <Undo2 />
               </Button>
             </AlertDialog.Trigger>
             <AlertDialog.Content>
@@ -581,7 +569,7 @@ function DimensionalMaterialFields({
                     }}
                     aria-label={t($ => $.materials.removeCrossSection)}
                   >
-                    <Cross2Icon width="10" height="10" />
+                    <X width="10" height="10" />
                   </Button>
                 </div>
               </Badge>
@@ -589,7 +577,7 @@ function DimensionalMaterialFields({
             {material.crossSections.length === 0 && (
               <Callout color="orange" size="sm">
                 <CalloutIcon>
-                  <ExclamationTriangleIcon />
+                  <TriangleAlert />
                 </CalloutIcon>
                 <CalloutText>{t($ => $.materials.noCrossSections)}</CalloutText>
               </Callout>
@@ -617,7 +605,7 @@ function DimensionalMaterialFields({
             onClick={handleAddCrossSection}
             variant="soft"
           >
-            <PlusIcon />
+            <Plus />
           </Button>
         </div>
       </div>
@@ -640,7 +628,7 @@ function DimensionalMaterialFields({
                     }}
                     aria-label={t($ => $.materials.removeStockLength)}
                   >
-                    <Cross2Icon width="10" height="10" />
+                    <X width="10" height="10" />
                   </Button>
                 </div>
               </Badge>
@@ -648,7 +636,7 @@ function DimensionalMaterialFields({
             {material.lengths.length === 0 && (
               <Callout color="orange" size="sm">
                 <CalloutIcon>
-                  <ExclamationTriangleIcon />
+                  <TriangleAlert />
                 </CalloutIcon>
                 <CalloutText>{t($ => $.materials.noLengths)}</CalloutText>
               </Callout>
@@ -670,7 +658,7 @@ function DimensionalMaterialFields({
             onClick={handleAddLength}
             variant="soft"
           >
-            <PlusIcon />
+            <Plus />
           </Button>
         </div>
       </div>
@@ -763,7 +751,7 @@ function SheetMaterialFields({
                     }}
                     aria-label={t($ => $.materials.removeSheetSize)}
                   >
-                    <Cross2Icon width="10" height="10" />
+                    <X width="10" height="10" />
                   </Button>
                 </div>
               </Badge>
@@ -771,7 +759,7 @@ function SheetMaterialFields({
             {material.sizes.length === 0 && (
               <Callout color="orange" size="sm">
                 <CalloutIcon>
-                  <ExclamationTriangleIcon />
+                  <TriangleAlert />
                 </CalloutIcon>
                 <CalloutText>{t($ => $.materials.noSizes)}</CalloutText>
               </Callout>
@@ -794,7 +782,7 @@ function SheetMaterialFields({
             onClick={handleAddSize}
             variant="soft"
           >
-            <PlusIcon />
+            <Plus />
           </Button>
         </div>
       </div>
@@ -817,7 +805,7 @@ function SheetMaterialFields({
                     }}
                     aria-label={t($ => $.materials.removeThickness)}
                   >
-                    <Cross2Icon width="10" height="10" />
+                    <X width="10" height="10" />
                   </Button>
                 </div>
               </Badge>
@@ -825,7 +813,7 @@ function SheetMaterialFields({
             {material.thicknesses.length === 0 && (
               <Callout color="orange" size="sm">
                 <CalloutIcon>
-                  <ExclamationTriangleIcon />
+                  <TriangleAlert />
                 </CalloutIcon>
                 <CalloutText>{t($ => $.materials.noThicknesses)}</CalloutText>
               </Callout>
@@ -847,7 +835,7 @@ function SheetMaterialFields({
             onClick={handleAddThickness}
             variant="soft"
           >
-            <PlusIcon />
+            <Plus />
           </Button>
         </div>
       </div>
@@ -923,7 +911,7 @@ function VolumeMaterialFields({
                     }}
                     aria-label={t($ => $.materials.removeVolume)}
                   >
-                    <Cross2Icon width="10" height="10" />
+                    <X width="10" height="10" />
                   </Button>
                 </div>
               </Badge>
@@ -931,7 +919,7 @@ function VolumeMaterialFields({
             {material.availableVolumes.length === 0 && (
               <Callout color="orange" size="sm">
                 <CalloutIcon>
-                  <ExclamationTriangleIcon />
+                  <TriangleAlert />
                 </CalloutIcon>
                 <CalloutText>{t($ => $.materials.noVolumes)}</CalloutText>
               </Callout>
@@ -969,7 +957,7 @@ function VolumeMaterialFields({
               onClick={handleAddVolume}
               variant="soft"
             >
-              <PlusIcon />
+              <Plus />
             </Button>
           </div>
         </div>

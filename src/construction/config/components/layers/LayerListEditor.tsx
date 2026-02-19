@@ -1,15 +1,15 @@
 import {
-  ChevronDownIcon,
-  ChevronUpIcon,
-  ColumnsIcon,
-  CopyIcon,
-  HeightIcon,
-  MagicWandIcon,
-  PlusIcon,
-  SquareIcon,
-  TrashIcon,
-  WidthIcon
-} from '@radix-ui/react-icons'
+  ChevronDown,
+  ChevronUp,
+  Columns,
+  Copy,
+  MoveHorizontal,
+  MoveVertical,
+  Plus,
+  Square,
+  Trash,
+  Wand2
+} from 'lucide-react'
 import React, { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -120,7 +120,7 @@ export function LayerListEditor({
             <DropdownMenu>
               <DropdownMenu.Trigger asChild>
                 <Button size="icon-sm" title={t($ => $.layers.copyFrom)} variant="soft">
-                  <CopyIcon />
+                  <Copy />
                 </Button>
               </DropdownMenu.Trigger>
               <DropdownMenu.Content>
@@ -146,7 +146,7 @@ export function LayerListEditor({
             <DropdownMenu>
               <DropdownMenu.Trigger asChild>
                 <Button size="icon-sm" title={t($ => $.layers.presetsLabel)} variant="soft">
-                  <MagicWandIcon />
+                  <Wand2 />
                 </Button>
               </DropdownMenu.Trigger>
               <DropdownMenu.Content>
@@ -170,7 +170,7 @@ export function LayerListEditor({
           <DropdownMenu>
             <DropdownMenu.Trigger asChild>
               <Button size="icon-sm" title={addLabel} variant="default">
-                <PlusIcon />
+                <Plus />
               </Button>
             </DropdownMenu.Trigger>
             <DropdownMenu.Content>
@@ -259,7 +259,7 @@ const LayerTypeIcon = ({ type }: { type: LayerType }) => {
   const { t } = useTranslation('config')
   return (
     <Tooltip content={t($ => $.layers.types[type])}>
-      {type === 'monolithic' ? <SquareIcon width={16} height={16} /> : <ColumnsIcon width={16} height={16} />}
+      {type === 'monolithic' ? <Square width={16} height={16} /> : <Columns width={16} height={16} />}
     </Tooltip>
   )
 }
@@ -328,7 +328,7 @@ function LayerCard({
             className="w-[10em]"
           >
             <TextField.Slot title={t($ => $.common.thickness)} side="left" className="pr-0 pl-1">
-              <HeightIcon />
+              <MoveVertical className="size-5" />
             </TextField.Slot>
           </LengthField>
 
@@ -350,7 +350,7 @@ function LayerCard({
               disabled={isFirst}
               title={t($ => $.layers.moveUp)}
             >
-              <ChevronUpIcon />
+              <ChevronUp />
             </Button>
             <Button
               size="icon-sm"
@@ -361,7 +361,7 @@ function LayerCard({
               disabled={isLast}
               title={t($ => $.layers.moveDown)}
             >
-              <ChevronDownIcon />
+              <ChevronDown />
             </Button>
             <Button
               size="icon-sm"
@@ -371,7 +371,7 @@ function LayerCard({
               }}
               title={t($ => $.layers.removeLayer)}
             >
-              <TrashIcon />
+              <Trash />
             </Button>
           </div>
         </div>
@@ -463,10 +463,10 @@ function StripedLayerFields({
           }}
           unit="mm"
           size="sm"
-          className="w-[8em]"
+          className="w-30"
         >
           <TextField.Slot title={t($ => $.common.width)} side="left" className="pr-0 pl-1">
-            <WidthIcon />
+            <MoveHorizontal className="size-5" />
           </TextField.Slot>
         </LengthField>
 
@@ -490,10 +490,10 @@ function StripedLayerFields({
           }}
           unit="mm"
           size="sm"
-          className="w-[8em]"
+          className="w-30"
         >
           <TextField.Slot title={t($ => $.common.width)} side="left" className="pr-0 pl-1">
-            <WidthIcon />
+            <MoveHorizontal className="size-5" />
           </TextField.Slot>
         </LengthField>
 

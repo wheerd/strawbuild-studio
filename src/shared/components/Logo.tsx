@@ -31,10 +31,10 @@ export function Logo({ className = '', compact = false }: LogoProps): React.JSX.
 
         <rect x="-2" y="-2" width="35" height="35" fill="#2b4d4c" rx="4" ry="4" filter="url(#inset-shadow)" />
 
-        <rect x="1" y="2" width="29" height="4" stroke="#d37c37" fill="#ed913e" stroke-width="0.2" />
+        <rect x="1" y="2" width="29" height="4" stroke="#d37c37" fill="#ed913e" strokeWidth="0.2" />
         <rect x="1" y="5" width="29" height="1" fill="#ab6a32" />
 
-        <rect x="19" y="6" width="5" height="24" stroke="#d37c37" fill="#ed913e" stroke-width="0.2" />
+        <rect x="19" y="6" width="5" height="24" stroke="#d37c37" fill="#ed913e" strokeWidth="0.2" />
         <rect x="23" y="6" width="1" height="24" fill="#d37c37" />
 
         <rect x="3" y="8" width="14" height="10" fill="#fdc362" />

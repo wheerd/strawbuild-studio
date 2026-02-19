@@ -1,4 +1,4 @@
-import { InfoCircledIcon } from '@radix-ui/react-icons'
+import { Info } from 'lucide-react'
 import * as Label from '@radix-ui/react-label'
 import { useTranslation } from 'react-i18next'
 
@@ -27,7 +27,7 @@ export function JoistConfigForm({ config, onUpdate }: JoistConfigFormProps) {
           </Label.Root>
           <Tooltip content={t($ => $.floors.tips.beamHeight)}>
             <Button size="icon" className="cursor-help rounded-full" variant="ghost">
-              <InfoCircledIcon width={12} height={12} />
+              <Info width={12} height={12} />
             </Button>
           </Tooltip>
         </div>

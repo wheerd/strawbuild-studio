@@ -1,5 +1,5 @@
-import { EyeOpenIcon, PinBottomIcon, PinTopIcon } from '@radix-ui/react-icons'
 import * as d3 from 'd3-array'
+import { ArrowDownToLine, ArrowUpToLine, Eye } from 'lucide-react'
 import React, { useCallback, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -34,7 +34,7 @@ function ModuleSummaryTableRow({ group, onNavigate }: { group: VirtualGroup; onN
       <Table.Cell className="text-end">{group.totalArea ? formatArea(group.totalArea) : '—'}</Table.Cell>
       <Table.Cell className="text-center">
         <Button size="icon-xs" title={t($ => $.modulesList.actions.jumpToDetails)} variant="ghost" onClick={onNavigate}>
-          <PinBottomIcon />
+          <ArrowDownToLine />
         </Button>
       </Table.Cell>
     </Table.Row>
@@ -98,7 +98,7 @@ function ModulePartsTable({
                   title={t($ => $.modulesList.actions.viewInPlan)}
                   className="-my-2"
                 >
-                  <EyeOpenIcon />
+                  <Eye />
                 </Button>
               )}
             </Table.Cell>
@@ -137,7 +137,7 @@ function ModuleGroupCard({
               variant="ghost"
               onClick={onBackToTop}
             >
-              <PinTopIcon />
+              <ArrowUpToLine />
             </Button>
           </div>
         </div>

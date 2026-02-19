@@ -1,4 +1,4 @@
-import { ExclamationTriangleIcon, ImageIcon } from '@radix-ui/react-icons'
+import { TriangleAlert, Image } from 'lucide-react'
 import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -36,7 +36,7 @@ export function PlanOverlayControls(): React.JSX.Element | null {
                 variant="secondary"
                 aria-label={t($ => $.planControls.ariaLabel)}
               >
-                <ImageIcon />
+                <Image />
               </Button>
             </DropdownMenu.Trigger>
             <DropdownMenu.Content>
@@ -78,7 +78,7 @@ export function PlanOverlayControls(): React.JSX.Element | null {
               <div className="flex flex-col gap-3">
                 <AlertDialog.Title>
                   <div className="flex items-center gap-2">
-                    <ExclamationTriangleIcon />
+                    <TriangleAlert />
                     <span>{t($ => $.planControls.confirmRemove.title)}</span>
                   </div>
                 </AlertDialog.Title>
@@ -124,7 +124,7 @@ export function PlanOverlayControls(): React.JSX.Element | null {
           }}
           title={t($ => $.planControls.importPlan)}
         >
-          <ImageIcon />
+          <Image />
         </Button>
       )}
     </div>

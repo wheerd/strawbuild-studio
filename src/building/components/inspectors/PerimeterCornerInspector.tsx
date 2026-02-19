@@ -1,4 +1,4 @@
-import { ExclamationTriangleIcon, PinLeftIcon, PinRightIcon, TrashIcon } from '@radix-ui/react-icons'
+import { ArrowLeftToLine, ArrowRightToLine, Trash, TriangleAlert } from 'lucide-react'
 import { useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -93,7 +93,7 @@ export function PerimeterCornerInspector({ cornerId }: { cornerId: PerimeterCorn
       {isNonStandardAngle && (
         <Callout color="orange">
           <CalloutIcon>
-            <ExclamationTriangleIcon />
+            <TriangleAlert />
           </CalloutIcon>
           <CalloutText>
             <span className="font-bold">{t($ => $.perimeterCorner.nonRightAngleWarning)}</span>
@@ -106,7 +106,7 @@ export function PerimeterCornerInspector({ cornerId }: { cornerId: PerimeterCorn
       {!canSwitchWall && (
         <Callout color="blue">
           <CalloutIcon>
-            <ExclamationTriangleIcon />
+            <TriangleAlert />
           </CalloutIcon>
           <CalloutText>
             <span className="font-bold">{t($ => $.perimeterCorner.cornerLockedWarning)}</span>
@@ -127,7 +127,7 @@ export function PerimeterCornerInspector({ cornerId }: { cornerId: PerimeterCorn
               canSwitchWall ? t($ => $.perimeterCorner.switchMainWall) : t($ => $.perimeterCorner.cannotSwitchTooltip)
             }
           >
-            {corner.constructedByWall === 'next' ? <PinLeftIcon /> : <PinRightIcon />}
+            {corner.constructedByWall === 'next' ? <ArrowLeftToLine /> : <ArrowRightToLine />}
           </Button>
           <Button size="icon" title={t($ => $.perimeterCorner.fitToView)} onClick={handleFitToView}>
             <FitToViewIcon />
@@ -146,7 +146,7 @@ export function PerimeterCornerInspector({ cornerId }: { cornerId: PerimeterCorn
             onClick={handleDeleteCorner}
             disabled={!canDeleteCorner.canDelete}
           >
-            {corner.interiorAngle === 180 ? <SplitWallIcon /> : <TrashIcon />}
+            {corner.interiorAngle === 180 ? <SplitWallIcon /> : <Trash />}
           </Button>
         </div>
       </div>

@@ -1,4 +1,4 @@
-import { EyeOpenIcon } from '@radix-ui/react-icons'
+import { Eye } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 
 import { Button } from '@/components/ui/button'
@@ -97,7 +97,7 @@ function VolumePartsTableRow({
             title={t($ => $.partsList.actions.viewInPlan)}
             className="-my-2"
           >
-            <EyeOpenIcon />
+            <Eye />
           </Button>
         )}
       </Table.Cell>

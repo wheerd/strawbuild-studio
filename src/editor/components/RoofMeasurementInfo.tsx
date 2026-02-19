@@ -1,5 +1,5 @@
 import { HoverCardTrigger } from '@radix-ui/react-hover-card'
-import { InfoCircledIcon } from '@radix-ui/react-icons'
+import { Info } from 'lucide-react'
 import { type ComponentProps, type JSX, useId } from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -744,12 +744,12 @@ export function RoofMeasurementInfo(config: MeasurementDisplayConfig): React.JSX
     <HoverCard>
       <HoverCardTrigger>
         <Button
-          size="icon"
-          className="cursor-help rounded-full"
+          size="icon-xs"
+          className="text-muted-foreground cursor-help rounded-full"
           title={t($ => $.measurements.measurements)}
           variant="ghost"
         >
-          <InfoCircledIcon width={12} height={12} />
+          <Info />
         </Button>
       </HoverCardTrigger>
       <HoverCardContent side="right">
@@ -768,7 +768,7 @@ export function RoofMeasurementModal(): React.JSX.Element {
       title={t($ => $.measurements.roofMeasurementDetails)}
       trigger={
         <Button size="icon">
-          <InfoCircledIcon />
+          <Info />
         </Button>
       }
     >

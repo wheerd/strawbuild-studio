@@ -1,4 +1,4 @@
-import { InfoCircledIcon } from '@radix-ui/react-icons'
+import { Info } from 'lucide-react'
 import * as Label from '@radix-ui/react-label'
 import React from 'react'
 import { useTranslation } from 'react-i18next'
@@ -24,7 +24,7 @@ export function TriangularBattensConfigForm({
       <div className="flex items-center gap-2">
         <h2>{t($ => $.walls.triangularBattensConfiguration)}</h2>
         <Tooltip content={t($ => $.walls.triangularBattensTooltip)}>
-          <InfoCircledIcon className="cursor-help" />
+          <Info className="cursor-help" />
         </Tooltip>
       </div>
 

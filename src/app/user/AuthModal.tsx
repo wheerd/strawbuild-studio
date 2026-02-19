@@ -1,4 +1,4 @@
-import { PersonIcon } from '@radix-ui/react-icons'
+import { User } from 'lucide-react'
 import React from 'react'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
@@ -58,7 +58,7 @@ export function AuthModal({ isOpen, onOpenChange, currentTab, onTabChange }: Aut
       <DialogContent className="max-w-sm" aria-describedby={undefined}>
         <div className="mb-4 flex items-center justify-center">
           <div className="bg-primary/10 rounded-full p-3">
-            <PersonIcon className="text-primary h-6 w-6" />
+            <User className="text-primary h-10 w-10" />
           </div>
         </div>
 

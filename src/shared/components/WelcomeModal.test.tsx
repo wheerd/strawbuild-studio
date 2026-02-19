@@ -77,7 +77,7 @@ describe('WelcomeModal', () => {
     const closeButtons = screen.queryAllByRole('button')
     const hasCloseButton = closeButtons.some(
       button =>
-        button.getAttribute('aria-label') === 'Close' || button.querySelector('svg')?.classList.contains('Cross2Icon')
+        button.getAttribute('aria-label') === 'Close' || button.querySelector('svg')?.classList.contains('X')
     )
 
     expect(hasCloseButton).toBe(false)

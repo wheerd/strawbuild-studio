@@ -1,5 +1,5 @@
-import { ExclamationTriangleIcon, Pencil1Icon, PinBottomIcon, PinTopIcon } from '@radix-ui/react-icons'
 import * as d3 from 'd3-array'
+import { ArrowDownToLine, ArrowUpToLine, Pencil, TriangleAlert } from 'lucide-react'
 import React, { Suspense, useCallback, useMemo, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -75,7 +75,7 @@ function MaterialSummaryRow({ group, onNavigate }: { group: MaterialGroup; onNav
         <div className="text-foreground flex items-center justify-between gap-2">
           <span className="font-medium">{materialName}</span>
           <Button size="icon-xs" title={t($ => $.partsList.actions.jumpToDetails)} variant="ghost" onClick={onNavigate}>
-            <PinBottomIcon />
+            <ArrowDownToLine />
           </Button>
         </div>
       </Table.RowHeaderCell>
@@ -104,7 +104,7 @@ function MaterialGroupSummaryRow({ group, onNavigate }: { group: PartSubGroup; o
             {badgeLabel}
           </Badge>
           <Button size="icon-xs" title={t($ => $.partsList.actions.jumpToDetails)} variant="ghost" onClick={onNavigate}>
-            <PinBottomIcon />
+            <ArrowDownToLine />
           </Button>
         </div>
       </Table.Cell>
@@ -147,7 +147,7 @@ function MaterialGroupCard({ material, group, onBackToTop, onViewInPlan }: Mater
                 openConfiguration('materials', material.id)
               }}
             >
-              <Pencil1Icon />
+              <Pencil />
             </Button>
             <div className="flex items-center gap-2">
               {group.badgeLabel && (
@@ -157,7 +157,7 @@ function MaterialGroupCard({ material, group, onBackToTop, onViewInPlan }: Mater
               )}
               {group.issueMessage && (
                 <Tooltip content={issueMessage}>
-                  <ExclamationTriangleIcon className="text-red-600" />
+                  <TriangleAlert className="text-red-600" />
                 </Tooltip>
               )}
             </div>
@@ -165,7 +165,7 @@ function MaterialGroupCard({ material, group, onBackToTop, onViewInPlan }: Mater
           <div className="flex items-center gap-2">
             <RegenerateLabelsButton groupId={groupId} compact />
             <Button size="icon" title={t($ => $.partsList.actions.backToSummary)} variant="ghost" onClick={onBackToTop}>
-              <PinTopIcon />
+              <ArrowUpToLine />
             </Button>
           </div>
         </div>

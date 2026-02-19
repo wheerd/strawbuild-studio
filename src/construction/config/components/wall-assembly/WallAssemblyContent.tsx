@@ -1,5 +1,5 @@
-import { CircleIcon, CopyIcon, CubeIcon, LayersIcon, PlusIcon, ResetIcon, TrashIcon } from '@radix-ui/react-icons'
 import * as Label from '@radix-ui/react-label'
+import { Box, Circle, Copy, Layers, Plus, Trash, Undo2 } from 'lucide-react'
 import React, { useCallback, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -268,7 +268,7 @@ export function WallAssemblyContent({ initialSelectionId }: WallAssemblyContentP
             <DropdownMenu>
               <DropdownMenu.Trigger asChild>
                 <Button size="icon" title={t($ => $.common.addNew)}>
-                  <PlusIcon />
+                  <Plus />
                 </Button>
               </DropdownMenu.Trigger>
               <DropdownMenu.Content>
@@ -278,7 +278,7 @@ export function WallAssemblyContent({ initialSelectionId }: WallAssemblyContentP
                   }}
                 >
                   <div className="flex items-center gap-1">
-                    <LayersIcon />
+                    <Layers />
                     {t($ => $.walls.types.infill)}
                   </div>
                 </DropdownMenu.Item>
@@ -288,7 +288,7 @@ export function WallAssemblyContent({ initialSelectionId }: WallAssemblyContentP
                   }}
                 >
                   <div className="flex items-center gap-1">
-                    <CubeIcon />
+                    <Box />
                     {t($ => $.walls.types.strawhenge)}
                   </div>
                 </DropdownMenu.Item>
@@ -298,7 +298,7 @@ export function WallAssemblyContent({ initialSelectionId }: WallAssemblyContentP
                   }}
                 >
                   <div className="flex items-center gap-1">
-                    <CircleIcon />
+                    <Circle />
                     {t($ => $.walls.types.modules)}
                   </div>
                 </DropdownMenu.Item>
@@ -308,7 +308,7 @@ export function WallAssemblyContent({ initialSelectionId }: WallAssemblyContentP
                   }}
                 >
                   <div className="flex items-center gap-1">
-                    <TrashIcon />
+                    <Trash />
                     {t($ => $.walls.types['non-strawbale'])}
                   </div>
                 </DropdownMenu.Item>
@@ -322,7 +322,7 @@ export function WallAssemblyContent({ initialSelectionId }: WallAssemblyContentP
               title={t($ => $.common.duplicate)}
               variant="soft"
             >
-              <CopyIcon />
+              <Copy />
             </Button>
 
             <AlertDialog.Root>
@@ -333,7 +333,7 @@ export function WallAssemblyContent({ initialSelectionId }: WallAssemblyContentP
                   variant="destructive"
                   title={usage.isUsed ? t($ => $.common.inUseCannotDelete) : t($ => $.common.delete)}
                 >
-                  <TrashIcon />
+                  <Trash />
                 </Button>
               </AlertDialog.Trigger>
               <AlertDialog.Content>
@@ -364,7 +364,7 @@ export function WallAssemblyContent({ initialSelectionId }: WallAssemblyContentP
                   variant="outline"
                   title={t($ => $.common.resetToDefaults)}
                 >
-                  <ResetIcon />
+                  <Undo2 />
                 </Button>
               </AlertDialog.Trigger>
               <AlertDialog.Content>

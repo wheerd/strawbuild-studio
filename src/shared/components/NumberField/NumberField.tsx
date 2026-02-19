@@ -1,4 +1,4 @@
-import { ChevronDownIcon, ChevronUpIcon } from '@radix-ui/react-icons'
+import { ChevronDown, ChevronUp } from 'lucide-react'
 import * as React from 'react'
 import { forwardRef, useContext } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -208,7 +208,7 @@ const NumberFieldSpinner = forwardRef<HTMLDivElement, NumberFieldSpinnerProps>(f
         className="border-input h-1/2 w-8 rounded-l-none rounded-br-none border-b-[0.5px] border-l focus-visible:relative"
         tabIndex={-1}
       >
-        <ChevronUpIcon />
+        <ChevronUp />
       </Button>
 
       <Button
@@ -220,7 +220,7 @@ const NumberFieldSpinner = forwardRef<HTMLDivElement, NumberFieldSpinnerProps>(f
         onClick={stepDown}
         tabIndex={-1}
       >
-        <ChevronDownIcon />
+        <ChevronDown />
       </Button>
     </div>
   )

@@ -1,4 +1,4 @@
-import { InfoCircledIcon } from '@radix-ui/react-icons'
+import { Info } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 
 import { Button } from '@/components/ui/button'
@@ -18,7 +18,7 @@ export function PerimeterPresetToolInspector({ tool }: ToolInspectorProps<Perime
         {/* Informational Note */}
         <Callout color="blue">
           <CalloutIcon>
-            <InfoCircledIcon />
+            <Info />
           </CalloutIcon>
           <CalloutText>
             <span className="text-sm">{t($ => $.perimeterPreset.info)}</span>

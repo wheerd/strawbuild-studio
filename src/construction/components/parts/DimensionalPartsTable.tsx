@@ -1,4 +1,4 @@
-import { ExclamationTriangleIcon, EyeOpenIcon } from '@radix-ui/react-icons'
+import { TriangleAlert, Eye } from 'lucide-react'
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -159,7 +159,7 @@ function DimensionalPartsTableRow({
           {part.sideFaces?.length && part.sideFaces[0].polygon.outer.points.length >= 3 && (
             <>
               <Tooltip key="special-cut" content={<SpecialCutTooltip polygon={part.sideFaces[0].polygon.outer} />}>
-                <ExclamationTriangleIcon aria-hidden className="text-orange-500" />
+                <TriangleAlert aria-hidden className="text-orange-500" />
               </Tooltip>
               <PartCutModal
                 trigger={
@@ -185,7 +185,7 @@ function DimensionalPartsTableRow({
                   : t($ => $.partsList.issues.lengthExceedsMultiple)
               }
             >
-              <ExclamationTriangleIcon className={part.requiresSinglePiece ? 'text-red-600' : 'text-orange-500'} />
+              <TriangleAlert className={part.requiresSinglePiece ? 'text-red-600' : 'text-orange-500'} />
             </Tooltip>
           )}
           <span>{part.length ? formatLengthInMeters(part.length) : '—'}</span>
@@ -205,7 +205,7 @@ function DimensionalPartsTableRow({
             title={t($ => $.partsList.actions.viewInPlan)}
             className="-my-2"
           >
-            <EyeOpenIcon />
+            <Eye />
           </Button>
         )}
       </Table.Cell>

@@ -1,5 +1,5 @@
-import { ExclamationTriangleIcon, ReloadIcon, SquareIcon, TrashIcon } from '@radix-ui/react-icons'
 import * as Label from '@radix-ui/react-label'
+import { RefreshCw, Square, Trash, TriangleAlert } from 'lucide-react'
 import { useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -57,7 +57,7 @@ function detectMixedOverhangs(overhangs: RoofOverhang[]): MixedState<Length> {
 function MixedStateIndicator({ tooltip }: { tooltip: string }) {
   return (
     <Tooltip content={tooltip}>
-      <ExclamationTriangleIcon className="text-amber-600" width={14} height={14} />
+      <TriangleAlert className="text-amber-600" width={14} height={14} />
     </Tooltip>
   )
 }
@@ -280,12 +280,12 @@ export function RoofInspector({ roofId }: RoofInspectorProps): React.JSX.Element
       <div className="flex justify-end gap-2">
         {roof.referencePerimeter && (
           <Button size="icon" title={t($ => $.roof.viewAssociatedPerimeter)} onClick={handleNavigateToPerimeter}>
-            <SquareIcon />
+            <Square />
           </Button>
         )}
         <Tooltip content={t($ => $.roof.cycleMainSide)}>
           <Button size="icon" onClick={() => cycleRoofMainSide(roofId)}>
-            <ReloadIcon />
+            <RefreshCw />
           </Button>
         </Tooltip>
         <Button size="icon" title={t($ => $.roof.fitToView)} onClick={handleFitToView}>
@@ -300,7 +300,7 @@ export function RoofInspector({ roofId }: RoofInspectorProps): React.JSX.Element
             popSelection()
           }}
         >
-          <TrashIcon />
+          <Trash />
         </Button>
       </div>
     </div>

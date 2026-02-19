@@ -1,4 +1,4 @@
-import { CheckCircledIcon, CrossCircledIcon, ExclamationTriangleIcon, InfoCircledIcon } from '@radix-ui/react-icons'
+import { CircleCheck, CircleX, Info, TriangleAlert } from 'lucide-react'
 import { useTheme } from 'next-themes'
 import { Toaster as Sonner } from 'sonner'
 
@@ -14,10 +14,10 @@ const Toaster = ({ ...props }: ToasterProps) => {
       theme={theme as ToasterProps['theme']}
       className="toaster group"
       icons={{
-        success: <CheckCircledIcon className="h-4 w-4" />,
-        info: <InfoCircledIcon className="h-4 w-4" />,
-        warning: <ExclamationTriangleIcon className="h-4 w-4" />,
-        error: <CrossCircledIcon className="h-4 w-4" />,
+        success: <CircleCheck className="h-4 w-4" />,
+        info: <Info className="h-4 w-4" />,
+        warning: <TriangleAlert className="h-4 w-4" />,
+        error: <CircleX className="h-4 w-4" />,
         loading: <Spinner className="h-4 w-4" />
       }}
       toastOptions={{

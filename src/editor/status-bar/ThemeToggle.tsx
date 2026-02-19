@@ -1,4 +1,4 @@
-import { MoonIcon, SunIcon } from '@radix-ui/react-icons'
+import { Moon, Sun } from 'lucide-react'
 import { useTheme } from 'next-themes'
 import React from 'react'
 import { useTranslation } from 'react-i18next'
@@ -21,7 +21,7 @@ export function ThemeToggle(): React.JSX.Element {
       title={isDark ? t($ => $.themeToggle.switchToLight) : t($ => $.themeToggle.switchToDark)}
       aria-pressed={isDark}
     >
-      {isDark ? <MoonIcon className="h-4 w-4" /> : <SunIcon className="h-4 w-4" />}
+      {isDark ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
     </Button>
   )
 }

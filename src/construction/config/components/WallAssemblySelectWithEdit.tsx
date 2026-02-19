@@ -1,4 +1,4 @@
-import { Pencil1Icon } from '@radix-ui/react-icons'
+import { Pencil } from 'lucide-react'
 import React from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -25,7 +25,7 @@ export function WallAssemblySelectWithEdit(props: WallAssemblySelectProps): Reac
           openConfiguration('walls', props.value ?? undefined)
         }}
       >
-        <Pencil1Icon />
+        <Pencil />
       </Button>
     </div>
   )

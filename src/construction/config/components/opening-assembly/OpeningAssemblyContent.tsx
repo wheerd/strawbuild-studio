@@ -1,5 +1,5 @@
-import { CopyIcon, PlusIcon, ResetIcon, TrashIcon } from '@radix-ui/react-icons'
 import * as Label from '@radix-ui/react-label'
+import { Copy, Plus, Trash, Undo2 } from 'lucide-react'
 import React, { useCallback, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -186,7 +186,7 @@ export function OpeningAssemblyContent({ initialSelectionId }: OpeningAssemblyCo
           <DropdownMenu>
             <DropdownMenu.Trigger asChild>
               <Button size="icon" title={t($ => $.common.addNew)}>
-                <PlusIcon />
+                <Plus />
               </Button>
             </DropdownMenu.Trigger>
             <DropdownMenu.Content>
@@ -229,7 +229,7 @@ export function OpeningAssemblyContent({ initialSelectionId }: OpeningAssemblyCo
           </DropdownMenu>
 
           <Button size="icon" onClick={handleDuplicate} variant="soft" title={t($ => $.common.duplicate)}>
-            <CopyIcon />
+            <Copy />
           </Button>
 
           <AlertDialog.Root>
@@ -240,7 +240,7 @@ export function OpeningAssemblyContent({ initialSelectionId }: OpeningAssemblyCo
                 disabled={usage.isUsed}
                 title={usage.isUsed ? t($ => $.common.inUseCannotDelete) : t($ => $.common.delete)}
               >
-                <TrashIcon />
+                <Trash />
               </Button>
             </AlertDialog.Trigger>
             <AlertDialog.Content>
@@ -271,7 +271,7 @@ export function OpeningAssemblyContent({ initialSelectionId }: OpeningAssemblyCo
                 variant="outline"
                 title={t($ => $.common.resetToDefaults)}
               >
-                <ResetIcon />
+                <Undo2 />
               </Button>
             </AlertDialog.Trigger>
             <AlertDialog.Content>
