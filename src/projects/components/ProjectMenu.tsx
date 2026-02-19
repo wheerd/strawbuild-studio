@@ -240,7 +240,7 @@ export function ProjectMenu(): React.JSX.Element {
     if (exportError || importError) {
       return {
         text: exportError ?? importError ?? t($ => $.autoSave.exportFailed),
-        icon: <Cross2Icon className="h-3 w-3" />,
+        icon: <Cross2Icon className="h-3 w-3" aria-hidden />,
         colorClass: 'text-red-600 dark:text-red-400'
       }
     }
@@ -248,7 +248,7 @@ export function ProjectMenu(): React.JSX.Element {
     if (isExporting || isImporting) {
       return {
         text: isExporting ? t($ => $.autoSave.exporting) : t($ => $.autoSave.importing),
-        icon: <UpdateIcon className="h-3 w-3 animate-spin" />,
+        icon: <UpdateIcon className="h-3 w-3 animate-spin" aria-hidden />,
         colorClass: 'text-blue-600 dark:text-blue-400'
       }
     }
@@ -256,7 +256,7 @@ export function ProjectMenu(): React.JSX.Element {
     if (activeError) {
       return {
         text: isAuthenticated ? t($ => $.projectMenu.syncFailed) : t($ => $.projectMenu.saveFailed),
-        icon: <Cross2Icon className="h-3 w-3" />,
+        icon: <Cross2Icon className="h-3 w-3" aria-hidden />,
         colorClass: 'text-red-600 dark:text-red-400'
       }
     }
@@ -264,7 +264,7 @@ export function ProjectMenu(): React.JSX.Element {
     if (activeIsSaving) {
       return {
         text: isAuthenticated ? t($ => $.projectMenu.syncing) : t($ => $.projectMenu.saving),
-        icon: <UpdateIcon className="h-3 w-3 animate-spin" />,
+        icon: <UpdateIcon className="h-3 w-3 animate-spin" aria-hidden />,
         colorClass: 'text-blue-600 dark:text-blue-400'
       }
     }
@@ -288,14 +288,14 @@ export function ProjectMenu(): React.JSX.Element {
         text: isAuthenticated
           ? `${t($ => $.projectMenu.synced)} ${timeText}`
           : `${t($ => $.projectMenu.saved)} ${timeText}`,
-        icon: <CheckIcon className="h-3 w-3" />,
+        icon: <CheckIcon className="h-3 w-3" aria-hidden />,
         colorClass: 'text-green-600 dark:text-green-400'
       }
     }
 
     return {
       text: t($ => $.autoSave.notSaved),
-      icon: <Cross2Icon className="h-3 w-3" />,
+      icon: <Cross2Icon className="h-3 w-3" aria-hidden />,
       colorClass: 'text-muted-foreground'
     }
   }
@@ -319,7 +319,7 @@ export function ProjectMenu(): React.JSX.Element {
               >
                 <span className="text-foreground text-sm font-medium">{projectName}</span>
                 <div className="flex items-center gap-0.5">
-                  <SaveIcon className="h-3.5 w-3.5" />
+                  <SaveIcon className="h-3.5 w-3.5" aria-hidden />
                   {statusInfo.icon}
                 </div>
               </Button>

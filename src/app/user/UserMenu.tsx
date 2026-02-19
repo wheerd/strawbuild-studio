@@ -56,7 +56,7 @@ export function UserMenu(): React.JSX.Element {
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="outline" size="icon" className="rounded-full" title={t($ => $.auth.accountMenu)}>
-          <PersonIcon />
+          <PersonIcon aria-hidden />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" sideOffset={4}>

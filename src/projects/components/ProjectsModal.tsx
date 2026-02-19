@@ -86,86 +86,99 @@ export function ProjectsModal({ open, onOpenChange }: ProjectsModalProps): React
             <DialogTitle>{t($ => $.projectMenu.manageProjects)}</DialogTitle>
           </DialogHeader>
 
-          <div className="max-h-[400px] overflow-y-auto">
+          <ul
+            className="max-h-[400px] list-none overflow-y-auto p-0"
+            role="listbox"
+            aria-label={t($ => $.projectMenu.projectsList)}
+          >
             {isLoading ? (
-              <div className="flex items-center justify-center py-8">
+              <li className="flex items-center justify-center py-8">
                 <Cross2Icon className="h-6 w-6 animate-spin" />
-              </div>
+              </li>
             ) : projects.length === 0 ? (
-              <div className="text-muted-foreground py-8 text-center">{t($ => $.projectMenu.noProjects)}</div>
+              <li className="text-muted-foreground py-8 text-center">{t($ => $.projectMenu.noProjects)}</li>
             ) : (
-              <div className="space-y-1">
-                {projects.map(project => (
-                  <div
-                    key={project.id}
-                    className={cn(
-                      'hover:bg-accent flex items-center justify-between rounded-lg p-3',
-                      project.id === currentProjectId && 'bg-accent/50'
-                    )}
+              projects.map(project => (
+                <li
+                  key={project.id}
+                  role="option"
+                  aria-selected={project.id === currentProjectId}
+                  className={cn(
+                    'hover:bg-accent flex items-center justify-between rounded-lg p-3',
+                    project.id === currentProjectId && 'bg-accent/50'
+                  )}
+                >
+                  <button
+                    onClick={() => {
+                      if (isOnline && project.id !== currentProjectId) {
+                        void handleSwitchProject(project)
+                      }
+                    }}
+                    disabled={!isOnline || switchingToProject !== null}
+                    aria-label={t($ => $.projectMenu.switchToProject, {
+                      name: project.name || t($ => $.projectMenu.untitled)
+                    })}
+                    className="flex-1 cursor-pointer text-left disabled:cursor-not-allowed disabled:opacity-50"
                   >
-                    <button
-                      onClick={() => {
-                        if (isOnline && project.id !== currentProjectId) {
-                          void handleSwitchProject(project)
-                        }
-                      }}
-                      disabled={!isOnline || switchingToProject !== null}
-                      className="flex-1 cursor-pointer text-left disabled:cursor-not-allowed disabled:opacity-50"
-                    >
-                      <div className="flex items-center gap-2">
-                        <span className="font-medium">{project.name || t($ => $.projectMenu.untitled)}</span>
-                        {project.id === currentProjectId && (
-                          <span className="bg-primary text-primary-foreground rounded px-1.5 py-0.5 text-xs">
-                            {t($ => $.projectMenu.current)}
-                          </span>
-                        )}
-                      </div>
-                      {project.description && (
-                        <p className="text-muted-foreground mt-0.5 truncate text-sm">{project.description}</p>
+                    <div className="flex items-center gap-2">
+                      <span className="font-medium">{project.name || t($ => $.projectMenu.untitled)}</span>
+                      {project.id === currentProjectId && (
+                        <span
+                          className="bg-primary text-primary-foreground rounded px-1.5 py-0.5 text-xs"
+                          aria-current="true"
+                        >
+                          {t($ => $.projectMenu.current)}
+                        </span>
                       )}
-                      <p className="text-muted-foreground mt-0.5 text-xs">
-                        {t($ => $.projectMenu.lastUpdated)}: {formatRelativeTime(project.updatedAt)}
-                      </p>
-                    </button>
-
-                    {project.id !== currentProjectId && (
-                      <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            disabled={!isOnline || switchingToProject !== null}
-                            className="text-muted-foreground hover:text-destructive"
-                          >
-                            <TrashIcon className="h-4 w-4" />
-                          </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent maxWidth="400px">
-                          <AlertDialogHeader>
-                            <AlertDialogTitle>{t($ => $.projectMenu.deleteConfirm)}</AlertDialogTitle>
-                            <AlertDialogDescription>
-                              {project.name}: {t($ => $.projectMenu.deleteMessage)}
-                            </AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel>{t($ => $.actions.cancel)}</AlertDialogCancel>
-                            <AlertDialogAction
-                              onClick={() => {
-                                void handleDeleteProject(project)
-                              }}
-                              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                            >
-                              {t($ => $.projectMenu.delete)}
-                            </AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
+                    </div>
+                    {project.description && (
+                      <p className="text-muted-foreground mt-0.5 truncate text-sm">{project.description}</p>
                     )}
-                  </div>
-                ))}
-              </div>
+                    <p className="text-muted-foreground mt-0.5 text-xs">
+                      {t($ => $.projectMenu.lastUpdated)}: {formatRelativeTime(project.updatedAt)}
+                    </p>
+                  </button>
+
+                  {project.id !== currentProjectId && (
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          disabled={!isOnline || switchingToProject !== null}
+                          aria-label={t($ => $.projectMenu.deleteProject, {
+                            name: project.name || t($ => $.projectMenu.untitled)
+                          })}
+                          className="text-muted-foreground hover:text-destructive"
+                        >
+                          <TrashIcon className="h-4 w-4" />
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent maxWidth="400px">
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>{t($ => $.projectMenu.deleteConfirm)}</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            {project.name}: {t($ => $.projectMenu.deleteMessage)}
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>{t($ => $.actions.cancel)}</AlertDialogCancel>
+                          <AlertDialogAction
+                            onClick={() => {
+                              void handleDeleteProject(project)
+                            }}
+                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                          >
+                            {t($ => $.projectMenu.delete)}
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  )}
+                </li>
+              ))
             )}
-          </div>
+          </ul>
 
           <DialogFooter>
             <Button

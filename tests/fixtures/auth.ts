@@ -98,3 +98,42 @@ export async function setupAnonymousPage(page: Page): Promise<void> {
   await setupEditorPage(page)
   await expect(page.getByRole('button', { name: /account/i })).toBeVisible()
 }
+
+export async function cleanupTestProjects(namePrefix: string): Promise<void> {
+  const config = getSupabaseConfig()
+  if (!config) {
+    return
+  }
+
+  const session = await signInViaApi(config, TEST_USER_EMAIL, TEST_USER_PASSWORD)
+
+  const listResponse = await fetch(`${config.url}/rest/v1/projects?name=like.${namePrefix}*&select=id,name`, {
+    headers: {
+      apikey: config.anonKey,
+      Authorization: `Bearer ${session.accessToken}`,
+      'Content-Type': 'application/json'
+    }
+  })
+
+  if (!listResponse.ok) {
+    console.error('Failed to list projects for cleanup:', await listResponse.text())
+    return
+  }
+
+  const projects = (await listResponse.json()) as Array<{ id: string; name: string }>
+
+  for (const project of projects) {
+    const deleteResponse = await fetch(`${config.url}/rest/v1/projects?id=eq.${project.id}`, {
+      method: 'DELETE',
+      headers: {
+        apikey: config.anonKey,
+        Authorization: `Bearer ${session.accessToken}`,
+        Prefer: 'return=minimal'
+      }
+    })
+
+    if (!deleteResponse.ok) {
+      console.error(`Failed to delete project ${project.name}:`, await deleteResponse.text())
+    }
+  }
+}

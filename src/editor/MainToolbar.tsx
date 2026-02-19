@@ -40,7 +40,7 @@ export function MainToolbar({ onInfoClick }: MainToolbarProps): React.JSX.Elemen
     <div className="border-border flex items-center gap-4 border-b p-2" data-testid="main-toolbar">
       {/* Logo + Project Menu */}
       <div className="flex items-center gap-1">
-        <div onClick={onInfoClick} className="cursor-pointer">
+        <div onClick={onInfoClick} className="cursor-pointer" role="button" title={t($ => $.about)}>
           <Logo compact />
         </div>
         <ProjectMenu />

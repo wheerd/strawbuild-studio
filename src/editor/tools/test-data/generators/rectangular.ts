@@ -165,7 +165,7 @@ export function createRectangularPerimeter(): void {
 
       // Add a roof
       const defaultRoofAssemblyId = configStore.getDefaultRoofAssemblyId()
-      modelStore.addRoof(
+      const roof = modelStore.addRoof(
         activeStoreyId,
         'gable',
         newPerimeter.outerPolygon,
@@ -183,7 +183,7 @@ export function createRectangularPerimeter(): void {
       })
 
       // Focus the view on the newly created test data
-      const bounds = Bounds2D.fromPoints(newPerimeter.outerPolygon.points)
+      const bounds = Bounds2D.fromPoints(roof.overhangPolygon.points)
       getSelectionActions().replaceSelection([newPerimeter.id])
       viewportActions().fitToView(bounds)
     }

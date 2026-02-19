@@ -1,4 +1,5 @@
 {
+  "about": "Über Strawbaler",
   "configuration": "Konfiguration",
   "constructionPlanForActiveStorey": "Konstruktionsplan für aktives Geschoss",
   "constructionPlanForStorey": "Konstruktionsplan für {{storeyName}}",

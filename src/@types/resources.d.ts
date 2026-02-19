@@ -50,9 +50,6 @@ interface Resources {
       "updatePasswordDescription": "Enter your new password below."
     },
     "autoSave": {
-      "autoSaveFailed": "Auto-save failed",
-      "autoSaved": "Auto-saved {{time}}",
-      "autoSaving": "Auto-saving...",
       "daysAgo": "{{days}}d ago",
       "errors": {
         "failedExport": "Failed to export project",
@@ -85,6 +82,7 @@ interface Resources {
       "delete": "Delete",
       "deleteConfirm": "Delete project?",
       "deleteMessage": "This cannot be undone.",
+      "deleteProject": "Delete project {{name}}",
       "deleteSuccess": "Project deleted",
       "description": "Description",
       "descriptionPlaceholder": "Add a description...",
@@ -104,15 +102,15 @@ interface Resources {
       "manageProjects": "Manage Projects",
       "newProject": "New Project",
       "noProjects": "No projects yet",
-      "offlineMessage": "Connect to internet to manage projects",
       "projectName": "Project Name",
+      "projectsList": "Projects",
       "save": "Save",
       "saveFailed": "Save failed",
       "saved": "Saved",
       "saving": "Saving...",
       "startEmpty": "Start with empty project",
-      "switchProject": "Switch to this project",
       "switchSuccess": "Switched to project",
+      "switchToProject": "Switch to {{name}}",
       "syncFailed": "Sync failed",
       "synced": "Synced",
       "syncing": "Syncing...",
@@ -1628,6 +1626,7 @@ interface Resources {
     }
   },
   "toolbar": {
+    "about": "about",
     "configuration": "Configuration",
     "constructionPlanForActiveStorey": "Construction Plan for active storey",
     "constructionPlanForStorey": "Construction Plan for {{storeyName}}",

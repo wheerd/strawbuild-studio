@@ -6,13 +6,14 @@ import { defineConfig, devices } from '@playwright/test'
 import dotenv from 'dotenv'
 import path from 'path'
 
-dotenv.config({ path: path.resolve(import.meta.dirname, '.env.test.local') })
+dotenv.config({ path: path.resolve(import.meta.dirname, '.env.test.local'), quiet: true })
 
 /**
  * See https://playwright.dev/docs/test-configuration.
  */
 export default defineConfig({
   testDir: './tests',
+  globalTeardown: './tests/global-teardown.ts',
   /* Run tests in files in parallel */
   fullyParallel: true,
   /* Fail the build on CI if you accidentally left test.only in the source code. */

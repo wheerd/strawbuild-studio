@@ -1,171 +1,146 @@
 import { expect, test } from '@playwright/test'
 
-import { isSupabaseConfiguredForTests, setupAnonymousPage, setupAuthenticatedPage } from './fixtures/auth'
+import { TEST_USER_EMAIL, TEST_USER_PASSWORD, isSupabaseConfiguredForTests, setupAnonymousPage } from './fixtures/auth'
+import { loadTestData } from './fixtures/editor'
 
 const authDescribe = isSupabaseConfiguredForTests() ? test.describe : test.describe.skip
 
 authDescribe('Project Management', () => {
-  authDescribe('Projects Modal', () => {
-    test.beforeEach(async ({ page }) => {
-      await setupAuthenticatedPage(page)
-    })
+  test('complete journey: anonymous rename, sign-in sync, CRUD operations', async ({ page }) => {
+    test.setTimeout(180000)
 
-    test('should open projects modal from project menu', async ({ page }) => {
-      await page.getByRole('button', { name: /project/i }).click()
-      await page.getByRole('menuitem', { name: /manage projects/i }).click()
-      await expect(page.getByRole('dialog', { name: /manage projects/i })).toBeVisible()
-    })
+    const testId = Date.now()
+    const firstName = `Journey First ${testId}`
+    const emptyName = `Journey Empty ${testId}`
+    const copiedName = `Journey Copied ${testId}`
 
-    test('should show current project indicator', async ({ page }) => {
-      await page.getByRole('button', { name: /project/i }).click()
-      await page.getByRole('menuitem', { name: /manage projects/i }).click()
-      await expect(page.getByText(/current/i)).toBeVisible()
-    })
+    await page.evaluate('document.fonts.ready')
 
-    test('should close projects modal with cancel button', async ({ page }) => {
-      await page.getByRole('button', { name: /project/i }).click()
-      await page.getByRole('menuitem', { name: /manage projects/i }).click()
-      await page.getByRole('button', { name: /cancel/i }).click()
-      await expect(page.getByRole('dialog', { name: /manage projects/i })).not.toBeVisible()
-    })
-  })
+    // === PHASE 1: Anonymous User ===
 
-  authDescribe('Edit Project', () => {
-    test.beforeEach(async ({ page }) => {
-      await setupAuthenticatedPage(page)
-    })
+    await setupAnonymousPage(page)
 
-    test('should open edit project dialog', async ({ page }) => {
-      await page.getByRole('button', { name: /project/i }).click()
-      await page.getByRole('menuitem', { name: /edit project/i }).click()
-      await expect(page.getByRole('dialog')).toBeVisible()
-      await expect(page.getByLabel(/name/i)).toBeVisible()
-    })
+    await page.getByRole('button', { name: /project/i }).click()
+    await expect(page.getByRole('menuitem', { name: /manage projects/i })).not.toBeVisible()
+    await page.keyboard.press('Escape')
 
-    test('should update project name', async ({ page }) => {
-      const uniqueName = `Test Project ${Date.now()}`
+    await loadTestData(page, /Rectangular Perimeter/)
+    await page.locator('[data-entity-type="perimeter"]').click()
+    await expect(page.getByTestId('side-panel')).toContainText('40.00m²')
 
-      await page.getByRole('button', { name: /project/i }).click()
-      await page.getByRole('menuitem', { name: /edit project/i }).click()
+    await page.getByRole('button', { name: /project/i }).click()
+    await page.getByRole('menuitem', { name: /edit project/i }).click()
+    await page.getByLabel(/name/i).fill(firstName)
+    await page.getByRole('button', { name: /^save$/i }).click()
 
-      await page.getByLabel(/name/i).fill(uniqueName)
-      await page.getByRole('button', { name: /^save$/i }).click()
+    await expect(page.getByRole('button', { name: /project/i })).toHaveText(firstName)
 
-      await expect(page.getByRole('button', { name: uniqueName })).toBeVisible()
-    })
-  })
+    // === PHASE 2: Sign In via UI ===
 
-  authDescribe('Create Project', () => {
-    test.beforeEach(async ({ page }) => {
-      await setupAuthenticatedPage(page)
-    })
+    await page.getByRole('button', { name: /account/i }).click()
+    await page.getByRole('menuitem', { name: /sign in/i }).click()
 
-    test('should open new project dialog', async ({ page }) => {
-      await page.getByRole('button', { name: /project/i }).click()
-      await page.getByRole('menuitem', { name: /manage projects/i }).click()
-      await page.getByRole('button', { name: /new project/i }).click()
+    await expect(page.getByRole('dialog')).toBeVisible()
+    await page.getByLabel(/email/i).fill(TEST_USER_EMAIL)
+    await page.getByLabel(/^password$/i).fill(TEST_USER_PASSWORD)
+    await page.getByRole('button', { name: /^sign in$/i }).click()
 
-      await expect(page.getByRole('dialog', { name: /new project/i })).toBeVisible()
-    })
+    await expect(page.getByRole('dialog')).not.toBeVisible({ timeout: 10000 })
 
-    test('should create new empty project', async ({ page }) => {
-      const projectName = `New Project ${Date.now()}`
+    await page.getByRole('button', { name: /account/i }).click()
+    await expect(page.getByTestId('user-email')).toHaveText(TEST_USER_EMAIL)
+    await page.keyboard.press('Escape')
 
-      await page.getByRole('button', { name: /project/i }).click()
-      await page.getByRole('menuitem', { name: /manage projects/i }).click()
-      await page.getByRole('button', { name: /new project/i }).click()
+    // === PHASE 3: Verify Synced Project ===
 
-      await page.getByLabel(/name/i).fill(projectName)
-      await page.getByRole('radio', { name: /start empty/i }).check()
-      await page.getByRole('button', { name: /^create$/i }).click()
+    await page.getByRole('button', { name: /project/i }).click()
+    await page.getByRole('menuitem', { name: /manage projects/i }).click()
 
-      await expect(page.getByRole('dialog', { name: /manage projects/i })).not.toBeVisible()
-      await expect(page.getByRole('button', { name: projectName })).toBeVisible()
-    })
+    const dialog = page.getByRole('dialog', { name: /manage projects/i })
+    const projectList = dialog.getByRole('listbox', { name: /projects/i })
+    await expect(dialog).toBeVisible()
 
-    test('should create project with copy of current', async ({ page }) => {
-      const projectName = `Copied Project ${Date.now()}`
+    const firstProjectOption = projectList.getByRole('option', { name: firstName })
+    await expect(firstProjectOption).toBeVisible()
+    await expect(firstProjectOption).toHaveAttribute('aria-selected', 'true')
 
-      await page.getByRole('button', { name: /project/i }).click()
-      await page.getByRole('menuitem', { name: /manage projects/i }).click()
-      await page.getByRole('button', { name: /new project/i }).click()
+    await page.getByRole('button', { name: /cancel/i }).click()
+    await expect(page.getByRole('dialog', { name: /manage projects/i })).not.toBeVisible()
 
-      await page.getByLabel(/name/i).fill(projectName)
-      await page.getByRole('radio', { name: /copy current/i }).check()
-      await page.getByRole('button', { name: /^create$/i }).click()
+    // === PHASE 4: Create Empty Project ===
 
-      await expect(page.getByRole('dialog', { name: /manage projects/i })).not.toBeVisible()
-      await expect(page.getByRole('button', { name: projectName })).toBeVisible()
-    })
-  })
+    await page.getByRole('button', { name: /project/i }).click()
+    await page.getByRole('menuitem', { name: /manage projects/i }).click()
+    await page.getByRole('button', { name: /new project/i }).click()
 
-  authDescribe('Switch Project', () => {
-    test.beforeEach(async ({ page }) => {
-      await setupAuthenticatedPage(page)
-    })
+    const newProjectDialog = page.getByRole('dialog', { name: /new project/i })
+    await expect(newProjectDialog).toBeVisible()
+    await newProjectDialog.getByLabel(/name/i).fill(emptyName)
+    await newProjectDialog.getByRole('radio', { name: /start with empty/i }).check()
+    await newProjectDialog.getByRole('button', { name: /^create$/i }).click()
 
-    test('should switch to another project', async ({ page }) => {
-      const firstProjectName = `First ${Date.now()}`
-      const secondProjectName = `Second ${Date.now()}`
+    await expect(page.getByRole('dialog', { name: /manage projects/i })).toBeVisible()
+    const emptyProjectEntry = projectList.getByRole('option', { name: emptyName })
+    await expect(emptyProjectEntry).toBeVisible()
+    await expect(emptyProjectEntry).toHaveAttribute('aria-selected', 'true')
 
-      await page.getByRole('button', { name: /project/i }).click()
-      await page.getByRole('menuitem', { name: /manage projects/i }).click()
-      await page.getByRole('button', { name: /new project/i }).click()
-      await page.getByLabel(/name/i).fill(firstProjectName)
-      await page.getByRole('button', { name: /^create$/i }).click()
+    await page.getByRole('button', { name: /cancel/i }).click()
+    await expect(page.getByRole('dialog', { name: /manage projects/i })).not.toBeVisible()
+    await expect(page.locator('[data-entity-type="perimeter"]')).not.toBeVisible()
+    await loadTestData(page, /Hexagonal Perimeter/)
+    await page.locator('[data-entity-type="perimeter"]').click()
+    await expect(page.getByTestId('side-panel')).toContainText('18m')
 
-      await page.waitForTimeout(500)
+    // === PHASE 5: Create Copied Project ===
 
-      await page.getByRole('button', { name: firstProjectName }).click()
-      await page.getByRole('menuitem', { name: /manage projects/i }).click()
-      await page.getByRole('button', { name: /new project/i }).click()
-      await page.getByLabel(/name/i).fill(secondProjectName)
-      await page.getByRole('button', { name: /^create$/i }).click()
+    await page.getByRole('button', { name: /project/i }).click()
+    await page.getByRole('menuitem', { name: /manage projects/i }).click()
+    await page.getByRole('button', { name: /new project/i }).click()
 
-      await page.waitForTimeout(500)
+    await page.getByLabel(/name/i).fill(copiedName)
+    await page.getByRole('radio', { name: /copy current/i }).check()
+    await page.getByRole('button', { name: /^create$/i }).click()
 
-      await page.getByRole('button', { name: secondProjectName }).click()
-      await page.getByRole('menuitem', { name: /manage projects/i }).click()
+    await expect(page.getByRole('dialog', { name: /manage projects/i })).toBeVisible()
+    const copiedProjectEntry = projectList.getByRole('option', { name: copiedName })
+    await expect(copiedProjectEntry).toBeVisible()
+    await expect(copiedProjectEntry).toHaveAttribute('aria-selected', 'true')
 
-      await page.getByText(firstProjectName).first().click()
+    await page.getByRole('button', { name: /cancel/i }).click()
+    await expect(page.getByRole('dialog', { name: /manage projects/i })).not.toBeVisible()
+    await page.locator('[data-entity-type="perimeter"]').click()
+    await expect(page.getByTestId('side-panel')).toContainText('18m')
 
-      await expect(page.getByRole('button', { name: firstProjectName })).toBeVisible({ timeout: 10000 })
-    })
-  })
+    // === PHASE 6: Switch Between Projects ===
 
-  authDescribe('Delete Project', () => {
-    test.beforeEach(async ({ page }) => {
-      await setupAuthenticatedPage(page)
-    })
+    await page.getByRole('button', { name: /project/i }).click()
+    await page.getByRole('menuitem', { name: /manage projects/i }).click()
 
-    test('should delete project with confirmation', async ({ page }) => {
-      const projectName = `To Delete ${Date.now()}`
+    const switchDialog = page.getByRole('dialog', { name: /manage projects/i })
+    const switchProjectList = switchDialog.getByRole('listbox', { name: /projects/i })
+    await switchProjectList.getByRole('button', { name: `Switch to ${firstName}` }).click()
 
-      await page.getByRole('button', { name: /project/i }).click()
-      await page.getByRole('menuitem', { name: /manage projects/i }).click()
-      await page.getByRole('button', { name: /new project/i }).click()
-      await page.getByLabel(/name/i).fill(projectName)
-      await page.getByRole('button', { name: /^create$/i }).click()
+    await expect(firstProjectOption).toHaveAttribute('aria-selected', 'true')
 
-      await page.waitForTimeout(500)
+    await page.getByRole('button', { name: /cancel/i }).click()
+    await expect(page.getByRole('dialog', { name: /manage projects/i })).not.toBeVisible()
+    await page.locator('[data-entity-type="perimeter"]').click()
+    await expect(page.getByTestId('side-panel')).toContainText('40.00m²')
 
-      await page.getByRole('button', { name: projectName }).click()
-      await page.getByRole('menuitem', { name: /manage projects/i }).click()
+    // === PHASE 7: Delete Test Projects ===
 
-      const projectRow = page.locator('div', { hasText: projectName }).first()
-      await projectRow.getByRole('button', { name: /delete/i }).click()
+    await page.getByRole('button', { name: /project/i }).click()
+    await page.getByRole('menuitem', { name: /manage projects/i }).click()
 
-      await page.getByRole('button', { name: /^delete$/i }).click()
+    const deleteDialog = page.getByRole('dialog', { name: /manage projects/i })
+    const deleteProjectList = deleteDialog.getByRole('listbox', { name: /projects/i })
 
-      await expect(page.getByText(projectName)).not.toBeVisible()
-    })
-  })
+    await deleteProjectList.getByRole('button', { name: `Delete project ${emptyName}` }).click()
+    await page.getByRole('button', { name: /^delete$/i }).click()
+    await expect(deleteProjectList.getByRole('option', { name: emptyName })).not.toBeVisible()
 
-  authDescribe('Anonymous User', () => {
-    test('should not show manage projects option', async ({ page }) => {
-      await setupAnonymousPage(page)
-      await page.getByRole('button', { name: /project/i }).click()
-      await expect(page.getByRole('menuitem', { name: /manage projects/i })).not.toBeVisible()
-    })
+    await deleteProjectList.getByRole('button', { name: `Delete project ${copiedName}` }).click()
+    await page.getByRole('button', { name: /^delete$/i }).click()
+    await expect(deleteProjectList.getByRole('option', { name: copiedName })).not.toBeVisible()
   })
 })
