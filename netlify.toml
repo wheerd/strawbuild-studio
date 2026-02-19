@@ -53,8 +53,8 @@
   [headers.values]
     Cache-Control = "public, max-age=0, must-revalidate"
 
-# Redirect rules (if needed in the future)
-# [[redirects]]
-#   from = "/old-path"
-#   to = "/new-path"
-#   status = 301
+# SPA fallback - redirect all routes to index.html for client-side routing
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
