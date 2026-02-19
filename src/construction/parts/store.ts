@@ -206,6 +206,6 @@ export function ensurePartsLoaded() {
   setupPartsSubscriptions()
 }
 
-export function clearPartsLabelPersistence(): void {
-  localStorage.removeItem('strawbaler-parts-labels')
+export function clearPartsPersistence(): void {
+  localStorage.removeItem('strawbaler-parts')
 }

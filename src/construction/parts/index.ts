@@ -1,6 +1,6 @@
 export * from './types'
 export {
-  clearPartsLabelPersistence,
+  clearPartsPersistence as clearPartsLabelPersistence,
   ensurePartsLoaded,
   getLabelGroupId,
   getPartsActions,
