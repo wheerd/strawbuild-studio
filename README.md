@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/wheerd/strawbuild-studio/workflows/CI/badge.svg)](https://github.com/wheerd/strawbuild-studio/actions/workflows/ci.yml)
 [![Security](https://github.com/wheerd/strawbuild-studio/workflows/Security%20&%20Dependencies/badge.svg)](https://github.com/wheerd/strawbuild-studio/actions/workflows/security.yml)
-[![Netlify Status](https://api.netlify.com/api/v1/badges/0c31f906-f421-426d-b6af-d0f69ae3ea83/deploy-status)](https://strawbuild.app/)
+[![Netlify Status](https://api.netlify.com/api/v1/badges/0b8abc72-e36d-48a9-9050-7f7f6b5fa887/deploy-status)](https://strawbuild.app/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 A modern web-based floor plan editor specifically designed for strawbale construction planning.
