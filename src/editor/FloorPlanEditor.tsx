@@ -10,6 +10,7 @@ import { useWelcomeModal } from '@/shared/hooks/useWelcomeModal'
 import { MainToolbar } from './MainToolbar'
 import { SidePanel } from './SidePanel'
 import { ConstraintStatusOverlay } from './components/ConstraintStatusOverlay'
+import { MigrationBanner } from './components/MigrationBanner'
 import { ViewModeToggle } from './components/ViewModeToggle'
 import { useAutoFitOnHydration } from './hooks/useAutoFitOnHydration'
 import { FloorPlanStage } from './layers/FloorPlanStage'
@@ -154,6 +155,7 @@ export function FloorPlanEditor(): React.JSX.Element {
           {/* Editor Area */}
           <div className="bg-background border-border relative overflow-hidden border-r">
             <ErrorBoundary FallbackComponent={FeatureErrorFallback}>
+              <MigrationBanner />
               <ViewModeToggle />
               <FloorPlanStage width={dimensions.width} height={dimensions.height} />
               <ConstraintStatusOverlay />

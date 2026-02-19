@@ -34,6 +34,14 @@
     "saveToFile": "In Datei speichern"
   },
   "currentLanguageWithLabel": "Aktuelle Sprache: {{language}}",
+  "migration": {
+    "downloadButton": "Projekt herunterladen",
+    "importInstructions": "Auf der neuen Seite: Klicke auf den Projektnamen oben links → 'Aus Datei laden', um dein Projekt zu importieren.",
+    "message": "Diese Seite wird nicht mehr aktualisiert. Bitte lade dein Projekt herunter und setze es auf der neuen Seite fort.",
+    "newSiteButton": "Zu strawbuild.app",
+    "subtitle": "Strawbaler ist jetzt StrawBuild Studio",
+    "title": "Wir sind umgezogen!"
+  },
   "storeys": {
     "addNewFloor": "Neues Geschoss hinzufügen",
     "basement": "UG{{level}}",

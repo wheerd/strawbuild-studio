@@ -38,3 +38,5 @@ coverage
 .pnpm-store
 opencodetmp
 .vite
+supabase
+.netlify
