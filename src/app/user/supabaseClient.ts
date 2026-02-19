@@ -14,7 +14,7 @@ export const getSupabaseClient = (): SupabaseClient => {
     if (!supabaseUrl || !supabaseAnonKey) {
       throw new Error('Missing configuration for supabase')
     }
-    supabaseInstance = createClient(supabaseUrl, supabaseAnonKey)
+    supabaseInstance = createClient(supabaseUrl, supabaseAnonKey, { auth: { storageKey: 'strawbuild-auth' } })
   }
   return supabaseInstance
 }
