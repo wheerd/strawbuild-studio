@@ -5,7 +5,7 @@ async function openMaterialsConfig(page: Page): Promise<Locator> {
 
   await page.evaluate(() => {
     localStorage.setItem(
-      'strawbaler-welcome-state',
+      'strawbuild-welcome-state',
       '{"accepted":true,"acceptedAt":"2025-10-22T06:21:42.893Z","version":"0.2"}'
     )
   })

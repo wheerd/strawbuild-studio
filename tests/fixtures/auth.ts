@@ -2,7 +2,7 @@ import { type Page, expect } from '@playwright/test'
 
 import { setupEditorPage } from './editor'
 
-export const TEST_USER_EMAIL = process.env.TEST_USER_EMAIL ?? 'test@strawbaler.dev'
+export const TEST_USER_EMAIL = process.env.TEST_USER_EMAIL ?? 'test@strawbuild.app'
 export const TEST_USER_PASSWORD = process.env.TEST_USER_PASSWORD ?? 'test-password-123'
 
 export interface SupabaseConfig {

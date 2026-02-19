@@ -18,7 +18,7 @@
   command = "pnpm typecheck && pnpm test && pnpm build"
 
 # Development branch deployments - ensure everything passes
-# Deploys to: development--strawbaler.netlify.app
+# Deploys to: development--strawbuild.netlify.app
 [context.development]
   command = "pnpm typecheck && pnpm test && pnpm build"
 

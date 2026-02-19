@@ -77,7 +77,7 @@ export const usePartsStore = create<PartsStore>()(
       }
     }),
     {
-      name: 'strawbaler-parts',
+      name: 'strawbuild-parts',
       partialize: state => ({
         labels: state.labels,
         nextLabelIndexByGroup: state.nextLabelIndexByGroup
@@ -207,5 +207,5 @@ export function ensurePartsLoaded() {
 }
 
 export function clearPartsPersistence(): void {
-  localStorage.removeItem('strawbaler-parts')
+  localStorage.removeItem('strawbuild-parts')
 }

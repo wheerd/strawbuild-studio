@@ -1,6 +1,6 @@
 ---
 name: Question
-about: Ask a question about using Strawbaler
+about: Ask a question about using StrawBuild Studio
 title: '[QUESTION] '
 labels: question
 assignees: ''

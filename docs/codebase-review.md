@@ -1,4 +1,4 @@
-# Strawbaler Codebase Review (from October 2025)
+# StrawBuild Studio Codebase Review (from October 2025)
 
 ## Overview
 

@@ -4,11 +4,11 @@ import path from 'node:path'
 test('Test Data Screenshot', async ({ page }) => {
   test.setTimeout(60000)
   await page.goto('/')
-  await expect(page).toHaveTitle(/Strawbaler/)
+  await expect(page).toHaveTitle(/StrawBuild/)
   await expect(page.getByText('Important Disclaimer')).toBeVisible({ timeout: 15000 })
   await page.getByRole('button', { name: 'I Understand & Continue' }).click()
   await expect(page.getByTestId('main-toolbar')).toMatchAriaSnapshot(`
-    - button "About Strawbaler"
+    - button "About StrawBuild Studio"
     - button "Project": My Project
     - toolbar:
       - button "Select"

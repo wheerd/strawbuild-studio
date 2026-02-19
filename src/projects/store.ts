@@ -132,7 +132,7 @@ export const useProjectsStore = create<ProjectsStore>()(
           }
         }),
         {
-          name: 'strawbaler-project-meta',
+          name: 'strawbuild-project-meta',
           version: CURRENT_VERSION,
           partialize: state => ({
             currentProject: state.currentProject

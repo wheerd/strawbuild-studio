@@ -1,8 +1,8 @@
-# Contributing to Strawbaler Online
+# Contributing to StrawBuild Studio
 
-Thank you for your interest in contributing to Strawbaler! 🌾
+Thank you for your interest in contributing to StrawBuild Studio! 🌾
 
-Strawbaler is a web-based floor plan editor designed specifically for strawbale construction planning. Our mission is to provide free, accessible tools to help the strawbale building community design and plan their projects with confidence.
+StrawBuild Studio is a web-based floor plan editor designed specifically for strawbale construction planning. Our mission is to provide free, accessible tools to help the strawbale building community design and plan their projects with confidence.
 
 **We welcome contributions from everyone** - whether you're a developer, strawbale builder, architect, designer, or enthusiast. There are many ways to contribute, and you don't need to be a programmer to help!
 
@@ -74,8 +74,8 @@ Strawbaler is a web-based floor plan editor designed specifically for strawbale 
 2. **Clone your fork**
 
    ```bash
-   git clone https://github.com/YOUR-USERNAME/strawbaler-online.git
-   cd strawbaler-online
+   git clone https://github.com/YOUR-USERNAME/strawbuild-studio.git
+   cd strawbuild-studio
    ```
 
 3. **Install dependencies**
@@ -346,7 +346,7 @@ Before opening a new issue, please search existing issues to see if your questio
 
 ## Recognition
 
-All contributors will be recognized for their contributions. Thank you for helping make Strawbaler better for the strawbale building community! 🌾
+All contributors will be recognized for their contributions. Thank you for helping make StrawBuild Studio better for the strawbale building community! 🌾
 
 ---
 

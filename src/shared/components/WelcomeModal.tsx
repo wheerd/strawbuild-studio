@@ -168,7 +168,7 @@ export function WelcomeModal({ isOpen, mode, onAccept, trigger }: WelcomeModalPr
                   <GitHubLogoIcon width="14" height="14" />
                   <a
                     className="text-sm"
-                    href="https://github.com/wheerd/strawbaler-online"
+                    href="https://github.com/wheerd/strawbuild-studio"
                     target="_blank"
                     rel="noopener noreferrer"
                   >

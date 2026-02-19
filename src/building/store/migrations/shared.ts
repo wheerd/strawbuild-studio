@@ -27,7 +27,7 @@ export const toVec2 = (value: unknown): Vec2 | null => {
   return null
 }
 
-const CONFIG_STORAGE_KEY = 'strawbaler-config'
+const CONFIG_STORAGE_KEY = 'strawbuild-config'
 
 export interface PersistedConfigStoreState {
   floorAssemblyConfigs?: Record<FloorAssemblyId, FloorAssemblyConfig>

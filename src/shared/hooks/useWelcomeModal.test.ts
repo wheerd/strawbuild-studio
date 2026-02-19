@@ -22,7 +22,7 @@ describe('useWelcomeModal', () => {
 
   it('does not open modal if already accepted', () => {
     localStorage.setItem(
-      'strawbaler-welcome-state',
+      'strawbuild-welcome-state',
       JSON.stringify({
         accepted: true,
         acceptedAt: new Date().toISOString(),
@@ -37,7 +37,7 @@ describe('useWelcomeModal', () => {
 
   it('opens modal if version is outdated', () => {
     localStorage.setItem(
-      'strawbaler-welcome-state',
+      'strawbuild-welcome-state',
       JSON.stringify({
         accepted: true,
         acceptedAt: new Date().toISOString(),
@@ -62,7 +62,7 @@ describe('useWelcomeModal', () => {
 
     expect(result.current.isOpen).toBe(false)
 
-    const stored = JSON.parse(localStorage.getItem('strawbaler-welcome-state')!)
+    const stored = JSON.parse(localStorage.getItem('strawbuild-welcome-state')!)
     expect(stored.accepted).toBe(true)
     expect(stored.version).toBe('0.2')
     expect(stored.acceptedAt).toBeDefined()
@@ -70,7 +70,7 @@ describe('useWelcomeModal', () => {
 
   it('opens modal manually in manual mode', () => {
     localStorage.setItem(
-      'strawbaler-welcome-state',
+      'strawbuild-welcome-state',
       JSON.stringify({
         accepted: true,
         acceptedAt: new Date().toISOString(),
@@ -91,7 +91,7 @@ describe('useWelcomeModal', () => {
   })
 
   it('handles corrupted localStorage gracefully', () => {
-    localStorage.setItem('strawbaler-welcome-state', 'invalid json')
+    localStorage.setItem('strawbuild-welcome-state', 'invalid json')
 
     const { result } = renderHook(() => useWelcomeModal())
 

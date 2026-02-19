@@ -38,7 +38,7 @@ assignees: ''
 - **Browser:** [e.g., Chrome 120, Firefox 121, Safari 17]
 - **OS:** [e.g., Windows 11, macOS 14, Ubuntu 22.04]
 - **Device:** [e.g., Desktop, Laptop, Tablet]
-- **Strawbaler Version:** [e.g., "latest from strawbaler.online" or specific commit/version]
+- **StrawBuild Studio Version:** [e.g., "latest from strawbuild.app" or specific commit/version]
 
 ## Additional Context
 

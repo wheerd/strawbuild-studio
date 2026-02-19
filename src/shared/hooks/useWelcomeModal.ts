@@ -8,7 +8,7 @@ interface WelcomeState {
   version: string
 }
 
-const STORAGE_KEY = 'strawbaler-welcome-state'
+const STORAGE_KEY = 'strawbuild-welcome-state'
 const CURRENT_VERSION = '0.2'
 
 function loadWelcomeState(): WelcomeState | null {

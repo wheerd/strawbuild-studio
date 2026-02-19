@@ -5,10 +5,10 @@ interface Resources {
       "cancel": "Cancel"
     },
     "app": {
+      "appName": "StrawBuild Studio",
       "changeLanguage": "Change language",
       "constructionPlanning": "Construction Planning",
-      "fitToContent": "Fit to content",
-      "strawbaler": "Strawbaler"
+      "fitToContent": "Fit to content"
     },
     "auth": {
       "accountMenu": "Account",
@@ -1626,7 +1626,7 @@ interface Resources {
     }
   },
   "toolbar": {
-    "about": "about",
+    "about": "About StrawBuild Studio",
     "configuration": "Configuration",
     "constructionPlanForActiveStorey": "Construction Plan for active storey",
     "constructionPlanForStorey": "Construction Plan for {{storeyName}}",
@@ -1709,7 +1709,7 @@ interface Resources {
     "demoVideo": {
       "demo01": "Demo 0.1",
       "demo02": "Demo 0.2",
-      "description": "Watch a quick demonstration of Strawbaler's features on YouTube:",
+      "description": "Watch a quick demonstration of StrawBuild Studio's features on YouTube:",
       "title": "Demo Video"
     },
     "disclaimer": {

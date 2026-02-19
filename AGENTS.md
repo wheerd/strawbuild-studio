@@ -1,4 +1,4 @@
-# Agent Guidelines for Strawbaler
+# Agent Guidelines for StrawBuild Studio
 
 ## Commands
 

@@ -113,7 +113,7 @@ export const useModelStore = create<Store>()(
       ),
       {
         // Persistence configuration
-        name: 'strawbaler-model',
+        name: 'strawbuild-model',
         version: MODEL_STORE_VERSION,
         migrate: (persistedState: unknown, version: number) => applyMigrations(persistedState, version) as StoreState,
         partialize: partializeState,
@@ -149,7 +149,7 @@ export const getCanUndo = (): boolean => useModelStore.temporal.getState().pastS
 export const getCanRedo = (): boolean => useModelStore.temporal.getState().futureStates.length > 0
 
 export const clearPersistence = (): void => {
-  localStorage.removeItem('strawbaler-model')
+  localStorage.removeItem('strawbuild-model')
 }
 
 export const getInitialModelState = (): StoreState => {
