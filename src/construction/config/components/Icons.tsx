@@ -1,4 +1,4 @@
-import { Square, Columns } from 'lucide-react'
+import { Columns, Square } from 'lucide-react'
 import React, { type ComponentType } from 'react'
 
 import type { WallAssemblyConfig } from '@/construction/config/types'

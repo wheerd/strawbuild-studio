@@ -1,4 +1,4 @@
-import { Box, TriangleAlert, Group, Ruler } from 'lucide-react'
+import { Box, Group, Ruler, TriangleAlert } from 'lucide-react'
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 

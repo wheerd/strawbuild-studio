@@ -1,5 +1,5 @@
-import { Info } from 'lucide-react'
 import * as Label from '@radix-ui/react-label'
+import { Info } from 'lucide-react'
 import React from 'react'
 import { useTranslation } from 'react-i18next'
 

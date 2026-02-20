@@ -1,6 +1,6 @@
-import { Copy, Info } from 'lucide-react'
 import * as Label from '@radix-ui/react-label'
 import type { Resources } from 'i18next'
+import { Copy, Info } from 'lucide-react'
 import { useCallback, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 

@@ -1,4 +1,4 @@
-import { TriangleAlert, Eye } from 'lucide-react'
+import { Eye, TriangleAlert } from 'lucide-react'
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 

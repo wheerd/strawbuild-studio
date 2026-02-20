@@ -1,4 +1,4 @@
-import { Check, X, Download, RefreshCw, Upload } from 'lucide-react'
+import { CloudIcon, Download, ListIcon, PencilIcon, Upload } from 'lucide-react'
 import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
@@ -236,11 +236,11 @@ export function ProjectMenu(): React.JSX.Element {
     }
   }
 
-  const getStatusInfo = () => {
+  const getStatusInfo = (): SyncStatus => {
     if (exportError || importError) {
       return {
         text: exportError ?? importError ?? t($ => $.autoSave.exportFailed),
-        icon: <X className="h-3 w-3" aria-hidden />,
+        active: false,
         colorClass: 'text-red-600 dark:text-red-400'
       }
     }
@@ -248,7 +248,7 @@ export function ProjectMenu(): React.JSX.Element {
     if (isExporting || isImporting) {
       return {
         text: isExporting ? t($ => $.autoSave.exporting) : t($ => $.autoSave.importing),
-        icon: <RefreshCw className="h-3 w-3 animate-spin" aria-hidden />,
+        active: true,
         colorClass: 'text-blue-600 dark:text-blue-400'
       }
     }
@@ -256,7 +256,7 @@ export function ProjectMenu(): React.JSX.Element {
     if (activeError) {
       return {
         text: isAuthenticated ? t($ => $.projectMenu.syncFailed) : t($ => $.projectMenu.saveFailed),
-        icon: <X className="h-3 w-3" aria-hidden />,
+        active: true,
         colorClass: 'text-red-600 dark:text-red-400'
       }
     }
@@ -264,7 +264,7 @@ export function ProjectMenu(): React.JSX.Element {
     if (activeIsSaving) {
       return {
         text: isAuthenticated ? t($ => $.projectMenu.syncing) : t($ => $.projectMenu.saving),
-        icon: <RefreshCw className="h-3 w-3 animate-spin" aria-hidden />,
+        active: true,
         colorClass: 'text-blue-600 dark:text-blue-400'
       }
     }
@@ -288,14 +288,14 @@ export function ProjectMenu(): React.JSX.Element {
         text: isAuthenticated
           ? `${t($ => $.projectMenu.synced)} ${timeText}`
           : `${t($ => $.projectMenu.saved)} ${timeText}`,
-        icon: <Check className="h-3 w-3" aria-hidden />,
+        active: false,
         colorClass: 'text-green-600 dark:text-green-400'
       }
     }
 
     return {
       text: t($ => $.autoSave.notSaved),
-      icon: <X className="h-3 w-3" aria-hidden />,
+      active: false,
       colorClass: 'text-muted-foreground'
     }
   }
@@ -306,6 +306,8 @@ export function ProjectMenu(): React.JSX.Element {
     setShowProjectsModal(true)
   }
 
+  const StatusIcon = isAuthenticated ? CloudIcon : SaveIcon
+
   return (
     <>
       <DropdownMenu>
@@ -313,14 +315,14 @@ export function ProjectMenu(): React.JSX.Element {
           <TooltipTrigger asChild>
             <DropdownMenuTrigger asChild>
               <Button
+                size="default"
                 variant="ghost"
-                className={cn('h-auto gap-2 px-2 py-1', statusInfo.colorClass)}
+                className={cn('h-auto w-50 justify-between gap-2 px-2 py-2', statusInfo.colorClass)}
                 aria-label={t($ => $.projectMenu.buttonTitle)}
               >
-                <span className="text-foreground text-sm font-medium">{projectName}</span>
+                <span className="text-foreground text-l truncate font-medium">{projectName}</span>
                 <div className="flex items-center gap-0.5">
-                  <SaveIcon className="h-3.5 w-3.5" aria-hidden />
-                  {statusInfo.icon}
+                  <StatusIcon className={cn('size-6!', statusInfo.active && 'animate-pulse')} aria-hidden />
                 </div>
               </Button>
             </DropdownMenuTrigger>
@@ -334,8 +336,15 @@ export function ProjectMenu(): React.JSX.Element {
             }}
             className="cursor-pointer"
           >
+            <PencilIcon />
             {t($ => $.projectMenu.editProject)}
           </DropdownMenuItem>
+
+          {isAuthenticated && (
+            <DropdownMenuItem onClick={openProjectsModal} disabled={!isOnline} className="cursor-pointer">
+              <ListIcon /> {t($ => $.projectMenu.manageProjects)}
+            </DropdownMenuItem>
+          )}
 
           <DropdownMenuSeparator />
 
@@ -393,15 +402,6 @@ export function ProjectMenu(): React.JSX.Element {
             <Upload className="mr-2 h-4 w-4" />
             {t($ => $.autoSave.loadFromFile)}
           </DropdownMenuItem>
-
-          {isAuthenticated && (
-            <>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={openProjectsModal} disabled={!isOnline} className="cursor-pointer">
-                {t($ => $.projectMenu.manageProjects)}
-              </DropdownMenuItem>
-            </>
-          )}
         </DropdownMenuContent>
       </DropdownMenu>
 
@@ -424,4 +424,10 @@ export function ProjectMenu(): React.JSX.Element {
       )}
     </>
   )
+}
+
+interface SyncStatus {
+  text: string
+  active: boolean
+  colorClass: string
 }

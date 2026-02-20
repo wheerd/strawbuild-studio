@@ -1,4 +1,4 @@
-import { TriangleAlert, Eye } from 'lucide-react'
+import { Eye, TriangleAlert } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 
 import { Button } from '@/components/ui/button'
@@ -145,10 +145,7 @@ function SheetPartsTableRow({
                   : t($ => $.partsList.issues.dimensionsExceedSizeMultiple)
               }
             >
-              <TriangleAlert
-                aria-hidden
-                className={part.requiresSinglePiece ? 'text-red-600' : 'text-orange-500'}
-              />
+              <TriangleAlert aria-hidden className={part.requiresSinglePiece ? 'text-red-600' : 'text-orange-500'} />
             </Tooltip>
           )}
           <span>

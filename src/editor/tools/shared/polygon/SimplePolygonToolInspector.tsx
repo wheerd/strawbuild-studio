@@ -1,4 +1,4 @@
-import { X, Info } from 'lucide-react'
+import { Info, X } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 

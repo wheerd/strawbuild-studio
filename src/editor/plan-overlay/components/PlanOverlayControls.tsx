@@ -1,4 +1,4 @@
-import { TriangleAlert, Image } from 'lucide-react'
+import { Image, TriangleAlert } from 'lucide-react'
 import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
