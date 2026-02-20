@@ -138,8 +138,8 @@ importers:
         specifier: ^1.1.4
         version: 1.1.4(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
       web-ifc:
-        specifier: ^0.0.74
-        version: 0.0.74
+        specifier: ^0.0.75
+        version: 0.0.75
       workbox-window:
         specifier: ^7.4.0
         version: 7.4.0
@@ -5450,8 +5450,8 @@ packages:
     resolution: {integrity: sha512-o8qghlI8NZHU1lLPrpi2+Uq7abh4GGPpYANlalzWxyWteJOCsr/P+oPBA49TOLu5FTZO4d3F9MnWJfiMo4BkmA==}
     engines: {node: '>=18'}
 
-  web-ifc@0.0.74:
-    resolution: {integrity: sha512-WFVxKrt81koT0mA1I5gVChc9/xsnqGZ1KzVxLhy+h43cs6z2hy8tuTtXuA/BPVUkzEzWn+EwNOozF+HHo6G6RA==}
+  web-ifc@0.0.75:
+    resolution: {integrity: sha512-d+xKbBkNgySlbZJF0zLG1zW6KOqT76/Ser7G2FrbO5w+y00WJy3yEPPoHbINF2WqMrhoGxSxw5d64jt4Om9WrQ==}
 
   web-streams-polyfill@3.3.3:
     resolution: {integrity: sha512-d2JWLCivmZYTSIoge9MsgFCZrt571BikcWGYkjC1khllbTeDlGqZ2D8vD8E/lJa8WGWbb7Plm8/XJYV7IJHZZw==}
@@ -11043,7 +11043,7 @@ snapshots:
     dependencies:
       xml-name-validator: 5.0.0
 
-  web-ifc@0.0.74: {}
+  web-ifc@0.0.75: {}
 
   web-streams-polyfill@3.3.3: {}
 
