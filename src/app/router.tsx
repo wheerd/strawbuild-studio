@@ -17,7 +17,7 @@ const FloorPlanEditor = React.lazy(
 
 export const router = createBrowserRouter([
   {
-    path: '/',
+    path: '*',
     element: (
       <ErrorBoundary FallbackComponent={ErrorFallback}>
         <Layout />
