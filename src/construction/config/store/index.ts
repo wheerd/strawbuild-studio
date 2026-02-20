@@ -184,7 +184,7 @@ export const useLayerSets = (): LayerSetConfig[] => {
 export const useLayerSetById = (id: LayerSetId): LayerSetConfig | null =>
   useConfigStore(state => state.actions.getLayerSetById(id))
 
-export const useLayerSetsByUse = (use: LayerSetConfig['uses'][number]): LayerSetConfig[] =>
+export const useLayerSetsByUse = (use: LayerSetConfig['use']): LayerSetConfig[] =>
   useConfigStore(state => state.actions.getLayerSetsByUse(use))
 
 export const useConfigActions = (): ConfigActions => useConfigStore(state => state.actions)

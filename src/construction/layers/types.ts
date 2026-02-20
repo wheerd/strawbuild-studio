@@ -45,14 +45,7 @@ export interface StripedLayerConfig extends BaseLayerConfig {
 
 export type LayerConfig = MonolithicLayerConfig | StripedLayerConfig
 
-export type LayerSetUse =
-  | 'wall-inside'
-  | 'wall-outside'
-  | 'floor-top'
-  | 'floor-bottom'
-  | 'roof-inside'
-  | 'roof-top'
-  | 'roof-overhang'
+export type LayerSetUse = 'wall' | 'floor' | 'ceiling' | 'roof'
 
 export interface LayerSetConfig {
   id: LayerSetId
@@ -60,5 +53,5 @@ export interface LayerSetConfig {
   nameKey?: LayerNameKey
   layers: LayerConfig[]
   totalThickness: Length
-  uses: LayerSetUse[]
+  use: LayerSetUse
 }

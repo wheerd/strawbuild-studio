@@ -445,7 +445,9 @@ function StripedLayerFields({
               onUpdateLayer(index, { direction: value as StripeDirection })
             }}
           >
-            <Select.Trigger />
+            <Select.Trigger>
+              <Select.Value />
+            </Select.Trigger>
             <Select.Content>
               <Select.Item value="perpendicular">{t($ => $.layers.directions.perpendicular)}</Select.Item>
               <Select.Item value="colinear">{t($ => $.layers.directions.colinear)}</Select.Item>

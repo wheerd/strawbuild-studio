@@ -159,6 +159,38 @@
       "striped": "Gestreift"
     }
   },
+  "layerSets": {
+    "copyNameTemplate": "{{name}} (Kopie)",
+    "defaults": {
+      "ceilingClayPlaster": "Lehmputz",
+      "ceilingLimePlaster": "Kalkputz",
+      "clayPlaster": "Lehmputz",
+      "clayPlasterDiagonal": "Lehmputz mit Diagonalaussteifung",
+      "gypsumBoards": "Gipskartonplatten",
+      "limePlaster": "Kalkputz",
+      "limePlasterDhf": "Kalkputz mit DHF",
+      "limePlasterDiagonal": "Kalkputz mit Diagonalaussteifung",
+      "screed": "Estrich",
+      "tiles": "Dachpfannen",
+      "woodenPlanking": "Holzschalung",
+      "woodenPlankingDhf": "Holzschalung mit DHF"
+    },
+    "deleteConfirm": "Möchten Sie „{{name}}\" wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.",
+    "deleteTitle": "Schichten löschen",
+    "emptyList": "Keine Schichten verfügbar",
+    "labels": {
+      "use": "Verwendung"
+    },
+    "newName": "Neue Schichten",
+    "resetConfirm": "Möchten Sie die Standard-Schichten wirklich zurücksetzen? Benutzerdefinierte Schichten bleiben erhalten. Diese Aktion kann nicht rückgängig gemacht werden.",
+    "resetTitle": "Schichten zurücksetzen",
+    "uses": {
+      "ceiling": "Decke",
+      "floor": "Boden",
+      "roof": "Dach",
+      "wall": "Wand"
+    }
+  },
   "materials": {
     "add": "Hinzufügen",
     "addCrossSection": "Querschnitt hinzufügen",
@@ -272,6 +304,7 @@
   },
   "modal": {
     "tabFloors": "Bodenaufbauten",
+    "tabLayerSets": "Schichten",
     "tabMaterials": "Materialien",
     "tabOpenings": "Öffnungsaufbauten",
     "tabRingBeams": "Ringankeraufbauten",

@@ -39,14 +39,14 @@ const createLayerSet = (
   name: string,
   nameKey: LayerNameKey | undefined,
   layers: LayerConfig[],
-  uses: LayerSetUse[]
+  use: LayerSetUse
 ): LayerSetConfig => ({
   id,
   name,
   nameKey,
   layers,
   totalThickness: sumThickness(layers),
-  uses
+  use
 })
 
 export const LAYER_SET_CLAY_PLASTER: LayerSetConfig = createLayerSet(
@@ -57,7 +57,7 @@ export const LAYER_SET_CLAY_PLASTER: LayerSetConfig = createLayerSet(
     createMonolithicLayer(clayPlasterBase.id, 20, 'Base Plaster (Clay)', $ => $.layers.defaults.clayPlasterBase),
     createMonolithicLayer(clayPlasterFine.id, 10, 'Fine Plaster (Clay)', $ => $.layers.defaults.clayPlasterFine)
   ],
-  ['wall-inside', 'wall-outside', 'floor-bottom', 'roof-inside']
+  'wall'
 )
 
 export const LAYER_SET_CLAY_PLASTER_DIAGONAL: LayerSetConfig = createLayerSet(
@@ -78,7 +78,7 @@ export const LAYER_SET_CLAY_PLASTER_DIAGONAL: LayerSetConfig = createLayerSet(
     },
     createMonolithicLayer(clayPlasterFine.id, 5, 'Fine Plaster (Clay)', $ => $.layers.defaults.clayPlasterFine)
   ],
-  ['wall-inside', 'wall-outside']
+  'wall'
 )
 
 export const LAYER_SET_LIME_PLASTER: LayerSetConfig = createLayerSet(
@@ -89,7 +89,7 @@ export const LAYER_SET_LIME_PLASTER: LayerSetConfig = createLayerSet(
     createMonolithicLayer(limePlasterBase.id, 20, 'Base Plaster (Lime)', $ => $.layers.defaults.limePlasterBase),
     createMonolithicLayer(limePlasterFine.id, 10, 'Fine Plaster (Lime)', $ => $.layers.defaults.limePlasterFine)
   ],
-  ['wall-inside', 'wall-outside', 'floor-bottom', 'roof-inside']
+  'wall'
 )
 
 export const LAYER_SET_LIME_PLASTER_DHF: LayerSetConfig = createLayerSet(
@@ -102,7 +102,7 @@ export const LAYER_SET_LIME_PLASTER_DHF: LayerSetConfig = createLayerSet(
     createMonolithicLayer(limePlasterBase.id, 10, 'Base Plaster (Lime)', $ => $.layers.defaults.limePlasterBase),
     createMonolithicLayer(limePlasterFine.id, 4, 'Fine Plaster (Lime)', $ => $.layers.defaults.limePlasterFine)
   ],
-  ['wall-inside', 'wall-outside']
+  'wall'
 )
 
 export const LAYER_SET_LIME_PLASTER_DIAGONAL: LayerSetConfig = createLayerSet(
@@ -123,7 +123,7 @@ export const LAYER_SET_LIME_PLASTER_DIAGONAL: LayerSetConfig = createLayerSet(
     },
     createMonolithicLayer(limePlasterFine.id, 5, 'Fine Plaster (Lime)', $ => $.layers.defaults.limePlasterFine)
   ],
-  ['wall-inside', 'wall-outside']
+  'wall'
 )
 
 export const LAYER_SET_WOODEN_PLANKING: LayerSetConfig = createLayerSet(
@@ -144,7 +144,7 @@ export const LAYER_SET_WOODEN_PLANKING: LayerSetConfig = createLayerSet(
     },
     createMonolithicLayer(boards.id, 25, 'Wood Planking', $ => $.layers.defaults.woodPlanking)
   ],
-  ['wall-inside', 'wall-outside']
+  'wall'
 )
 
 export const LAYER_SET_WOODEN_PLANKING_DHF: LayerSetConfig = createLayerSet(
@@ -165,7 +165,7 @@ export const LAYER_SET_WOODEN_PLANKING_DHF: LayerSetConfig = createLayerSet(
     },
     createMonolithicLayer(boards.id, 25, 'Wood Planking', $ => $.layers.defaults.woodPlanking)
   ],
-  ['wall-inside', 'wall-outside']
+  'wall'
 )
 
 export const LAYER_SET_GYPSUM: LayerSetConfig = createLayerSet(
@@ -173,7 +173,29 @@ export const LAYER_SET_GYPSUM: LayerSetConfig = createLayerSet(
   'Gypsum Boards',
   $ => $.layerSets.defaults.gypsumBoards,
   [createMonolithicLayer(gypsum.id, 30, 'Gypsum Boards', $ => $.layers.defaults.gypsumBoards)],
-  ['wall-inside', 'wall-outside', 'floor-bottom', 'roof-inside']
+  'wall'
+)
+
+export const LAYER_SET_CEILING_PLASTER: LayerSetConfig = createLayerSet(
+  'ls_ceiling_plaster' as LayerSetId,
+  'Clay Plaster',
+  $ => $.layerSets.defaults.ceilingClayPlaster,
+  [
+    createMonolithicLayer(clayPlasterBase.id, 20, 'Base Plaster (Clay)', $ => $.layers.defaults.clayPlasterBase),
+    createMonolithicLayer(clayPlasterFine.id, 10, 'Fine Plaster (Clay)', $ => $.layers.defaults.clayPlasterFine)
+  ],
+  'ceiling'
+)
+
+export const LAYER_SET_CEILING_LIME_PLASTER: LayerSetConfig = createLayerSet(
+  'ls_ceiling_lime_plaster' as LayerSetId,
+  'Lime Plaster',
+  $ => $.layerSets.defaults.ceilingLimePlaster,
+  [
+    createMonolithicLayer(limePlasterBase.id, 20, 'Base Plaster (Lime)', $ => $.layers.defaults.limePlasterBase),
+    createMonolithicLayer(limePlasterFine.id, 10, 'Fine Plaster (Lime)', $ => $.layers.defaults.limePlasterFine)
+  ],
+  'ceiling'
 )
 
 export const LAYER_SET_FLOOR_SCREED: LayerSetConfig = createLayerSet(
@@ -189,7 +211,7 @@ export const LAYER_SET_FLOOR_SCREED: LayerSetConfig = createLayerSet(
     ),
     createMonolithicLayer(cementScreed.id, 35, 'Screed', $ => $.layers.defaults.screed)
   ],
-  ['floor-top']
+  'floor'
 )
 
 export const LAYER_SET_ROOF_TILES: LayerSetConfig = createLayerSet(
@@ -220,7 +242,7 @@ export const LAYER_SET_ROOF_TILES: LayerSetConfig = createLayerSet(
     },
     createMonolithicLayer('material_invalid' as MaterialId, 35, 'Tiles', $ => $.layers.defaults.tiles)
   ],
-  ['roof-top', 'roof-overhang']
+  'roof'
 )
 
 export const DEFAULT_LAYER_SETS: LayerSetConfig[] = [
@@ -232,6 +254,8 @@ export const DEFAULT_LAYER_SETS: LayerSetConfig[] = [
   LAYER_SET_WOODEN_PLANKING,
   LAYER_SET_WOODEN_PLANKING_DHF,
   LAYER_SET_GYPSUM,
+  LAYER_SET_CEILING_PLASTER,
+  LAYER_SET_CEILING_LIME_PLASTER,
   LAYER_SET_FLOOR_SCREED,
   LAYER_SET_ROOF_TILES
 ]

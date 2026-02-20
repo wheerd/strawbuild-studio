@@ -23,11 +23,11 @@ export interface LayerSetsState {
 }
 
 export interface LayerSetsActions {
-  addLayerSet: (name: string, layers: LayerConfig[], uses: LayerSetUse[]) => LayerSetConfig
+  addLayerSet: (name: string, layers: LayerConfig[], use: LayerSetUse) => LayerSetConfig
   duplicateLayerSet: (id: LayerSetId, name: string) => LayerSetConfig
   removeLayerSet: (id: LayerSetId) => void
   updateLayerSetName: (id: LayerSetId, name: string) => void
-  updateLayerSetUses: (id: LayerSetId, uses: LayerSetUse[]) => void
+  updateLayerSetUse: (id: LayerSetId, use: LayerSetUse) => void
   setLayerSetLayers: (id: LayerSetId, layers: LayerConfig[]) => void
   addLayerToSet: (id: LayerSetId, layer: LayerConfig) => void
   updateLayerInSet: (id: LayerSetId, index: number, updates: Partial<Omit<LayerConfig, 'type'>>) => void
@@ -59,7 +59,7 @@ export const createLayerSetsSlice: StateCreator<
     layerSetConfigs: Object.fromEntries(DEFAULT_LAYER_SETS.map(layerSet => [layerSet.id, layerSet])),
 
     actions: {
-      addLayerSet: (name: string, layers: LayerConfig[], uses: LayerSetUse[]) => {
+      addLayerSet: (name: string, layers: LayerConfig[], use: LayerSetUse) => {
         validateLayerSetName(name)
 
         const sanitizedLayers = sanitizeLayerArray(layers)
@@ -69,7 +69,7 @@ export const createLayerSetsSlice: StateCreator<
           name: name.trim(),
           layers: sanitizedLayers,
           totalThickness: sumLayerThickness(sanitizedLayers),
-          uses
+          use
         }
 
         set(state => {
@@ -132,12 +132,12 @@ export const createLayerSetsSlice: StateCreator<
         })
       },
 
-      updateLayerSetUses: (id: LayerSetId, uses: LayerSetUse[]) => {
+      updateLayerSetUse: (id: LayerSetId, use: LayerSetUse) => {
         set(state => {
           if (!(id in state.layerSetConfigs)) return
           const layerSet = state.layerSetConfigs[id]
 
-          layerSet.uses = uses
+          layerSet.use = use
           updateTimestampDraft(state, id)
         })
       },
@@ -214,7 +214,7 @@ export const createLayerSetsSlice: StateCreator<
 
       getLayerSetsByUse: (use: LayerSetUse) => {
         const state = get()
-        return Object.values(state.layerSetConfigs).filter(ls => ls.uses.includes(use))
+        return Object.values(state.layerSetConfigs).filter(ls => ls.use === use)
       },
 
       resetLayerSetsToDefaults: () => {

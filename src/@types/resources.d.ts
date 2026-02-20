@@ -274,9 +274,10 @@ interface Resources {
       }
     },
     "layerSets": {
-      "configure": "Configure Layer Sets",
       "copyNameTemplate": "{{name}} (Copy)",
       "defaults": {
+        "ceilingClayPlaster": "Clay Plaster",
+        "ceilingLimePlaster": "Lime Plaster",
         "clayPlaster": "Clay Plaster",
         "clayPlasterDiagonal": "Clay Plaster with Diagonal Bracing",
         "gypsumBoards": "Gypsum Boards",
@@ -292,19 +293,16 @@ interface Resources {
       "deleteTitle": "Delete Layer Set",
       "emptyList": "No layer sets available",
       "labels": {
-        "uses": "Uses"
+        "use": "Use"
       },
       "newName": "New Layer Set",
       "resetConfirm": "Are you sure you want to reset default layer sets? This will restore the original default layer sets but keep any custom layer sets you've created. This action cannot be undone.",
       "resetTitle": "Reset Layer Sets",
       "uses": {
-        "floorBottom": "Floor Bottom (Ceiling)",
-        "floorTop": "Floor Top",
-        "roofInside": "Roof Inside (Ceiling)",
-        "roofOverhang": "Roof Overhang",
-        "roofTop": "Roof Top",
-        "wallInside": "Wall Inside",
-        "wallOutside": "Wall Outside"
+        "ceiling": "Ceiling",
+        "floor": "Floor",
+        "roof": "Roof",
+        "wall": "Wall"
       }
     },
     "layers": {

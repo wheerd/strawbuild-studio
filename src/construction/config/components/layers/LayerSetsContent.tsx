@@ -7,23 +7,12 @@ import { AlertDialog } from '@/components/ui/alert-dialog'
 import { Button } from '@/components/ui/button'
 import { LayerSetSelect } from '@/construction/config/components/layers/LayerSetSelect'
 import { useConfigActions, useLayerSets } from '@/construction/config/store'
-import type { LayerSetUse } from '@/construction/layers/types'
 
 import { LayerSetConfigForm } from './LayerSetConfigForm'
 
 export interface LayerSetsContentProps {
   initialSelectionId?: string
 }
-
-const ALL_USES: LayerSetUse[] = [
-  'wall-inside',
-  'wall-outside',
-  'floor-top',
-  'floor-bottom',
-  'roof-inside',
-  'roof-top',
-  'roof-overhang'
-]
 
 export function LayerSetsContent({ initialSelectionId }: LayerSetsContentProps): React.JSX.Element {
   const layerSets = useLayerSets()
@@ -43,7 +32,7 @@ export function LayerSetsContent({ initialSelectionId }: LayerSetsContentProps):
     const newLayerSet = addLayerSet(
       t($ => $.layerSets.newName),
       [],
-      ALL_USES
+      'wall'
     )
     setSelectedLayerSetId(newLayerSet.id)
   }, [addLayerSet])

@@ -57,7 +57,9 @@ export function ModuleConfigForm({ module, onUpdate }: ModuleConfigFormProps): R
             }
           }}
         >
-          <Select.Trigger />
+          <Select.Trigger>
+            <Select.Value />
+          </Select.Trigger>
           <Select.Content>
             <Select.Item value="single">{t($ => $.walls.moduleTypeSingle)}</Select.Item>
             <Select.Item value="double">{t($ => $.walls.moduleTypeDouble)}</Select.Item>

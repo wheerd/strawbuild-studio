@@ -20,6 +20,7 @@ export default defineConfig({
       'config:*.defaults.*',
       'config:*.presets.*',
       'config:*.types.*',
+      'config:layerSets.uses.*',
       'construction:tags.*',
       'construction:tagCategories.*',
       'construction:areaTypes.*',

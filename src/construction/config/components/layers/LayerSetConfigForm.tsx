@@ -1,40 +1,25 @@
 import { useTranslation } from 'react-i18next'
 
-import { Checkbox } from '@/components/ui/checkbox'
+import { Select } from '@/components/ui/select'
 import { TextField } from '@/components/ui/text-field'
 import { LayerListEditor } from '@/construction/config/components/layers/LayerListEditor'
 import { useConfigActions } from '@/construction/config/store'
 import type { LayerSetConfig, LayerSetUse } from '@/construction/layers/types'
 import { useDebouncedInput } from '@/shared/hooks/useDebouncedInput'
 
-const ALL_USES: LayerSetUse[] = [
-  'wall-inside',
-  'wall-outside',
-  'floor-top',
-  'floor-bottom',
-  'roof-inside',
-  'roof-top',
-  'roof-overhang'
-]
-
-type LayerSetUseKey =
-  | 'wallInside'
-  | 'wallOutside'
-  | 'floorTop'
-  | 'floorBottom'
-  | 'roofInside'
-  | 'roofTop'
-  | 'roofOverhang'
+import { getLayerSetUseIcon } from './LayerSetSelect'
 
 interface LayerSetConfigFormProps {
   layerSet: LayerSetConfig
 }
 
+const USE_OPTIONS: LayerSetUse[] = ['wall', 'floor', 'ceiling', 'roof']
+
 export function LayerSetConfigForm({ layerSet }: LayerSetConfigFormProps): React.JSX.Element {
   const { t } = useTranslation('config')
   const {
     updateLayerSetName,
-    updateLayerSetUses,
+    updateLayerSetUse,
     addLayerToSet,
     setLayerSetLayers,
     updateLayerInSet,
@@ -42,27 +27,16 @@ export function LayerSetConfigForm({ layerSet }: LayerSetConfigFormProps): React
     moveLayerInSet
   } = useConfigActions()
 
-  const nameState = useDebouncedInput(layerSet.name, name => {
-    updateLayerSetName(layerSet.id, name)
-  })
-
-  const handleUseToggle = (use: LayerSetUse, checked: boolean) => {
-    const newUses = checked ? [...layerSet.uses, use] : layerSet.uses.filter(u => u !== use)
-    updateLayerSetUses(layerSet.id, newUses)
-  }
-
-  const getUseKey = (use: LayerSetUse): LayerSetUseKey => {
-    const keyMap: Record<LayerSetUse, LayerSetUseKey> = {
-      'wall-inside': 'wallInside',
-      'wall-outside': 'wallOutside',
-      'floor-top': 'floorTop',
-      'floor-bottom': 'floorBottom',
-      'roof-inside': 'roofInside',
-      'roof-top': 'roofTop',
-      'roof-overhang': 'roofOverhang'
+  const nameKey = layerSet.nameKey
+  const nameInput = useDebouncedInput(
+    nameKey ? t(nameKey) : layerSet.name,
+    name => {
+      updateLayerSetName(layerSet.id, name)
+    },
+    {
+      debounceMs: 1000
     }
-    return keyMap[use]
-  }
+  )
 
   return (
     <div className="flex flex-col gap-4">
@@ -70,32 +44,42 @@ export function LayerSetConfigForm({ layerSet }: LayerSetConfigFormProps): React
         <span className="text-sm font-medium">{t($ => $.common.name)}</span>
         <TextField.Root
           size="sm"
-          value={nameState.value}
+          value={nameInput.value}
           onChange={e => {
-            nameState.handleChange(e.target.value)
+            nameInput.handleChange(e.target.value)
           }}
-          onBlur={nameState.handleBlur}
-          onKeyDown={nameState.handleKeyDown}
+          onBlur={nameInput.handleBlur}
+          onKeyDown={nameInput.handleKeyDown}
           placeholder={t($ => $.common.placeholders.name)}
           required
         />
       </div>
 
-      <div className="flex flex-col gap-2">
-        <span className="text-sm font-medium">{t($ => $.layerSets.labels.uses)}</span>
-        <div className="flex flex-wrap gap-2">
-          {ALL_USES.map(use => (
-            <label key={use} className="flex items-center gap-1">
-              <Checkbox
-                checked={layerSet.uses.includes(use)}
-                onCheckedChange={checked => {
-                  handleUseToggle(use, checked === true)
-                }}
-              />
-              <span className="text-sm">{t($ => $.layerSets.uses[getUseKey(use)])}</span>
-            </label>
-          ))}
-        </div>
+      <div className="grid grid-cols-[auto_1fr] items-center gap-2">
+        <span className="text-sm font-medium">{t($ => $.layerSets.labels.use)}</span>
+        <Select.Root
+          value={layerSet.use}
+          onValueChange={value => {
+            updateLayerSetUse(layerSet.id, value as LayerSetUse)
+          }}
+        >
+          <Select.Trigger>
+            <Select.Value />
+          </Select.Trigger>
+          <Select.Content>
+            {USE_OPTIONS.map(use => {
+              const Icon = getLayerSetUseIcon(use)
+              return (
+                <Select.Item key={use} value={use}>
+                  <div className="flex items-center gap-2">
+                    <Icon width={14} height={14} className="shrink-0" />
+                    <span>{t($ => $.layerSets.uses[use])}</span>
+                  </div>
+                </Select.Item>
+              )
+            })}
+          </Select.Content>
+        </Select.Root>
       </div>
 
       <LayerListEditor

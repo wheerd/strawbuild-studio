@@ -124,7 +124,9 @@ function PostsOpeningConfigForm({
             }
           }}
         >
-          <Select.Trigger />
+          <Select.Trigger>
+            <Select.Value />
+          </Select.Trigger>
           <Select.Content>
             <Select.Item value="full">{t($ => $.openings.postTypes.full)}</Select.Item>
             <Select.Item value="double">{t($ => $.openings.postTypes.double)}</Select.Item>
