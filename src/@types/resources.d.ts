@@ -273,6 +273,40 @@ interface Resources {
         "straw": "Straw Filled Floor"
       }
     },
+    "layerSets": {
+      "configure": "Configure Layer Sets",
+      "copyNameTemplate": "{{name}} (Copy)",
+      "defaults": {
+        "clayPlaster": "Clay Plaster",
+        "clayPlasterDiagonal": "Clay Plaster with Diagonal Bracing",
+        "gypsumBoards": "Gypsum Boards",
+        "limePlaster": "Lime Plaster",
+        "limePlasterDhf": "Lime Plaster with DHF",
+        "limePlasterDiagonal": "Lime Plaster with Diagonal Bracing",
+        "screed": "Screed",
+        "tiles": "Roof Tiles",
+        "woodenPlanking": "Wooden Planking",
+        "woodenPlankingDhf": "Wooden Planking with DHF"
+      },
+      "deleteConfirm": "Are you sure you want to delete \"{{name}}\"? This action cannot be undone.",
+      "deleteTitle": "Delete Layer Set",
+      "emptyList": "No layer sets available",
+      "labels": {
+        "uses": "Uses"
+      },
+      "newName": "New Layer Set",
+      "resetConfirm": "Are you sure you want to reset default layer sets? This will restore the original default layer sets but keep any custom layer sets you've created. This action cannot be undone.",
+      "resetTitle": "Reset Layer Sets",
+      "uses": {
+        "floorBottom": "Floor Bottom (Ceiling)",
+        "floorTop": "Floor Top",
+        "roofInside": "Roof Inside (Ceiling)",
+        "roofOverhang": "Roof Overhang",
+        "roofTop": "Roof Top",
+        "wallInside": "Wall Inside",
+        "wallOutside": "Wall Outside"
+      }
+    },
     "layers": {
       "copyFrom": "Copy from...",
       "defaultName_monolithic": "Monolithic Layer",
@@ -441,6 +475,7 @@ interface Resources {
     },
     "modal": {
       "tabFloors": "Floor Assemblies",
+      "tabLayerSets": "Layer Sets",
       "tabMaterials": "Materials",
       "tabOpenings": "Opening Assemblies",
       "tabRingBeams": "Ring Beam Assemblies",

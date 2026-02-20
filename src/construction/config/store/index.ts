@@ -6,12 +6,14 @@ import { immer } from 'zustand/middleware/immer'
 import type {
   AssemblyId,
   FloorAssemblyId,
+  LayerSetId,
   OpeningAssemblyId,
   RingBeamAssemblyId,
   RoofAssemblyId,
   WallAssemblyId
 } from '@/building/model/ids'
 import { createFloorAssembliesSlice } from '@/construction/config/store/slices/floors'
+import { createLayerSetsSlice } from '@/construction/config/store/slices/layers'
 import { createOpeningAssembliesSlice } from '@/construction/config/store/slices/openings'
 import { createRingBeamAssembliesSlice } from '@/construction/config/store/slices/ringBeams'
 import { createRoofAssembliesSlice } from '@/construction/config/store/slices/roofs'
@@ -26,6 +28,7 @@ import type {
   RoofAssemblyConfig,
   WallAssemblyConfig
 } from '@/construction/config/types'
+import type { LayerSetConfig } from '@/construction/layers/types'
 import type { MaterialId } from '@/construction/materials/material'
 import { subscribeRecords } from '@/shared/utils/subscription'
 
@@ -44,6 +47,7 @@ const useConfigStore = create<ConfigStore>()(
         const floorSlice = immer(createFloorAssembliesSlice)(set, get, store)
         const roofSlice = immer(createRoofAssembliesSlice)(set, get, store)
         const openingSlice = immer(createOpeningAssembliesSlice)(set, get, store)
+        const layerSetsSlice = immer(createLayerSetsSlice)(set, get, store)
         const timestampsSlice = immer(createTimestampsSlice)(set, get, store)
 
         return {
@@ -53,6 +57,7 @@ const useConfigStore = create<ConfigStore>()(
           ...floorSlice,
           ...roofSlice,
           ...openingSlice,
+          ...layerSetsSlice,
           ...timestampsSlice,
           actions: {
             ...strawSlice.actions,
@@ -61,6 +66,7 @@ const useConfigStore = create<ConfigStore>()(
             ...floorSlice.actions,
             ...roofSlice.actions,
             ...openingSlice.actions,
+            ...layerSetsSlice.actions,
             ...timestampsSlice.actions,
             reset: () => {
               set(store.getInitialState())
@@ -78,6 +84,7 @@ const useConfigStore = create<ConfigStore>()(
           floorAssemblyConfigs: state.floorAssemblyConfigs,
           roofAssemblyConfigs: state.roofAssemblyConfigs,
           openingAssemblyConfigs: state.openingAssemblyConfigs,
+          layerSetConfigs: state.layerSetConfigs,
           defaultBaseRingBeamAssemblyId: state.defaultBaseRingBeamAssemblyId,
           defaultTopRingBeamAssemblyId: state.defaultTopRingBeamAssemblyId,
           defaultWallAssemblyId: state.defaultWallAssemblyId,
@@ -168,6 +175,18 @@ export const useOpeningAssemblyById = (id: OpeningAssemblyId): OpeningAssemblyCo
 export const useDefaultOpeningAssemblyId = (): OpeningAssemblyId =>
   useConfigStore(state => state.actions.getDefaultOpeningAssemblyId())
 
+// Layer set selector hooks
+export const useLayerSets = (): LayerSetConfig[] => {
+  const layerSetConfigs = useConfigStore(state => state.layerSetConfigs)
+  return useMemo(() => Object.values(layerSetConfigs), [layerSetConfigs])
+}
+
+export const useLayerSetById = (id: LayerSetId): LayerSetConfig | null =>
+  useConfigStore(state => state.actions.getLayerSetById(id))
+
+export const useLayerSetsByUse = (use: LayerSetConfig['uses'][number]): LayerSetConfig[] =>
+  useConfigStore(state => state.actions.getLayerSetsByUse(use))
+
 export const useConfigActions = (): ConfigActions => useConfigStore(state => state.actions)
 
 // For non-reactive contexts
@@ -193,6 +212,7 @@ export const getConfigState = () => {
     floorAssemblyConfigs: state.floorAssemblyConfigs,
     roofAssemblyConfigs: state.roofAssemblyConfigs,
     openingAssemblyConfigs: state.openingAssemblyConfigs,
+    layerSetConfigs: state.layerSetConfigs,
     defaultBaseRingBeamAssemblyId: state.defaultBaseRingBeamAssemblyId,
     defaultTopRingBeamAssemblyId: state.defaultTopRingBeamAssemblyId,
     defaultWallAssemblyId: state.defaultWallAssemblyId,
@@ -211,6 +231,7 @@ export const setConfigState = (data: {
   floorAssemblyConfigs?: Record<FloorAssemblyId, FloorAssemblyConfig>
   roofAssemblyConfigs?: Record<RoofAssemblyId, RoofAssemblyConfig>
   openingAssemblyConfigs?: Record<OpeningAssemblyId, OpeningAssemblyConfig>
+  layerSetConfigs?: Record<LayerSetId, LayerSetConfig>
   defaultBaseRingBeamAssemblyId?: RingBeamAssemblyId
   defaultTopRingBeamAssemblyId?: RingBeamAssemblyId
   defaultWallAssemblyId: WallAssemblyId
@@ -228,6 +249,7 @@ export const setConfigState = (data: {
     floorAssemblyConfigs: data.floorAssemblyConfigs ?? state.floorAssemblyConfigs,
     roofAssemblyConfigs: data.roofAssemblyConfigs ?? state.roofAssemblyConfigs,
     openingAssemblyConfigs: data.openingAssemblyConfigs ?? state.openingAssemblyConfigs,
+    layerSetConfigs: data.layerSetConfigs ?? state.layerSetConfigs,
     defaultBaseRingBeamAssemblyId: data.defaultBaseRingBeamAssemblyId,
     defaultTopRingBeamAssemblyId: data.defaultTopRingBeamAssemblyId,
     defaultWallAssemblyId: data.defaultWallAssemblyId,
