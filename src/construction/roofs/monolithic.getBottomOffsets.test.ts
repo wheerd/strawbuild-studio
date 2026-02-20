@@ -43,25 +43,20 @@ describe('MonolithicRoofAssembly.getBottomOffsets', () => {
     return roof
   }
 
-  const createTestConfig = (insideThickness = 0): MonolithicRoofConfig => ({
+  const createTestConfig = (): MonolithicRoofConfig => ({
     type: 'monolithic',
     thickness: millimeters(200),
     material: 'test-material' as any,
     infillMaterial: 'test-infill' as any,
-    layers: {
-      insideThickness: millimeters(insideThickness),
-      insideLayers: [],
-      topThickness: millimeters(0),
-      topLayers: [],
-      overhangThickness: millimeters(0),
-      overhangLayers: []
-    }
+    insideLayerSetId: undefined,
+    topLayerSetId: undefined,
+    overhangLayerSetId: undefined
   })
 
   describe('Shed Roof', () => {
     it('should add one sloped area to map for shed roof', () => {
       const roof = createTestRoof('shed', newVec2(5000, 5000), newVec2(5000, 0), 30, verticalOffset)
-      const config = createTestConfig(0)
+      const config = createTestConfig()
       const assembly = new MonolithicRoofAssembly(config)
       mockSplitPolygonByLine.mockReturnValue([{ side: 'right', polygon: roof.overhangPolygon }])
       const ridgeHeight = roof.verticalOffset + roof.rise
@@ -85,7 +80,7 @@ describe('MonolithicRoofAssembly.getBottomOffsets', () => {
   describe('Gable Roof', () => {
     it('should add two sloped areas to map for gable roof', () => {
       const roof = createTestRoof('gable', newVec2(5000, 5000), newVec2(5000, 0), 30, verticalOffset)
-      const config = createTestConfig(0)
+      const config = createTestConfig()
       const assembly = new MonolithicRoofAssembly(config)
       const polygon1: Polygon2D = { points: [newVec2(0, 0), newVec2(1, 1), newVec2(2, 2)] }
       const polygon2: Polygon2D = { points: [newVec2(3, 3), newVec2(4, 4), newVec2(5, 5)] }

@@ -1,6 +1,6 @@
 import { DEFAULT_FLOOR_ASSEMBLY_ID, type FloorAssemblyId } from '@/building/model/ids'
+import { LAYER_SET_CEILING_PLASTER, LAYER_SET_FLOOR_SCREED } from '@/construction/config/store/slices/layers.defaults'
 import type { FloorAssemblyConfig } from '@/construction/config/types'
-import { PRESET_FLOOR_SCREED } from '@/construction/layers/defaults'
 import { clt, concrete, glt, osb, roughWood, strawbale } from '@/construction/materials/material'
 
 const cltAssembly: FloorAssemblyConfig = {
@@ -10,12 +10,8 @@ const cltAssembly: FloorAssemblyConfig = {
   type: 'monolithic',
   thickness: 180,
   material: clt.id,
-  layers: {
-    topThickness: 60,
-    topLayers: PRESET_FLOOR_SCREED.layers,
-    bottomThickness: 0,
-    bottomLayers: []
-  }
+  topLayerSetId: LAYER_SET_FLOOR_SCREED.id,
+  bottomLayerSetId: undefined
 }
 
 const concreteAssembly: FloorAssemblyConfig = {
@@ -25,12 +21,8 @@ const concreteAssembly: FloorAssemblyConfig = {
   type: 'monolithic',
   thickness: 200,
   material: concrete.id,
-  layers: {
-    topThickness: 60,
-    topLayers: PRESET_FLOOR_SCREED.layers,
-    bottomThickness: 0,
-    bottomLayers: []
-  }
+  topLayerSetId: LAYER_SET_FLOOR_SCREED.id,
+  bottomLayerSetId: undefined
 }
 
 const joistAssembly: FloorAssemblyConfig = {
@@ -50,12 +42,8 @@ const joistAssembly: FloorAssemblyConfig = {
   subfloorThickness: 22,
   openingSideMaterial: roughWood.id,
   openingSideThickness: 60,
-  layers: {
-    topThickness: 60,
-    topLayers: PRESET_FLOOR_SCREED.layers,
-    bottomThickness: 0,
-    bottomLayers: []
-  }
+  topLayerSetId: LAYER_SET_FLOOR_SCREED.id,
+  bottomLayerSetId: LAYER_SET_CEILING_PLASTER.id
 }
 
 const hangingJoistAssembly: FloorAssemblyConfig = {
@@ -72,12 +60,8 @@ const hangingJoistAssembly: FloorAssemblyConfig = {
   openingSideMaterial: roughWood.id,
   openingSideThickness: 60,
   verticalOffset: 0,
-  layers: {
-    topThickness: 60,
-    topLayers: PRESET_FLOOR_SCREED.layers,
-    bottomThickness: 0,
-    bottomLayers: []
-  }
+  topLayerSetId: LAYER_SET_FLOOR_SCREED.id,
+  bottomLayerSetId: LAYER_SET_CEILING_PLASTER.id
 }
 
 const filledAssembly: FloorAssemblyConfig = {
@@ -98,12 +82,8 @@ const filledAssembly: FloorAssemblyConfig = {
   openingFrameThickness: 60,
   openingFrameMaterial: roughWood.id,
   strawMaterial: undefined,
-  layers: {
-    topThickness: 60,
-    topLayers: PRESET_FLOOR_SCREED.layers,
-    bottomThickness: 0,
-    bottomLayers: []
-  }
+  topLayerSetId: LAYER_SET_FLOOR_SCREED.id,
+  bottomLayerSetId: LAYER_SET_CEILING_PLASTER.id
 }
 
 export const DEFAULT_FLOOR_ASSEMBLIES = [

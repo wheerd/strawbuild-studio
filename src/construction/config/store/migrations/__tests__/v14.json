@@ -1,0 +1,1014 @@
+{
+  "defaultStrawMaterial": "material_strawbale",
+  "ringBeamAssemblyConfigs": {
+    "ringbeam_default": {
+      "id": "ringbeam_default",
+      "name": "Full 36x6cm",
+      "type": "full",
+      "width": 360,
+      "height": 60,
+      "material": "material_rough_wood",
+      "offsetFromEdge": 0
+    },
+    "ringbeam_brick_default": {
+      "id": "ringbeam_brick_default",
+      "name": "Brick Ring Beam",
+      "type": "brick",
+      "beamWidth": 360,
+      "wallWidth": 240,
+      "wallHeight": 300,
+      "beamMaterial": "material_rough_wood",
+      "wallMaterial": "material_aac_brick",
+      "beamThickness": 60,
+      "insulationMaterial": "material_cork",
+      "insulationThickness": 120,
+      "waterproofingMaterial": "material_bitumen",
+      "waterproofingThickness": 2
+    }
+  },
+  "wallAssemblyConfigs": {
+    "wa_infill_default": {
+      "id": "wa_infill_default",
+      "name": "Standard Infill",
+      "type": "infill",
+      "posts": {
+        "type": "double",
+        "width": 60,
+        "material": "material_rough_wood",
+        "thickness": 120,
+        "infillMaterial": "material_strawbale"
+      },
+      "layers": {
+        "insideLayers": [
+          {
+            "name": "Base Plaster (Clay)",
+            "type": "monolithic",
+            "material": "material_clay_plaster_base",
+            "thickness": 20
+          },
+          {
+            "name": "Fine Plaster (Clay)",
+            "type": "monolithic",
+            "material": "material_clay_plaster_fine",
+            "thickness": 10
+          }
+        ],
+        "outsideLayers": [
+          {
+            "name": "Base Plaster (Lime)",
+            "type": "monolithic",
+            "material": "material_lime_plaster_base",
+            "thickness": 20
+          },
+          {
+            "name": "Fine Plaster (Lime)",
+            "type": "monolithic",
+            "material": "material_lime_plaster_fine",
+            "thickness": 10
+          }
+        ],
+        "insideThickness": 30,
+        "outsideThickness": 30
+      },
+      "minStrawSpace": 70,
+      "maxPostSpacing": 900,
+      "triangularBattens": {
+        "size": 30,
+        "inside": false,
+        "outside": false,
+        "material": "material_batten",
+        "minLength": 100
+      },
+      "desiredPostSpacing": 800
+    },
+    "wa_module_default": {
+      "id": "wa_module_default",
+      "name": "Default Module",
+      "type": "modules",
+      "infill": {
+        "posts": {
+          "type": "full",
+          "width": 60,
+          "material": "material_rough_wood"
+        },
+        "minStrawSpace": 70,
+        "maxPostSpacing": 900,
+        "triangularBattens": {
+          "size": 30,
+          "inside": false,
+          "outside": false,
+          "material": "material_batten",
+          "minLength": 100
+        },
+        "desiredPostSpacing": 800
+      },
+      "layers": {
+        "insideLayers": [
+          {
+            "name": "Base Plaster (Clay)",
+            "type": "monolithic",
+            "material": "material_clay_plaster_base",
+            "thickness": 20
+          },
+          {
+            "name": "Fine Plaster (Clay)",
+            "type": "monolithic",
+            "material": "material_clay_plaster_fine",
+            "thickness": 10
+          }
+        ],
+        "outsideLayers": [
+          {
+            "name": "Base Plaster (Lime)",
+            "type": "monolithic",
+            "material": "material_lime_plaster_base",
+            "thickness": 20
+          },
+          {
+            "name": "Fine Plaster (Lime)",
+            "type": "monolithic",
+            "material": "material_lime_plaster_fine",
+            "thickness": 10
+          }
+        ],
+        "insideThickness": 30,
+        "outsideThickness": 30
+      },
+      "module": {
+        "type": "single",
+        "maxWidth": 920,
+        "minWidth": 920,
+        "frameMaterial": "material_rough_wood",
+        "strawMaterial": "material_strawbale",
+        "frameThickness": 60,
+        "triangularBattens": {
+          "size": 30,
+          "inside": false,
+          "outside": false,
+          "material": "material_batten",
+          "minLength": 100
+        }
+      }
+    },
+    "wa_ecococon_default": {
+      "id": "wa_ecococon_default",
+      "name": "Ecococon Modules",
+      "type": "prefab-modules",
+      "layers": {
+        "insideLayers": [
+          {
+            "name": "Base Plaster (Clay)",
+            "type": "monolithic",
+            "material": "material_clay_plaster_base",
+            "thickness": 20
+          },
+          {
+            "name": "Fine Plaster (Clay)",
+            "type": "monolithic",
+            "material": "material_clay_plaster_fine",
+            "thickness": 10
+          }
+        ],
+        "outsideLayers": [
+          {
+            "name": "Base Plaster (Lime)",
+            "type": "monolithic",
+            "material": "material_lime_plaster_base",
+            "thickness": 20
+          },
+          {
+            "name": "Fine Plaster (Lime)",
+            "type": "monolithic",
+            "material": "material_lime_plaster_fine",
+            "thickness": 10
+          }
+        ],
+        "insideThickness": 30,
+        "outsideThickness": 30
+      },
+      "maxWidth": 850,
+      "targetWidth": 800,
+      "sillMaterial": "material_ecococon_sill",
+      "lintelMaterial": "material_ecococon_lintel",
+      "defaultMaterial": "material_ecococon_standard",
+      "fallbackMaterial": "material_ecococon_box",
+      "inclinedMaterial": "material_ecococon_inclined",
+      "openingAssemblyId": "oa_prefab_threshold_default",
+      "preferEqualWidths": true,
+      "tallReinforceStagger": 800,
+      "tallReinforceMaterial": "material_lvl",
+      "tallReinforceThickness": 15,
+      "tallReinforceThreshold": 3000
+    },
+    "wa_strawhenge_default": {
+      "id": "wa_strawhenge_default",
+      "name": "Strawhenge Module",
+      "type": "strawhenge",
+      "infill": {
+        "posts": {
+          "type": "full",
+          "width": 60,
+          "material": "material_rough_wood"
+        },
+        "minStrawSpace": 70,
+        "maxPostSpacing": 900,
+        "triangularBattens": {
+          "size": 30,
+          "inside": false,
+          "outside": false,
+          "material": "material_batten",
+          "minLength": 100
+        },
+        "desiredPostSpacing": 800
+      },
+      "layers": {
+        "insideLayers": [
+          {
+            "name": "Base Plaster (Clay)",
+            "type": "monolithic",
+            "material": "material_clay_plaster_base",
+            "thickness": 20
+          },
+          {
+            "name": "Fine Plaster (Clay)",
+            "type": "monolithic",
+            "material": "material_clay_plaster_fine",
+            "thickness": 10
+          }
+        ],
+        "outsideLayers": [
+          {
+            "name": "Base Plaster (Lime)",
+            "type": "monolithic",
+            "material": "material_lime_plaster_base",
+            "thickness": 20
+          },
+          {
+            "name": "Fine Plaster (Lime)",
+            "type": "monolithic",
+            "material": "material_lime_plaster_fine",
+            "thickness": 10
+          }
+        ],
+        "insideThickness": 30,
+        "outsideThickness": 30
+      },
+      "module": {
+        "type": "single",
+        "maxWidth": 920,
+        "minWidth": 920,
+        "frameMaterial": "material_rough_wood",
+        "strawMaterial": "material_strawbale",
+        "frameThickness": 60,
+        "triangularBattens": {
+          "size": 30,
+          "inside": false,
+          "outside": false,
+          "material": "material_batten",
+          "minLength": 100
+        }
+      }
+    },
+    "wa_non_strawbale_default": {
+      "id": "wa_non_strawbale_default",
+      "name": "Concrete Wall",
+      "type": "non-strawbale",
+      "layers": {
+        "insideLayers": [
+          {
+            "name": "Base Plaster (Clay)",
+            "type": "monolithic",
+            "material": "material_clay_plaster_base",
+            "thickness": 20
+          },
+          {
+            "name": "Fine Plaster (Clay)",
+            "type": "monolithic",
+            "material": "material_clay_plaster_fine",
+            "thickness": 10
+          }
+        ],
+        "outsideLayers": [
+          {
+            "name": "Insulation",
+            "type": "monolithic",
+            "material": "material_invalid",
+            "thickness": 160
+          },
+          {
+            "name": "Base Plaster (Lime)",
+            "type": "monolithic",
+            "material": "material_lime_plaster_base",
+            "thickness": 20
+          },
+          {
+            "name": "Fine Plaster (Lime)",
+            "type": "monolithic",
+            "material": "material_lime_plaster_fine",
+            "thickness": 10
+          }
+        ],
+        "insideThickness": 30,
+        "outsideThickness": 190
+      },
+      "material": "material_concrete",
+      "openingAssemblyId": "oa_empty_default"
+    }
+  },
+  "floorAssemblyConfigs": {
+    "fa_clt_default": {
+      "id": "fa_clt_default",
+      "name": "CLT 18cm (6cm)",
+      "type": "monolithic",
+      "layers": {
+        "topLayers": [
+          {
+            "name": "Impact Sound Insulation",
+            "type": "monolithic",
+            "material": "material_impact_sound_insulation",
+            "thickness": 25
+          },
+          {
+            "name": "Screed",
+            "type": "monolithic",
+            "material": "material_cement_screed",
+            "thickness": 35
+          }
+        ],
+        "bottomLayers": [],
+        "topThickness": 60,
+        "bottomThickness": 0
+      },
+      "material": "material_clt",
+      "thickness": 180
+    },
+    "fa_joist_default": {
+      "id": "fa_joist_default",
+      "name": "Joist 8x24cm (6cm)",
+      "type": "joist",
+      "layers": {
+        "topLayers": [
+          {
+            "name": "Impact Sound Insulation",
+            "type": "monolithic",
+            "material": "material_impact_sound_insulation",
+            "thickness": 25
+          },
+          {
+            "name": "Screed",
+            "type": "monolithic",
+            "material": "material_cement_screed",
+            "thickness": 35
+          }
+        ],
+        "bottomLayers": [],
+        "topThickness": 60,
+        "bottomThickness": 0
+      },
+      "joistSpacing": 800,
+      "joistMaterial": "material_glt",
+      "joistThickness": 80,
+      "subfloorMaterial": "material_osb",
+      "wallBeamMaterial": "material_glt",
+      "subfloorThickness": 22,
+      "wallBeamThickness": 120,
+      "constructionHeight": 240,
+      "wallInfillMaterial": "material_strawbale",
+      "openingSideMaterial": "material_rough_wood",
+      "openingSideThickness": 60,
+      "wallBeamInsideOffset": 40
+    },
+    "fa_filled_default": {
+      "id": "fa_filled_default",
+      "name": "Filled Joist 8x36cm (6cm)",
+      "type": "filled",
+      "layers": {
+        "topLayers": [
+          {
+            "name": "Impact Sound Insulation",
+            "type": "monolithic",
+            "material": "material_impact_sound_insulation",
+            "thickness": 25
+          },
+          {
+            "name": "Screed",
+            "type": "monolithic",
+            "material": "material_cement_screed",
+            "thickness": 35
+          }
+        ],
+        "bottomLayers": [],
+        "topThickness": 60,
+        "bottomThickness": 0
+      },
+      "joistSpacing": 800,
+      "frameMaterial": "material_rough_wood",
+      "joistMaterial": "material_glt",
+      "frameThickness": 60,
+      "joistThickness": 80,
+      "subfloorMaterial": "material_osb",
+      "subfloorThickness": 22,
+      "constructionHeight": 360,
+      "openingFrameMaterial": "material_rough_wood",
+      "openingFrameThickness": 60,
+      "ceilingSheathingMaterial": "material_osb",
+      "ceilingSheathingThickness": 22
+    },
+    "fa_concrete_default": {
+      "id": "fa_concrete_default",
+      "name": "Concrete 20cm (6cm)",
+      "type": "monolithic",
+      "layers": {
+        "topLayers": [
+          {
+            "name": "Impact Sound Insulation",
+            "type": "monolithic",
+            "material": "material_impact_sound_insulation",
+            "thickness": 25
+          },
+          {
+            "name": "Screed",
+            "type": "monolithic",
+            "material": "material_cement_screed",
+            "thickness": 35
+          }
+        ],
+        "bottomLayers": [],
+        "topThickness": 60,
+        "bottomThickness": 0
+      },
+      "material": "material_concrete",
+      "thickness": 200
+    },
+    "fa_hanging_joist_default": {
+      "id": "fa_hanging_joist_default",
+      "name": "Hanging Joist 8x24cm (6cm)",
+      "type": "hanging-joist",
+      "layers": {
+        "topLayers": [
+          {
+            "name": "Impact Sound Insulation",
+            "type": "monolithic",
+            "material": "material_impact_sound_insulation",
+            "thickness": 25
+          },
+          {
+            "name": "Screed",
+            "type": "monolithic",
+            "material": "material_cement_screed",
+            "thickness": 35
+          }
+        ],
+        "bottomLayers": [],
+        "topThickness": 60,
+        "bottomThickness": 0
+      },
+      "joistHeight": 240,
+      "joistSpacing": 800,
+      "joistMaterial": "material_glt",
+      "joistThickness": 80,
+      "verticalOffset": 0,
+      "subfloorMaterial": "material_osb",
+      "subfloorThickness": 22,
+      "openingSideMaterial": "material_rough_wood",
+      "openingSideThickness": 60
+    }
+  },
+  "roofAssemblyConfigs": {
+    "ra_clt_default": {
+      "id": "ra_clt_default",
+      "name": "CLT Monolithic 18cm",
+      "type": "monolithic",
+      "layers": {
+        "topLayers": [
+          {
+            "name": "Wind Paper",
+            "type": "monolithic",
+            "material": "material_wind_barrier",
+            "thickness": 1
+          },
+          {
+            "name": "Battens",
+            "type": "striped",
+            "gapWidth": 500,
+            "direction": "colinear",
+            "thickness": 40,
+            "stripeWidth": 60,
+            "stripeMaterial": "material_batten"
+          },
+          {
+            "name": "Counter Battens",
+            "type": "striped",
+            "gapWidth": 300,
+            "direction": "perpendicular",
+            "thickness": 30,
+            "stripeWidth": 50,
+            "stripeMaterial": "material_batten"
+          },
+          {
+            "name": "Tiles",
+            "type": "monolithic",
+            "material": "material_invalid",
+            "thickness": 35
+          }
+        ],
+        "insideLayers": [
+          {
+            "name": "Base Plaster (Clay)",
+            "type": "monolithic",
+            "material": "material_clay_plaster_base",
+            "thickness": 20
+          },
+          {
+            "name": "Fine Plaster (Clay)",
+            "type": "monolithic",
+            "material": "material_clay_plaster_fine",
+            "thickness": 10
+          }
+        ],
+        "topThickness": 106,
+        "overhangLayers": [],
+        "insideThickness": 30,
+        "overhangThickness": 0
+      },
+      "material": "material_clt",
+      "thickness": 180,
+      "infillMaterial": "material_woodwool"
+    },
+    "ra_purlin_default": {
+      "id": "ra_purlin_default",
+      "name": "Purlin Roof (Straw)",
+      "type": "purlin",
+      "layers": {
+        "topLayers": [
+          {
+            "name": "Wind Paper",
+            "type": "monolithic",
+            "material": "material_wind_barrier",
+            "thickness": 1
+          },
+          {
+            "name": "Battens",
+            "type": "striped",
+            "gapWidth": 500,
+            "direction": "colinear",
+            "thickness": 40,
+            "stripeWidth": 60,
+            "stripeMaterial": "material_batten"
+          },
+          {
+            "name": "Counter Battens",
+            "type": "striped",
+            "gapWidth": 300,
+            "direction": "perpendicular",
+            "thickness": 30,
+            "stripeWidth": 50,
+            "stripeMaterial": "material_batten"
+          },
+          {
+            "name": "Tiles",
+            "type": "monolithic",
+            "material": "material_invalid",
+            "thickness": 35
+          }
+        ],
+        "insideLayers": [
+          {
+            "name": "Base Plaster (Clay)",
+            "type": "monolithic",
+            "material": "material_clay_plaster_base",
+            "thickness": 20
+          },
+          {
+            "name": "Fine Plaster (Clay)",
+            "type": "monolithic",
+            "material": "material_clay_plaster_fine",
+            "thickness": 10
+          }
+        ],
+        "topThickness": 106,
+        "overhangLayers": [],
+        "insideThickness": 30,
+        "overhangThickness": 0
+      },
+      "thickness": 360,
+      "purlinInset": 20,
+      "purlinWidth": 120,
+      "rafterWidth": 80,
+      "purlinHeight": 240,
+      "purlinSpacing": 6000,
+      "rafterSpacing": 500,
+      "strawMaterial": "material_strawbale",
+      "infillMaterial": "material_strawbale",
+      "purlinMaterial": "material_glt",
+      "rafterMaterial": "material_glt",
+      "deckingMaterial": "material_osb",
+      "deckingThickness": 22,
+      "rafterSpacingMin": 70,
+      "ceilingSheathingMaterial": "material_fire_boarding",
+      "ceilingSheathingThickness": 40
+    }
+  },
+  "openingAssemblyConfigs": {
+    "oa_post_default": {
+      "id": "oa_post_default",
+      "name": "Standard Opening with Posts",
+      "type": "post",
+      "posts": {
+        "type": "double",
+        "width": 100,
+        "material": "material_rough_wood",
+        "thickness": 140,
+        "infillMaterial": "material_woodwool"
+      },
+      "padding": 15,
+      "replacePosts": true,
+      "sillMaterial": "material_rough_wood",
+      "sillThickness": 60,
+      "headerMaterial": "material_rough_wood",
+      "headerThickness": 140
+    },
+    "oa_empty_default": {
+      "id": "oa_empty_default",
+      "name": "Empty Opening",
+      "type": "empty",
+      "padding": 15
+    },
+    "oa_simple_default": {
+      "id": "oa_simple_default",
+      "name": "Standard Opening",
+      "type": "simple",
+      "padding": 15,
+      "sillMaterial": "material_rough_wood",
+      "sillThickness": 60,
+      "headerMaterial": "material_rough_wood",
+      "headerThickness": 60
+    },
+    "oa_planked_default": {
+      "id": "oa_planked_default",
+      "name": "Standard Opening with Planking",
+      "type": "planked",
+      "padding": 15,
+      "sillMaterial": "material_rough_wood",
+      "plankMaterial": "material_dhf",
+      "sillThickness": 60,
+      "headerMaterial": "material_rough_wood",
+      "plankThickness": 25,
+      "headerThickness": 60
+    },
+    "oa_post_prefab_default": {
+      "id": "oa_post_prefab_default",
+      "name": "Prefab Opening with Posts",
+      "type": "post",
+      "posts": {
+        "type": "full",
+        "width": 75,
+        "material": "material_lvl"
+      },
+      "padding": 15,
+      "replacePosts": false,
+      "sillMaterial": "",
+      "sillThickness": 0,
+      "headerMaterial": "",
+      "headerThickness": 0,
+      "postsSupportHeader": true
+    },
+    "oa_simple_prefab_default": {
+      "id": "oa_simple_prefab_default",
+      "name": "Prefab Opening without Planking",
+      "type": "simple",
+      "padding": 15,
+      "sillMaterial": "",
+      "sillThickness": 0,
+      "headerMaterial": "",
+      "headerThickness": 0
+    },
+    "oa_planked_prefab_default": {
+      "id": "oa_planked_prefab_default",
+      "name": "Prefab Opening with Planking",
+      "type": "planked",
+      "padding": 15,
+      "sillMaterial": "",
+      "plankMaterial": "material_lvl",
+      "sillThickness": 0,
+      "headerMaterial": "",
+      "plankThickness": 21,
+      "headerThickness": 0
+    },
+    "oa_prefab_threshold_default": {
+      "id": "oa_prefab_threshold_default",
+      "name": "Standard Prefab Opening",
+      "type": "threshold",
+      "padding": 15,
+      "defaultId": "oa_planked_prefab_default",
+      "thresholds": [
+        {
+          "assemblyId": "oa_post_prefab_default",
+          "widthThreshold": 2000
+        }
+      ]
+    }
+  },
+  "layerSetConfigs": {
+    "ls_clay_plaster": {
+      "id": "ls_clay_plaster",
+      "name": "Clay Plaster",
+      "layers": [
+        {
+          "type": "monolithic",
+          "name": "Base Plaster (Clay)",
+          "material": "material_clay_plaster_base",
+          "thickness": 20
+        },
+        {
+          "type": "monolithic",
+          "name": "Fine Plaster (Clay)",
+          "material": "material_clay_plaster_fine",
+          "thickness": 10
+        }
+      ],
+      "totalThickness": 30,
+      "use": "wall"
+    },
+    "ls_clay_plaster_diagonal": {
+      "id": "ls_clay_plaster_diagonal",
+      "name": "Clay Plaster with Diagonal Bracing",
+      "layers": [
+        {
+          "type": "striped",
+          "name": "Diagonal Bracing",
+          "direction": "diagonal",
+          "stripeMaterial": "material_board",
+          "stripeWidth": 200,
+          "gapMaterial": "material_clay_plaster_base",
+          "gapWidth": 50,
+          "thickness": 25
+        },
+        {
+          "type": "monolithic",
+          "name": "Fine Plaster (Clay)",
+          "material": "material_clay_plaster_fine",
+          "thickness": 5
+        }
+      ],
+      "totalThickness": 30,
+      "use": "wall"
+    },
+    "ls_lime_plaster": {
+      "id": "ls_lime_plaster",
+      "name": "Lime Plaster",
+      "layers": [
+        {
+          "type": "monolithic",
+          "name": "Base Plaster (Lime)",
+          "material": "material_lime_plaster_base",
+          "thickness": 20
+        },
+        {
+          "type": "monolithic",
+          "name": "Fine Plaster (Lime)",
+          "material": "material_lime_plaster_fine",
+          "thickness": 10
+        }
+      ],
+      "totalThickness": 30,
+      "use": "wall"
+    },
+    "ls_lime_plaster_dhf": {
+      "id": "ls_lime_plaster_dhf",
+      "name": "Lime Plaster with DHF",
+      "layers": [
+        {
+          "type": "monolithic",
+          "name": "DHF",
+          "material": "material_dhf",
+          "thickness": 16
+        },
+        {
+          "type": "monolithic",
+          "name": "Plaster Ground (Reed)",
+          "material": "material_reed",
+          "thickness": 9,
+          "overlap": true
+        },
+        {
+          "type": "monolithic",
+          "name": "Base Plaster (Lime)",
+          "material": "material_lime_plaster_base",
+          "thickness": 10
+        },
+        {
+          "type": "monolithic",
+          "name": "Fine Plaster (Lime)",
+          "material": "material_lime_plaster_fine",
+          "thickness": 4
+        }
+      ],
+      "totalThickness": 30,
+      "use": "wall"
+    },
+    "ls_lime_plaster_diagonal": {
+      "id": "ls_lime_plaster_diagonal",
+      "name": "Lime Plaster with Diagonal Bracing",
+      "layers": [
+        {
+          "type": "striped",
+          "name": "Diagonal Bracing",
+          "direction": "diagonal",
+          "stripeMaterial": "material_board",
+          "stripeWidth": 200,
+          "gapMaterial": "material_lime_plaster_base",
+          "gapWidth": 50,
+          "thickness": 25
+        },
+        {
+          "type": "monolithic",
+          "name": "Fine Plaster (Lime)",
+          "material": "material_lime_plaster_fine",
+          "thickness": 5
+        }
+      ],
+      "totalThickness": 30,
+      "use": "wall"
+    },
+    "ls_wooden_planking": {
+      "id": "ls_wooden_planking",
+      "name": "Wooden Planking",
+      "layers": [
+        {
+          "type": "monolithic",
+          "name": "Wind Barrier",
+          "material": "material_wind_barrier",
+          "thickness": 1
+        },
+        {
+          "type": "striped",
+          "name": "Battens",
+          "direction": "colinear",
+          "stripeMaterial": "material_batten",
+          "stripeWidth": 48,
+          "gapWidth": 500,
+          "thickness": 24
+        },
+        {
+          "type": "monolithic",
+          "name": "Wood Planking",
+          "material": "material_board",
+          "thickness": 25
+        }
+      ],
+      "totalThickness": 50,
+      "use": "wall"
+    },
+    "ls_wooden_planking_dhf": {
+      "id": "ls_wooden_planking_dhf",
+      "name": "Wooden Planking with DHF",
+      "layers": [
+        {
+          "type": "monolithic",
+          "name": "DHF",
+          "material": "material_dhf",
+          "thickness": 16
+        },
+        {
+          "type": "striped",
+          "name": "Battens",
+          "direction": "colinear",
+          "stripeMaterial": "material_batten",
+          "stripeWidth": 48,
+          "gapWidth": 500,
+          "thickness": 24
+        },
+        {
+          "type": "monolithic",
+          "name": "Wood Planking",
+          "material": "material_board",
+          "thickness": 25
+        }
+      ],
+      "totalThickness": 65,
+      "use": "wall"
+    },
+    "ls_gypsum": {
+      "id": "ls_gypsum",
+      "name": "Gypsum Boards",
+      "layers": [
+        {
+          "type": "monolithic",
+          "name": "Gypsum Boards",
+          "material": "material_gypsum",
+          "thickness": 30
+        }
+      ],
+      "totalThickness": 30,
+      "use": "wall"
+    },
+    "ls_ceiling_plaster": {
+      "id": "ls_ceiling_plaster",
+      "name": "Clay Plaster",
+      "layers": [
+        {
+          "type": "monolithic",
+          "name": "Base Plaster (Clay)",
+          "material": "material_clay_plaster_base",
+          "thickness": 20
+        },
+        {
+          "type": "monolithic",
+          "name": "Fine Plaster (Clay)",
+          "material": "material_clay_plaster_fine",
+          "thickness": 10
+        }
+      ],
+      "totalThickness": 30,
+      "use": "ceiling"
+    },
+    "ls_ceiling_lime_plaster": {
+      "id": "ls_ceiling_lime_plaster",
+      "name": "Lime Plaster",
+      "layers": [
+        {
+          "type": "monolithic",
+          "name": "Base Plaster (Lime)",
+          "material": "material_lime_plaster_base",
+          "thickness": 20
+        },
+        {
+          "type": "monolithic",
+          "name": "Fine Plaster (Lime)",
+          "material": "material_lime_plaster_fine",
+          "thickness": 10
+        }
+      ],
+      "totalThickness": 30,
+      "use": "ceiling"
+    },
+    "ls_floor_screed": {
+      "id": "ls_floor_screed",
+      "name": "Screed",
+      "layers": [
+        {
+          "type": "monolithic",
+          "name": "Impact Sound Insulation",
+          "material": "material_impact_sound_insulation",
+          "thickness": 25
+        },
+        {
+          "type": "monolithic",
+          "name": "Screed",
+          "material": "material_cement_screed",
+          "thickness": 35
+        }
+      ],
+      "totalThickness": 60,
+      "use": "floor"
+    },
+    "ls_roof_tiles": {
+      "id": "ls_roof_tiles",
+      "name": "Roof Tiles",
+      "layers": [
+        {
+          "type": "monolithic",
+          "name": "Wind Paper",
+          "material": "material_wind_barrier",
+          "thickness": 1
+        },
+        {
+          "type": "striped",
+          "direction": "colinear",
+          "name": "Battens",
+          "gapWidth": 500,
+          "thickness": 40,
+          "stripeMaterial": "material_batten",
+          "stripeWidth": 60
+        },
+        {
+          "type": "striped",
+          "direction": "perpendicular",
+          "name": "Counter Battens",
+          "gapWidth": 300,
+          "thickness": 30,
+          "stripeMaterial": "material_batten",
+          "stripeWidth": 50
+        },
+        {
+          "type": "monolithic",
+          "name": "Tiles",
+          "material": "material_invalid",
+          "thickness": 35
+        }
+      ],
+      "totalThickness": 106,
+      "use": "roof"
+    }
+  },
+  "defaultBaseRingBeamAssemblyId": "ringbeam_default",
+  "defaultTopRingBeamAssemblyId": "ringbeam_default",
+  "defaultWallAssemblyId": "wa_infill_default",
+  "defaultFloorAssemblyId": "fa_clt_default",
+  "defaultRoofAssemblyId": "ra_purlin_default",
+  "defaultOpeningAssemblyId": "oa_simple_default",
+  "timestamps": {
+    "ra_clt_default": 1771536987630
+  }
+}

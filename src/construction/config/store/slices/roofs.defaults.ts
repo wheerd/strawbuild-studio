@@ -1,6 +1,6 @@
 import { type RoofAssemblyId } from '@/building/model/ids'
+import { LAYER_SET_CEILING_PLASTER, LAYER_SET_ROOF_TILES } from '@/construction/config/store/slices/layers.defaults'
 import type { RoofAssemblyConfig } from '@/construction/config/types'
-import { PRESET_CEILING_CLAY_PLASTER, PRESET_ROOF_TILES } from '@/construction/layers/defaults'
 import { clt, fireProtectionBoarding, glt, osb, strawbale, woodwool } from '@/construction/materials/material'
 
 const monolithicAssembly: RoofAssemblyConfig = {
@@ -11,14 +11,9 @@ const monolithicAssembly: RoofAssemblyConfig = {
   thickness: 180,
   material: clt.id,
   infillMaterial: woodwool.id,
-  layers: {
-    insideThickness: 30,
-    insideLayers: PRESET_CEILING_CLAY_PLASTER.layers,
-    topThickness: 106, // Wind paper (1) + battens (40) + counter battens (30) + tiles (35)
-    topLayers: PRESET_ROOF_TILES.layers,
-    overhangThickness: 0,
-    overhangLayers: []
-  }
+  insideLayerSetId: LAYER_SET_CEILING_PLASTER.id,
+  topLayerSetId: LAYER_SET_ROOF_TILES.id,
+  overhangLayerSetId: undefined
 }
 
 const purlinAssembly: RoofAssemblyConfig = {
@@ -42,14 +37,9 @@ const purlinAssembly: RoofAssemblyConfig = {
   deckingMaterial: osb.id,
   deckingThickness: 22,
   strawMaterial: strawbale.id,
-  layers: {
-    insideThickness: 30,
-    insideLayers: PRESET_CEILING_CLAY_PLASTER.layers,
-    topThickness: 106, // Wind paper (1) + battens (40) + counter battens (30) + tiles (35)
-    topLayers: PRESET_ROOF_TILES.layers,
-    overhangThickness: 0,
-    overhangLayers: []
-  }
+  insideLayerSetId: LAYER_SET_CEILING_PLASTER.id,
+  topLayerSetId: LAYER_SET_ROOF_TILES.id,
+  overhangLayerSetId: undefined
 }
 
 export const DEFAULT_ROOF_ASSEMBLIES = [purlinAssembly, monolithicAssembly]

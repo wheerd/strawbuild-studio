@@ -1,6 +1,6 @@
 import { type PerimeterWallWithGeometry, isOpeningId } from '@/building/model'
 import { getModelActions } from '@/building/store'
-import { getConfigActions } from '@/construction/config'
+import { getConfigActions, resolveLayerSetThickness } from '@/construction/config'
 import { getRoofHeightLineCached } from '@/construction/derived'
 import { createConstructionElement } from '@/construction/elements'
 import { WallConstructionArea } from '@/construction/geometry'
@@ -21,7 +21,7 @@ import { TAG_NON_STRAWBALE_CONSTRUCTION } from '@/construction/tags'
 import type { NonStrawbaleWallConfig } from '@/construction/walls'
 import { BaseWallAssembly } from '@/construction/walls/base'
 import { calculateWallCornerInfo, getWallContext } from '@/construction/walls/corners/corners'
-import { constructWallLayers } from '@/construction/walls/layers'
+import { type WallLayerSetIds, constructWallLayers } from '@/construction/walls/layers'
 import { WALL_POLYGON_PLANE, createWallPolygonWithOpenings } from '@/construction/walls/polygons'
 import { convertHeightLineToWallOffsets } from '@/construction/walls/roofIntegration'
 import { segmentedWallConstruction } from '@/construction/walls/segmentation'
@@ -33,7 +33,6 @@ export class NonStrawbaleWallAssembly extends BaseWallAssembly<NonStrawbaleWallC
     const cornerInfo = calculateWallCornerInfo(wall, wallContext)
 
     const { getRingBeamAssemblyById } = getConfigActions()
-    // Get ring beam assemblies for THIS specific wall
     const basePlateAssembly = wall.baseRingBeamAssemblyId ? getRingBeamAssemblyById(wall.baseRingBeamAssemblyId) : null
     const topPlateAssembly = wall.topRingBeamAssemblyId ? getRingBeamAssemblyById(wall.topRingBeamAssemblyId) : null
 
@@ -43,8 +42,10 @@ export class NonStrawbaleWallAssembly extends BaseWallAssembly<NonStrawbaleWallC
     const totalConstructionHeight = storeyContext.wallTop - storeyContext.wallBottom
     const ceilingOffset = storeyContext.roofBottom - storeyContext.wallTop
 
-    const structuralThickness =
-      wall.thickness - this.config.layers.insideThickness - this.config.layers.outsideThickness
+    const insideThickness = resolveLayerSetThickness(this.config.insideLayerSetId)
+    const outsideThickness = resolveLayerSetThickness(this.config.outsideLayerSetId)
+
+    const structuralThickness = wall.thickness - insideThickness - outsideThickness
     if (structuralThickness <= 0) {
       throw new Error('Non-strawbale wall structural thickness must be greater than 0')
     }
@@ -81,16 +82,21 @@ export class NonStrawbaleWallAssembly extends BaseWallAssembly<NonStrawbaleWallC
     const structureShapes = structuralPolygons.map(p =>
       createExtrudedPolygon(p, WALL_POLYGON_PLANE, structuralThickness)
     )
-    const structureTransform = fromTrans(newVec3(0, this.config.layers.insideThickness, 0))
+    const structureTransform = fromTrans(newVec3(0, insideThickness, 0))
     const structureElements = structureShapes.map(s =>
       createConstructionElement(this.config.material, s, structureTransform)
     )
+
+    const layerSetIds: WallLayerSetIds = {
+      insideLayerSetId: this.config.insideLayerSetId,
+      outsideLayerSetId: this.config.outsideLayerSetId
+    }
 
     const metadataResults = Array.from(
       segmentedWallConstruction(
         wall,
         storeyContext,
-        this.config.layers,
+        layerSetIds,
         this.noopWallSegment,
         this.noopInfill,
         this.config.openingAssemblyId
@@ -112,7 +118,7 @@ export class NonStrawbaleWallAssembly extends BaseWallAssembly<NonStrawbaleWallC
       warnings: aggRes.warnings
     }
 
-    const layerModel = constructWallLayers(wall, storeyContext, this.config.layers)
+    const layerModel = constructWallLayers(wall, storeyContext, layerSetIds)
 
     return mergeModels(baseModel, layerModel)
   }
@@ -133,7 +139,9 @@ export class NonStrawbaleWallAssembly extends BaseWallAssembly<NonStrawbaleWallC
 
   get thicknessRange(): ThicknessRange {
     const material = getMaterialById(this.config.material)
-    const layerThickness = this.config.layers.insideThickness + this.config.layers.outsideThickness
+    const insideThickness = resolveLayerSetThickness(this.config.insideLayerSetId)
+    const outsideThickness = resolveLayerSetThickness(this.config.outsideLayerSetId)
+    const layerThickness = insideThickness + outsideThickness
     return addThickness(material ? getMaterialThickness(material) : undefined, layerThickness)
   }
 

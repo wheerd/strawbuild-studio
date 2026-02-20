@@ -1,6 +1,6 @@
 import type { FloorOpening, PerimeterWithGeometry } from '@/building/model'
 import { getModelActions } from '@/building/store'
-import { getConfigActions } from '@/construction/config'
+import { getConfigActions, resolveLayerSetThickness } from '@/construction/config'
 import {
   type Length,
   type Line2D,
@@ -56,7 +56,9 @@ export function computePerimeterConstructionPolygon(
   const offsets = walls.map(wall => {
     const assembly = getWallAssemblyById(wall.wallAssemblyId)
     const layerThickness = Math.max(
-      (outside ? assembly?.layers.outsideThickness : assembly?.layers.insideThickness) ?? 0,
+      outside
+        ? resolveLayerSetThickness(assembly?.outsideLayerSetId)
+        : resolveLayerSetThickness(assembly?.insideLayerSetId),
       0
     )
     const distanceFromEdge = outside ? Math.min(-layerThickness, 0) : Math.max(layerThickness, 0)
@@ -134,7 +136,7 @@ export function createWallFaceOffsets(perimeters: PerimeterWithGeometry[]): Wall
 
       const inwardNormal = negVec2(wall.outsideDirection)
 
-      const insideThickness = Math.max(assembly.layers.insideThickness, 0)
+      const insideThickness = Math.max(resolveLayerSetThickness(assembly.insideLayerSetId), 0)
       if (insideThickness > 0) {
         const segment: LineSegment2D = {
           start: copyVec2(startCorner.insidePoint),
@@ -152,7 +154,7 @@ export function createWallFaceOffsets(perimeters: PerimeterWithGeometry[]): Wall
         })
       }
 
-      const outsideThickness = Math.max(assembly.layers.outsideThickness, 0)
+      const outsideThickness = Math.max(resolveLayerSetThickness(assembly.outsideLayerSetId), 0)
       if (outsideThickness > 0) {
         const segment: LineSegment2D = {
           start: copyVec2(startCorner.outsidePoint),

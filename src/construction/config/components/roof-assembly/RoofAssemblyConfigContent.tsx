@@ -67,14 +67,9 @@ export function RoofAssemblyConfigContent({ initialSelectionId }: RoofAssemblyCo
           thickness: 180,
           material: defaultMaterial,
           infillMaterial: defaultMaterial,
-          layers: {
-            insideThickness: 0,
-            insideLayers: [],
-            topThickness: 0,
-            topLayers: [],
-            overhangThickness: 0,
-            overhangLayers: []
-          }
+          insideLayerSetId: undefined,
+          topLayerSetId: undefined,
+          overhangLayerSetId: undefined
         }
       } else {
         name = t($ => $.roofs.newName.purlin)
@@ -95,14 +90,9 @@ export function RoofAssemblyConfigContent({ initialSelectionId }: RoofAssemblyCo
           ceilingSheathingThickness: 40,
           deckingMaterial: defaultMaterial,
           deckingThickness: 22,
-          layers: {
-            insideThickness: 0,
-            insideLayers: [],
-            topThickness: 0,
-            topLayers: [],
-            overhangThickness: 0,
-            overhangLayers: []
-          }
+          insideLayerSetId: undefined,
+          topLayerSetId: undefined,
+          overhangLayerSetId: undefined
         }
       }
 

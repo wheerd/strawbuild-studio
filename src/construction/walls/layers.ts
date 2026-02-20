@@ -1,5 +1,7 @@
 import { type PerimeterWallWithGeometry, isOpeningId } from '@/building/model'
+import type { LayerSetId } from '@/building/model/ids'
 import { getModelActions } from '@/building/store'
+import { resolveLayerSetLayers, resolveLayerSetThickness } from '@/construction/config'
 import { getRoofHeightLineCached } from '@/construction/derived'
 import type { GroupOrElement } from '@/construction/elements'
 import { WallConstructionArea } from '@/construction/geometry'
@@ -27,7 +29,6 @@ import { assertUnreachable } from '@/shared/utils'
 import { getWallContext } from './corners/corners'
 import { computeLayerSpan, subtractWallOpenings } from './polygons'
 import { convertHeightLineToWallOffsets } from './roofIntegration'
-import type { WallLayersConfig } from './types'
 
 const WALL_LAYER_PLANE: Plane3D = 'xz'
 
@@ -66,15 +67,24 @@ const aggregateLayerResults = (results: ConstructionResult[]): ConstructionModel
   return { ...aggregated, bounds: Bounds3D.merge(...aggregated.elements.map(element => element.bounds)) }
 }
 
+export interface WallLayerSetIds {
+  insideLayerSetId?: LayerSetId
+  outsideLayerSetId?: LayerSetId
+}
+
 export function constructWallLayers(
   wall: PerimeterWallWithGeometry,
   storeyContext: StoreyContext,
-  layers: WallLayersConfig
+  layerSetIds: WallLayerSetIds
 ): ConstructionModel {
   const context = getWallContext(wall)
 
+  const insideLayers = resolveLayerSetLayers(layerSetIds.insideLayerSetId)
+  const outsideLayers = resolveLayerSetLayers(layerSetIds.outsideLayerSetId)
+  const outsideThickness = resolveLayerSetThickness(layerSetIds.outsideLayerSetId)
+
   const baseInsideSpan = computeLayerSpan('inside', 0 as Length, wall, context)
-  const baseOutsideSpan = computeLayerSpan('outside', layers.outsideThickness, wall, context)
+  const baseOutsideSpan = computeLayerSpan('outside', outsideThickness, wall, context)
 
   const layerResults: ConstructionResult[] = []
 
@@ -84,7 +94,7 @@ export function constructWallLayers(
   const { getWallOpeningById } = getModelActions()
   const openings = wall.entityIds.filter(isOpeningId).map(getWallOpeningById)
 
-  if (layers.insideLayers.length > 0) {
+  if (insideLayers.length > 0) {
     let insideOffset: Length = 0
     let previousSpan = baseInsideSpan
 
@@ -92,9 +102,9 @@ export function constructWallLayers(
     const top = storeyContext.ceilingConstructionBottom - storeyContext.wallBottom
     const zAdjustment = storeyContext.finishedFloorTop - storeyContext.wallBottom
 
-    const insideLayers = [...layers.insideLayers].reverse()
+    const reversedInsideLayers = [...insideLayers].reverse()
 
-    insideLayers.forEach((layer, layerIndex) => {
+    reversedInsideLayers.forEach((layer, layerIndex) => {
       const cumulativeInside = insideOffset + layer.thickness
       const span = computeLayerSpan('inside', cumulativeInside, wall, context)
       const start = Math.min(span.start, previousSpan.start)
@@ -142,14 +152,14 @@ export function constructWallLayers(
     })
   }
 
-  if (layers.outsideLayers.length > 0) {
+  if (outsideLayers.length > 0) {
     const bottom = storeyContext.floorBottom - storeyContext.wallBottom
     const top = storeyContext.wallTop - storeyContext.wallBottom
     const zAdjustment = storeyContext.finishedFloorTop - storeyContext.wallBottom
 
-    let outsideOffset: Length = wall.thickness - layers.outsideThickness
+    let outsideOffset: Length = wall.thickness - outsideThickness
     let previousSpan = baseOutsideSpan
-    layers.outsideLayers.forEach((layer, layerIndex) => {
+    outsideLayers.forEach((layer, layerIndex) => {
       const remainingOutside = wall.thickness - outsideOffset - layer.thickness
       const depth = Math.max(remainingOutside, 0)
       const span = computeLayerSpan('outside', depth, wall, context)

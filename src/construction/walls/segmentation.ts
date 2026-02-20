@@ -7,7 +7,7 @@ import {
   isWallPostId
 } from '@/building/model/ids'
 import { getModelActions } from '@/building/store'
-import { getConfigActions } from '@/construction/config'
+import { getConfigActions, resolveLayerSetThickness } from '@/construction/config'
 import { getRoofHeightLineCached } from '@/construction/derived'
 import { WallConstructionArea } from '@/construction/geometry'
 import { constructWallPost } from '@/construction/materials/posts'
@@ -24,7 +24,8 @@ import {
   TAG_WALL_HEIGHT,
   TAG_WALL_LENGTH
 } from '@/construction/tags'
-import type { SegmentInfillMethod, WallLayersConfig } from '@/construction/walls'
+import type { SegmentInfillMethod } from '@/construction/walls'
+import { type WallLayerSetIds } from '@/construction/walls/layers'
 import {
   type WallTopOffsets,
   convertHeightLineToWallOffsets,
@@ -37,7 +38,7 @@ import { type WallCornerInfo, calculateWallCornerInfo, getWallContext } from './
 export function* segmentedWallConstruction(
   wall: PerimeterWallWithGeometry,
   storeyContext: StoreyContext,
-  layers: WallLayersConfig,
+  layerSetIds: WallLayerSetIds,
   wallConstruction: WallSegmentConstruction,
   infillMethod: SegmentInfillMethod,
   wallOpeningAssemblyId?: OpeningAssemblyId,
@@ -46,11 +47,9 @@ export function* segmentedWallConstruction(
   const wallContext = getWallContext(wall)
   const cornerInfo = calculateWallCornerInfo(wall, wallContext)
 
-  // Calculate ring beam heights
   const { basePlateHeight, topPlateHeight } = getRingBeamHeights(wall)
 
-  // Calculate all wall dimensions
-  const dimensions = calculateWallDimensions(wall, layers, storeyContext, basePlateHeight, topPlateHeight)
+  const dimensions = calculateWallDimensions(wall, layerSetIds, storeyContext, basePlateHeight, topPlateHeight)
 
   // Determine if stands are needed at wall start/end
   const standAtWallStart = wallContext.startCorner.exteriorAngle !== 180 || cornerInfo.startCorner.constructedByThisWall
@@ -183,7 +182,7 @@ function getRingBeamHeights(wall: PerimeterWallWithGeometry): {
  */
 function calculateWallDimensions(
   wall: PerimeterWallWithGeometry,
-  layers: WallLayersConfig,
+  layerSetIds: WallLayerSetIds,
   storeyContext: StoreyContext,
   basePlateHeight: Length,
   topPlateHeight: Length
@@ -191,8 +190,11 @@ function calculateWallDimensions(
   const totalConstructionHeight = storeyContext.wallTop - storeyContext.wallBottom
   const ceilingOffset = storeyContext.roofBottom - storeyContext.wallTop
 
-  const y = layers.insideThickness
-  const sizeY = wall.thickness - layers.insideThickness - layers.outsideThickness
+  const insideThickness = resolveLayerSetThickness(layerSetIds.insideLayerSetId)
+  const outsideThickness = resolveLayerSetThickness(layerSetIds.outsideLayerSetId)
+
+  const y = insideThickness
+  const sizeY = wall.thickness - insideThickness - outsideThickness
   const z = basePlateHeight
   const sizeZ = totalConstructionHeight - basePlateHeight - topPlateHeight
 

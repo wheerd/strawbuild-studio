@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next'
 
 import { FullScreenModal } from '@/components/ui/full-screen-modal'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { LayerSetsContent } from '@/construction/config/components/layers/LayerSetsContent'
 import type { ConfigTab } from '@/construction/config/context/ConfigurationModalContext'
 import { MaterialsConfigContent } from '@/construction/materials/components/MaterialsConfigContent'
 
@@ -38,6 +39,7 @@ export function ConfigurationModal({
       <Tabs value={activeTab} onValueChange={setActiveTab} className="flex h-full w-full flex-col">
         <TabsList>
           <TabsTrigger value="materials">{t($ => $.modal.tabMaterials)}</TabsTrigger>
+          <TabsTrigger value="layers">{t($ => $.modal.tabLayerSets)}</TabsTrigger>
           <TabsTrigger value="ringbeams">{t($ => $.modal.tabRingBeams)}</TabsTrigger>
           <TabsTrigger value="walls">{t($ => $.modal.tabWalls)}</TabsTrigger>
           <TabsTrigger value="openings">{t($ => $.modal.tabOpenings)}</TabsTrigger>
@@ -48,6 +50,12 @@ export function ConfigurationModal({
         <TabsContent value="materials">
           <div className="flex w-full pt-4">
             <MaterialsConfigContent initialSelectionId={initialSelectionId} />
+          </div>
+        </TabsContent>
+
+        <TabsContent value="layers">
+          <div className="flex w-full pt-4">
+            <LayerSetsContent initialSelectionId={initialSelectionId} />
           </div>
         </TabsContent>
 

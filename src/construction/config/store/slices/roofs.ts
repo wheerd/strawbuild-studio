@@ -2,20 +2,11 @@ import { type StateCreator } from 'zustand'
 
 import { type RoofAssemblyId, createRoofAssemblyId } from '@/building/model/ids'
 import {
-  appendLayer,
-  moveLayer,
-  removeLayerAt,
-  sanitizeLayerArray,
-  sumLayerThickness,
-  updateLayerAt
-} from '@/construction/config/store/layerUtils'
-import {
   type TimestampsState,
   removeTimestampDraft,
   updateTimestampDraft
 } from '@/construction/config/store/slices/timestampsSlice'
 import type { RoofAssemblyConfig } from '@/construction/config/types'
-import type { LayerConfig } from '@/construction/layers/types'
 import { type RoofConfig, validateRoofConfig } from '@/construction/roofs/types'
 
 import { DEFAULT_ROOF_ASSEMBLIES, DEFAULT_ROOF_ASSEMBLY_ID } from './roofs.defaults'
@@ -28,47 +19,15 @@ export interface RoofAssembliesState {
 type UnionOmit<T, K extends string | number | symbol> = T extends unknown ? Omit<T, K> : never
 
 export interface RoofAssembliesActions {
-  // CRUD operations
   addRoofAssembly: (name: string, config: RoofConfig) => RoofAssemblyConfig
   removeRoofAssembly: (id: RoofAssemblyId) => void
   updateRoofAssemblyName: (id: RoofAssemblyId, name: string) => void
   updateRoofAssemblyConfig: (id: RoofAssemblyId, config: Partial<UnionOmit<RoofConfig, 'type'>>) => void
   duplicateRoofAssembly: (id: RoofAssemblyId, name: string) => RoofAssemblyConfig
 
-  // Inside layer operations
-  addRoofAssemblyInsideLayer: (id: RoofAssemblyId, layer: LayerConfig) => void
-  setRoofAssemblyInsideLayers: (id: RoofAssemblyId, layers: LayerConfig[]) => void
-  updateRoofAssemblyInsideLayer: (
-    id: RoofAssemblyId,
-    index: number,
-    updates: Partial<Omit<LayerConfig, 'type'>>
-  ) => void
-  removeRoofAssemblyInsideLayer: (id: RoofAssemblyId, index: number) => void
-  moveRoofAssemblyInsideLayer: (id: RoofAssemblyId, fromIndex: number, toIndex: number) => void
-
-  // Top layer operations
-  addRoofAssemblyTopLayer: (id: RoofAssemblyId, layer: LayerConfig) => void
-  setRoofAssemblyTopLayers: (id: RoofAssemblyId, layers: LayerConfig[]) => void
-  updateRoofAssemblyTopLayer: (id: RoofAssemblyId, index: number, updates: Partial<Omit<LayerConfig, 'type'>>) => void
-  removeRoofAssemblyTopLayer: (id: RoofAssemblyId, index: number) => void
-  moveRoofAssemblyTopLayer: (id: RoofAssemblyId, fromIndex: number, toIndex: number) => void
-
-  // Overhang layer operations
-  addRoofAssemblyOverhangLayer: (id: RoofAssemblyId, layer: LayerConfig) => void
-  setRoofAssemblyOverhangLayers: (id: RoofAssemblyId, layers: LayerConfig[]) => void
-  updateRoofAssemblyOverhangLayer: (
-    id: RoofAssemblyId,
-    index: number,
-    updates: Partial<Omit<LayerConfig, 'type'>>
-  ) => void
-  removeRoofAssemblyOverhangLayer: (id: RoofAssemblyId, index: number) => void
-  moveRoofAssemblyOverhangLayer: (id: RoofAssemblyId, fromIndex: number, toIndex: number) => void
-
-  // Queries
   getRoofAssemblyById: (id: RoofAssemblyId) => RoofAssemblyConfig | null
   getAllRoofAssemblies: () => RoofAssemblyConfig[]
 
-  // Default management
   setDefaultRoofAssembly: (configId: RoofAssemblyId) => void
   getDefaultRoofAssemblyId: () => RoofAssemblyId
   resetRoofAssembliesToDefaults: () => void
@@ -88,14 +47,11 @@ export const createRoofAssembliesSlice: StateCreator<
   [],
   RoofAssembliesSlice
 > = (set, get) => {
-  // Initialize with default assemblies
-
   return {
     roofAssemblyConfigs: Object.fromEntries(DEFAULT_ROOF_ASSEMBLIES.map(config => [config.id, config])),
     defaultRoofAssemblyId: DEFAULT_ROOF_ASSEMBLY_ID,
 
     actions: {
-      // Roof assembly CRUD operations
       addRoofAssembly: (name: string, config: RoofConfig) => {
         validateRoofAssemblyName(name)
         validateRoofConfig(config)
@@ -185,7 +141,6 @@ export const createRoofAssembliesSlice: StateCreator<
         return duplicated
       },
 
-      // Roof queries
       getRoofAssemblyById: (id: RoofAssemblyId) => {
         const state = get()
         return state.roofAssemblyConfigs[id] ?? null
@@ -196,7 +151,6 @@ export const createRoofAssembliesSlice: StateCreator<
         return Object.values(state.roofAssemblyConfigs)
       },
 
-      // Default roof config management
       setDefaultRoofAssembly: (configId: RoofAssemblyId) => {
         set(state => {
           if (!(configId in state.roofAssemblyConfigs)) {
@@ -209,212 +163,6 @@ export const createRoofAssembliesSlice: StateCreator<
       getDefaultRoofAssemblyId: () => {
         const state = get()
         return state.defaultRoofAssemblyId
-      },
-
-      // Inside layer operations
-      addRoofAssemblyInsideLayer: (id: RoofAssemblyId, layer: LayerConfig) => {
-        set(state => {
-          if (!(id in state.roofAssemblyConfigs)) return
-          const config = state.roofAssemblyConfigs[id]
-
-          const insideLayers = appendLayer(config.layers.insideLayers, layer)
-          const insideThickness = sumLayerThickness(insideLayers)
-          config.layers = { ...config.layers, insideLayers, insideThickness }
-          validateRoofConfig(config)
-          updateTimestampDraft(state, id)
-        })
-      },
-
-      setRoofAssemblyInsideLayers: (id: RoofAssemblyId, layers: LayerConfig[]) => {
-        set(state => {
-          if (!(id in state.roofAssemblyConfigs)) return
-          const config = state.roofAssemblyConfigs[id]
-
-          const insideLayers = sanitizeLayerArray(layers)
-          const insideThickness = sumLayerThickness(insideLayers)
-          config.layers = { ...config.layers, insideLayers, insideThickness }
-          validateRoofConfig(config)
-          updateTimestampDraft(state, id)
-        })
-      },
-
-      updateRoofAssemblyInsideLayer: (
-        id: RoofAssemblyId,
-        index: number,
-        updates: Partial<Omit<LayerConfig, 'type'>>
-      ) => {
-        set(state => {
-          if (!(id in state.roofAssemblyConfigs)) return
-          const config = state.roofAssemblyConfigs[id]
-
-          const insideLayers = updateLayerAt(config.layers.insideLayers, index, updates)
-          const insideThickness = sumLayerThickness(insideLayers)
-          config.layers = { ...config.layers, insideLayers, insideThickness }
-          validateRoofConfig(config)
-          updateTimestampDraft(state, id)
-        })
-      },
-
-      removeRoofAssemblyInsideLayer: (id: RoofAssemblyId, index: number) => {
-        set(state => {
-          if (!(id in state.roofAssemblyConfigs)) return
-          const config = state.roofAssemblyConfigs[id]
-
-          const insideLayers = removeLayerAt(config.layers.insideLayers, index)
-          const insideThickness = sumLayerThickness(insideLayers)
-          config.layers = { ...config.layers, insideLayers, insideThickness }
-          validateRoofConfig(config)
-          updateTimestampDraft(state, id)
-        })
-      },
-
-      moveRoofAssemblyInsideLayer: (id: RoofAssemblyId, fromIndex: number, toIndex: number) => {
-        set(state => {
-          if (!(id in state.roofAssemblyConfigs)) return
-          const config = state.roofAssemblyConfigs[id]
-
-          const insideLayers = moveLayer(config.layers.insideLayers, fromIndex, toIndex)
-          const insideThickness = sumLayerThickness(insideLayers)
-          config.layers = { ...config.layers, insideLayers, insideThickness }
-          validateRoofConfig(config)
-          updateTimestampDraft(state, id)
-        })
-      },
-
-      // Top layer operations
-      addRoofAssemblyTopLayer: (id: RoofAssemblyId, layer: LayerConfig) => {
-        set(state => {
-          if (!(id in state.roofAssemblyConfigs)) return
-          const config = state.roofAssemblyConfigs[id]
-
-          const topLayers = appendLayer(config.layers.topLayers, layer)
-          const topThickness = sumLayerThickness(topLayers)
-          config.layers = { ...config.layers, topLayers, topThickness }
-          validateRoofConfig(config)
-          updateTimestampDraft(state, id)
-        })
-      },
-
-      setRoofAssemblyTopLayers: (id: RoofAssemblyId, layers: LayerConfig[]) => {
-        set(state => {
-          if (!(id in state.roofAssemblyConfigs)) return
-          const config = state.roofAssemblyConfigs[id]
-
-          const topLayers = sanitizeLayerArray(layers)
-          const topThickness = sumLayerThickness(topLayers)
-          config.layers = { ...config.layers, topLayers, topThickness }
-          validateRoofConfig(config)
-          updateTimestampDraft(state, id)
-        })
-      },
-
-      updateRoofAssemblyTopLayer: (id: RoofAssemblyId, index: number, updates: Partial<Omit<LayerConfig, 'type'>>) => {
-        set(state => {
-          if (!(id in state.roofAssemblyConfigs)) return
-          const config = state.roofAssemblyConfigs[id]
-
-          const topLayers = updateLayerAt(config.layers.topLayers, index, updates)
-          const topThickness = sumLayerThickness(topLayers)
-          config.layers = { ...config.layers, topLayers, topThickness }
-          validateRoofConfig(config)
-          updateTimestampDraft(state, id)
-        })
-      },
-
-      removeRoofAssemblyTopLayer: (id: RoofAssemblyId, index: number) => {
-        set(state => {
-          if (!(id in state.roofAssemblyConfigs)) return
-          const config = state.roofAssemblyConfigs[id]
-
-          const topLayers = removeLayerAt(config.layers.topLayers, index)
-          const topThickness = sumLayerThickness(topLayers)
-          config.layers = { ...config.layers, topLayers, topThickness }
-          validateRoofConfig(config)
-          updateTimestampDraft(state, id)
-        })
-      },
-
-      moveRoofAssemblyTopLayer: (id: RoofAssemblyId, fromIndex: number, toIndex: number) => {
-        set(state => {
-          if (!(id in state.roofAssemblyConfigs)) return
-          const config = state.roofAssemblyConfigs[id]
-
-          const topLayers = moveLayer(config.layers.topLayers, fromIndex, toIndex)
-          const topThickness = sumLayerThickness(topLayers)
-          config.layers = { ...config.layers, topLayers, topThickness }
-          validateRoofConfig(config)
-          updateTimestampDraft(state, id)
-        })
-      },
-
-      // Overhang layer operations
-      addRoofAssemblyOverhangLayer: (id: RoofAssemblyId, layer: LayerConfig) => {
-        set(state => {
-          if (!(id in state.roofAssemblyConfigs)) return
-          const config = state.roofAssemblyConfigs[id]
-
-          const overhangLayers = appendLayer(config.layers.overhangLayers, layer)
-          const overhangThickness = sumLayerThickness(overhangLayers)
-          config.layers = { ...config.layers, overhangLayers, overhangThickness }
-          validateRoofConfig(config)
-          updateTimestampDraft(state, id)
-        })
-      },
-
-      setRoofAssemblyOverhangLayers: (id: RoofAssemblyId, layers: LayerConfig[]) => {
-        set(state => {
-          if (!(id in state.roofAssemblyConfigs)) return
-          const config = state.roofAssemblyConfigs[id]
-
-          const overhangLayers = sanitizeLayerArray(layers)
-          const overhangThickness = sumLayerThickness(overhangLayers)
-          config.layers = { ...config.layers, overhangLayers, overhangThickness }
-          validateRoofConfig(config)
-          updateTimestampDraft(state, id)
-        })
-      },
-
-      updateRoofAssemblyOverhangLayer: (
-        id: RoofAssemblyId,
-        index: number,
-        updates: Partial<Omit<LayerConfig, 'type'>>
-      ) => {
-        set(state => {
-          if (!(id in state.roofAssemblyConfigs)) return
-          const config = state.roofAssemblyConfigs[id]
-
-          const overhangLayers = updateLayerAt(config.layers.overhangLayers, index, updates)
-          const overhangThickness = sumLayerThickness(overhangLayers)
-          config.layers = { ...config.layers, overhangLayers, overhangThickness }
-          validateRoofConfig(config)
-          updateTimestampDraft(state, id)
-        })
-      },
-
-      removeRoofAssemblyOverhangLayer: (id: RoofAssemblyId, index: number) => {
-        set(state => {
-          if (!(id in state.roofAssemblyConfigs)) return
-          const config = state.roofAssemblyConfigs[id]
-
-          const overhangLayers = removeLayerAt(config.layers.overhangLayers, index)
-          const overhangThickness = sumLayerThickness(overhangLayers)
-          config.layers = { ...config.layers, overhangLayers, overhangThickness }
-          validateRoofConfig(config)
-          updateTimestampDraft(state, id)
-        })
-      },
-
-      moveRoofAssemblyOverhangLayer: (id: RoofAssemblyId, fromIndex: number, toIndex: number) => {
-        set(state => {
-          if (!(id in state.roofAssemblyConfigs)) return
-          const config = state.roofAssemblyConfigs[id]
-
-          const overhangLayers = moveLayer(config.layers.overhangLayers, fromIndex, toIndex)
-          const overhangThickness = sumLayerThickness(overhangLayers)
-          config.layers = { ...config.layers, overhangLayers, overhangThickness }
-          validateRoofConfig(config)
-          updateTimestampDraft(state, id)
-        })
       },
 
       resetRoofAssembliesToDefaults: () => {

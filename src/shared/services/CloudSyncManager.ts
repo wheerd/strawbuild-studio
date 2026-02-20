@@ -95,9 +95,8 @@ export class CloudSyncManager {
   }
 
   async syncLocalProjectToCloud(): Promise<void> {
-    await this.ensureSyncService()
-
-    const userId = this.syncService?.getCurrentUserId()
+    const service = await this.ensureSyncService()
+    const userId = service.getCurrentUserId()
     if (!userId) {
       throw new Error('Not authenticated')
     }
@@ -113,11 +112,6 @@ export class CloudSyncManager {
       const partsLabelState = {
         labels: partsState.labels,
         nextLabelIndexByGroup: partsState.nextLabelIndexByGroup
-      }
-
-      const service = this.syncService
-      if (!service) {
-        throw new Error('Sync service not available')
       }
 
       await service.upsertProject(userId, {
@@ -143,13 +137,7 @@ export class CloudSyncManager {
   }
 
   async loadProjectFromCloud(projectId: ProjectId): Promise<void> {
-    await this.ensureSyncService()
-
-    const service = this.syncService
-    if (!service) {
-      throw new Error('Sync service not available')
-    }
-
+    const service = await this.ensureSyncService()
     try {
       this.syncingEnabled = false // Prevent hydration triggering sync
       const projectData = await service.loadProject(projectId)
@@ -179,17 +167,14 @@ export class CloudSyncManager {
   }
 
   async switchProject(projectId: ProjectId): Promise<void> {
-    await this.ensureSyncService()
-
     await this.flushSyncQueue()
     await this.loadProjectFromCloud(projectId)
     await this.reloadProjectList()
   }
 
   async createProject(options: { name: string; description?: string; mode: 'empty' | 'copy' }): Promise<void> {
-    await this.ensureSyncService()
-
-    const userId = this.syncService?.getCurrentUserId()
+    const service = await this.ensureSyncService()
+    const userId = service.getCurrentUserId()
     if (!userId) {
       throw new Error('Not authenticated')
     }
@@ -204,24 +189,13 @@ export class CloudSyncManager {
         ? this.getEmptyProjectData(newProjectId, options.name, options.description, now)
         : this.getCurrentProjectData(newProjectId, options.name, options.description, now)
 
-    const service = this.syncService
-    if (!service) {
-      throw new Error('Sync service not available')
-    }
-
     await service.createProject(userId, projectData)
     await this.loadProjectFromCloud(newProjectId)
     await this.reloadProjectList()
   }
 
   async deleteProject(projectId: ProjectId): Promise<void> {
-    await this.ensureSyncService()
-
-    const service = this.syncService
-    if (!service) {
-      throw new Error('Sync service not available')
-    }
-
+    const service = await this.ensureSyncService()
     await service.deleteProject(projectId)
 
     const actions = getProjectActions()
@@ -229,11 +203,7 @@ export class CloudSyncManager {
   }
 
   async reloadProjectList(): Promise<void> {
-    await this.ensureSyncService()
-
-    const service = this.syncService
-    if (!service) return
-
+    const service = await this.ensureSyncService()
     const actions = getProjectActions()
     actions.setLoading(true)
 
@@ -303,7 +273,7 @@ export class CloudSyncManager {
     }
   }
 
-  private async ensureSyncService(): Promise<void> {
+  private async ensureSyncService(): Promise<ICloudSyncService> {
     if (!this.syncService) {
       this.syncService = getCloudSyncService()
       if (!this.syncService) {
@@ -311,23 +281,23 @@ export class CloudSyncManager {
       }
       await this.syncService.initialize()
     }
+    return this.syncService
   }
 
   private async loadProjectsFromCloud(): Promise<void> {
-    if (!this.syncService) return
-
+    const service = await this.ensureSyncService()
     const actions = getProjectActions()
     actions.setLoading(true)
 
     try {
-      const projects = await this.syncService.loadProjectList()
+      const projects = await service.loadProjectList()
       actions.setProjects(projects)
 
       await this.syncCurrentProjectState(projects)
 
       const localProjectId = getProjectMeta().projectId
       if (!projects.some(p => p.id === localProjectId)) {
-        const updatedProjects = await this.syncService.loadProjectList()
+        const updatedProjects = await service.loadProjectList()
         actions.setProjects(updatedProjects)
       }
     } catch (error) {

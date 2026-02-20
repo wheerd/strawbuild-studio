@@ -1,6 +1,6 @@
 import type { OpeningAssemblyId, PerimeterWallWithGeometry } from '@/building/model'
+import type { LayerSetId } from '@/building/model/ids'
 import type { WallConstructionArea } from '@/construction/geometry'
-import type { LayerConfig } from '@/construction/layers/types'
 import type { MaterialId } from '@/construction/materials/material'
 import { type PostConfig, validatePosts } from '@/construction/materials/posts'
 import type { ThicknessRange } from '@/construction/materials/thickness'
@@ -25,15 +25,9 @@ export type WallAssemblyType = 'infill' | 'strawhenge' | 'non-strawbale' | 'modu
 
 export interface WallBaseConfig {
   type: WallAssemblyType
-  layers: WallLayersConfig
-  openingAssemblyId?: OpeningAssemblyId // Optional override for this wall type
-}
-
-export interface WallLayersConfig {
-  insideThickness: Length
-  insideLayers: LayerConfig[]
-  outsideThickness: Length
-  outsideLayers: LayerConfig[]
+  insideLayerSetId?: LayerSetId
+  outsideLayerSetId?: LayerSetId
+  openingAssemblyId?: OpeningAssemblyId
 }
 
 export interface InfillWallSegmentConfig {
@@ -106,11 +100,6 @@ const ensureNonNegative = (value: number, message: string) => {
   }
 }
 
-const validateLayers = (layers: WallLayersConfig): void => {
-  ensureNonNegative(layers.insideThickness, 'Inside layer thickness cannot be negative')
-  ensureNonNegative(layers.outsideThickness, 'Outside layer thickness cannot be negative')
-}
-
 // Opening validation moved to OpeningConfig in openings/types.ts
 
 const validateTriangularBattens = (config: TriangularBattenConfig): void => {
@@ -177,8 +166,6 @@ const validatePrefabModulesWallConfig = (config: PrefabModulesWallConfig): void 
 }
 
 export const validateWallConfig = (config: WallConfig): void => {
-  validateLayers(config.layers)
-
   switch (config.type) {
     case 'infill':
       validateInfillWallConfig(config)

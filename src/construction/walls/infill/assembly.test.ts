@@ -11,7 +11,7 @@ import { constructStraw } from '@/construction/materials/straw'
 import { type IssueMessageKey, yieldElement, yieldError, yieldMeasurement, yieldWarning } from '@/construction/results'
 import type { StoreyContext } from '@/construction/storeys/context'
 import { TAG_POST_SPACING } from '@/construction/tags'
-import type { InfillWallConfig, InfillWallSegmentConfig, WallLayersConfig } from '@/construction/walls'
+import type { InfillWallConfig, InfillWallSegmentConfig } from '@/construction/walls'
 import { segmentedWallConstruction } from '@/construction/walls/segmentation'
 import { IDENTITY, type Length, type Vec3, ZERO_VEC2, newVec2, newVec3 } from '@/shared/geometry'
 import { partial } from '@/test/helpers'
@@ -180,15 +180,6 @@ function createMockWall(
   })
 }
 
-function createMockLayers(): WallLayersConfig {
-  return {
-    insideThickness: 30,
-    insideLayers: [],
-    outsideThickness: 50,
-    outsideLayers: []
-  }
-}
-
 describe('assembly.construct', () => {
   beforeEach(() => {
     vi.clearAllMocks()
@@ -225,7 +216,8 @@ describe('assembly.construct', () => {
       config = {
         type: 'infill',
         ...createMockInfillConfig(),
-        layers: createMockLayers()
+        insideLayerSetId: undefined,
+        outsideLayerSetId: undefined
       }
       assembly = new InfillWallAssembly(config)
     })
@@ -243,7 +235,7 @@ describe('assembly.construct', () => {
       expect(mockSegmentedWallConstruction).toHaveBeenCalledWith(
         wall,
         createMockStoreyContext(floorHeight),
-        config.layers,
+        { insideLayerSetId: undefined, outsideLayerSetId: undefined },
         expect.any(Function), // wallConstruction function
         expect.any(Function), // openingConstruction function
         undefined

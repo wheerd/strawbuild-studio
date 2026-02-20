@@ -1,5 +1,6 @@
 import type { Resources, SelectorFn, SelectorOptions } from 'i18next'
 
+import type { LayerSetId } from '@/building/model/ids'
 import type { MaterialId } from '@/construction/materials/material'
 import type { ConstructionResult } from '@/construction/results'
 import { type Length, type Plane3D, type PolygonWithHoles2D, type Vec2 } from '@/shared/geometry'
@@ -43,3 +44,14 @@ export interface StripedLayerConfig extends BaseLayerConfig {
 }
 
 export type LayerConfig = MonolithicLayerConfig | StripedLayerConfig
+
+export type LayerSetUse = 'wall' | 'floor' | 'ceiling' | 'roof'
+
+export interface LayerSetConfig {
+  id: LayerSetId
+  name: string
+  nameKey?: LayerNameKey
+  layers: LayerConfig[]
+  totalThickness: Length
+  use: LayerSetUse
+}

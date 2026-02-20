@@ -1,4 +1,5 @@
 import type { FloorAssembliesActions, FloorAssembliesState } from './slices/floors'
+import type { LayerSetsActions, LayerSetsState } from './slices/layers'
 import type { OpeningAssembliesActions, OpeningAssembliesState } from './slices/openings'
 import type { RingBeamAssembliesActions, RingBeamAssembliesState } from './slices/ringBeams'
 import type { RoofAssembliesActions, RoofAssembliesState } from './slices/roofs'
@@ -14,6 +15,7 @@ export interface ConfigState
     FloorAssembliesState,
     RoofAssembliesState,
     OpeningAssembliesState,
+    LayerSetsState,
     TimestampsState {}
 
 export interface ConfigActions
@@ -24,6 +26,7 @@ export interface ConfigActions
     FloorAssembliesActions,
     RoofAssembliesActions,
     OpeningAssembliesActions,
+    LayerSetsActions,
     TimestampsActions {
   reset: () => void
 }

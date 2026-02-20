@@ -1,5 +1,5 @@
 import type { PerimeterWallWithGeometry } from '@/building/model'
-import { getConfigActions } from '@/construction/config'
+import { getConfigActions, resolveLayerSetThickness } from '@/construction/config'
 import { getMaterialById } from '@/construction/materials/store'
 import { type ThicknessRange, addThickness, getMaterialThickness } from '@/construction/materials/thickness'
 import type { ConstructionModel } from '@/construction/model'
@@ -9,7 +9,7 @@ import type { StoreyContext } from '@/construction/storeys/context'
 import { TAG_INFILL_CONSTRUCTION } from '@/construction/tags'
 import type { InfillWallConfig } from '@/construction/walls'
 import { BaseWallAssembly } from '@/construction/walls/base'
-import { constructWallLayers } from '@/construction/walls/layers'
+import { type WallLayerSetIds, constructWallLayers } from '@/construction/walls/layers'
 import { segmentedWallConstruction } from '@/construction/walls/segmentation'
 import { Bounds3D } from '@/shared/geometry'
 
@@ -17,11 +17,16 @@ import { infillWallArea } from './infill'
 
 export class InfillWallAssembly extends BaseWallAssembly<InfillWallConfig> {
   construct(wall: PerimeterWallWithGeometry, storeyContext: StoreyContext): ConstructionModel {
+    const layerSetIds: WallLayerSetIds = {
+      insideLayerSetId: this.config.insideLayerSetId,
+      outsideLayerSetId: this.config.outsideLayerSetId
+    }
+
     const allResults = Array.from(
       segmentedWallConstruction(
         wall,
         storeyContext,
-        this.config.layers,
+        layerSetIds,
         (area, startsWithStand, endsWithStand, startAtEnd) =>
           infillWallArea(area, this.config, startsWithStand, endsWithStand, startAtEnd),
         area => infillWallArea(area, this.config),
@@ -41,7 +46,7 @@ export class InfillWallAssembly extends BaseWallAssembly<InfillWallConfig> {
       warnings: aggRes.warnings
     }
 
-    const layerModel = constructWallLayers(wall, storeyContext, this.config.layers)
+    const layerModel = constructWallLayers(wall, storeyContext, layerSetIds)
 
     return mergeModels(baseModel, layerModel)
   }
@@ -49,7 +54,9 @@ export class InfillWallAssembly extends BaseWallAssembly<InfillWallConfig> {
   get thicknessRange(): ThicknessRange {
     const strawMaterialId = this.config.strawMaterial ?? getConfigActions().getDefaultStrawMaterial()
     const strawMaterial = getMaterialById(strawMaterialId)
-    const layerThickness = this.config.layers.insideThickness + this.config.layers.outsideThickness
+    const insideThickness = resolveLayerSetThickness(this.config.insideLayerSetId)
+    const outsideThickness = resolveLayerSetThickness(this.config.outsideLayerSetId)
+    const layerThickness = insideThickness + outsideThickness
     return addThickness(strawMaterial ? getMaterialThickness(strawMaterial) : undefined, layerThickness)
   }
 

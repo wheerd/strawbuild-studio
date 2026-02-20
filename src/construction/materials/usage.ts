@@ -2,6 +2,7 @@ import { useMemo } from 'react'
 
 import type {
   FloorAssemblyId,
+  LayerSetId,
   OpeningAssemblyId,
   RingBeamAssemblyId,
   RoofAssemblyId,
@@ -11,6 +12,7 @@ import { useWallPosts } from '@/building/store'
 import {
   useDefaultStrawMaterialId,
   useFloorAssemblies,
+  useLayerSets,
   useOpeningAssemblies,
   useRingBeamAssemblies,
   useRoofAssemblies,
@@ -28,7 +30,13 @@ import { assertUnreachable } from '@/shared/utils'
 
 import type { MaterialId } from './material'
 
-export type MaterialUsageId = RingBeamAssemblyId | WallAssemblyId | FloorAssemblyId | RoofAssemblyId | OpeningAssemblyId
+export type MaterialUsageId =
+  | RingBeamAssemblyId
+  | WallAssemblyId
+  | FloorAssemblyId
+  | RoofAssemblyId
+  | OpeningAssemblyId
+  | LayerSetId
 
 export interface MaterialUsage {
   isUsed: boolean
@@ -47,6 +55,7 @@ export function useMaterialUsage(materialId: MaterialId): MaterialUsage {
   const floorAssemblies = useFloorAssemblies()
   const roofAssemblies = useRoofAssemblies()
   const openingAssemblies = useOpeningAssemblies()
+  const layerSets = useLayerSets()
   const defaultStrawMaterialId = useDefaultStrawMaterialId()
   const wallPosts = useWallPosts()
 
@@ -89,8 +98,14 @@ export function useMaterialUsage(materialId: MaterialId): MaterialUsage {
       }
     })
 
-    // Check wall posts from building model
+    // Check layer sets
+    layerSets.forEach(layerSet => {
+      if (checkLayers(layerSet.layers, materialId)) {
+        assemblyIdSet.add(layerSet.id)
+      }
+    })
 
+    // Check wall posts from building model
     for (const post of wallPosts) {
       if (post.material === materialId || post.infillMaterial === materialId) {
         usedInWallPosts = true
@@ -113,6 +128,7 @@ export function useMaterialUsage(materialId: MaterialId): MaterialUsage {
     floorAssemblies,
     roofAssemblies,
     openingAssemblies,
+    layerSets,
     defaultStrawMaterialId,
     wallPosts
   ])
@@ -178,10 +194,6 @@ function isMaterialUsedInWall(materialId: MaterialId, assembly: WallAssemblyConf
       break
   }
 
-  // Check layers
-  if (checkLayers(assembly.layers.insideLayers, materialId)) return true
-  if (checkLayers(assembly.layers.outsideLayers, materialId)) return true
-
   return false
 }
 
@@ -209,10 +221,6 @@ function isMaterialUsedInFloor(materialId: MaterialId, assembly: FloorAssemblyCo
       break
   }
 
-  // Check layers
-  if (checkLayers(assembly.layers.topLayers, materialId)) return true
-  if (checkLayers(assembly.layers.bottomLayers, materialId)) return true
-
   return false
 }
 
@@ -232,11 +240,6 @@ function isMaterialUsedInRoof(materialId: MaterialId, assembly: RoofAssemblyConf
       if (assembly.strawMaterial === materialId) return true
       break
   }
-
-  // Check layers
-  if (checkLayers(assembly.layers.insideLayers, materialId)) return true
-  if (checkLayers(assembly.layers.topLayers, materialId)) return true
-  if (checkLayers(assembly.layers.overhangLayers, materialId)) return true
 
   return false
 }

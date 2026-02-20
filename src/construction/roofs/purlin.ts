@@ -100,8 +100,8 @@ export class PurlinRoofAssembly extends BaseRoofAssembly<PurlinRoofConfig> {
       .reduce((a, b) => a.add(b))
 
     // Calculate Z-range for clipping volume (doubled for safety margin)
-    const minZ = -2 * (roof.rise + this.config.layers.insideThickness)
-    const maxZ = (this.config.thickness + this.config.layers.topThickness) * 2
+    const minZ = -2 * (roof.rise + this.insideLayersThickness)
+    const maxZ = (this.config.thickness + this.topLayersThickness) * 2
 
     const outerConstructionClippingVolume = perimeterContexts
       .map(c =>
@@ -193,7 +193,7 @@ export class PurlinRoofAssembly extends BaseRoofAssembly<PurlinRoofConfig> {
   }
 
   get topOffset(): Length {
-    return this.config.layers.topThickness
+    return this.topLayersThickness
   }
 
   getBottomOffsets = (roof: Roof, map: VerticalOffsetMap, _contexts: PerimeterConstructionContext[]): void => {

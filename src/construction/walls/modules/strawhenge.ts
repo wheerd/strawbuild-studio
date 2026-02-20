@@ -1,5 +1,5 @@
 import type { PerimeterWallWithGeometry } from '@/building/model'
-import { getConfigActions } from '@/construction/config'
+import { getConfigActions, resolveLayerSetThickness } from '@/construction/config'
 import { WallConstructionArea } from '@/construction/geometry'
 import { getMaterialById } from '@/construction/materials/store'
 import { constructStraw } from '@/construction/materials/straw'
@@ -15,7 +15,7 @@ import { TAG_POST_SPACING, TAG_STRAWHENGE_CONSTRUCTION } from '@/construction/ta
 import type { StrawhengeWallConfig } from '@/construction/walls'
 import { BaseWallAssembly } from '@/construction/walls/base'
 import { infillWallArea } from '@/construction/walls/infill/infill'
-import { constructWallLayers } from '@/construction/walls/layers'
+import { type WallLayerSetIds, constructWallLayers } from '@/construction/walls/layers'
 import { segmentedWallConstruction } from '@/construction/walls/segmentation'
 import { Bounds3D, type Length } from '@/shared/geometry'
 
@@ -23,11 +23,16 @@ import { constructModule } from './modules'
 
 export class StrawhengeWallAssembly extends BaseWallAssembly<StrawhengeWallConfig> {
   construct(wall: PerimeterWallWithGeometry, storeyContext: StoreyContext): ConstructionModel {
+    const layerSetIds: WallLayerSetIds = {
+      insideLayerSetId: this.config.insideLayerSetId,
+      outsideLayerSetId: this.config.outsideLayerSetId
+    }
+
     const allResults = Array.from(
       segmentedWallConstruction(
         wall,
         storeyContext,
-        this.config.layers,
+        layerSetIds,
         this.strawhengeWallArea.bind(this),
         area => infillWallArea(area, this.config.infill),
         this.config.openingAssemblyId,
@@ -47,7 +52,7 @@ export class StrawhengeWallAssembly extends BaseWallAssembly<StrawhengeWallConfi
       warnings: aggRes.warnings
     }
 
-    const layerModel = constructWallLayers(wall, storeyContext, this.config.layers)
+    const layerModel = constructWallLayers(wall, storeyContext, layerSetIds)
 
     return mergeModels(baseModel, layerModel)
   }
@@ -182,10 +187,12 @@ export class StrawhengeWallAssembly extends BaseWallAssembly<StrawhengeWallConfi
   }
 
   get thicknessRange(): ThicknessRange {
-    const { module, infill, layers } = this.config
+    const { module, infill } = this.config
     const strawMaterialId = module.strawMaterial ?? infill.strawMaterial ?? getConfigActions().getDefaultStrawMaterial()
     const strawMaterial = getMaterialById(strawMaterialId)
-    const layerThickness = layers.insideThickness + layers.outsideThickness
+    const insideThickness = resolveLayerSetThickness(this.config.insideLayerSetId)
+    const outsideThickness = resolveLayerSetThickness(this.config.outsideLayerSetId)
+    const layerThickness = insideThickness + outsideThickness
     return addThickness(strawMaterial ? getMaterialThickness(strawMaterial) : undefined, layerThickness)
   }
 

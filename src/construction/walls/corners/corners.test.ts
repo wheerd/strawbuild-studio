@@ -9,17 +9,22 @@ import type {
 } from '@/building/model'
 import { createPerimeterWallId } from '@/building/model/ids'
 import { type WallAssemblyConfig } from '@/construction/config'
-import type { WallLayersConfig } from '@/construction/walls'
 import { type Length, type Vec2, ZERO_VEC2, newVec2 } from '@/shared/geometry'
 import { partial } from '@/test/helpers'
 
 import { type WallContext, calculateWallCornerInfo, getWallContext } from './corners'
 
-// Mock the config actions
+// Mock layer set helpers to return test values
+const mockLayerSetThicknesses: Record<string, number> = {}
+
 vi.mock('@/construction/config', () => ({
   getConfigActions: () => ({
     getWallAssemblyById: (id: WallAssemblyId) => mockAssemblies.find(a => a.id === id) ?? null
-  })
+  }),
+  resolveLayerSetThickness: (id: string | undefined) => {
+    if (!id) return 0
+    return mockLayerSetThicknesses[id] ?? 0
+  }
 }))
 
 vi.mock('@/building/store', () => ({
@@ -32,6 +37,17 @@ vi.mock('@/building/store', () => ({
 const mockAssemblies: WallAssemblyConfig[] = []
 const mockCorners: PerimeterCornerWithGeometry[] = []
 const mockWalls: PerimeterWallWithGeometry[] = []
+
+// Helper to set layer thicknesses for an assembly
+function setAssemblyLayerThicknesses(
+  insideLayerSetId: string,
+  insideThickness: number,
+  outsideLayerSetId: string,
+  outsideThickness: number
+): void {
+  mockLayerSetThicknesses[insideLayerSetId] = insideThickness
+  mockLayerSetThicknesses[outsideLayerSetId] = outsideThickness
+}
 
 // Mock data helpers
 function createMockWall(id: string, wallLength: Length, thickness: Length, wallAssemblyId?: string) {
@@ -69,7 +85,18 @@ function createMockCorner(id: string, insidePoint: Vec2, outsidePoint: Vec2, con
   })
 }
 
-function createMockAssembly(id: string, name: string, layers: WallLayersConfig): WallAssemblyConfig {
+function createMockAssembly(
+  id: string,
+  name: string,
+  insideThickness: number,
+  outsideThickness: number
+): WallAssemblyConfig {
+  const insideLayerSetId = `${id}-inside`
+  const outsideLayerSetId = `${id}-outside`
+
+  // Store the thickness values for the mock
+  setAssemblyLayerThicknesses(insideLayerSetId, insideThickness, outsideLayerSetId, outsideThickness)
+
   return {
     id: id as any,
     name,
@@ -89,7 +116,8 @@ function createMockAssembly(id: string, name: string, layers: WallLayersConfig):
       outside: false,
       minLength: 100
     },
-    layers
+    insideLayerSetId: insideLayerSetId as any,
+    outsideLayerSetId: outsideLayerSetId as any
   }
 }
 
@@ -99,14 +127,10 @@ describe('Corner Calculations', () => {
     mockCorners.length = 0
     mockWalls.length = 0
 
-    mockAssemblies.push(
-      createMockAssembly('defaultAssembly', 'Default', {
-        insideLayers: [],
-        outsideLayers: [],
-        insideThickness: 0,
-        outsideThickness: 0
-      })
-    )
+    // Clear mock thicknesses
+    Object.keys(mockLayerSetThicknesses).forEach(key => delete mockLayerSetThicknesses[key])
+
+    mockAssemblies.push(createMockAssembly('defaultAssembly', 'Default', 0, 0))
   })
 
   describe('getWallContext', () => {
@@ -142,16 +166,9 @@ describe('Corner Calculations', () => {
     let mockContext: WallContext
 
     beforeEach(() => {
-      const layers: WallLayersConfig = {
-        insideThickness: 30,
-        insideLayers: [],
-        outsideThickness: 50,
-        outsideLayers: []
-      }
-
-      const previousAssembly = createMockAssembly('assembly-1', 'Previous Assembly', layers)
-      const nextAssembly = createMockAssembly('assembly-2', 'Next Assembly', layers)
-      const currentAssembly = createMockAssembly('assembly-3', 'Current Assembly', layers)
+      const previousAssembly = createMockAssembly('assembly-1', 'Previous Assembly', 30, 50)
+      const nextAssembly = createMockAssembly('assembly-2', 'Next Assembly', 30, 50)
+      const currentAssembly = createMockAssembly('assembly-3', 'Current Assembly', 30, 50)
 
       mockAssemblies.push(previousAssembly, nextAssembly, currentAssembly)
 

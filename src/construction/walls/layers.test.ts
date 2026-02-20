@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import type { OpeningWithGeometry, PerimeterCornerWithGeometry, PerimeterWallWithGeometry } from '@/building/model'
 import {
+  type LayerSetId,
   type StoreyId,
   createOpeningId,
   createPerimeterCornerId,
@@ -10,12 +11,13 @@ import {
 } from '@/building/model/ids'
 import type { ConstructionElement, GroupOrElement } from '@/construction/elements'
 import type { FloorAssembly } from '@/construction/floors'
+import type { LayerConfig } from '@/construction/layers/types'
 import { clayPlasterBase, limePlasterBase } from '@/construction/materials/material'
 import type { ExtrudedShape } from '@/construction/shapes'
 import type { StoreyContext } from '@/construction/storeys/context'
 import { TAG_LAYERS, TAG_WALL_LAYER_INSIDE, TAG_WALL_LAYER_OUTSIDE } from '@/construction/tags'
 import type { WallContext, WallCornerInfo } from '@/construction/walls/corners/corners'
-import type { WallLayersConfig } from '@/construction/walls/types'
+import type { WallLayerSetIds } from '@/construction/walls/layers'
 import { type Polygon2D, type PolygonWithHoles2D, ZERO_VEC2, newVec2 } from '@/shared/geometry'
 import { partial } from '@/test/helpers'
 
@@ -42,7 +44,33 @@ vi.mock('@/shared/geometry', async importOriginal => {
   }
 })
 
-const mockAssemblies = new Map<string, { layers: WallLayersConfig }>()
+const insideLayerSetId = 'inside-layer-set' as LayerSetId
+const outsideLayerSetId = 'outside-layer-set' as LayerSetId
+
+const insideLayers: LayerConfig[] = [
+  {
+    type: 'monolithic',
+    name: 'Inside Layer',
+    material: clayPlasterBase.id,
+    thickness: 30
+  }
+]
+
+const outsideLayers: LayerConfig[] = [
+  {
+    type: 'monolithic',
+    name: 'Outside Layer',
+    material: limePlasterBase.id,
+    thickness: 20
+  }
+]
+
+const layerSetLayersMap = new Map<LayerSetId, LayerConfig[]>([
+  [insideLayerSetId, insideLayers],
+  [outsideLayerSetId, outsideLayers]
+])
+
+const mockAssemblies = new Map<string, WallLayerSetIds>()
 const mockOpenings = new Map<string, OpeningWithGeometry>()
 
 const baseAssemblyId = createWallAssemblyId()
@@ -56,7 +84,13 @@ vi.mock('@/construction/config', () => ({
   getConfigActions: () => ({
     getWallAssemblyById: (id: string) => mockAssemblies.get(id) ?? null,
     getRingBeamAssemblyById: () => null
-  })
+  }),
+  resolveLayerSetLayers: (id: LayerSetId | undefined) => (id ? (layerSetLayersMap.get(id) ?? []) : []),
+  resolveLayerSetThickness: (id: LayerSetId | undefined) => {
+    if (!id) return 0
+    const layers = layerSetLayersMap.get(id) ?? []
+    return layers.reduce((sum, layer) => sum + layer.thickness, 0)
+  }
 }))
 
 vi.mock('@/building/store', () => ({
@@ -128,33 +162,16 @@ const storeyContext: StoreyContext = {
   floorAssembly: {} as FloorAssembly
 }
 
-const baseLayers: WallLayersConfig = {
-  insideThickness: 30,
-  insideLayers: [
-    {
-      type: 'monolithic',
-      name: 'Inside Layer',
-      material: clayPlasterBase.id,
-      thickness: 30
-    }
-  ],
-  outsideThickness: 20,
-  outsideLayers: [
-    {
-      type: 'monolithic',
-      name: 'Outside Layer',
-      material: limePlasterBase.id,
-      thickness: 20
-    }
-  ]
+const baseLayerSetIds: WallLayerSetIds = {
+  insideLayerSetId,
+  outsideLayerSetId
 }
 
 const applyAssemblies = () => {
   mockAssemblies.clear()
-  const assembly = { layers: baseLayers }
-  mockAssemblies.set(baseAssemblyId, assembly)
-  mockAssemblies.set(previousAssemblyId, assembly)
-  mockAssemblies.set(nextAssemblyId, assembly)
+  mockAssemblies.set(baseAssemblyId, baseLayerSetIds)
+  mockAssemblies.set(previousAssemblyId, baseLayerSetIds)
+  mockAssemblies.set(nextAssemblyId, baseLayerSetIds)
 }
 
 const flattenElements = (items: GroupOrElement[]): ConstructionElement[] => {
@@ -258,7 +275,7 @@ describe('constructWallLayers', () => {
   it('creates extruded polygons for inside and outside layers', () => {
     const wall = createWall()
 
-    const model = constructWallLayers(wall, storeyContext, baseLayers)
+    const model = constructWallLayers(wall, storeyContext, baseLayerSetIds)
 
     const elements = flattenElements(model.elements)
     expect(elements).toHaveLength(2)
@@ -325,7 +342,7 @@ describe('constructWallLayers', () => {
 
     const wall = createWall({ entityIds: [opening.id] })
 
-    const model = constructWallLayers(wall, storeyContext, baseLayers)
+    const model = constructWallLayers(wall, storeyContext, baseLayerSetIds)
 
     const elements = flattenElements(model.elements)
     const inside = elements.find(
@@ -355,7 +372,7 @@ describe('constructWallLayers', () => {
     const wall = createWall()
 
     const baselineOutsideStart = (() => {
-      const baselineModel = constructWallLayers(wall, storeyContext, baseLayers)
+      const baselineModel = constructWallLayers(wall, storeyContext, baseLayerSetIds)
       const baselineOutside = flattenElements(baselineModel.elements).find(
         element => element.shape.base?.type === 'extrusion' && element.shape.base.thickness === 20
       )
@@ -370,7 +387,7 @@ describe('constructWallLayers', () => {
       end: newVec2(-360, 0)
     }
 
-    const model = constructWallLayers(wall, storeyContext, baseLayers)
+    const model = constructWallLayers(wall, storeyContext, baseLayerSetIds)
     const elements = flattenElements(model.elements)
     const outside = elements.find(
       element => element.shape.base?.type === 'extrusion' && element.shape.base.thickness === 20
@@ -390,7 +407,7 @@ describe('constructWallLayers', () => {
     const wall = createWall()
 
     const baselineInsideStart = (() => {
-      const baselineModel = constructWallLayers(wall, storeyContext, baseLayers)
+      const baselineModel = constructWallLayers(wall, storeyContext, baseLayerSetIds)
       const baselineInside = flattenElements(baselineModel.elements).find(
         element => element.shape.base?.type === 'extrusion' && element.shape.base.thickness === 30
       )
@@ -405,7 +422,7 @@ describe('constructWallLayers', () => {
       end: newVec2(40, 0)
     }
 
-    const model = constructWallLayers(wall, storeyContext, baseLayers)
+    const model = constructWallLayers(wall, storeyContext, baseLayerSetIds)
     const elements = flattenElements(model.elements)
     const inside = elements.find(
       element => element.shape.base?.type === 'extrusion' && element.shape.base.thickness === 30

@@ -28,8 +28,8 @@ export class MonolithicRoofAssembly extends BaseRoofAssembly<MonolithicRoofConfi
     const roofSides = this.splitRoofPolygon(roof, ridgeHeight)
 
     // Calculate Z-range for clipping volume (doubled for safety margin)
-    const minZ = -2 * (ridgeHeight + this.config.layers.insideThickness)
-    const maxZ = (this.config.thickness + this.config.layers.topThickness) * 2
+    const minZ = -2 * (ridgeHeight + this.insideLayersThickness)
+    const maxZ = (this.config.thickness + this.topLayersThickness) * 2
     const ceilingClippingVolume = this.getCeilingPolygons(roof)
       .map(c => this.createExtrudedVolume(c, roof.ridgeLine, minZ, maxZ))
       .reduce((a, b) => a.add(b))
@@ -88,7 +88,7 @@ export class MonolithicRoofAssembly extends BaseRoofAssembly<MonolithicRoofConfi
   }
 
   get topOffset(): Length {
-    return this.config.layers.topThickness
+    return this.topLayersThickness
   }
 
   getBottomOffsets = (roof: Roof, map: VerticalOffsetMap, _contexts: PerimeterConstructionContext[]): void => {

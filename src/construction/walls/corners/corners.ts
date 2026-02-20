@@ -1,6 +1,6 @@
 import type { PerimeterCornerId, PerimeterCornerWithGeometry, PerimeterWallWithGeometry } from '@/building/model'
 import { getModelActions } from '@/building/store'
-import { getConfigActions } from '@/construction/config'
+import { getConfigActions, resolveLayerSetThickness } from '@/construction/config'
 import { type Length, type LineSegment2D, distVec2, scaleAddVec2 } from '@/shared/geometry'
 
 export interface WallContext {
@@ -38,7 +38,6 @@ export interface WallCornerInfo {
   extensionStart: Length
   constructionLength: Length
   extensionEnd: Length
-  // Construction lines for roof queries (adjusted by layer thickness)
   constructionInsideLine: LineSegment2D
   constructionOutsideLine: LineSegment2D
 }
@@ -55,11 +54,18 @@ export function calculateWallCornerInfo(wall: PerimeterWallWithGeometry, context
     throw new Error('Invalid wall assembly')
   }
 
+  const previousInsideThickness = resolveLayerSetThickness(previousAssembly.insideLayerSetId)
+  const previousOutsideThickness = resolveLayerSetThickness(previousAssembly.outsideLayerSetId)
+  const nextInsideThickness = resolveLayerSetThickness(nextAssembly.insideLayerSetId)
+  const nextOutsideThickness = resolveLayerSetThickness(nextAssembly.outsideLayerSetId)
+  const currentInsideThickness = resolveLayerSetThickness(currentAssembly.insideLayerSetId)
+  const currentOutsideThickness = resolveLayerSetThickness(currentAssembly.outsideLayerSetId)
+
   const outerStartExtension = Math.round(
-    distVec2(wall.outsideLine.start, startCorner.outsidePoint) - previousAssembly.layers.outsideThickness
+    distVec2(wall.outsideLine.start, startCorner.outsidePoint) - previousOutsideThickness
   )
   const innerStartExtension = Math.round(
-    distVec2(wall.insideLine.start, startCorner.insidePoint) - previousAssembly.layers.insideThickness
+    distVec2(wall.insideLine.start, startCorner.insidePoint) - previousInsideThickness
   )
   const startExtended = startCorner.constructedByWall === 'next'
   const startExtension = startCorner.exteriorAngle === 180 ? 0 : Math.max(outerStartExtension, innerStartExtension)
@@ -69,15 +75,11 @@ export function calculateWallCornerInfo(wall: PerimeterWallWithGeometry, context
       : startExtended
         ? startExtension
         : startExtension === outerStartExtension
-          ? previousAssembly.layers.insideThickness
-          : previousAssembly.layers.outsideThickness
+          ? previousInsideThickness
+          : previousOutsideThickness
 
-  const outerEndExtension = Math.round(
-    distVec2(wall.outsideLine.end, endCorner.outsidePoint) - nextAssembly.layers.outsideThickness
-  )
-  const innerEndExtension = Math.round(
-    distVec2(wall.insideLine.end, endCorner.insidePoint) - nextAssembly.layers.insideThickness
-  )
+  const outerEndExtension = Math.round(distVec2(wall.outsideLine.end, endCorner.outsidePoint) - nextOutsideThickness)
+  const innerEndExtension = Math.round(distVec2(wall.insideLine.end, endCorner.insidePoint) - nextInsideThickness)
   const endExtended = endCorner.constructedByWall === 'previous'
   const endExtension = endCorner.exteriorAngle === 180 ? 0 : Math.max(outerEndExtension, innerEndExtension)
   const appliedEndExtension =
@@ -86,33 +88,32 @@ export function calculateWallCornerInfo(wall: PerimeterWallWithGeometry, context
       : endExtended
         ? endExtension
         : endExtension === outerEndExtension
-          ? nextAssembly.layers.insideThickness
-          : nextAssembly.layers.outsideThickness
+          ? nextInsideThickness
+          : nextOutsideThickness
 
   const constructionLength = Math.round(wall.wallLength + appliedStartExtension + appliedEndExtension)
 
-  // Calculate construction lines adjusted by layer thickness
   const epsilon = 1e-2
   const constructionInsideLine = {
     start: scaleAddVec2(
-      scaleAddVec2(wall.insideLine.start, wall.outsideDirection, currentAssembly.layers.insideThickness + epsilon),
+      scaleAddVec2(wall.insideLine.start, wall.outsideDirection, currentInsideThickness + epsilon),
       wall.direction,
       -appliedStartExtension
     ),
     end: scaleAddVec2(
-      scaleAddVec2(wall.insideLine.end, wall.outsideDirection, currentAssembly.layers.insideThickness + epsilon),
+      scaleAddVec2(wall.insideLine.end, wall.outsideDirection, currentInsideThickness + epsilon),
       wall.direction,
       appliedEndExtension
     )
   }
   const constructionOutsideLine = {
     start: scaleAddVec2(
-      scaleAddVec2(wall.outsideLine.start, wall.outsideDirection, -currentAssembly.layers.outsideThickness - epsilon),
+      scaleAddVec2(wall.outsideLine.start, wall.outsideDirection, -currentOutsideThickness - epsilon),
       wall.direction,
       -appliedStartExtension
     ),
     end: scaleAddVec2(
-      scaleAddVec2(wall.outsideLine.end, wall.outsideDirection, -currentAssembly.layers.outsideThickness - epsilon),
+      scaleAddVec2(wall.outsideLine.end, wall.outsideDirection, -currentOutsideThickness - epsilon),
       wall.direction,
       appliedEndExtension
     )
