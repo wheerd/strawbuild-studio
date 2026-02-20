@@ -170,3 +170,18 @@ export const lvl: SheetMaterial = {
   color: '#e9d9c4',
   density: 480
 }
+
+export const xps: SheetMaterial = {
+  id: 'material_xps' as MaterialId,
+  name: 'XPS (Extruded Polystyrene)',
+  nameKey: 'xps',
+  sizes: [
+    { smallerLength: 600, biggerLength: 1250 },
+    { smallerLength: 600, biggerLength: 2500 }
+  ],
+  thicknesses: [20, 30, 40, 50, 60, 80, 100, 120, 140, 160, 180, 200],
+  sheetType: 'solid',
+  type: 'sheet',
+  color: '#a8d4e6',
+  density: 35
+}

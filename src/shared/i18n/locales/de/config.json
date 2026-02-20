@@ -173,7 +173,8 @@
       "screed": "Estrich",
       "tiles": "Dachpfannen",
       "woodenPlanking": "Holzschalung",
-      "woodenPlankingDhf": "Holzschalung mit DHF"
+      "woodenPlankingDhf": "Holzschalung mit DHF",
+      "xpsLimePlaster": "XPS-Dämmung + Kalkputz"
     },
     "deleteConfirm": "Möchten Sie „{{name}}\" wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.",
     "deleteTitle": "Schichten löschen",
@@ -240,7 +241,8 @@
       "strawbale": "Strohballen",
       "structuralWood": "Konstruktionsvollholz (KVH)",
       "windBarrier": "Windsperre",
-      "woodwool": "Holzwolle"
+      "woodwool": "Holzwolle",
+      "xps": "XPS (Extrudierter Polystyrol-Hartschaum)"
     },
     "defaultStrawMaterial": "Standard-Strohmaterial",
     "deleteConfirm": "Möchtest du \"{{name}}\" wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.",

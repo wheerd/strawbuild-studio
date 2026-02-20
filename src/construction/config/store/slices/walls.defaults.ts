@@ -19,7 +19,7 @@ import {
   strawbale
 } from '@/construction/materials/material'
 
-import { LAYER_SET_CLAY_PLASTER, LAYER_SET_LIME_PLASTER } from './layers.defaults'
+import { LAYER_SET_CLAY_PLASTER, LAYER_SET_LIME_PLASTER, LAYER_SET_XPS_LIME_PLASTER } from './layers.defaults'
 import { DEFAULT_EMPTY_ASSEMBLY, prefabThresholdAssembly } from './opening.defaults'
 
 const infillAssembly: InfillWallAssemblyConfig = {
@@ -141,7 +141,7 @@ const nonStrawbaleAssembly: NonStrawbaleWallAssemblyConfig = {
   material: concrete.id,
   openingAssemblyId: DEFAULT_EMPTY_ASSEMBLY.id, // Non-strawbale walls use empty opening type
   insideLayerSetId: LAYER_SET_CLAY_PLASTER.id,
-  outsideLayerSetId: undefined // Custom layers - will be created by migration
+  outsideLayerSetId: LAYER_SET_XPS_LIME_PLASTER.id
 }
 
 const ecococonAssembly: PrefabModulesWallAssemblyConfig = {

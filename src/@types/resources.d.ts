@@ -287,7 +287,8 @@ interface Resources {
         "screed": "Screed",
         "tiles": "Roof Tiles",
         "woodenPlanking": "Wooden Planking",
-        "woodenPlankingDhf": "Wooden Planking with DHF"
+        "woodenPlankingDhf": "Wooden Planking with DHF",
+        "xpsLimePlaster": "XPS Insulation + Lime Plaster"
       },
       "deleteConfirm": "Are you sure you want to delete \"{{name}}\"? This action cannot be undone.",
       "deleteTitle": "Delete Layer Set",
@@ -410,7 +411,8 @@ interface Resources {
         "strawbale": "Strawbales",
         "structuralWood": "Structural Timber",
         "windBarrier": "Wind Barrier",
-        "woodwool": "Woodwool"
+        "woodwool": "Woodwool",
+        "xps": "XPS (Extruded Polystyrene)"
       },
       "deleteConfirm": "Are you sure you want to delete \"{{name}}\"? This action cannot be undone.",
       "deleteTitle": "Delete Material",

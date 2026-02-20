@@ -12,7 +12,8 @@ import {
   limePlasterBase,
   limePlasterFine,
   reed,
-  windBarrier
+  windBarrier,
+  xps
 } from '@/construction/materials/material'
 import type { MaterialId } from '@/construction/materials/material'
 
@@ -122,6 +123,18 @@ export const LAYER_SET_LIME_PLASTER_DIAGONAL: LayerSetConfig = createLayerSet(
       thickness: 25
     },
     createMonolithicLayer(limePlasterFine.id, 5, 'Fine Plaster (Lime)', $ => $.layers.defaults.limePlasterFine)
+  ],
+  'wall'
+)
+
+export const LAYER_SET_XPS_LIME_PLASTER: LayerSetConfig = createLayerSet(
+  'ls_xps_lime_plaster' as LayerSetId,
+  'XPS Insulation + Lime Plaster',
+  $ => $.layerSets.defaults.xpsLimePlaster,
+  [
+    createMonolithicLayer(xps.id, 160, 'Insulation (XPS)', $ => $.layers.defaults.insulation),
+    createMonolithicLayer(limePlasterBase.id, 20, 'Base Plaster (Lime)', $ => $.layers.defaults.limePlasterBase),
+    createMonolithicLayer(limePlasterFine.id, 10, 'Fine Plaster (Lime)', $ => $.layers.defaults.limePlasterFine)
   ],
   'wall'
 )
@@ -251,6 +264,7 @@ export const DEFAULT_LAYER_SETS: LayerSetConfig[] = [
   LAYER_SET_LIME_PLASTER,
   LAYER_SET_LIME_PLASTER_DHF,
   LAYER_SET_LIME_PLASTER_DIAGONAL,
+  LAYER_SET_XPS_LIME_PLASTER,
   LAYER_SET_WOODEN_PLANKING,
   LAYER_SET_WOODEN_PLANKING_DHF,
   LAYER_SET_GYPSUM,
