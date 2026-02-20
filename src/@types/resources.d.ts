@@ -640,6 +640,7 @@ interface Resources {
       "unknown": "Unknown",
       "usedBy": "Used By:",
       "usedInFloor": "Floor: {{label}}",
+      "usedInLayerSet": "Layer Set: {{label}}",
       "usedInOpening": "Opening: {{label}}",
       "usedInRingBeam": "Ring Beam: {{label}}",
       "usedInRoof": "Roof: {{label}}",

@@ -2,8 +2,9 @@ import { renderHook } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import type { WallPostWithGeometry } from '@/building/model'
-import { createRingBeamAssemblyId, createWallAssemblyId } from '@/building/model/ids'
+import { createLayerSetId, createRingBeamAssemblyId, createWallAssemblyId } from '@/building/model/ids'
 import type { RingBeamAssemblyConfig, WallAssemblyConfig } from '@/construction/config/types'
+import type { LayerSetConfig } from '@/construction/layers/types'
 import { partial } from '@/test/helpers'
 
 import { concrete, createMaterialId, roughWood, strawbale, woodwool } from './material'
@@ -11,12 +12,12 @@ import { useMaterialUsage } from './usage'
 
 const defaultStrawMaterialId = strawbale.id
 
-// Mock the store hooks
 const mockUseRingBeamAssemblies: any = vi.fn(() => [])
 const mockUseWallAssemblies: any = vi.fn(() => [])
 const mockUseFloorAssemblies: any = vi.fn(() => [])
 const mockUseRoofAssemblies: any = vi.fn(() => [])
 const mockUseOpeningAssemblies: any = vi.fn(() => [])
+const mockUseLayerSets: any = vi.fn(() => [])
 const mockUseDefaultStrawMaterialId: any = vi.fn(() => defaultStrawMaterialId)
 const mockUseWallPosts: any = vi.fn(() => [])
 
@@ -26,6 +27,7 @@ vi.mock('@/construction/config/store', () => ({
   useFloorAssemblies: () => mockUseFloorAssemblies(),
   useRoofAssemblies: () => mockUseRoofAssemblies(),
   useOpeningAssemblies: () => mockUseOpeningAssemblies(),
+  useLayerSets: () => mockUseLayerSets(),
   useDefaultStrawMaterialId: () => mockUseDefaultStrawMaterialId()
 }))
 
@@ -36,12 +38,12 @@ vi.mock('@/building/store', () => ({
 describe('Material Usage Detection', () => {
   describe('useMaterialUsage', () => {
     beforeEach(() => {
-      // Reset all mocks to return empty arrays
       mockUseRingBeamAssemblies.mockReturnValue([])
       mockUseWallAssemblies.mockReturnValue([])
       mockUseFloorAssemblies.mockReturnValue([])
       mockUseRoofAssemblies.mockReturnValue([])
       mockUseOpeningAssemblies.mockReturnValue([])
+      mockUseLayerSets.mockReturnValue([])
       mockUseDefaultStrawMaterialId.mockReturnValue(defaultStrawMaterialId)
       mockUseWallPosts.mockReturnValue([])
     })
@@ -107,12 +109,8 @@ describe('Material Usage Detection', () => {
           outside: false,
           minLength: 100
         },
-        layers: {
-          insideThickness: 30,
-          insideLayers: [],
-          outsideThickness: 50,
-          outsideLayers: []
-        }
+        insideLayerSetId: undefined,
+        outsideLayerSetId: undefined
       }
 
       mockUseWallAssemblies.mockReturnValue([wallAssembly])
@@ -162,12 +160,8 @@ describe('Material Usage Detection', () => {
             minLength: 100
           }
         },
-        layers: {
-          insideThickness: 30,
-          insideLayers: [],
-          outsideThickness: 50,
-          outsideLayers: []
-        }
+        insideLayerSetId: undefined,
+        outsideLayerSetId: undefined
       }
 
       mockUseWallAssemblies.mockReturnValue([wallAssembly])
@@ -223,12 +217,8 @@ describe('Material Usage Detection', () => {
             minLength: 100
           }
         },
-        layers: {
-          insideThickness: 30,
-          insideLayers: [],
-          outsideThickness: 50,
-          outsideLayers: []
-        }
+        insideLayerSetId: undefined,
+        outsideLayerSetId: undefined
       }
 
       mockUseWallAssemblies.mockReturnValue([wallAssembly])
@@ -268,12 +258,8 @@ describe('Material Usage Detection', () => {
           outside: true,
           minLength: 100
         },
-        layers: {
-          insideThickness: 30,
-          insideLayers: [],
-          outsideThickness: 50,
-          outsideLayers: []
-        }
+        insideLayerSetId: undefined,
+        outsideLayerSetId: undefined
       }
 
       mockUseWallAssemblies.mockReturnValue([wallAssembly])
@@ -377,12 +363,8 @@ describe('Material Usage Detection', () => {
           outside: false,
           minLength: 100
         },
-        layers: {
-          insideThickness: 30,
-          insideLayers: [],
-          outsideThickness: 50,
-          outsideLayers: []
-        }
+        insideLayerSetId: undefined,
+        outsideLayerSetId: undefined
       }
 
       mockUseRingBeamAssemblies.mockReturnValue([ringBeamAssembly])
@@ -422,12 +404,8 @@ describe('Material Usage Detection', () => {
         tallReinforceThickness: 60,
         tallReinforceStagger: 150,
         tallReinforceMaterial,
-        layers: {
-          insideThickness: 30,
-          insideLayers: [],
-          outsideThickness: 50,
-          outsideLayers: []
-        }
+        insideLayerSetId: undefined,
+        outsideLayerSetId: undefined
       }
 
       mockUseWallAssemblies.mockReturnValue([wallAssembly])
@@ -455,6 +433,66 @@ describe('Material Usage Detection', () => {
       const { result: reinforceResult } = renderHook(() => useMaterialUsage(tallReinforceMaterial))
       expect(reinforceResult.current.isUsed).toBe(true)
       expect(reinforceResult.current.assemblyIds).toEqual([wallAssembly.id])
+    })
+
+    it('detects layer set material usage', () => {
+      const layerSetMaterialId = createMaterialId()
+
+      const layerSet: LayerSetConfig = {
+        id: createLayerSetId(),
+        name: 'Test Layer Set',
+        use: 'wall',
+        totalThickness: 30,
+        layers: [
+          {
+            type: 'monolithic',
+            name: 'Test Layer',
+            material: layerSetMaterialId,
+            thickness: 30
+          }
+        ]
+      }
+
+      mockUseLayerSets.mockReturnValue([layerSet])
+
+      const { result } = renderHook(() => useMaterialUsage(layerSetMaterialId))
+
+      expect(result.current.isUsed).toBe(true)
+      expect(result.current.assemblyIds).toEqual([layerSet.id])
+    })
+
+    it('detects striped layer material usage', () => {
+      const stripeMaterialId = createMaterialId()
+      const gapMaterialId = createMaterialId()
+
+      const layerSet: LayerSetConfig = {
+        id: createLayerSetId(),
+        name: 'Striped Layer Set',
+        use: 'wall',
+        totalThickness: 40,
+        layers: [
+          {
+            type: 'striped',
+            name: 'Striped Layer',
+            direction: 'diagonal',
+            stripeMaterial: stripeMaterialId,
+            stripeWidth: 30,
+            gapMaterial: gapMaterialId,
+            gapWidth: 10,
+            thickness: 40
+          }
+        ]
+      }
+
+      mockUseLayerSets.mockReturnValue([layerSet])
+
+      const { result: stripeResult } = renderHook(() => useMaterialUsage(stripeMaterialId))
+      expect(stripeResult.current.isUsed).toBe(true)
+      expect(stripeResult.current.assemblyIds).toEqual([layerSet.id])
+
+      const { result: gapResult } = renderHook(() => useMaterialUsage(gapMaterialId))
+      expect(gapResult.current.isUsed).toBe(true)
+      expect(gapResult.current.assemblyIds).toEqual([layerSet.id])
     })
   })
 })

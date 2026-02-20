@@ -1,5 +1,5 @@
 import type { PerimeterWallWithGeometry } from '@/building/model'
-import { getConfigActions } from '@/construction/config'
+import { getConfigActions, resolveLayerSetThickness } from '@/construction/config'
 import { WallConstructionArea } from '@/construction/geometry'
 import { getMaterialById } from '@/construction/materials/store'
 import { type ThicknessRange, addThickness, getMaterialThickness } from '@/construction/materials/thickness'
@@ -12,18 +12,23 @@ import { TAG_MODULE_CONSTRUCTION } from '@/construction/tags'
 import type { ModulesWallConfig } from '@/construction/walls'
 import { BaseWallAssembly } from '@/construction/walls/base'
 import { infillWallArea } from '@/construction/walls/infill/infill'
-import { constructWallLayers } from '@/construction/walls/layers'
+import { type WallLayerSetIds, constructWallLayers } from '@/construction/walls/layers'
 import { segmentedWallConstruction } from '@/construction/walls/segmentation'
 
 import { constructModule } from './modules'
 
 export class ModulesWallAssembly extends BaseWallAssembly<ModulesWallConfig> {
   construct(wall: PerimeterWallWithGeometry, storeyContext: StoreyContext): ConstructionModel {
+    const layerSetIds: WallLayerSetIds = {
+      insideLayerSetId: this.config.insideLayerSetId,
+      outsideLayerSetId: this.config.outsideLayerSetId
+    }
+
     const allResults = Array.from(
       segmentedWallConstruction(
         wall,
         storeyContext,
-        this.config.layers,
+        layerSetIds,
         this.moduleWallArea.bind(this),
         area => infillWallArea(area, this.config.infill),
         this.config.openingAssemblyId,
@@ -34,7 +39,7 @@ export class ModulesWallAssembly extends BaseWallAssembly<ModulesWallConfig> {
     assignDeterministicIdsToResults(allResults, wall.id)
 
     const baseModel = resultsToModel(allResults)
-    const layerModel = constructWallLayers(wall, storeyContext, this.config.layers)
+    const layerModel = constructWallLayers(wall, storeyContext, layerSetIds)
 
     return mergeModels(baseModel, layerModel)
   }
@@ -61,10 +66,12 @@ export class ModulesWallAssembly extends BaseWallAssembly<ModulesWallConfig> {
   }
 
   get thicknessRange(): ThicknessRange {
-    const { module, infill, layers } = this.config
+    const { module, infill } = this.config
     const strawMaterialId = module.strawMaterial ?? infill.strawMaterial ?? getConfigActions().getDefaultStrawMaterial()
     const strawMaterial = getMaterialById(strawMaterialId)
-    const layerThickness = layers.insideThickness + layers.outsideThickness
+    const insideThickness = resolveLayerSetThickness(this.config.insideLayerSetId)
+    const outsideThickness = resolveLayerSetThickness(this.config.outsideLayerSetId)
+    const layerThickness = insideThickness + outsideThickness
     return addThickness(strawMaterial ? getMaterialThickness(strawMaterial) : undefined, layerThickness)
   }
 

@@ -179,12 +179,8 @@ const createTestConfig = (): PrefabModulesWallConfig => ({
   tallReinforceThickness: 15,
   tallReinforceStagger: 400,
   tallReinforceMaterial: 'material_reinforce' as MaterialId,
-  layers: {
-    insideThickness: 0,
-    insideLayers: [],
-    outsideThickness: 0,
-    outsideLayers: []
-  }
+  insideLayerSetId: undefined,
+  outsideLayerSetId: undefined
 })
 
 class TestPrefabModulesWallAssembly extends PrefabModulesWallAssembly {

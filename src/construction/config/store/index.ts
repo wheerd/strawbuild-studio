@@ -28,7 +28,7 @@ import type {
   RoofAssemblyConfig,
   WallAssemblyConfig
 } from '@/construction/config/types'
-import type { LayerSetConfig } from '@/construction/layers/types'
+import type { LayerConfig, LayerSetConfig } from '@/construction/layers/types'
 import type { MaterialId } from '@/construction/materials/material'
 import { subscribeRecords } from '@/shared/utils/subscription'
 
@@ -291,3 +291,19 @@ export const _clearAllAssemblies = () =>
     roofAssemblyConfigs: {},
     openingAssemblyConfigs: {}
   })
+
+// Layer set helpers
+export const getLayerSetById = (id: LayerSetId | undefined): LayerSetConfig | null => {
+  if (!id) return null
+  return useConfigStore.getState().layerSetConfigs[id] ?? null
+}
+
+export const resolveLayerSetLayers = (id: LayerSetId | undefined): LayerConfig[] => {
+  const layerSet = getLayerSetById(id)
+  return layerSet?.layers ?? []
+}
+
+export const resolveLayerSetThickness = (id: LayerSetId | undefined): number => {
+  const layerSet = getLayerSetById(id)
+  return layerSet?.totalThickness ?? 0
+}

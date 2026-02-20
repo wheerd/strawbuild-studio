@@ -81,12 +81,8 @@ const createTestConfig = (): StrawhengeWallConfig => ({
     },
     infillMaterial: 'infill-material' as MaterialId
   },
-  layers: {
-    insideThickness: 0,
-    insideLayers: [],
-    outsideThickness: 0,
-    outsideLayers: []
-  }
+  insideLayerSetId: undefined,
+  outsideLayerSetId: undefined
 })
 
 // Test wall lengths from C# implementation

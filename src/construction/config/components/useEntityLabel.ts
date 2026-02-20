@@ -3,12 +3,14 @@ import { useTranslation } from 'react-i18next'
 import { useStoreyName } from '@/building/hooks/useStoreyName'
 import {
   type FloorAssemblyId,
+  type LayerSetId,
   type OpeningAssemblyId,
   type RingBeamAssemblyId,
   type RoofAssemblyId,
   type StoreyId,
   type WallAssemblyId,
   isFloorAssemblyId,
+  isLayerSetId,
   isOpeningAssemblyId,
   isRingBeamAssemblyId,
   isRoofAssemblyId,
@@ -18,6 +20,7 @@ import {
 import { useStoreyById } from '@/building/store'
 import {
   useFloorAssemblyById,
+  useLayerSetById,
   useOpeningAssemblyById,
   useRingBeamAssemblyById,
   useRoofAssemblyById,
@@ -34,6 +37,7 @@ export type EntityId =
   | RoofAssemblyId
   | OpeningAssemblyId
   | MaterialId
+  | LayerSetId
 
 /**
  * Hook that returns a function to get display labels for any entity ID.
@@ -79,6 +83,12 @@ export function useEntityLabel(id: EntityId | undefined): string {
     const assembly = useOpeningAssemblyById(id)
     const assemblyName = assembly?.nameKey ? t(assembly.nameKey) : assembly?.name
     return t($ => $.usage.usedInOpening, { label: assemblyName })
+  }
+
+  if (isLayerSetId(id)) {
+    const layerSet = useLayerSetById(id)
+    const layerSetName = layerSet?.nameKey ? t(layerSet.nameKey) : layerSet?.name
+    return t($ => $.usage.usedInLayerSet, { label: layerSetName })
   }
 
   if (isMaterialId(id)) {

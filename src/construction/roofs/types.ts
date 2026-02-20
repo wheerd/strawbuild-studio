@@ -1,6 +1,5 @@
 import type { Roof } from '@/building/model'
-import { sumLayerThickness } from '@/construction/config/store/layerUtils'
-import type { LayerConfig } from '@/construction/layers/types'
+import type { LayerSetId } from '@/building/model/ids'
 import type { MaterialId } from '@/construction/materials/material'
 import type { ConstructionModel } from '@/construction/model'
 import type { PerimeterConstructionContext } from '@/construction/perimeters/context'
@@ -21,16 +20,9 @@ export type RoofAssemblyType = 'monolithic' | 'purlin'
 
 export interface RoofAssemblyConfigBase {
   type: RoofAssemblyType
-  layers: RoofLayersConfig
-}
-
-export interface RoofLayersConfig {
-  insideThickness: Length
-  insideLayers: LayerConfig[]
-  topThickness: Length
-  topLayers: LayerConfig[]
-  overhangThickness: Length
-  overhangLayers: LayerConfig[]
+  insideLayerSetId?: LayerSetId
+  topLayerSetId?: LayerSetId
+  overhangLayerSetId?: LayerSetId
 }
 
 export interface MonolithicRoofConfig extends RoofAssemblyConfigBase {
@@ -85,25 +77,6 @@ export type HeightLine = (HeightJumpItem | HeightItem)[]
 // Validation
 
 export const validateRoofConfig = (config: RoofConfig): void => {
-  const { layers } = config
-
-  // Validate layer thicknesses match layer arrays
-  const insideThickness = sumLayerThickness(layers.insideLayers)
-  if (Math.abs(layers.insideThickness - insideThickness) > 0.01) {
-    throw new Error(`Inside layer thickness mismatch: expected ${insideThickness}, got ${layers.insideThickness}`)
-  }
-
-  const topThickness = sumLayerThickness(layers.topLayers)
-  if (Math.abs(layers.topThickness - topThickness) > 0.01) {
-    throw new Error(`Top layer thickness mismatch: expected ${topThickness}, got ${layers.topThickness}`)
-  }
-
-  const overhangThickness = sumLayerThickness(layers.overhangLayers)
-  if (Math.abs(layers.overhangThickness - overhangThickness) > 0.01) {
-    throw new Error(`Overhang layer thickness mismatch: expected ${overhangThickness}, got ${layers.overhangThickness}`)
-  }
-
-  // Type-specific validation
   switch (config.type) {
     case 'monolithic':
       if (config.thickness <= 0) {
@@ -114,7 +87,6 @@ export const validateRoofConfig = (config: RoofConfig): void => {
       }
       break
     case 'purlin':
-      // Validate purlin dimensions
       if (config.thickness <= 0) {
         throw new Error('Purlin roof thickness must be positive')
       }

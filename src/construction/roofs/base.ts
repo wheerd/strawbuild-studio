@@ -2,6 +2,7 @@ import type { Manifold } from 'manifold-3d'
 
 import type { Roof } from '@/building/model'
 import { getModelActions } from '@/building/store'
+import { resolveLayerSetLayers, resolveLayerSetThickness } from '@/construction/config'
 import { LAYER_CONSTRUCTIONS } from '@/construction/layers'
 import type { LayerConfig } from '@/construction/layers/types'
 import { transformManifold } from '@/construction/manifold/operations'
@@ -74,13 +75,25 @@ export abstract class BaseRoofAssembly<T extends RoofAssemblyConfigBase> impleme
   protected abstract get ceilingLayerOffset(): Length
   protected abstract get overhangLayerOffset(): Length
 
+  get insideLayersThickness(): Length {
+    return resolveLayerSetThickness(this.config.insideLayerSetId)
+  }
+
+  get topLayersThickness(): Length {
+    return resolveLayerSetThickness(this.config.topLayerSetId)
+  }
+
+  get overhangLayersThickness(): Length {
+    return resolveLayerSetThickness(this.config.overhangLayerSetId)
+  }
+
   get totalThickness(): Length {
     return (
-      this.config.layers.insideThickness +
+      this.insideLayersThickness +
       this.ceilingLayerOffset +
       this.constructionThickness +
       this.topLayerOffset +
-      this.config.layers.topThickness
+      this.topLayersThickness
     )
   }
 
@@ -297,13 +310,14 @@ export abstract class BaseRoofAssembly<T extends RoofAssemblyConfigBase> impleme
    * Construct top layers (on roof side polygon)
    */
   protected *constructTopLayers(roof: Roof, roofSide: RoofSide): Generator<ConstructionResult> {
-    if (this.config.layers.topLayers.length === 0) {
+    const topLayers = resolveLayerSetLayers(this.config.topLayerSetId)
+    if (topLayers.length === 0) {
       return
     }
 
     let zOffset = this.constructionThickness + this.topLayerOffset
 
-    for (const [layerIndex, layer] of this.config.layers.topLayers.entries()) {
+    for (const [layerIndex, layer] of topLayers.entries()) {
       const preparedPolygon = this.preparePolygonForConstruction(
         roofSide.polygon,
         roof.ridgeLine,
@@ -332,7 +346,8 @@ export abstract class BaseRoofAssembly<T extends RoofAssemblyConfigBase> impleme
    * Construct ceiling layers (inside perimeter intersection with roof side)
    */
   protected *constructCeilingLayers(roof: Roof, roofSide: RoofSide): Generator<ConstructionResult> {
-    if (this.config.layers.insideLayers.length === 0) {
+    const insideLayers = resolveLayerSetLayers(this.config.insideLayerSetId)
+    if (insideLayers.length === 0) {
       return
     }
 
@@ -346,10 +361,10 @@ export abstract class BaseRoofAssembly<T extends RoofAssemblyConfigBase> impleme
       return
     }
 
-    let zOffset = this.ceilingLayerOffset - this.config.layers.insideThickness
+    let zOffset = this.ceilingLayerOffset - this.insideLayersThickness
 
     // Reverse order: bottom to top
-    const reversedLayers = [...this.config.layers.insideLayers].reverse()
+    const reversedLayers = [...insideLayers].reverse()
 
     for (const [layerIndex, layer] of reversedLayers.entries()) {
       for (const ceilingPoly of sideCeilingPolygons) {
@@ -378,21 +393,21 @@ export abstract class BaseRoofAssembly<T extends RoofAssemblyConfigBase> impleme
    * Construct overhang layers (overhang areas for this roof side)
    */
   protected *constructOverhangLayers(roof: Roof, roofSide: RoofSide): Generator<ConstructionResult> {
-    if (this.config.layers.overhangLayers.length === 0) {
+    const overhangLayers = resolveLayerSetLayers(this.config.overhangLayerSetId)
+    if (overhangLayers.length === 0) {
       return
     }
 
-    // Subtract reference polygon from this roof side's polygon
     const sideOverhangPolygons = subtractPolygons([roofSide.polygon], [roof.referencePolygon])
 
     if (sideOverhangPolygons.length === 0) {
       return
     }
 
-    let zOffset = this.overhangLayerOffset - this.config.layers.overhangThickness
+    let zOffset = this.overhangLayerOffset - this.overhangLayersThickness
 
     // Reverse order: bottom to top
-    const reversedLayers = [...this.config.layers.overhangLayers].reverse()
+    const reversedLayers = [...overhangLayers].reverse()
 
     for (const [layerIndex, layer] of reversedLayers.entries()) {
       for (const overhangPoly of sideOverhangPolygons) {

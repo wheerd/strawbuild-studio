@@ -1,4 +1,4 @@
-import type { FloorAssemblyConfig } from '@/construction/config'
+import { type FloorAssemblyConfig, resolveLayerSetLayers, resolveLayerSetThickness } from '@/construction/config'
 import { runLayerConstruction } from '@/construction/layers'
 import type { LayerConfig } from '@/construction/layers/types'
 import type { ConstructionModel } from '@/construction/model'
@@ -19,11 +19,13 @@ export abstract class BaseFloorAssembly<TConfig extends FloorAssemblyConfigBase>
   abstract construct: (context: PerimeterConstructionContext) => ConstructionModel;
 
   *constructCeilingLayers(polygons: PolygonWithHoles2D[], idPrefix: string) {
-    yield* this.constructLayers(polygons, this.config.layers.bottomLayers, TAG_FLOOR_LAYER_BOTTOM, true, idPrefix)
+    const layers = resolveLayerSetLayers(this.config.bottomLayerSetId)
+    yield* this.constructLayers(polygons, layers, TAG_FLOOR_LAYER_BOTTOM, true, idPrefix)
   }
 
   *constructFloorLayers(polygons: PolygonWithHoles2D[], idPrefix: string) {
-    yield* this.constructLayers(polygons, this.config.layers.topLayers, TAG_FLOOR_LAYER_TOP, false, idPrefix)
+    const layers = resolveLayerSetLayers(this.config.topLayerSetId)
+    yield* this.constructLayers(polygons, layers, TAG_FLOOR_LAYER_TOP, false, idPrefix)
   }
 
   private *constructLayers(
@@ -60,20 +62,20 @@ export abstract class BaseFloorAssembly<TConfig extends FloorAssemblyConfigBase>
   abstract get constructionThickness(): Length
 
   get topLayersThickness() {
-    return this.config.layers.topThickness
+    return resolveLayerSetThickness(this.config.topLayerSetId)
   }
 
   get bottomLayersThickness() {
-    return this.config.layers.bottomThickness
+    return resolveLayerSetThickness(this.config.bottomLayerSetId)
   }
 
   get totalThickness() {
     return (
-      this.config.layers.topThickness +
+      this.topLayersThickness +
       this.topOffset +
       this.constructionThickness +
       this.bottomOffset +
-      this.config.layers.bottomThickness
+      this.bottomLayersThickness
     )
   }
 

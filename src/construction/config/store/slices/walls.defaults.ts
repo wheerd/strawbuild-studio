@@ -6,8 +6,6 @@ import type {
   PrefabModulesWallAssemblyConfig,
   StrawhengeWallAssemblyConfig
 } from '@/construction/config/types'
-import { PRESET_WALL_CLAY_PLASTER, PRESET_WALL_LIME_PLASTER } from '@/construction/layers/defaults'
-import type { MaterialId } from '@/construction/materials/material'
 import {
   battens,
   concrete,
@@ -21,6 +19,7 @@ import {
   strawbale
 } from '@/construction/materials/material'
 
+import { LAYER_SET_CLAY_PLASTER, LAYER_SET_LIME_PLASTER } from './layers.defaults'
 import { DEFAULT_EMPTY_ASSEMBLY, prefabThresholdAssembly } from './opening.defaults'
 
 const infillAssembly: InfillWallAssemblyConfig = {
@@ -46,12 +45,8 @@ const infillAssembly: InfillWallAssemblyConfig = {
     minLength: 100
   },
   // No openingAssemblyId - uses global default
-  layers: {
-    insideThickness: 30,
-    insideLayers: PRESET_WALL_CLAY_PLASTER.layers,
-    outsideThickness: 30,
-    outsideLayers: PRESET_WALL_LIME_PLASTER.layers
-  }
+  insideLayerSetId: LAYER_SET_CLAY_PLASTER.id,
+  outsideLayerSetId: LAYER_SET_LIME_PLASTER.id
 }
 
 const strawhengeAssembly: StrawhengeWallAssemblyConfig = {
@@ -92,12 +87,8 @@ const strawhengeAssembly: StrawhengeWallAssemblyConfig = {
     }
   },
   // No openingAssemblyId - uses global default
-  layers: {
-    insideThickness: 30,
-    insideLayers: PRESET_WALL_CLAY_PLASTER.layers,
-    outsideThickness: 30,
-    outsideLayers: PRESET_WALL_LIME_PLASTER.layers
-  }
+  insideLayerSetId: LAYER_SET_CLAY_PLASTER.id,
+  outsideLayerSetId: LAYER_SET_LIME_PLASTER.id
 }
 
 const modulesAssembly: ModulesWallAssemblyConfig = {
@@ -138,12 +129,8 @@ const modulesAssembly: ModulesWallAssemblyConfig = {
     }
   },
   // No openingAssemblyId - uses global default
-  layers: {
-    insideThickness: 30,
-    insideLayers: PRESET_WALL_CLAY_PLASTER.layers,
-    outsideThickness: 30,
-    outsideLayers: PRESET_WALL_LIME_PLASTER.layers
-  }
+  insideLayerSetId: LAYER_SET_CLAY_PLASTER.id,
+  outsideLayerSetId: LAYER_SET_LIME_PLASTER.id
 }
 
 const nonStrawbaleAssembly: NonStrawbaleWallAssemblyConfig = {
@@ -153,21 +140,8 @@ const nonStrawbaleAssembly: NonStrawbaleWallAssemblyConfig = {
   type: 'non-strawbale',
   material: concrete.id,
   openingAssemblyId: DEFAULT_EMPTY_ASSEMBLY.id, // Non-strawbale walls use empty opening type
-  layers: {
-    insideThickness: 30,
-    insideLayers: PRESET_WALL_CLAY_PLASTER.layers,
-    outsideThickness: 160 + 30,
-    outsideLayers: [
-      {
-        type: 'monolithic',
-        name: 'Insulation',
-        nameKey: $ => $.layers.defaults.insulation,
-        material: 'material_invalid' as MaterialId,
-        thickness: 160
-      },
-      ...PRESET_WALL_LIME_PLASTER.layers
-    ]
-  }
+  insideLayerSetId: LAYER_SET_CLAY_PLASTER.id,
+  outsideLayerSetId: undefined // Custom layers - will be created by migration
 }
 
 const ecococonAssembly: PrefabModulesWallAssemblyConfig = {
@@ -188,12 +162,8 @@ const ecococonAssembly: PrefabModulesWallAssemblyConfig = {
   tallReinforceThickness: 15,
   tallReinforceStagger: 800,
   tallReinforceMaterial: lvl.id,
-  layers: {
-    insideThickness: 30,
-    insideLayers: PRESET_WALL_CLAY_PLASTER.layers,
-    outsideThickness: 30,
-    outsideLayers: PRESET_WALL_LIME_PLASTER.layers
-  }
+  insideLayerSetId: LAYER_SET_CLAY_PLASTER.id,
+  outsideLayerSetId: LAYER_SET_LIME_PLASTER.id
 }
 
 export const DEFAULT_WALL_ASSEMBLIES = [

@@ -69,12 +69,6 @@ export function WallAssemblyContent({ initialSelectionId }: WallAssemblyContentP
 
       let name: string
       let config: WallConfig
-      const layers = {
-        insideThickness: 0,
-        insideLayers: [],
-        outsideThickness: 0,
-        outsideLayers: []
-      }
 
       switch (type) {
         case 'infill':
@@ -98,7 +92,8 @@ export function WallAssemblyContent({ initialSelectionId }: WallAssemblyContentP
               outside: false,
               minLength: 100
             },
-            layers
+            insideLayerSetId: undefined,
+            outsideLayerSetId: undefined
           }
           break
         case 'strawhenge':
@@ -137,7 +132,8 @@ export function WallAssemblyContent({ initialSelectionId }: WallAssemblyContentP
                 minLength: 100
               }
             },
-            layers
+            insideLayerSetId: undefined,
+            outsideLayerSetId: undefined
           }
           break
         case 'modules':
@@ -176,7 +172,8 @@ export function WallAssemblyContent({ initialSelectionId }: WallAssemblyContentP
                 minLength: 100
               }
             },
-            layers
+            insideLayerSetId: undefined,
+            outsideLayerSetId: undefined
           }
           break
         case 'prefab-modules':
@@ -196,7 +193,8 @@ export function WallAssemblyContent({ initialSelectionId }: WallAssemblyContentP
             tallReinforceStagger: 400,
             tallReinforceMaterial: lvl.id,
             openingAssemblyId: 'oa_empty_default' as OpeningAssemblyId,
-            layers
+            insideLayerSetId: undefined,
+            outsideLayerSetId: undefined
           }
           break
         case 'non-strawbale':
@@ -205,7 +203,8 @@ export function WallAssemblyContent({ initialSelectionId }: WallAssemblyContentP
             type: 'non-strawbale',
             material: defaultMaterial,
             openingAssemblyId: 'oa_empty_default' as OpeningAssemblyId,
-            layers
+            insideLayerSetId: undefined,
+            outsideLayerSetId: undefined
           }
           break
       }

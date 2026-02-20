@@ -100,24 +100,30 @@ describe('config migrations', () => {
       wallAssemblyConfigs: Record<
         string,
         {
-          layers: {
-            insideLayers: { material: string; thickness: number; name: string }[]
-            outsideLayers: { material: string; thickness: number; name: string }[]
-          }
+          insideLayerSetId?: string
+          outsideLayerSetId?: string
+          layers?: unknown
         }
       >
+      layerSetConfigs: Record<string, { layers: { material: string; thickness: number; name: string }[] }>
     }
 
-    const layers = migrated.wallAssemblyConfigs.test.layers
-    expect(layers.insideLayers).toHaveLength(1)
-    expect(layers.insideLayers[0].material).toBeDefined()
-    expect(layers.insideLayers[0].thickness).toBe(25)
-    expect(layers.insideLayers[0].name).toBe('Default Layer')
+    const assembly = migrated.wallAssemblyConfigs.test
+    expect(assembly.insideLayerSetId).toBeDefined()
+    expect(assembly.outsideLayerSetId).toBeDefined()
+    expect(assembly.layers).toBeUndefined()
 
-    expect(layers.outsideLayers).toHaveLength(1)
-    expect(layers.outsideLayers[0].material).toBeDefined()
-    expect(layers.outsideLayers[0].thickness).toBe(45)
-    expect(layers.outsideLayers[0].name).toBe('Default Layer')
+    const insideLayerSet = migrated.layerSetConfigs[assembly.insideLayerSetId!]
+    expect(insideLayerSet).toBeDefined()
+    expect(insideLayerSet.layers).toHaveLength(1)
+    expect(insideLayerSet.layers[0].material).toBeDefined()
+    expect(insideLayerSet.layers[0].thickness).toBe(25)
+
+    const outsideLayerSet = migrated.layerSetConfigs[assembly.outsideLayerSetId!]
+    expect(outsideLayerSet).toBeDefined()
+    expect(outsideLayerSet.layers).toHaveLength(1)
+    expect(outsideLayerSet.layers[0].material).toBeDefined()
+    expect(outsideLayerSet.layers[0].thickness).toBe(45)
   })
 
   it('populates missing floor layer arrays with invalid material defaults', () => {
@@ -137,24 +143,30 @@ describe('config migrations', () => {
       floorAssemblyConfigs: Record<
         string,
         {
-          layers: {
-            topLayers: { material: string; thickness: number; name: string }[]
-            bottomLayers: { material: string; thickness: number; name: string }[]
-          }
+          topLayerSetId?: string
+          bottomLayerSetId?: string
+          layers?: unknown
         }
       >
+      layerSetConfigs: Record<string, { layers: { material: string; thickness: number; name: string }[] }>
     }
 
-    const layers = migrated.floorAssemblyConfigs.floor.layers
-    expect(layers.topLayers).toHaveLength(1)
-    expect(layers.topLayers[0].material).toBeDefined()
-    expect(layers.topLayers[0].thickness).toBe(22)
-    expect(layers.topLayers[0].name).toBe('Default Layer')
+    const assembly = migrated.floorAssemblyConfigs.floor
+    expect(assembly.topLayerSetId).toBeDefined()
+    expect(assembly.bottomLayerSetId).toBeDefined()
+    expect(assembly.layers).toBeUndefined()
 
-    expect(layers.bottomLayers).toHaveLength(1)
-    expect(layers.bottomLayers[0].material).toBeDefined()
-    expect(layers.bottomLayers[0].thickness).toBe(12)
-    expect(layers.bottomLayers[0].name).toBe('Default Layer')
+    const topLayerSet = migrated.layerSetConfigs[assembly.topLayerSetId!]
+    expect(topLayerSet).toBeDefined()
+    expect(topLayerSet.layers).toHaveLength(1)
+    expect(topLayerSet.layers[0].material).toBeDefined()
+    expect(topLayerSet.layers[0].thickness).toBe(22)
+
+    const bottomLayerSet = migrated.layerSetConfigs[assembly.bottomLayerSetId!]
+    expect(bottomLayerSet).toBeDefined()
+    expect(bottomLayerSet.layers).toHaveLength(1)
+    expect(bottomLayerSet.layers[0].material).toBeDefined()
+    expect(bottomLayerSet.layers[0].thickness).toBe(12)
   })
 
   it('renames purlin roof config fields from cladding to sheathing/decking', () => {

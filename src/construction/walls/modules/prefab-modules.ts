@@ -1,4 +1,5 @@
 import type { PerimeterWallWithGeometry } from '@/building/model'
+import { resolveLayerSetThickness } from '@/construction/config'
 import { type ConstructionElement, createConstructionElement } from '@/construction/elements'
 import { WallConstructionArea } from '@/construction/geometry'
 import type { MaterialId, PrefabMaterial } from '@/construction/materials/material'
@@ -21,17 +22,22 @@ import {
 } from '@/construction/tags'
 import type { PrefabModulesWallConfig } from '@/construction/walls'
 import { BaseWallAssembly } from '@/construction/walls/base'
-import { constructWallLayers } from '@/construction/walls/layers'
+import { type WallLayerSetIds, constructWallLayers } from '@/construction/walls/layers'
 import { segmentedWallConstruction } from '@/construction/walls/segmentation'
 import { type Length, type Vec3, addVec3, composeTransform, fromRot, fromTrans, newVec3 } from '@/shared/geometry'
 
 export class PrefabModulesWallAssembly extends BaseWallAssembly<PrefabModulesWallConfig> {
   construct(wall: PerimeterWallWithGeometry, storeyContext: StoreyContext): ConstructionModel {
+    const layerSetIds: WallLayerSetIds = {
+      insideLayerSetId: this.config.insideLayerSetId,
+      outsideLayerSetId: this.config.outsideLayerSetId
+    }
+
     const allResults = Array.from(
       segmentedWallConstruction(
         wall,
         storeyContext,
-        this.config.layers,
+        layerSetIds,
         this.moduleWallArea.bind(this),
         this.moduleOpeningSubWallArea.bind(this),
         this.config.openingAssemblyId,
@@ -42,7 +48,7 @@ export class PrefabModulesWallAssembly extends BaseWallAssembly<PrefabModulesWal
     assignDeterministicIdsToResults(allResults, wall.id)
 
     const baseModel = resultsToModel(allResults)
-    const layerModel = constructWallLayers(wall, storeyContext, this.config.layers)
+    const layerModel = constructWallLayers(wall, storeyContext, layerSetIds)
 
     return mergeModels(baseModel, layerModel)
   }
@@ -369,7 +375,9 @@ export class PrefabModulesWallAssembly extends BaseWallAssembly<PrefabModulesWal
   get thicknessRange(): ThicknessRange {
     const { defaultMaterial } = this.config
     const moduleMaterial = this.getModuleMaterial(defaultMaterial)
-    const layerThickness = this.config.layers.insideThickness + this.config.layers.outsideThickness
+    const insideThickness = resolveLayerSetThickness(this.config.insideLayerSetId)
+    const outsideThickness = resolveLayerSetThickness(this.config.outsideLayerSetId)
+    const layerThickness = insideThickness + outsideThickness
 
     const min = moduleMaterial.minThickness + layerThickness
     const max = moduleMaterial.maxThickness + layerThickness

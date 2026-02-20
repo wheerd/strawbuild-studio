@@ -1,4 +1,4 @@
-import type { LayerConfig } from '@/construction/layers/types'
+import type { LayerSetId } from '@/building/model/ids'
 import type { MaterialId } from '@/construction/materials/material'
 import type { ConstructionModel } from '@/construction/model'
 import type { PerimeterConstructionContext } from '@/construction/perimeters/context'
@@ -26,14 +26,8 @@ export type FloorAssemblyType = 'monolithic' | 'joist' | 'filled' | 'hanging-joi
 
 export interface FloorAssemblyConfigBase {
   type: FloorAssemblyType
-  layers: FloorLayersConfig
-}
-
-export interface FloorLayersConfig {
-  bottomThickness: Length
-  bottomLayers: LayerConfig[]
-  topThickness: Length
-  topLayers: LayerConfig[]
+  topLayerSetId?: LayerSetId
+  bottomLayerSetId?: LayerSetId
 }
 
 export interface MonolithicFloorConfig extends FloorAssemblyConfigBase {
@@ -109,10 +103,6 @@ export type FloorConfig = MonolithicFloorConfig | JoistFloorConfig | FilledFloor
 // Validation
 
 export const validateFloorConfig = (config: FloorConfig): void => {
-  if (config.layers.topThickness < 0 || config.layers.bottomThickness < 0) {
-    throw new Error('Layer thicknesses cannot be negative')
-  }
-
   switch (config.type) {
     case 'monolithic':
       validateMonolithicFloorConfig(config)

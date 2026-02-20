@@ -1,7 +1,14 @@
 import { describe, expect, it, vi } from 'vitest'
 
 import type { PerimeterCornerWithGeometry, PerimeterWallWithGeometry, PerimeterWithGeometry } from '@/building/model'
-import type { PerimeterCornerId, PerimeterId, PerimeterWallId, StoreyId, WallAssemblyId } from '@/building/model/ids'
+import type {
+  LayerSetId,
+  PerimeterCornerId,
+  PerimeterId,
+  PerimeterWallId,
+  StoreyId,
+  WallAssemblyId
+} from '@/building/model/ids'
 import { type StoreActions, getModelActions } from '@/building/store'
 import { getConfigActions } from '@/construction/config'
 import {
@@ -17,8 +24,14 @@ import { partial, partialMock } from '@/test/helpers'
 
 import { computePerimeterConstructionPolygon } from './context'
 
+const outsideThicknessByLayerSetId = new Map<LayerSetId, number>()
+
 vi.mock('@/construction/config', () => ({
-  getConfigActions: vi.fn()
+  getConfigActions: vi.fn(),
+  resolveLayerSetThickness: (id: LayerSetId | undefined) => {
+    if (!id) return 0
+    return outsideThicknessByLayerSetId.get(id) ?? 0
+  }
 }))
 
 const mockedGetWallAssemblyById = vi.fn()
@@ -31,8 +44,8 @@ vi.mock('@/building/store', () => ({
   getModelActions: vi.fn()
 }))
 
-const mockedGetPerimeterCornerById = vi.fn()
 const mockedGetPerimeterWallById = vi.fn()
+const mockedGetPerimeterCornerById = vi.fn()
 
 vi.mocked(getModelActions).mockReturnValue(
   partialMock<StoreActions>({
@@ -114,16 +127,17 @@ describe('computePerimeterConstructionPolygon', () => {
       outsideThicknessByAssembly.set(walls[index].wallAssemblyId, value)
     })
 
+    outsideThicknessByLayerSetId.clear()
+
     mockedGetWallAssemblyById.mockImplementation((id: WallAssemblyId) => {
       const outsideThickness = outsideThicknessByAssembly.get(id)
       if (outsideThickness == null) {
         return null
       }
+      const outsideLayerSetId = `ls-${id}` as LayerSetId
+      outsideThicknessByLayerSetId.set(outsideLayerSetId, outsideThickness)
       return {
-        layers: {
-          insideThickness: 0,
-          outsideThickness
-        }
+        outsideLayerSetId
       } as any
     })
 

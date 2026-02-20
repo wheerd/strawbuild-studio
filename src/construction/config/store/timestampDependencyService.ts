@@ -5,7 +5,7 @@ import type {
   RoofAssemblyId,
   WallAssemblyId
 } from '@/building/model/ids'
-import { getConfigActions } from '@/construction/config/store'
+import { getConfigActions, resolveLayerSetLayers } from '@/construction/config/store'
 import type {
   FloorAssemblyConfig,
   OpeningAssemblyConfig,
@@ -74,8 +74,10 @@ export class ConfigTimestampDependencyService {
       materials.push(assembly.tallReinforceMaterial)
     }
 
-    materials.push(...this.extractMaterialsFromLayers(assembly.layers.insideLayers))
-    materials.push(...this.extractMaterialsFromLayers(assembly.layers.outsideLayers))
+    const insideLayers = resolveLayerSetLayers(assembly.insideLayerSetId)
+    const outsideLayers = resolveLayerSetLayers(assembly.outsideLayerSetId)
+    materials.push(...this.extractMaterialsFromLayers(insideLayers))
+    materials.push(...this.extractMaterialsFromLayers(outsideLayers))
 
     return materials
   }
@@ -114,8 +116,10 @@ export class ConfigTimestampDependencyService {
       materials.push(assembly.joistMaterial, assembly.subfloorMaterial, assembly.openingSideMaterial)
     }
 
-    materials.push(...this.extractMaterialsFromLayers(assembly.layers.bottomLayers))
-    materials.push(...this.extractMaterialsFromLayers(assembly.layers.topLayers))
+    const bottomLayers = resolveLayerSetLayers(assembly.bottomLayerSetId)
+    const topLayers = resolveLayerSetLayers(assembly.topLayerSetId)
+    materials.push(...this.extractMaterialsFromLayers(bottomLayers))
+    materials.push(...this.extractMaterialsFromLayers(topLayers))
 
     return materials
   }
@@ -135,9 +139,12 @@ export class ConfigTimestampDependencyService {
       if (assembly.strawMaterial) materials.push(assembly.strawMaterial)
     }
 
-    materials.push(...this.extractMaterialsFromLayers(assembly.layers.insideLayers))
-    materials.push(...this.extractMaterialsFromLayers(assembly.layers.topLayers))
-    materials.push(...this.extractMaterialsFromLayers(assembly.layers.overhangLayers))
+    const insideLayers = resolveLayerSetLayers(assembly.insideLayerSetId)
+    const topLayers = resolveLayerSetLayers(assembly.topLayerSetId)
+    const overhangLayers = resolveLayerSetLayers(assembly.overhangLayerSetId)
+    materials.push(...this.extractMaterialsFromLayers(insideLayers))
+    materials.push(...this.extractMaterialsFromLayers(topLayers))
+    materials.push(...this.extractMaterialsFromLayers(overhangLayers))
 
     return materials
   }

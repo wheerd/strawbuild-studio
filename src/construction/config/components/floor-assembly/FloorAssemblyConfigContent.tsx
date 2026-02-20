@@ -68,12 +68,8 @@ export function FloorAssemblyConfigContent({ initialSelectionId }: FloorAssembly
           type: 'monolithic',
           thickness: 180,
           material: defaultMaterial,
-          layers: {
-            topThickness: 0,
-            topLayers: [],
-            bottomThickness: 0,
-            bottomLayers: []
-          }
+          topLayerSetId: undefined,
+          bottomLayerSetId: undefined
         }
       } else if (type === 'joist') {
         name = t($ => $.floors.newName.joist)
@@ -91,12 +87,8 @@ export function FloorAssemblyConfigContent({ initialSelectionId }: FloorAssembly
           subfloorMaterial: defaultMaterial,
           openingSideThickness: 60,
           openingSideMaterial: defaultMaterial,
-          layers: {
-            topThickness: 0,
-            topLayers: [],
-            bottomThickness: 0,
-            bottomLayers: []
-          }
+          topLayerSetId: undefined,
+          bottomLayerSetId: undefined
         }
       } else if (type === 'filled') {
         name = t($ => $.floors.newName.filled)
@@ -115,12 +107,8 @@ export function FloorAssemblyConfigContent({ initialSelectionId }: FloorAssembly
           openingFrameThickness: 60,
           openingFrameMaterial: defaultMaterial,
           strawMaterial: undefined,
-          layers: {
-            topThickness: 0,
-            topLayers: [],
-            bottomThickness: 0,
-            bottomLayers: []
-          }
+          topLayerSetId: undefined,
+          bottomLayerSetId: undefined
         }
       } else {
         name = t($ => $.floors.newName.hangingJoist)
@@ -135,12 +123,8 @@ export function FloorAssemblyConfigContent({ initialSelectionId }: FloorAssembly
           openingSideThickness: 60,
           openingSideMaterial: defaultMaterial,
           verticalOffset: 0,
-          layers: {
-            topThickness: 0,
-            topLayers: [],
-            bottomThickness: 0,
-            bottomLayers: []
-          }
+          topLayerSetId: undefined,
+          bottomLayerSetId: undefined
         }
       }
 

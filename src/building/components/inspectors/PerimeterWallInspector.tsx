@@ -13,7 +13,7 @@ import { ConstructionPlanModal } from '@/construction/components/ConstructionPla
 import { BACK_VIEW, FRONT_VIEW, TOP_VIEW } from '@/construction/components/plan/ConstructionPlan'
 import { RingBeamAssemblySelectWithEdit } from '@/construction/config/components/RingBeamAssemblySelectWithEdit'
 import { WallAssemblySelectWithEdit } from '@/construction/config/components/WallAssemblySelectWithEdit'
-import { useWallAssemblyById } from '@/construction/config/store'
+import { resolveLayerSetThickness, useWallAssemblyById } from '@/construction/config/store'
 import { formatThicknessRange } from '@/construction/materials/thickness'
 import { resolveWallAssembly } from '@/construction/walls'
 import { MeasurementInfo } from '@/editor/components/MeasurementInfo'
@@ -178,7 +178,9 @@ export function PerimeterWallInspector({ wallId }: { wallId: PerimeterWallId }):
                     <MeasurementInfo highlightedPart="insideLayer" />
                   </div>
                 </DataList.Label>
-                <DataList.Value>{formatLength(wallAssemblyConfig?.layers.insideThickness ?? 0)}</DataList.Value>
+                <DataList.Value>
+                  {formatLength(wallAssemblyConfig ? resolveLayerSetThickness(wallAssemblyConfig.insideLayerSetId) : 0)}
+                </DataList.Value>
               </DataList.Item>
               <DataList.Item>
                 <DataList.Label>
@@ -187,7 +189,11 @@ export function PerimeterWallInspector({ wallId }: { wallId: PerimeterWallId }):
                     <MeasurementInfo highlightedPart="outsideLayer" />
                   </div>
                 </DataList.Label>
-                <DataList.Value>{formatLength(wallAssemblyConfig?.layers.outsideThickness ?? 0)}</DataList.Value>
+                <DataList.Value>
+                  {formatLength(
+                    wallAssemblyConfig ? resolveLayerSetThickness(wallAssemblyConfig.outsideLayerSetId) : 0
+                  )}
+                </DataList.Value>
               </DataList.Item>
               <DataList.Item>
                 <DataList.Label>
@@ -200,8 +206,8 @@ export function PerimeterWallInspector({ wallId }: { wallId: PerimeterWallId }):
                   {wallAssemblyConfig &&
                     formatLength(
                       wall.thickness -
-                        wallAssemblyConfig.layers.outsideThickness -
-                        wallAssemblyConfig.layers.insideThickness
+                        resolveLayerSetThickness(wallAssemblyConfig.outsideLayerSetId) -
+                        resolveLayerSetThickness(wallAssemblyConfig.insideLayerSetId)
                     )}
                 </DataList.Value>
               </DataList.Item>

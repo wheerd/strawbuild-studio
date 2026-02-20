@@ -1,7 +1,14 @@
 import { describe, expect, it, vi } from 'vitest'
 
 import type { PerimeterCornerWithGeometry, PerimeterWallWithGeometry, PerimeterWithGeometry } from '@/building/model'
-import type { PerimeterCornerId, PerimeterId, PerimeterWallId, StoreyId, WallAssemblyId } from '@/building/model/ids'
+import type {
+  LayerSetId,
+  PerimeterCornerId,
+  PerimeterId,
+  PerimeterWallId,
+  StoreyId,
+  WallAssemblyId
+} from '@/building/model/ids'
 import { type StoreActions, getModelActions } from '@/building/store'
 import { getConfigActions } from '@/construction/config'
 import { direction, distVec2, newVec2, perpendicular, scaleAddVec2 } from '@/shared/geometry'
@@ -9,8 +16,17 @@ import { partial, partialMock } from '@/test/helpers'
 
 import { applyWallFaceOffsets, createWallFaceOffsets } from './context'
 
+const mockInsideThickness = { value: 50 }
+const mockOutsideThickness = { value: 100 }
+
 vi.mock('@/construction/config', () => ({
-  getConfigActions: vi.fn()
+  getConfigActions: vi.fn(),
+  resolveLayerSetThickness: (id: LayerSetId | undefined) => {
+    if (!id) return 0
+    if ((id as string) === 'inside-layer-set') return mockInsideThickness.value
+    if ((id as string) === 'outside-layer-set') return mockOutsideThickness.value
+    return 0
+  }
 }))
 
 const mockedGetWallAssemblyById = vi.fn()
@@ -95,9 +111,12 @@ describe('applyWallFaceOffsets', () => {
   const outsideThickness = 100
 
   beforeEach(() => {
+    mockInsideThickness.value = insideThickness
+    mockOutsideThickness.value = outsideThickness
     mockedGetWallAssemblyById.mockReset()
     mockedGetWallAssemblyById.mockReturnValue({
-      layers: { insideThickness, insideLayers: [], outsideThickness, outsideLayers: [] }
+      insideLayerSetId: 'inside-layer-set' as LayerSetId,
+      outsideLayerSetId: 'outside-layer-set' as LayerSetId
     } as any)
   })
 
