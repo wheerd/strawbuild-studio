@@ -17,15 +17,8 @@ const USE_OPTIONS: LayerSetUse[] = ['wall', 'floor', 'ceiling', 'roof']
 
 export function LayerSetConfigForm({ layerSet }: LayerSetConfigFormProps): React.JSX.Element {
   const { t } = useTranslation('config')
-  const {
-    updateLayerSetName,
-    updateLayerSetUse,
-    addLayerToSet,
-    setLayerSetLayers,
-    updateLayerInSet,
-    removeLayerFromSet,
-    moveLayerInSet
-  } = useConfigActions()
+  const { updateLayerSetName, updateLayerSetUse, addLayerToSet, updateLayerInSet, removeLayerFromSet, moveLayerInSet } =
+    useConfigActions()
 
   const nameKey = layerSet.nameKey
   const nameInput = useDebouncedInput(
@@ -87,9 +80,6 @@ export function LayerSetConfigForm({ layerSet }: LayerSetConfigFormProps): React
         layers={layerSet.layers}
         onAddLayer={layer => {
           addLayerToSet(layerSet.id, layer)
-        }}
-        onReplaceLayers={layers => {
-          setLayerSetLayers(layerSet.id, layers)
         }}
         onUpdateLayer={(index, updates) => {
           updateLayerInSet(layerSet.id, index, updates)

@@ -32,3 +32,6 @@ export const runLayerConstruction = (
       assertUnreachable(config, 'Unsupported layer type')
   }
 }
+
+export const sumLayerThickness = (layers: LayerConfig[]): number =>
+  layers.reduce((total, layer) => total + (layer.overlap ? 0 : layer.thickness), 0)

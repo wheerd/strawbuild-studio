@@ -2,19 +2,13 @@ import { type StateCreator } from 'zustand'
 
 import { type LayerSetId, createLayerSetId } from '@/building/model/ids'
 import {
-  appendLayer,
-  moveLayer,
-  removeLayerAt,
-  sanitizeLayerArray,
-  sumLayerThickness,
-  updateLayerAt
-} from '@/construction/config/store/layerUtils'
-import {
   type TimestampsState,
   removeTimestampDraft,
   updateTimestampDraft
 } from '@/construction/config/store/slices/timestampsSlice'
+import { sumLayerThickness } from '@/construction/layers'
 import type { LayerConfig, LayerSetConfig, LayerSetUse } from '@/construction/layers/types'
+import { assertUnreachable } from '@/shared/utils'
 
 import { DEFAULT_LAYER_SETS } from './layers.defaults'
 
@@ -28,7 +22,6 @@ export interface LayerSetsActions {
   removeLayerSet: (id: LayerSetId) => void
   updateLayerSetName: (id: LayerSetId, name: string) => void
   updateLayerSetUse: (id: LayerSetId, use: LayerSetUse) => void
-  setLayerSetLayers: (id: LayerSetId, layers: LayerConfig[]) => void
   addLayerToSet: (id: LayerSetId, layer: LayerConfig) => void
   updateLayerInSet: (id: LayerSetId, index: number, updates: Partial<Omit<LayerConfig, 'type'>>) => void
   removeLayerFromSet: (id: LayerSetId, index: number) => void
@@ -142,18 +135,6 @@ export const createLayerSetsSlice: StateCreator<
         })
       },
 
-      setLayerSetLayers: (id: LayerSetId, layers: LayerConfig[]) => {
-        set(state => {
-          if (!(id in state.layerSetConfigs)) return
-          const layerSet = state.layerSetConfigs[id]
-
-          const sanitizedLayers = sanitizeLayerArray(layers)
-          layerSet.layers = sanitizedLayers
-          layerSet.totalThickness = sumLayerThickness(sanitizedLayers)
-          updateTimestampDraft(state, id)
-        })
-      },
-
       addLayerToSet: (id: LayerSetId, layer: LayerConfig) => {
         set(state => {
           if (!(id in state.layerSetConfigs)) return
@@ -249,3 +230,82 @@ export const createLayerSetsSlice: StateCreator<
     } satisfies LayerSetsActions
   }
 }
+
+const sanitizeLayerName = (name: string): string => name.trim()
+
+const ensureNonNegative = (value: number, message: string): void => {
+  if (value < 0) {
+    throw new Error(message)
+  }
+}
+
+const assertLayerIndex = (layers: LayerConfig[], index: number): void => {
+  if (!Number.isInteger(index) || index < 0 || index >= layers.length) {
+    throw new Error('Layer index out of bounds')
+  }
+}
+
+const validateLayerConfig = (layer: LayerConfig): void => {
+  if (sanitizeLayerName(layer.name).length === 0) {
+    throw new Error('Layer name cannot be empty')
+  }
+  ensureNonNegative(layer.thickness, 'Layer thickness cannot be negative')
+
+  switch (layer.type) {
+    case 'monolithic':
+      // No additional validation needed
+      break
+    case 'striped':
+      ensureNonNegative(layer.stripeWidth, 'Layer stripe width cannot be negative')
+      ensureNonNegative(layer.gapWidth, 'Layer gap width cannot be negative')
+      break
+    default:
+      assertUnreachable(layer, 'Invalid layer type')
+  }
+}
+
+const mergeLayerUpdates = (layer: LayerConfig, updates: Partial<Omit<LayerConfig, 'type'>>): LayerConfig => {
+  const nextName = 'name' in updates && typeof updates.name === 'string' ? sanitizeLayerName(updates.name) : layer.name
+  const merged = { ...layer, ...updates, name: sanitizeLayerName(nextName) } as LayerConfig
+  validateLayerConfig(merged)
+  return merged
+}
+
+const appendLayer = (layers: LayerConfig[], layer: LayerConfig): LayerConfig[] => {
+  const sanitized: LayerConfig = { ...layer, name: sanitizeLayerName(layer.name) }
+  validateLayerConfig(sanitized)
+  return [...layers, sanitized]
+}
+
+const updateLayerAt = (
+  layers: LayerConfig[],
+  index: number,
+  updates: Partial<Omit<LayerConfig, 'type'>>
+): LayerConfig[] => {
+  assertLayerIndex(layers, index)
+
+  const nextLayer = mergeLayerUpdates(layers[index], updates)
+  return layers.map((existing, position) => (position === index ? nextLayer : existing))
+}
+
+const removeLayerAt = (layers: LayerConfig[], index: number): LayerConfig[] => {
+  assertLayerIndex(layers, index)
+  return layers.filter((_, position) => position !== index)
+}
+
+const moveLayer = (layers: LayerConfig[], fromIndex: number, toIndex: number): LayerConfig[] => {
+  assertLayerIndex(layers, fromIndex)
+  assertLayerIndex(layers, toIndex)
+
+  if (fromIndex === toIndex) {
+    return [...layers]
+  }
+
+  const reordered = [...layers]
+  const [layer] = reordered.splice(fromIndex, 1)
+  reordered.splice(toIndex, 0, layer)
+  return reordered
+}
+
+const sanitizeLayerArray = (layers: LayerConfig[]): LayerConfig[] =>
+  layers.reduce<LayerConfig[]>((sanitized, layer) => appendLayer(sanitized, layer), [])

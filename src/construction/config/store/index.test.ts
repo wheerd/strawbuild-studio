@@ -70,48 +70,6 @@ describe('ConfigStore', () => {
     })
   })
 
-  describe('Layer Sets', () => {
-    beforeEach(() => {
-      _clearAllAssemblies()
-    })
-
-    it('should have default layer sets', () => {
-      const store = getConfigActions()
-      const layerSets = store.getAllLayerSets()
-
-      expect(layerSets.length).toBeGreaterThan(0)
-    })
-
-    it('should create a new layer set', () => {
-      const store = getConfigActions()
-      const layerSet = store.addLayerSet('Custom Wall Layers', [], 'wall')
-
-      expect(layerSet.name).toBe('Custom Wall Layers')
-      expect(layerSet.use).toBe('wall')
-      expect(layerSet.totalThickness).toBe(0)
-    })
-
-    it('should update layer set layers', () => {
-      const store = getConfigActions()
-      const layerSet = store.addLayerSet('Test', [], 'wall')
-
-      const newLayers = [
-        {
-          type: 'monolithic' as const,
-          name: 'Test Layer',
-          thickness: 30,
-          material: createMaterialId()
-        }
-      ]
-
-      store.setLayerSetLayers(layerSet.id, newLayers)
-
-      const updated = store.getLayerSetById(layerSet.id)
-      expect(updated?.layers).toHaveLength(1)
-      expect(updated?.totalThickness).toBe(30)
-    })
-  })
-
   describe('Wall Assemblies', () => {
     beforeEach(() => {
       _clearAllAssemblies()

@@ -1,15 +1,4 @@
-import {
-  ChevronDown,
-  ChevronUp,
-  Columns,
-  Copy,
-  MoveHorizontal,
-  MoveVertical,
-  Plus,
-  Square,
-  Trash,
-  Wand2
-} from 'lucide-react'
+import { ChevronDown, ChevronUp, Columns, MoveHorizontal, MoveVertical, Plus, Square, Trash } from 'lucide-react'
 import React, { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -20,8 +9,7 @@ import { DropdownMenu } from '@/components/ui/dropdown-menu'
 import { Select } from '@/components/ui/select'
 import { TextField } from '@/components/ui/text-field'
 import { Tooltip } from '@/components/ui/tooltip'
-import { sumLayerThickness } from '@/construction/config/store/layerUtils'
-import type { LayerPreset } from '@/construction/layers/defaults'
+import { sumLayerThickness } from '@/construction/layers'
 import type {
   LayerConfig,
   LayerType,
@@ -33,7 +21,6 @@ import { MaterialSelectWithEdit } from '@/construction/materials/components/Mate
 import type { MaterialId } from '@/construction/materials/material'
 import { LengthField } from '@/shared/components/LengthField'
 import type { Length } from '@/shared/geometry'
-import { useFormatters } from '@/shared/i18n/useFormatters'
 
 const DEFAULT_MATERIAL = '' as MaterialId
 
@@ -72,9 +59,6 @@ interface LayerListEditorProps {
   measurementInfo?: React.ReactNode
   addLabel: string
   emptyHint?: string
-  layerPresets?: LayerPreset[]
-  layerCopySources?: LayerCopySource[]
-  onReplaceLayers?: (layers: LayerConfig[]) => void
   beforeLabel: string
   afterLabel: string
 }
@@ -89,23 +73,12 @@ export function LayerListEditor({
   measurementInfo,
   addLabel,
   emptyHint,
-  layerPresets,
-  layerCopySources,
-  onReplaceLayers,
   beforeLabel,
   afterLabel
 }: LayerListEditorProps): React.JSX.Element {
   const { t } = useTranslation('config')
-  const { formatLength } = useFormatters()
   const hasLayers = layers.length > 0
   const totalThickness = useMemo(() => sumLayerThickness(layers), [layers])
-  const hasPresetMenu = onReplaceLayers != null && layerPresets && layerPresets.length > 0
-
-  const applyPreset = (presetLayers: LayerConfig[]) => {
-    if (!onReplaceLayers) return
-    const clonedLayers = presetLayers.map(layer => ({ ...layer }))
-    onReplaceLayers(clonedLayers)
-  }
 
   return (
     <div className="flex flex-col gap-2">
@@ -116,57 +89,6 @@ export function LayerListEditor({
           <span className="text-sm">{t($ => $.layers.totalThicknessLabel, { thickness: totalThickness })}</span>
         </div>
         <div className="flex gap-1">
-          {layerCopySources && (
-            <DropdownMenu>
-              <DropdownMenu.Trigger asChild>
-                <Button size="icon-sm" title={t($ => $.layers.copyFrom)} variant="soft">
-                  <Copy />
-                </Button>
-              </DropdownMenu.Trigger>
-              <DropdownMenu.Content>
-                <DropdownMenu.Label>{t($ => $.layers.copyFrom)}</DropdownMenu.Label>
-                {layerCopySources.map(({ name, totalThickness, layerSource }) => (
-                  <DropdownMenu.Item
-                    key={name}
-                    onSelect={() => {
-                      applyPreset(layerSource())
-                    }}
-                  >
-                    <div className="flex items-center gap-2">
-                      <span>{name}</span>
-                      <span className="text-sm">· {formatLength(totalThickness)}</span>
-                    </div>
-                  </DropdownMenu.Item>
-                ))}
-              </DropdownMenu.Content>
-            </DropdownMenu>
-          )}
-
-          {hasPresetMenu && (
-            <DropdownMenu>
-              <DropdownMenu.Trigger asChild>
-                <Button size="icon-sm" title={t($ => $.layers.presetsLabel)} variant="soft">
-                  <Wand2 />
-                </Button>
-              </DropdownMenu.Trigger>
-              <DropdownMenu.Content>
-                {layerPresets.map(preset => (
-                  <DropdownMenu.Item
-                    key={t(preset.nameKey)}
-                    onSelect={() => {
-                      applyPreset(preset.layers)
-                    }}
-                  >
-                    <div className="flex items-center gap-2">
-                      <span>{t(preset.nameKey)}</span>
-                      <span className="text-sm">· {formatLength(sumLayerThickness(preset.layers))}</span>
-                    </div>
-                  </DropdownMenu.Item>
-                ))}
-              </DropdownMenu.Content>
-            </DropdownMenu>
-          )}
-
           <DropdownMenu>
             <DropdownMenu.Trigger asChild>
               <Button size="icon-sm" title={addLabel} variant="default">
