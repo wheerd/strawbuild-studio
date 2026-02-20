@@ -229,12 +229,7 @@ interface Resources {
         "wallBeamInsideOffset": "Inside Offset"
       },
       "layers": {
-        "addBottomLayer": "Add Bottom Layer",
-        "addTopLayer": "Add Top Layer",
         "bottomLayers": "Bottom Layers",
-        "finishedBottom": "Finished Bottom",
-        "finishedTop": "Finished Top",
-        "floorConstruction": "Floor Construction",
         "noBottomLayers": "No bottom layers defined",
         "noTopLayers": "No top layers defined",
         "topLayers": "Top Layers"
@@ -307,7 +302,6 @@ interface Resources {
       }
     },
     "layers": {
-      "copyFrom": "Copy from...",
       "defaultName_monolithic": "Monolithic Layer",
       "defaultName_striped": "Striped Layer",
       "defaults": {
@@ -338,20 +332,17 @@ interface Resources {
       "gap": "Gap",
       "moveDown": "Move down",
       "moveUp": "Move up",
-      "overlap": "Overlap with next layer",
-      "presets": {
-        "clayPlaster": "Clay Plaster",
-        "clayPlasterDiagonal": "Clay Plaster + Diagonal Bracing",
-        "gypsum": "Gypsum",
-        "limePlaster": "Lime Plaster",
-        "limePlasterDhf": "Lime Plaster + DHF",
-        "limePlasterDiagonal": "Lime Plaster + Diagonal Bracing",
-        "screed": "Screed",
-        "tiles": "Tiles",
-        "woodenPlanking": "Wooden Planking",
-        "woodenPlankingDhf": "Wooden Planking + DHF"
+      "noLayers": "No layers defined",
+      "orientation": {
+        "after": {
+          "ceiling": "Finished Ceiling",
+          "floor": "Finished Floor Top",
+          "roof": "Outside",
+          "wall": "Inside/Outside"
+        },
+        "before": "Construction"
       },
-      "presetsLabel": "Presets",
+      "overlap": "Overlap with next layer",
       "removeLayer": "Remove layer",
       "selectMaterial": "Select material...",
       "stripe": "Stripe",
@@ -582,9 +573,6 @@ interface Resources {
       }
     },
     "roofs": {
-      "addInsideLayer": "Add Inside Layer",
-      "addOverhangLayer": "Add Overhang Layer",
-      "addTopLayer": "Add Top Layer",
       "configure": "Configure Roof Assembly",
       "copyNameTemplate": "{{name}} (Copy)",
       "defaultLabel": "{{label}} <gray>(default)</gray>",
@@ -596,7 +584,6 @@ interface Resources {
       "deleteConfirm": "Are you sure you want to delete \"{{name}}\"? This action cannot be undone.",
       "deleteTitle": "Delete Roof Assembly",
       "emptyList": "No roof assemblies available",
-      "finishedTop": "Finished Top",
       "labels": {
         "spacingMin": "Spacing (Min)",
         "spacingTarget": "Spacing (Target)"
@@ -612,11 +599,8 @@ interface Resources {
       "noInsideLayers": "No inside layers defined",
       "noOverhangLayers": "No overhang layers defined (optional)",
       "noTopLayers": "No top layers defined",
-      "outside": "Outside",
-      "overhang": "Overhang",
       "resetConfirm": "Are you sure you want to reset default roof assemblies? This will restore the original default assemblies but keep any custom assemblies you've created. This action cannot be undone.",
       "resetTitle": "Reset Roof Assemblies",
-      "roofConstruction": "Roof Construction",
       "sections": {
         "ceilingSheathing": "Ceiling Sheathing",
         "decking": "Decking",
@@ -651,8 +635,6 @@ interface Resources {
       "usedInWallPosts": "Wall Posts"
     },
     "walls": {
-      "addInsideLayer": "Add Inside Layer",
-      "addOutsideLayer": "Add Outside Layer",
       "battenInside": "Inside",
       "battenMinLength": "Min Length",
       "battenOutside": "Outside",
@@ -678,7 +660,6 @@ interface Resources {
       "infillConfiguration": "Infill Configuration",
       "infillMaterial": "Infill Material",
       "infillMaterialTooltip": "If configured, will be used for gaps which are too small for straw",
-      "inside": "Inside",
       "insideLayers": "Inside Layers",
       "maxPostSpacing": "Max Post Spacing",
       "maxWidth": "Max Width",
@@ -699,7 +680,6 @@ interface Resources {
       "nonStrawbaleConfiguration": "Non-Strawbale Configuration",
       "openingAssembly": "Opening Assembly",
       "openingsSection": "Openings",
-      "outside": "Outside",
       "outsideLayers": "Outside Layers",
       "postType": "Post Type",
       "postTypeDouble": "Double",
@@ -735,8 +715,7 @@ interface Resources {
         "non-strawbale": "Non-Strawbale",
         "prefab-modules": "Prefab Modules",
         "strawhenge": "Strawhenge"
-      },
-      "wallConstruction": "Wall Construction"
+      }
     }
   },
   "construction": {

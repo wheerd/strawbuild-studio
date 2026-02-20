@@ -1,26 +1,17 @@
-import { ChevronDown, ChevronUp, Columns, MoveHorizontal, MoveVertical, Plus, Square, Trash } from 'lucide-react'
-import React, { useEffect, useMemo, useState } from 'react'
+import { Plus } from 'lucide-react'
+import React, { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 
+import type { LayerSetId } from '@/building/model/ids'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
-import { Checkbox } from '@/components/ui/checkbox'
 import { DropdownMenu } from '@/components/ui/dropdown-menu'
-import { Select } from '@/components/ui/select'
-import { TextField } from '@/components/ui/text-field'
-import { Tooltip } from '@/components/ui/tooltip'
+import { useConfigActions } from '@/construction/config/store'
 import { sumLayerThickness } from '@/construction/layers'
-import type {
-  LayerConfig,
-  LayerType,
-  MonolithicLayerConfig,
-  StripeDirection,
-  StripedLayerConfig
-} from '@/construction/layers/types'
-import { MaterialSelectWithEdit } from '@/construction/materials/components/MaterialSelectWithEdit'
+import type { LayerConfig, LayerType } from '@/construction/layers/types'
 import type { MaterialId } from '@/construction/materials/material'
-import { LengthField } from '@/shared/components/LengthField'
-import type { Length } from '@/shared/geometry'
+
+import { LayerCard, LayerTypeIcon } from './LayerCard'
 
 const DEFAULT_MATERIAL = '' as MaterialId
 
@@ -43,62 +34,58 @@ const getDefaultLayer = (type: LayerType, name: string, thickness: number): Laye
         gapMaterial: undefined
       }
 
-export interface LayerCopySource {
-  name: string
-  totalThickness: Length
-  layerSource: () => LayerConfig[]
-}
-
 interface LayerListEditorProps {
-  title: string
-  layers: LayerConfig[]
-  onAddLayer: (layer: LayerConfig) => void
-  onUpdateLayer: (index: number, updates: Partial<Omit<LayerConfig, 'type'>>) => void
-  onRemoveLayer: (index: number) => void
-  onMoveLayer: (fromIndex: number, toIndex: number) => void
-  measurementInfo?: React.ReactNode
-  addLabel: string
-  emptyHint?: string
-  beforeLabel: string
-  afterLabel: string
+  layerSetId: LayerSetId
 }
 
-export function LayerListEditor({
-  title,
-  layers,
-  onAddLayer,
-  onUpdateLayer,
-  onRemoveLayer,
-  onMoveLayer,
-  measurementInfo,
-  addLabel,
-  emptyHint,
-  beforeLabel,
-  afterLabel
-}: LayerListEditorProps): React.JSX.Element {
+export function LayerListEditor({ layerSetId }: LayerListEditorProps): React.JSX.Element {
   const { t } = useTranslation('config')
+  const { getLayerSetById, addLayerToSet, updateLayerInSet, removeLayerFromSet, moveLayerInSet } = useConfigActions()
+
+  const layerSet = getLayerSetById(layerSetId)
+  const layers = layerSet?.layers ?? []
+  const use = layerSet?.use ?? 'wall'
+
   const hasLayers = layers.length > 0
   const totalThickness = useMemo(() => sumLayerThickness(layers), [layers])
+
+  const beforeLabel = t($ => $.layers.orientation.before)
+  const afterLabel = t($ => $.layers.orientation.after[use])
+
+  const handleAddLayer = (layer: LayerConfig) => {
+    addLayerToSet(layerSetId, layer)
+  }
+
+  const handleUpdateLayer = (index: number, updates: Partial<Omit<LayerConfig, 'type'>>) => {
+    updateLayerInSet(layerSetId, index, updates)
+  }
+
+  const handleRemoveLayer = (index: number) => {
+    removeLayerFromSet(layerSetId, index)
+  }
+
+  const handleMoveLayer = (fromIndex: number, toIndex: number) => {
+    moveLayerInSet(layerSetId, fromIndex, toIndex)
+  }
 
   return (
     <div className="flex flex-col gap-2">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <span className="text-base font-bold">{title}</span>
-          {measurementInfo}
+          <span className="text-base font-bold">{t($ => $.common.totalThickness)}</span>
           <span className="text-sm">{t($ => $.layers.totalThicknessLabel, { thickness: totalThickness })}</span>
         </div>
         <div className="flex gap-1">
           <DropdownMenu>
             <DropdownMenu.Trigger asChild>
-              <Button size="icon-sm" title={addLabel} variant="default">
+              <Button size="icon-sm" title={t($ => $.common.add)} variant="default">
                 <Plus />
               </Button>
             </DropdownMenu.Trigger>
             <DropdownMenu.Content>
               <DropdownMenu.Item
                 onSelect={() => {
-                  onAddLayer(
+                  handleAddLayer(
                     getDefaultLayer(
                       'monolithic',
                       t($ => $.layers.defaultName_monolithic),
@@ -114,7 +101,7 @@ export function LayerListEditor({
               </DropdownMenu.Item>
               <DropdownMenu.Item
                 onSelect={() => {
-                  onAddLayer(
+                  handleAddLayer(
                     getDefaultLayer(
                       'striped',
                       t($ => $.layers.defaultName_striped),
@@ -136,7 +123,7 @@ export function LayerListEditor({
       {!hasLayers && (
         <Card variant="soft">
           <div className="flex min-h-14 items-center justify-center">
-            <span className="text-muted-foreground text-sm">{emptyHint}</span>
+            <span className="text-muted-foreground text-sm">{t($ => $.layers.noLayers)}</span>
           </div>
         </Card>
       )}
@@ -153,9 +140,9 @@ export function LayerListEditor({
               layer={layer}
               isFirst={index === 0}
               isLast={index === layers.length - 1}
-              onMoveLayer={onMoveLayer}
-              onUpdateLayer={onUpdateLayer}
-              onRemoveLayer={onRemoveLayer}
+              onMoveLayer={handleMoveLayer}
+              onUpdateLayer={handleUpdateLayer}
+              onRemoveLayer={handleRemoveLayer}
             />
           ))}
           <div className="flex justify-center">
@@ -164,276 +151,5 @@ export function LayerListEditor({
         </div>
       )}
     </div>
-  )
-}
-
-interface LayerCardProps {
-  index: number
-  layer: LayerConfig
-  isFirst: boolean
-  isLast: boolean
-  onMoveLayer: (fromIndex: number, toIndex: number) => void
-  onUpdateLayer: (index: number, updates: Partial<Omit<LayerConfig, 'type'>>) => void
-  onRemoveLayer: (index: number) => void
-}
-
-const LayerTypeIcon = ({ type }: { type: LayerType }) => {
-  const { t } = useTranslation('config')
-  return (
-    <Tooltip content={t($ => $.layers.types[type])}>
-      {type === 'monolithic' ? <Square width={16} height={16} /> : <Columns width={16} height={16} />}
-    </Tooltip>
-  )
-}
-
-function LayerCard({
-  index,
-  layer,
-  isFirst,
-  isLast,
-  onMoveLayer,
-  onUpdateLayer,
-  onRemoveLayer
-}: LayerCardProps): React.JSX.Element {
-  const { t } = useTranslation('config')
-
-  // Display translated name if nameKey exists
-  const displayName = layer.nameKey ? t(layer.nameKey) : layer.name
-  const [nameInput, setNameInput] = useState(displayName)
-
-  useEffect(() => {
-    setNameInput(displayName)
-  }, [displayName])
-
-  const commitNameChange = () => {
-    const trimmed = nameInput.trim()
-    if (trimmed.length === 0) {
-      setNameInput(displayName)
-      return
-    }
-    if (trimmed !== displayName) {
-      // Clear nameKey when user edits the name
-      onUpdateLayer(index, { name: trimmed, nameKey: undefined })
-    } else if (trimmed !== nameInput) {
-      setNameInput(trimmed)
-    }
-  }
-
-  return (
-    <Card variant="soft" className="p-3">
-      <div className="flex flex-col gap-2">
-        <div className="grid grid-cols-[auto_1fr_auto_auto_auto] items-center gap-1">
-          <LayerTypeIcon type={layer.type} />
-          <TextField.Root
-            title={t($ => $.common.name)}
-            size="sm"
-            value={nameInput}
-            onChange={event => {
-              setNameInput(event.target.value)
-            }}
-            onBlur={commitNameChange}
-            onKeyDown={event => {
-              if (event.key === 'Enter') {
-                event.currentTarget.blur()
-              }
-            }}
-            placeholder={t($ => $.common.placeholders.name)}
-            required
-          />
-          <LengthField
-            value={layer.thickness}
-            onChange={value => {
-              onUpdateLayer(index, { thickness: value })
-            }}
-            unit="mm"
-            size="sm"
-            className="w-[10em]"
-          >
-            <TextField.Slot title={t($ => $.common.thickness)} side="left" className="pr-0 pl-1">
-              <MoveVertical className="size-5" />
-            </TextField.Slot>
-          </LengthField>
-
-          <Checkbox
-            checked={layer.overlap}
-            onCheckedChange={value => {
-              onUpdateLayer(index, { overlap: value === true })
-            }}
-            title={t($ => $.layers.overlap)}
-          />
-
-          <div className="flex gap-1">
-            <Button
-              size="icon-sm"
-              variant="outline"
-              onClick={() => {
-                onMoveLayer(index, index - 1)
-              }}
-              disabled={isFirst}
-              title={t($ => $.layers.moveUp)}
-            >
-              <ChevronUp />
-            </Button>
-            <Button
-              size="icon-sm"
-              variant="outline"
-              onClick={() => {
-                onMoveLayer(index, index + 1)
-              }}
-              disabled={isLast}
-              title={t($ => $.layers.moveDown)}
-            >
-              <ChevronDown />
-            </Button>
-            <Button
-              size="icon-sm"
-              variant="destructive"
-              onClick={() => {
-                onRemoveLayer(index)
-              }}
-              title={t($ => $.layers.removeLayer)}
-            >
-              <Trash />
-            </Button>
-          </div>
-        </div>
-
-        {layer.type === 'monolithic' && (
-          <MonolithicLayerFields index={index} layer={layer} onUpdateLayer={onUpdateLayer} />
-        )}
-
-        {layer.type === 'striped' && <StripedLayerFields index={index} layer={layer} onUpdateLayer={onUpdateLayer} />}
-      </div>
-    </Card>
-  )
-}
-
-function Field({ label, control }: { label: string; control: React.ReactNode }): React.JSX.Element {
-  return (
-    <div className="grid grid-cols-[auto_1fr] items-center gap-2">
-      <span className="text-sm">{label}</span>
-      {control}
-    </div>
-  )
-}
-
-function MonolithicLayerFields({
-  index,
-  layer,
-  onUpdateLayer
-}: {
-  index: number
-  layer: Extract<LayerConfig, { type: 'monolithic' }>
-  onUpdateLayer: (index: number, updates: Partial<Omit<MonolithicLayerConfig, 'type'>>) => void
-}): React.JSX.Element {
-  const { t } = useTranslation('config')
-  return (
-    <Field
-      label={t($ => $.common.materialLabel)}
-      control={
-        <MaterialSelectWithEdit
-          value={layer.material}
-          onValueChange={material => {
-            if (!material) return
-            onUpdateLayer(index, { material })
-          }}
-          placeholder={t($ => $.layers.selectMaterial)}
-          size="sm"
-          preferredTypes={['sheet', 'volume']}
-        />
-      }
-    />
-  )
-}
-
-function StripedLayerFields({
-  index,
-  layer,
-  onUpdateLayer
-}: {
-  index: number
-  layer: Extract<LayerConfig, { type: 'striped' }>
-  onUpdateLayer: (index: number, updates: Partial<Omit<StripedLayerConfig, 'type'>>) => void
-}): React.JSX.Element {
-  const { t } = useTranslation('config')
-  return (
-    <>
-      <Field
-        label={t($ => $.layers.direction)}
-        control={
-          <Select.Root
-            value={layer.direction}
-            onValueChange={value => {
-              onUpdateLayer(index, { direction: value as StripeDirection })
-            }}
-          >
-            <Select.Trigger>
-              <Select.Value />
-            </Select.Trigger>
-            <Select.Content>
-              <Select.Item value="perpendicular">{t($ => $.layers.directions.perpendicular)}</Select.Item>
-              <Select.Item value="colinear">{t($ => $.layers.directions.colinear)}</Select.Item>
-              <Select.Item value="diagonal">{t($ => $.layers.directions.diagonal)}</Select.Item>
-            </Select.Content>
-          </Select.Root>
-        }
-      />
-      <div className="grid grid-cols-[auto_auto_auto_1fr] items-center gap-x-2 gap-y-2">
-        <span className="text-sm">{t($ => $.layers.stripe)}</span>
-        <LengthField
-          value={layer.stripeWidth}
-          onChange={value => {
-            onUpdateLayer(index, { stripeWidth: value })
-          }}
-          unit="mm"
-          size="sm"
-          className="w-30"
-        >
-          <TextField.Slot title={t($ => $.common.width)} side="left" className="pr-0 pl-1">
-            <MoveHorizontal className="size-5" />
-          </TextField.Slot>
-        </LengthField>
-
-        <span className="text-sm">{t($ => $.common.materialLabel)}</span>
-        <MaterialSelectWithEdit
-          value={layer.stripeMaterial}
-          onValueChange={material => {
-            if (!material) return
-            onUpdateLayer(index, { stripeMaterial: material })
-          }}
-          placeholder={t($ => $.layers.selectMaterial)}
-          size="sm"
-          preferredTypes={['dimensional']}
-        />
-
-        <span className="text-sm">{t($ => $.layers.gap)}</span>
-        <LengthField
-          value={layer.gapWidth}
-          onChange={value => {
-            onUpdateLayer(index, { gapWidth: value })
-          }}
-          unit="mm"
-          size="sm"
-          className="w-30"
-        >
-          <TextField.Slot title={t($ => $.common.width)} side="left" className="pr-0 pl-1">
-            <MoveHorizontal className="size-5" />
-          </TextField.Slot>
-        </LengthField>
-
-        <span className="text-sm">{t($ => $.common.materialLabel)}</span>
-        <MaterialSelectWithEdit
-          value={layer.gapMaterial}
-          allowEmpty
-          emptyLabel={t($ => $.common.none)}
-          onValueChange={material => {
-            onUpdateLayer(index, { gapMaterial: material ?? undefined })
-          }}
-          placeholder={t($ => $.layers.selectMaterial)}
-          size="sm"
-          preferredTypes={['sheet', 'volume']}
-        />
-      </div>
-    </>
   )
 }

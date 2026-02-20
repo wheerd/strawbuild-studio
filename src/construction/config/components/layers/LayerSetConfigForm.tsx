@@ -17,8 +17,7 @@ const USE_OPTIONS: LayerSetUse[] = ['wall', 'floor', 'ceiling', 'roof']
 
 export function LayerSetConfigForm({ layerSet }: LayerSetConfigFormProps): React.JSX.Element {
   const { t } = useTranslation('config')
-  const { updateLayerSetName, updateLayerSetUse, addLayerToSet, updateLayerInSet, removeLayerFromSet, moveLayerInSet } =
-    useConfigActions()
+  const { updateLayerSetName, updateLayerSetUse } = useConfigActions()
 
   const nameKey = layerSet.nameKey
   const nameInput = useDebouncedInput(
@@ -75,26 +74,7 @@ export function LayerSetConfigForm({ layerSet }: LayerSetConfigFormProps): React
         </Select.Root>
       </div>
 
-      <LayerListEditor
-        title={t($ => $.common.totalThickness)}
-        layers={layerSet.layers}
-        onAddLayer={layer => {
-          addLayerToSet(layerSet.id, layer)
-        }}
-        onUpdateLayer={(index, updates) => {
-          updateLayerInSet(layerSet.id, index, updates)
-        }}
-        onRemoveLayer={index => {
-          removeLayerFromSet(layerSet.id, index)
-        }}
-        onMoveLayer={(fromIndex, toIndex) => {
-          moveLayerInSet(layerSet.id, fromIndex, toIndex)
-        }}
-        addLabel={t($ => $.common.add)}
-        emptyHint="No layers defined"
-        beforeLabel=""
-        afterLabel=""
-      />
+      <LayerListEditor layerSetId={layerSet.id} />
     </div>
   )
 }

@@ -60,12 +60,7 @@
       "wallBeamInsideOffset": "Innenversatz"
     },
     "layers": {
-      "addBottomLayer": "Untere Schicht hinzufügen",
-      "addTopLayer": "Obere Schicht hinzufügen",
       "bottomLayers": "Untere Schichten",
-      "finishedBottom": "Fertig unten",
-      "finishedTop": "Fertig oben",
-      "floorConstruction": "Bodenaufbau",
       "noBottomLayers": "Keine unteren Schichten definiert",
       "noTopLayers": "Keine oberen Schichten definiert",
       "topLayers": "Obere Schichten"
@@ -105,7 +100,6 @@
     }
   },
   "layers": {
-    "copyFrom": "Kopieren von...",
     "defaultName_monolithic": "Monolithische Schicht",
     "defaultName_striped": "Gestreifte Schicht",
     "defaults": {
@@ -136,20 +130,17 @@
     "gap": "Zwischenraum",
     "moveDown": "Nach unten verschieben",
     "moveUp": "Nach oben verschieben",
-    "overlap": "Überlappung mit nächster Schicht",
-    "presets": {
-      "clayPlaster": "Lehmputz",
-      "clayPlasterDiagonal": "Lehmputz + Diagonalaussteifung",
-      "gypsum": "Gipskarton",
-      "limePlaster": "Kalkputz",
-      "limePlasterDhf": "Kalkputz + DHF",
-      "limePlasterDiagonal": "Kalkputz + Diagonalaussteifung",
-      "screed": "Estrich",
-      "tiles": "Fliesen",
-      "woodenPlanking": "Holzschalung",
-      "woodenPlankingDhf": "Holzschalung + DHF"
+    "noLayers": "Keine Schichten definiert",
+    "orientation": {
+      "after": {
+        "ceiling": "Fertige Decke",
+        "floor": "Fertiger Fußboden",
+        "roof": "Außen",
+        "wall": "Innen/Außen"
+      },
+      "before": "Konstruktion"
     },
-    "presetsLabel": "Vorlagen",
+    "overlap": "Überlappung mit nächster Schicht",
     "removeLayer": "Schicht entfernen",
     "selectMaterial": "Material auswählen...",
     "stripe": "Streifen",
@@ -413,9 +404,6 @@
     }
   },
   "roofs": {
-    "addInsideLayer": "Innenschicht hinzufügen",
-    "addOverhangLayer": "Traufschicht hinzufügen",
-    "addTopLayer": "Obere Schicht hinzufügen",
     "configure": "Dachaufbau konfigurieren",
     "copyNameTemplate": "{{name}} (Kopie)",
     "defaultLabel": "{{label}} <gray>(Standard)</gray>",
@@ -427,7 +415,6 @@
     "deleteConfirm": "Möchtest du \"{{name}}\" wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.",
     "deleteTitle": "Dachaufbau löschen",
     "emptyList": "Keine Dachaufbauten verfügbar",
-    "finishedTop": "Fertig oben",
     "labels": {
       "spacingMin": "Abstand (Min)",
       "spacingTarget": "Abstand (Ziel)"
@@ -443,11 +430,8 @@
     "noInsideLayers": "Keine Innenschichten definiert",
     "noOverhangLayers": "Keine Traufschichten definiert (optional)",
     "noTopLayers": "Keine oberen Schichten definiert",
-    "outside": "Außen",
-    "overhang": "Traufe",
     "resetConfirm": "Möchtest du die Standard-Dachaufbauten wirklich zurücksetzen? Dies stellt die ursprünglichen Standardaufbauten wieder her, behält aber alle benutzerdefinierten Aufbauten bei. Diese Aktion kann nicht rückgängig gemacht werden.",
     "resetTitle": "Dachaufbauten zurücksetzen",
-    "roofConstruction": "Dachaufbau",
     "sections": {
       "ceilingSheathing": "Deckenbeplankung",
       "decking": "Dachbeplankung",
@@ -472,9 +456,9 @@
     "globalDefault_wall": "Standard Wandaufbau",
     "unknown": "Unbekannt",
     "usedBy": "Verwendet von:",
-     "usedInFloor": "Boden: {{label}}",
-     "usedInLayerSet": "Schichtaufbau: {{label}}",
-     "usedInOpening": "Öffnung: {{label}}",
+    "usedInFloor": "Boden: {{label}}",
+    "usedInLayerSet": "Schichtaufbau: {{label}}",
+    "usedInOpening": "Öffnung: {{label}}",
     "usedInRingBeam": "Ringanker: {{label}}",
     "usedInRoof": "Dach: {{label}}",
     "usedInStorey": "Geschoss: {{label}}",
@@ -482,8 +466,6 @@
     "usedInWallPosts": "Wandständer"
   },
   "walls": {
-    "addInsideLayer": "Innenschicht hinzufügen",
-    "addOutsideLayer": "Außenschicht hinzufügen",
     "battenInside": "Innen",
     "battenMinLength": "Min. Länge",
     "battenOutside": "Außen",
@@ -509,7 +491,6 @@
     "infillConfiguration": "Ausfachung",
     "infillMaterial": "Füllmaterial",
     "infillMaterialTooltip": "Falls konfiguriert, wird dies für Lücken verwendet, die zu klein für Stroh sind",
-    "inside": "Innen",
     "insideLayers": "Innenschichten",
     "maxPostSpacing": "Max. Ständerabstand",
     "maxWidth": "Max. Breite",
@@ -530,7 +511,6 @@
     "noOutsideLayers": "Keine Außenschichten definiert",
     "openingAssembly": "Öffnungsaufbau",
     "openingsSection": "Öffnungen",
-    "outside": "Außen",
     "outsideLayers": "Außenschichten",
     "postsConfiguration": "Ständerkonfiguration",
     "postType": "Ständertyp",
@@ -566,7 +546,6 @@
       "non-strawbale": "Massiv",
       "prefab-modules": "Fertigteile",
       "strawhenge": "Strawhenge"
-    },
-    "wallConstruction": "Wandaufbau"
+    }
   }
 }
