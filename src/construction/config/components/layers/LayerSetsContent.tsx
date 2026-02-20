@@ -77,8 +77,6 @@ export function LayerSetsContent({ initialSelectionId }: LayerSetsContentProps):
     }
   }, [resetLayerSetsToDefaults, selectedLayerSetId, layerSets])
 
-  const isDefault = selectedLayerSet ? layerSets[0].id === selectedLayerSet.id : false
-
   return (
     <div className="flex w-full flex-col gap-4">
       <div className="flex flex-col gap-2">
@@ -111,15 +109,9 @@ export function LayerSetsContent({ initialSelectionId }: LayerSetsContentProps):
             <AlertDialog.Trigger asChild>
               <Button
                 size="icon"
-                disabled={!selectedLayerSet || isDefault || usage.isUsed}
+                disabled={!selectedLayerSet || layerSets.length <= 1 || usage.isUsed}
                 variant="destructive"
-                title={
-                  usage.isUsed
-                    ? t($ => $.common.inUseCannotDelete)
-                    : isDefault
-                      ? t($ => $.common.inUseCannotDelete)
-                      : t($ => $.common.delete)
-                }
+                title={usage.isUsed ? t($ => $.common.inUseCannotDelete) : t($ => $.common.delete)}
               >
                 <Trash />
               </Button>
