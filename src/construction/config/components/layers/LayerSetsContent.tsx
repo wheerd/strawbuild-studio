@@ -1,11 +1,15 @@
+import * as Label from '@radix-ui/react-label'
 import { Copy, Plus, Trash, Undo2 } from 'lucide-react'
 import React, { useCallback, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import type { LayerSetId } from '@/building/model/ids'
 import { AlertDialog } from '@/components/ui/alert-dialog'
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { LayerSetSelect } from '@/construction/config/components/layers/LayerSetSelect'
+import { type EntityId, useEntityLabel } from '@/construction/config/components/useEntityLabel'
+import { useLayerSetUsage } from '@/construction/config/layerSetUsage'
 import { useConfigActions, useLayerSets } from '@/construction/config/store'
 
 import { LayerSetConfigForm } from './LayerSetConfigForm'
@@ -28,6 +32,8 @@ export function LayerSetsContent({ initialSelectionId }: LayerSetsContentProps):
 
   const selectedLayerSet = layerSets.find(ls => ls.id === selectedLayerSetId) ?? null
 
+  const usage = useLayerSetUsage(selectedLayerSetId ?? ('' as LayerSetId))
+
   const handleAddNew = useCallback(() => {
     const newLayerSet = addLayerSet(
       t($ => $.layerSets.newName),
@@ -49,7 +55,7 @@ export function LayerSetsContent({ initialSelectionId }: LayerSetsContentProps):
   }, [selectedLayerSet, duplicateLayerSet])
 
   const handleDelete = useCallback(() => {
-    if (!selectedLayerSet) return
+    if (!selectedLayerSet || usage.isUsed) return
 
     const currentIndex = layerSets.findIndex(ls => ls.id === selectedLayerSetId)
     removeLayerSet(selectedLayerSet.id)
@@ -61,7 +67,7 @@ export function LayerSetsContent({ initialSelectionId }: LayerSetsContentProps):
     } else {
       setSelectedLayerSetId(null)
     }
-  }, [selectedLayerSet, selectedLayerSetId, layerSets, removeLayerSet])
+  }, [selectedLayerSet, selectedLayerSetId, layerSets, removeLayerSet, usage.isUsed])
 
   const handleReset = useCallback(() => {
     resetLayerSetsToDefaults()
@@ -105,9 +111,15 @@ export function LayerSetsContent({ initialSelectionId }: LayerSetsContentProps):
             <AlertDialog.Trigger asChild>
               <Button
                 size="icon"
-                disabled={!selectedLayerSet || isDefault}
+                disabled={!selectedLayerSet || isDefault || usage.isUsed}
                 variant="destructive"
-                title={isDefault ? t($ => $.common.inUseCannotDelete) : t($ => $.common.delete)}
+                title={
+                  usage.isUsed
+                    ? t($ => $.common.inUseCannotDelete)
+                    : isDefault
+                      ? t($ => $.common.inUseCannotDelete)
+                      : t($ => $.common.delete)
+                }
               >
                 <Trash />
               </Button>
@@ -166,6 +178,36 @@ export function LayerSetsContent({ initialSelectionId }: LayerSetsContentProps):
           <span className="">{t($ => $.layerSets.emptyList)}</span>
         </div>
       )}
+
+      {usage.isUsed && <UsageDisplay usage={usage} />}
+    </div>
+  )
+}
+
+function UsageBadge({ id }: { id: EntityId }) {
+  const label = useEntityLabel(id)
+  return (
+    <Badge key={id} variant="soft" color="blue">
+      {label}
+    </Badge>
+  )
+}
+
+function UsageDisplay({ usage }: { usage: ReturnType<typeof useLayerSetUsage> }): React.JSX.Element {
+  const { t } = useTranslation('config')
+
+  const allIds = [...usage.wallAssemblyIds, ...usage.floorAssemblyIds, ...usage.roofAssemblyIds]
+
+  return (
+    <div className="grid grid-cols-[auto_1fr] items-center gap-2 gap-x-3">
+      <Label.Root>
+        <span className="text-base font-medium">{t($ => $.usage.usedBy)}</span>
+      </Label.Root>
+      <div className="flex flex-wrap gap-1">
+        {allIds.map(id => (
+          <UsageBadge key={id} id={id} />
+        ))}
+      </div>
     </div>
   )
 }
