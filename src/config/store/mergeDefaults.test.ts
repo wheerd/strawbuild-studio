@@ -4,9 +4,9 @@ import { mergeStateWithDefaults } from './mergeDefaults'
 import { DEFAULT_FLOOR_ASSEMBLIES } from './slices/floors.defaults'
 import { DEFAULT_LAYER_SETS } from './slices/layers.defaults'
 import { DEFAULT_OPENING_ASSEMBLIES } from './slices/opening.defaults'
+import { DEFAULT_PERIMETER_WALL_ASSEMBLIES } from './slices/perimeterWalls.defaults'
 import { DEFAULT_RING_BEAM_ASSEMBLIES } from './slices/ringBeams.defaults'
 import { DEFAULT_ROOF_ASSEMBLIES } from './slices/roofs.defaults'
-import { DEFAULT_WALL_ASSEMBLIES } from './slices/walls.defaults'
 import type { ConfigState } from './types'
 
 describe('mergeStateWithDefaults', () => {
@@ -66,14 +66,14 @@ describe('mergeStateWithDefaults', () => {
   })
 
   it('should restore nameKey for all assembly types', () => {
-    const defaultWall = DEFAULT_WALL_ASSEMBLIES[0]
+    const defaultWall = DEFAULT_PERIMETER_WALL_ASSEMBLIES[0]
     const defaultFloor = DEFAULT_FLOOR_ASSEMBLIES[0]
     const defaultRoof = DEFAULT_ROOF_ASSEMBLIES[0]
     const defaultOpening = DEFAULT_OPENING_ASSEMBLIES[0]
     const defaultRingBeam = DEFAULT_RING_BEAM_ASSEMBLIES[0]
 
     const state: Partial<ConfigState> = {
-      wallAssemblyConfigs: {
+      perimeterWallAssemblyConfigs: {
         [defaultWall.id]: { ...defaultWall, nameKey: undefined }
       },
       floorAssemblyConfigs: {
@@ -92,7 +92,7 @@ describe('mergeStateWithDefaults', () => {
 
     mergeStateWithDefaults(state as ConfigState)
 
-    expect(state.wallAssemblyConfigs?.[defaultWall.id]?.nameKey).toBe(defaultWall.nameKey)
+    expect(state.perimeterWallAssemblyConfigs?.[defaultWall.id]?.nameKey).toBe(defaultWall.nameKey)
     expect(state.floorAssemblyConfigs?.[defaultFloor.id]?.nameKey).toBe(defaultFloor.nameKey)
     expect(state.roofAssemblyConfigs?.[defaultRoof.id]?.nameKey).toBe(defaultRoof.nameKey)
     expect(state.openingAssemblyConfigs?.[defaultOpening.id]?.nameKey).toBe(defaultOpening.nameKey)
@@ -102,7 +102,7 @@ describe('mergeStateWithDefaults', () => {
   it('should handle undefined configs gracefully', () => {
     const state: Partial<ConfigState> = {
       layerSetConfigs: undefined,
-      wallAssemblyConfigs: undefined
+      perimeterWallAssemblyConfigs: undefined
     }
 
     expect(() => {

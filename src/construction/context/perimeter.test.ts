@@ -5,9 +5,9 @@ import type {
   LayerSetId,
   PerimeterCornerId,
   PerimeterId,
+  PerimeterWallAssemblyId,
   PerimeterWallId,
-  StoreyId,
-  WallAssemblyId
+  StoreyId
 } from '@/building/model/ids'
 import { type StoreActions, getModelActions } from '@/building/store'
 import { getConfigActions } from '@/config/store'
@@ -37,7 +37,7 @@ vi.mock('@/config/store', () => ({
 const mockedGetWallAssemblyById = vi.fn()
 
 vi.mocked(getConfigActions).mockReturnValue({
-  getWallAssemblyById: mockedGetWallAssemblyById
+  getPerimeterWallAssemblyById: mockedGetWallAssemblyById
 } as any)
 
 vi.mock('@/building/store', () => ({
@@ -80,7 +80,7 @@ describe('computePerimeterConstructionPolygon', () => {
       return partial<PerimeterWallWithGeometry>({
         id: `wall-${index}` as PerimeterWallId,
         thickness,
-        wallAssemblyId: `assembly-${index}` as WallAssemblyId,
+        wallAssemblyId: `assembly-${index}` as PerimeterWallAssemblyId,
         insideLength: distVec2(insideStart, insideEnd),
         outsideLength: distVec2(outsideLineStart, outsideLineEnd),
         wallLength: distVec2(insideStart, insideEnd),
@@ -122,14 +122,14 @@ describe('computePerimeterConstructionPolygon', () => {
       cornerIds: corners.map(c => c.id)
     })
 
-    const outsideThicknessByAssembly = new Map<WallAssemblyId, number>()
+    const outsideThicknessByAssembly = new Map<PerimeterWallAssemblyId, number>()
     outsideLayerThicknesses.forEach((value, index) => {
       outsideThicknessByAssembly.set(walls[index].wallAssemblyId, value)
     })
 
     outsideThicknessByLayerSetId.clear()
 
-    mockedGetWallAssemblyById.mockImplementation((id: WallAssemblyId) => {
+    mockedGetWallAssemblyById.mockImplementation((id: PerimeterWallAssemblyId) => {
       const outsideThickness = outsideThicknessByAssembly.get(id)
       if (outsideThickness == null) {
         return null

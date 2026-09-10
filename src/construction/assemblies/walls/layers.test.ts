@@ -6,8 +6,8 @@ import {
   type StoreyId,
   createOpeningId,
   createPerimeterCornerId,
-  createPerimeterWallId,
-  createWallAssemblyId
+  createPerimeterWallAssemblyId,
+  createPerimeterWallId
 } from '@/building/model/ids'
 import type { FloorAssembly } from '@/construction/assemblies/floors/types'
 import type { LayerConfig } from '@/construction/assemblies/layers/types'
@@ -73,16 +73,16 @@ const layerSetLayersMap = new Map<LayerSetId, LayerConfig[]>([
 const mockAssemblies = new Map<string, WallLayerSetIds>()
 const mockOpenings = new Map<string, OpeningWithGeometry>()
 
-const baseAssemblyId = createWallAssemblyId()
-const previousAssemblyId = createWallAssemblyId()
-const nextAssemblyId = createWallAssemblyId()
+const baseAssemblyId = createPerimeterWallAssemblyId()
+const previousAssemblyId = createPerimeterWallAssemblyId()
+const nextAssemblyId = createPerimeterWallAssemblyId()
 
 let wallContext: WallContext
 let cornerInfo: WallCornerInfo
 
 vi.mock('@/config/store', () => ({
   getConfigActions: () => ({
-    getWallAssemblyById: (id: string) => mockAssemblies.get(id) ?? null,
+    getPerimeterWallAssemblyById: (id: string) => mockAssemblies.get(id) ?? null,
     getRingBeamAssemblyById: () => null
   }),
   resolveLayerSetLayers: (id: LayerSetId | undefined) => (id ? (layerSetLayersMap.get(id) ?? []) : []),

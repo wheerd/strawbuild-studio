@@ -414,6 +414,7 @@ interface Resources {
         "boards": "Boards",
         "brick": "Brick",
         "cementScreed": "Cement Screed",
+        "clayBrick": "Clay Brick",
         "clayPlasterBase": "Clay Plaster (Base)",
         "clayPlasterFine": "Clay Plaster (Fine)",
         "clt": "Cross-laminated Timber (CLT)",
@@ -748,11 +749,15 @@ interface Resources {
       "defaultLabel": "{{label}} <gray>(default)</gray>",
       "defaultWallAssembly": "Default Wall Assembly",
       "defaults": {
+        "clayBrickWall": "Clay Brick Wall",
+        "concreteInteriorWall": "Concrete Interior Wall",
         "concreteWall": "Concrete Wall",
         "defaultModule": "Default Module",
         "ecococonModules": "Ecococon Modules",
         "standardInfill": "Standard Infill",
-        "strawhengeModule": "Strawhenge Module"
+        "standardStrawFilled": "Standard Straw-Filled",
+        "strawhengeModule": "Strawhenge Module",
+        "woodStudClayBrick": "Wood Studs with Clay Brick Infill"
       },
       "deleteConfirm": "Are you sure you want to delete \"{{name}}\"? This action cannot be undone.",
       "deleteTitle": "Delete Wall Assembly",

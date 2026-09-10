@@ -228,6 +228,7 @@
       "bitumen": "Bitumen",
       "boards": "Bretter",
       "brick": "Ziegel",
+      "clayBrick": "Lehmziegel",
       "cementScreed": "Zementestrich",
       "clayPlasterBase": "Lehmputz (Grund)",
       "clayPlasterFine": "Lehmputz (Fein)",
@@ -564,10 +565,14 @@
     "defaultLabel": "{{label}} <gray>(Standard)</gray>",
     "defaults": {
       "concreteWall": "Betonwand",
+      "concreteInteriorWall": "Beton-Innenwand",
+      "clayBrickWall": "Lehmziegelwand",
       "defaultModule": "Standard-Modul",
       "ecococonModules": "Ecococon Module",
       "standardInfill": "Standard-Ausfachung",
-      "strawhengeModule": "Strawhenge-Modul"
+      "strawhengeModule": "Strawhenge-Modul",
+      "standardStrawFilled": "Standard mit Strohfüllung",
+      "woodStudClayBrick": "Holzständer mit Lehmziegelfüllung"
     },
     "defaultWallAssembly": "Standard-Wandaufbau",
     "deleteConfirm": "Möchtest du \"{{name}}\" wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.",

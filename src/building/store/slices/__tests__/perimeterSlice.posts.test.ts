@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import type { PerimeterId, PerimeterWallId, StoreyId, WallPostId } from '@/building/model/ids'
-import { createWallAssemblyId } from '@/building/model/ids'
+import { createPerimeterWallAssemblyId } from '@/building/model/ids'
 import { ensurePolygonIsClockwise, wouldClosingPolygonSelfIntersect } from '@/shared/geometry/polygon'
 
 import {
@@ -43,7 +43,7 @@ describe('wallPostSlice', () => {
 
     // Create a default perimeter for testing
     const boundary = createRectangularBoundary()
-    const wallAssemblyId = createWallAssemblyId()
+    const wallAssemblyId = createPerimeterWallAssemblyId()
     const perimeter = slice.actions.addPerimeter(testStoreyId, boundary, wallAssemblyId, 420)
     perimeterId = perimeter.id
     wallId = perimeter.wallIds[0]
@@ -504,7 +504,7 @@ describe('wallPostSlice', () => {
   describe('Wall Post Cascade Cleanup', () => {
     it('should remove posts when wall is removed', () => {
       const boundary = createLShapedBoundary()
-      const wallAssemblyId = createWallAssemblyId()
+      const wallAssemblyId = createPerimeterWallAssemblyId()
       const perimeter = slice.actions.addPerimeter(testStoreyId, boundary, wallAssemblyId, 420)
 
       const post = slice.actions.addWallPost(

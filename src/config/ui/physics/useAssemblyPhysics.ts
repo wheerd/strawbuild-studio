@@ -4,11 +4,11 @@ import type { AssemblyPhysicsStructure } from '@/construction/assemblies/physics
 import { resolveRoofAssembly } from '@/construction/assemblies/roofs'
 import type { RoofConfig } from '@/construction/assemblies/roofs/types'
 import { resolveWallAssembly } from '@/construction/assemblies/walls'
-import type { WallConfig } from '@/construction/assemblies/walls/types'
+import type { PerimeterWallConfig } from '@/construction/assemblies/walls/types'
 import type { Length } from '@/shared/geometry'
 
 export function useWallAssemblyPhysics(
-  config: WallConfig | null,
+  config: PerimeterWallConfig | null,
   thickness: Length,
   height: Length
 ): AssemblyPhysicsStructure | null {
@@ -28,7 +28,7 @@ export function useRoofAssemblyPhysics(config: RoofConfig | null): AssemblyPhysi
 }
 
 export function getWallAssemblyPhysics(
-  config: WallConfig,
+  config: PerimeterWallConfig,
   thickness: Length,
   height: Length
 ): AssemblyPhysicsStructure {

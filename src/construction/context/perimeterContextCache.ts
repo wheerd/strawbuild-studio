@@ -53,7 +53,7 @@ export class PerimeterContextCacheService {
 
   private setupSubscriptions(): void {
     const { getPerimetersByStorey, getAllPerimeters, getPerimeterWallsById } = getModelActions()
-    const { getWallAssemblyById } = getConfigActions()
+    const { getPerimeterWallAssemblyById } = getConfigActions()
 
     subscribeToPerimeterGeometries(perimeterId => {
       this.invalidate(perimeterId)
@@ -88,7 +88,7 @@ export class PerimeterContextCacheService {
     subscribeToLayerSets(layerSetId => {
       for (const perimeter of getAllPerimeters()) {
         const usesLayerSet = getPerimeterWallsById(perimeter.id).some(wall => {
-          const assembly = getWallAssemblyById(wall.wallAssemblyId)
+          const assembly = getPerimeterWallAssemblyById(wall.wallAssemblyId)
           return assembly?.insideLayerSetId === layerSetId || assembly?.outsideLayerSetId === layerSetId
         })
         if (usesLayerSet) {

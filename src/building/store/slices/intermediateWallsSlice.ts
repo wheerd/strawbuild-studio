@@ -14,7 +14,14 @@ import type {
   WallNodeGeometry,
   WallNodeWithGeometry
 } from '@/building/model'
-import type { IntermediateWallId, PerimeterId, PerimeterWallId, WallEntityId, WallNodeId } from '@/building/model/ids'
+import type {
+  InteriorWallAssemblyId,
+  IntermediateWallId,
+  PerimeterId,
+  PerimeterWallId,
+  WallEntityId,
+  WallNodeId
+} from '@/building/model/ids'
 import { createIntermediateWallId, createWallNodeId, isOpeningId } from '@/building/model/ids'
 import { InvalidOperationError, NotFoundError } from '@/building/store/errors'
 import { cleanUpOrphaned } from '@/building/store/slices/cleanup'
@@ -52,10 +59,12 @@ export interface IntermediateWallsActions {
     perimeterId: PerimeterId,
     start: WallAttachment,
     end: WallAttachment,
-    thickness: Length
+    thickness: Length,
+    wallAssemblyId: InteriorWallAssemblyId
   ) => IntermediateWallWithGeometry
   removeIntermediateWall: (wallId: IntermediateWallId) => void
   updateIntermediateWallThickness: (wallId: IntermediateWallId, thickness: Length) => void
+  updateIntermediateWallAssembly: (wallId: IntermediateWallId, assemblyId: InteriorWallAssemblyId) => void
   updateIntermediateWallAlignment: (wallId: IntermediateWallId, start: WallAxis, end: WallAxis) => void
   updateIntermediateWallAttachmentAxis: (wallId: IntermediateWallId, endpoint: 'start' | 'end', axis: WallAxis) => void
   updateIntermediateWallAlignmentPreservingGeometry: (wallId: IntermediateWallId, axis: WallAxis) => void
@@ -95,7 +104,13 @@ export const createIntermediateWallsSlice: StateCreator<
   _wallNodeGeometry: {},
 
   actions: {
-    addIntermediateWall: (perimeterId: PerimeterId, start: WallAttachment, end: WallAttachment, thickness: Length) => {
+    addIntermediateWall: (
+      perimeterId: PerimeterId,
+      start: WallAttachment,
+      end: WallAttachment,
+      thickness: Length,
+      wallAssemblyId: InteriorWallAssemblyId
+    ) => {
       if (thickness <= 0) {
         throw new Error('Wall thickness must be greater than 0')
       }
@@ -115,7 +130,8 @@ export const createIntermediateWallsSlice: StateCreator<
           entityIds: [],
           start,
           end,
-          thickness
+          thickness,
+          wallAssemblyId
         }
 
         state.intermediateWalls[wallId] = wall
@@ -124,11 +140,15 @@ export const createIntermediateWallsSlice: StateCreator<
         if (!(start.nodeId in state.wallNodes) || state.wallNodes[start.nodeId].perimeterId !== perimeterId) {
           throw new NotFoundError('Wall node', start.nodeId)
         }
-        state.wallNodes[start.nodeId].connectedWallIds.push(wallId)
+        const startNode = state.wallNodes[start.nodeId]
+        startNode.connectedWallIds.push(wallId)
+        if (startNode.type === 'inner' && !startNode.constructedBy) startNode.constructedBy = wallId
         if (!(end.nodeId in state.wallNodes) || state.wallNodes[end.nodeId].perimeterId !== perimeterId) {
           throw new NotFoundError('Wall node', end.nodeId)
         }
-        state.wallNodes[end.nodeId].connectedWallIds.push(wallId)
+        const endNode = state.wallNodes[end.nodeId]
+        endNode.connectedWallIds.push(wallId)
+        if (endNode.type === 'inner' && !endNode.constructedBy) endNode.constructedBy = wallId
 
         updateAllWallNodeGeometry(state, perimeterId)
 
@@ -172,6 +192,16 @@ export const createIntermediateWallsSlice: StateCreator<
 
         wall.thickness = thickness
         updateAllWallNodeGeometry(state, wall.perimeterId)
+        updateTimestampDraft(state, wallId)
+      })
+    },
+
+    updateIntermediateWallAssembly: (wallId: IntermediateWallId, assemblyId: InteriorWallAssemblyId) => {
+      set(state => {
+        if (!(wallId in state.intermediateWalls)) {
+          throw new NotFoundError('Intermediate wall', wallId)
+        }
+        state.intermediateWalls[wallId].wallAssemblyId = assemblyId
         updateTimestampDraft(state, wallId)
       })
     },
@@ -477,6 +507,8 @@ export const createIntermediateWallsSlice: StateCreator<
           perimeterId: originalWall.perimeterId,
           type: 'inner',
           position: projectedPoint,
+          constructedBy: wallAId,
+          constructedWithColinear: wallBId,
           connectedWallIds: [wallAId, wallBId]
         }
         state.wallNodes[newNodeIdInner] = newNode

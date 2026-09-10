@@ -4,17 +4,17 @@ import {
   type FloorAssemblyId,
   type LayerSetId,
   type OpeningAssemblyId,
+  type PerimeterWallAssemblyId,
   type RingBeamAssemblyId,
   type RoofAssemblyId,
   type StoreyId,
-  type WallAssemblyId,
   isFloorAssemblyId,
   isLayerSetId,
   isOpeningAssemblyId,
+  isPerimeterWallAssemblyId,
   isRingBeamAssemblyId,
   isRoofAssemblyId,
-  isStoreyId,
-  isWallAssemblyId
+  isStoreyId
 } from '@/building/model/ids'
 import { useStoreyById } from '@/building/store'
 import { useStoreyName } from '@/building/ui/useStoreyName'
@@ -32,7 +32,7 @@ import { type MaterialId, isMaterialId } from '@/materials/types'
 export type EntityId =
   | StoreyId
   | RingBeamAssemblyId
-  | WallAssemblyId
+  | PerimeterWallAssemblyId
   | FloorAssemblyId
   | RoofAssemblyId
   | OpeningAssemblyId
@@ -61,7 +61,7 @@ export function useEntityLabel(id: EntityId | undefined): string {
     return t($ => $.usage.usedInRingBeam, { label: assemblyName })
   }
 
-  if (isWallAssemblyId(id)) {
+  if (isPerimeterWallAssemblyId(id)) {
     const assembly = useWallAssemblyById(id)
     const assemblyName = assembly?.nameKey ? t(assembly.nameKey) : assembly?.name
     return t($ => $.usage.usedInWall, { label: assemblyName })

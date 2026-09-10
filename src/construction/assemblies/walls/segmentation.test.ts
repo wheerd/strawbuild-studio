@@ -7,7 +7,7 @@ import {
   type WallEntity,
   type WallPostWithGeometry
 } from '@/building/model'
-import { type StoreyId, createOpeningId, createWallAssemblyId, createWallPostId } from '@/building/model/ids'
+import { type StoreyId, createOpeningId, createPerimeterWallAssemblyId, createWallPostId } from '@/building/model/ids'
 import { type StoreActions, getModelActions } from '@/building/store'
 import { getConfigActions } from '@/config/store'
 import type { OpeningAssemblyConfig } from '@/config/types'
@@ -120,7 +120,7 @@ function createMockWall(
     startCornerId: 'start-corner' as any,
     endCornerId: 'end-corner' as any,
     polygon: { points: [] },
-    wallAssemblyId: createWallAssemblyId(),
+    wallAssemblyId: createPerimeterWallAssemblyId(),
     topRingBeamAssemblyId: 'top-assembly' as RingBeamAssemblyId,
     baseRingBeamAssemblyId: 'base-assembly' as RingBeamAssemblyId,
     thickness,

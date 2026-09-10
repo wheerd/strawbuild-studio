@@ -4,7 +4,7 @@ import { useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 
-import type { PerimeterWallId, RingBeamAssemblyId, WallAssemblyId } from '@/building/model/ids'
+import type { PerimeterWallAssemblyId, PerimeterWallId, RingBeamAssemblyId } from '@/building/model/ids'
 import { useModelActions, usePerimeterWallById, useWallOpeningsByWallId } from '@/building/store'
 import { resolveLayerSetThickness, useWallAssemblyById } from '@/config/store'
 import { RingBeamAssemblySelectWithEdit } from '@/config/ui/ring-beam-assembly/RingBeamAssemblySelectWithEdit'
@@ -82,7 +82,7 @@ export function PerimeterWallInspector({ wallId }: { wallId: PerimeterWallId }):
         </div>
         <WallAssemblySelectWithEdit
           value={wall.wallAssemblyId}
-          onValueChange={(value: WallAssemblyId) => {
+          onValueChange={(value: PerimeterWallAssemblyId) => {
             updateOuterWallAssembly(wallId, value)
           }}
           placeholder={t($ => $.perimeterWall.selectAssemblyPlaceholder)}

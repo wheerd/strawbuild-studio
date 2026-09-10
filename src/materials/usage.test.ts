@@ -2,8 +2,8 @@ import { renderHook } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import type { WallPostWithGeometry } from '@/building/model'
-import { createLayerSetId, createRingBeamAssemblyId, createWallAssemblyId } from '@/building/model/ids'
-import type { RingBeamAssemblyConfig, WallAssemblyConfig } from '@/config/types'
+import { createLayerSetId, createPerimeterWallAssemblyId, createRingBeamAssemblyId } from '@/building/model/ids'
+import type { PerimeterWallAssemblyConfig, RingBeamAssemblyConfig } from '@/config/types'
 import type { LayerSetConfig } from '@/construction/assemblies/layers/types'
 import { partial } from '@/test/helpers'
 
@@ -89,8 +89,8 @@ describe('Material Usage Detection', () => {
     })
 
     it('detects wall assembly post materials', () => {
-      const wallAssembly: WallAssemblyConfig = {
-        id: createWallAssemblyId(),
+      const wallAssembly: PerimeterWallAssemblyConfig = {
+        id: createPerimeterWallAssemblyId(),
         name: 'Test Infill',
         type: 'infill',
         maxPostSpacing: 900,
@@ -125,8 +125,8 @@ describe('Material Usage Detection', () => {
     })
 
     it('detects strawhenge module usage', () => {
-      const wallAssembly: WallAssemblyConfig = {
-        id: createWallAssemblyId(),
+      const wallAssembly: PerimeterWallAssemblyConfig = {
+        id: createPerimeterWallAssemblyId(),
         name: 'Test Strawhenge',
         type: 'strawhenge',
         module: {
@@ -177,8 +177,8 @@ describe('Material Usage Detection', () => {
 
     it('detects spacer and infill materials in double modules', () => {
       const spacerMaterialId = createMaterialId()
-      const wallAssembly: WallAssemblyConfig = {
-        id: createWallAssemblyId(),
+      const wallAssembly: PerimeterWallAssemblyConfig = {
+        id: createPerimeterWallAssemblyId(),
         name: 'Double Module Wall',
         type: 'strawhenge',
         module: {
@@ -240,8 +240,8 @@ describe('Material Usage Detection', () => {
     it('detects triangular batten material usage in infill walls', () => {
       const battenMaterialId = createMaterialId()
 
-      const wallAssembly: WallAssemblyConfig = {
-        id: createWallAssemblyId(),
+      const wallAssembly: PerimeterWallAssemblyConfig = {
+        id: createPerimeterWallAssemblyId(),
         name: 'Infill with Battens',
         type: 'infill',
         maxPostSpacing: 900,
@@ -277,8 +277,8 @@ describe('Material Usage Detection', () => {
       const moduleBattenId = createMaterialId()
       const infillBattenId = createMaterialId()
 
-      const wallAssembly = partial<WallAssemblyConfig>({
-        id: createWallAssemblyId(),
+      const wallAssembly = partial<PerimeterWallAssemblyConfig>({
+        id: createPerimeterWallAssemblyId(),
         type: 'modules',
         module: {
           frameMaterial: roughWood.id,
@@ -345,8 +345,8 @@ describe('Material Usage Detection', () => {
         offsetFromEdge: 30
       }
 
-      const wallAssembly: WallAssemblyConfig = {
-        id: createWallAssemblyId(),
+      const wallAssembly: PerimeterWallAssemblyConfig = {
+        id: createPerimeterWallAssemblyId(),
         name: 'Test Infill',
         type: 'infill',
         maxPostSpacing: 900,
@@ -389,8 +389,8 @@ describe('Material Usage Detection', () => {
       const sillMaterial = createMaterialId()
       const tallReinforceMaterial = createMaterialId()
 
-      const wallAssembly: WallAssemblyConfig = {
-        id: createWallAssemblyId(),
+      const wallAssembly: PerimeterWallAssemblyConfig = {
+        id: createPerimeterWallAssemblyId(),
         name: 'Prefab Modules Wall',
         type: 'prefab-modules',
         defaultMaterial,

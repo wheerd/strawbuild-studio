@@ -1,9 +1,9 @@
 import * as Label from '@radix-ui/react-label'
 import { useTranslation } from 'react-i18next'
 
-import type { WallAssemblyId } from '@/building/model/ids'
+import type { PerimeterWallAssemblyId } from '@/building/model/ids'
 import { useConfigActions, useLayerSetById } from '@/config/store'
-import type { WallAssemblyConfig } from '@/config/types'
+import type { PerimeterWallAssemblyConfig } from '@/config/types'
 import { LayerSetSdValueRow } from '@/config/ui/layers/LayerSetSdValueRow'
 import { LayerSetSelectWithEdit } from '@/config/ui/layers/LayerSetSelect'
 import { OpeningAssemblySelectWithEdit } from '@/config/ui/opening-assembly/OpeningAssemblySelectWithEdit'
@@ -12,12 +12,12 @@ import { MeasurementInfo } from '@/shared/ui/MeasurementInfo'
 import { Separator } from '@/shared/ui/components/separator'
 
 interface CommonConfigFormProps {
-  assemblyId: WallAssemblyId
-  config: WallAssemblyConfig
+  assemblyId: PerimeterWallAssemblyId
+  config: PerimeterWallAssemblyConfig
 }
 
 export function CommonConfigForm({ assemblyId, config }: CommonConfigFormProps): React.JSX.Element {
-  const { updateWallAssemblyConfig } = useConfigActions()
+  const { updatePerimeterWallAssemblyConfig: updateWallAssemblyConfig } = useConfigActions()
   const { t } = useTranslation('config')
 
   const insideLayerSet = useLayerSetById(config.insideLayerSetId)

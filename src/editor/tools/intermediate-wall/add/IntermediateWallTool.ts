@@ -10,6 +10,7 @@ import {
   isWallNodeId
 } from '@/building/model'
 import { getModelActions } from '@/building/store'
+import { getConfigActions } from '@/config/store'
 import { type SnapResult, SnappingService } from '@/editor/canvas/services/SnappingService'
 import {
   type LengthInputPosition,
@@ -346,7 +347,8 @@ export class IntermediateWallTool extends BaseTool implements ToolImplementation
         perimeterId,
         { nodeId: startNode.id, axis: this.state.alignment },
         { nodeId: endNode.id, axis: this.state.alignment },
-        this.state.thickness
+        this.state.thickness,
+        getConfigActions().getDefaultInteriorWallAssemblyId()
       )
       createdWalls.push(wall)
       lengthOverrides.set(wall.id, this.state.segmentLengthOverrides[index] ?? null)

@@ -1,17 +1,17 @@
 import type {
   FloorAssemblyId,
   OpeningAssemblyId,
+  PerimeterWallAssemblyId,
   RingBeamAssemblyId,
-  RoofAssemblyId,
-  WallAssemblyId
+  RoofAssemblyId
 } from '@/building/model/ids'
 import { getConfigActions, resolveLayerSetLayers } from '@/config/store'
 import type {
   FloorAssemblyConfig,
   OpeningAssemblyConfig,
+  PerimeterWallAssemblyConfig,
   RingBeamAssemblyConfig,
-  RoofAssemblyConfig,
-  WallAssemblyConfig
+  RoofAssemblyConfig
 } from '@/config/types'
 import type { LayerConfig } from '@/construction/assemblies/layers/types'
 import { getMaterialsActions } from '@/materials/store'
@@ -31,7 +31,7 @@ export class ConfigTimestampDependencyService {
     return materials
   }
 
-  private extractMaterialsFromWallAssembly(assembly: WallAssemblyConfig): MaterialId[] {
+  private extractMaterialsFromWallAssembly(assembly: PerimeterWallAssemblyConfig): MaterialId[] {
     const materials: MaterialId[] = []
 
     if (assembly.type === 'infill') {
@@ -159,10 +159,10 @@ export class ConfigTimestampDependencyService {
     }
   }
 
-  getEffectiveWallAssemblyTimestamp(assemblyId: WallAssemblyId): number | null {
+  getEffectiveWallAssemblyTimestamp(assemblyId: PerimeterWallAssemblyId): number | null {
     const configActions = getConfigActions()
     const materialsActions = getMaterialsActions()
-    const assembly = configActions.getWallAssemblyById(assemblyId)
+    const assembly = configActions.getPerimeterWallAssemblyById(assemblyId)
 
     if (!assembly) return null
 

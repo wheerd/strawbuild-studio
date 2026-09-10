@@ -3,9 +3,9 @@ import { ModulesWallAssembly } from './modules/all-modules'
 import { PrefabModulesWallAssembly } from './modules/prefab-modules'
 import { StrawhengeWallAssembly } from './modules/strawhenge'
 import { NonStrawbaleWallAssembly } from './nonStrawbale'
-import type { WallAssembly, WallConfig } from './types'
+import type { PerimeterWallAssembly, PerimeterWallConfig } from './types'
 
-export function resolveWallAssembly(config: WallConfig): WallAssembly {
+export function resolveWallAssembly(config: PerimeterWallConfig): PerimeterWallAssembly {
   switch (config.type) {
     case 'infill':
       return new InfillWallAssembly(config)
@@ -18,6 +18,6 @@ export function resolveWallAssembly(config: WallConfig): WallAssembly {
     case 'prefab-modules':
       return new PrefabModulesWallAssembly(config)
     default:
-      throw new Error(`Unknown wall assembly type: ${(config as WallConfig).type}`)
+      throw new Error(`Unknown wall assembly type: ${(config as PerimeterWallConfig).type}`)
   }
 }

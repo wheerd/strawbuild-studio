@@ -228,6 +228,7 @@
       "bitumen": "Bitumen",
       "boards": "Boards",
       "brick": "Brick",
+      "clayBrick": "Clay Brick",
       "cementScreed": "Cement Screed",
       "clayPlasterBase": "Clay Plaster (Base)",
       "clayPlasterFine": "Clay Plaster (Fine)",
@@ -564,10 +565,14 @@
     "defaultLabel": "{{label}} <gray>(default)</gray>",
     "defaults": {
       "concreteWall": "Concrete Wall",
+      "concreteInteriorWall": "Concrete Interior Wall",
+      "clayBrickWall": "Clay Brick Wall",
       "defaultModule": "Default Module",
       "ecococonModules": "Ecococon Modules",
       "standardInfill": "Standard Infill",
       "strawhengeModule": "Strawhenge Module"
+      ,"standardStrawFilled": "Standard Straw-Filled",
+      "woodStudClayBrick": "Wood Studs with Clay Brick Infill"
     },
     "defaultWallAssembly": "Default Wall Assembly",
     "deleteConfirm": "Are you sure you want to delete \"{{name}}\"? This action cannot be undone.",

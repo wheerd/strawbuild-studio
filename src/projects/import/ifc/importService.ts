@@ -43,7 +43,7 @@ function applyImportedModel(model: ParsedIfcModel): void {
   clearPersistence()
   actions.reset()
 
-  const defaultWallAssemblyId = configActions.getDefaultWallAssemblyId()
+  const defaultWallAssemblyId = configActions.getDefaultPerimeterWallAssemblyId()
   const defaultFloorAssemblyId = configActions.getDefaultFloorAssemblyId()
 
   const baseStorey = actions.getStoreysOrderedByLevel()[0]

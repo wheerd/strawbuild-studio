@@ -49,12 +49,12 @@ export function computePerimeterConstructionPolygon(
   outside = true
 ): { polygon: Polygon2D; lines: Line2D[] } {
   const { getPerimeterWallById } = getModelActions()
-  const { getWallAssemblyById } = getConfigActions()
+  const { getPerimeterWallAssemblyById } = getConfigActions()
 
   const walls = perimeter.wallIds.map(getPerimeterWallById)
 
   const offsets = walls.map(wall => {
-    const assembly = getWallAssemblyById(wall.wallAssemblyId)
+    const assembly = getPerimeterWallAssemblyById(wall.wallAssemblyId)
     const layerThickness = Math.max(
       outside
         ? resolveLayerSetThickness(assembly?.outsideLayerSetId)
@@ -120,13 +120,13 @@ const DISTANCE_EPSILON = 1e-3
 
 export function createWallFaceOffsets(perimeters: PerimeterWithGeometry[]): WallFaceOffset[] {
   const { getPerimeterWallById, getPerimeterCornerById } = getModelActions()
-  const { getWallAssemblyById } = getConfigActions()
+  const { getPerimeterWallAssemblyById } = getConfigActions()
   const faces: WallFaceOffset[] = []
 
   for (const perimeter of perimeters) {
     const walls = perimeter.wallIds.map(getPerimeterWallById)
     for (const wall of walls) {
-      const assembly = getWallAssemblyById(wall.wallAssemblyId)
+      const assembly = getPerimeterWallAssemblyById(wall.wallAssemblyId)
       if (!assembly) {
         continue
       }

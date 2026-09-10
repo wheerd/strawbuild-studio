@@ -1,4 +1,4 @@
-import { type WallAssemblyId } from '@/building/model/ids'
+import { type PerimeterWallAssemblyId } from '@/building/model/ids'
 import type {
   InfillWallAssemblyConfig,
   ModulesWallAssemblyConfig,
@@ -23,7 +23,7 @@ import { LAYER_SET_CLAY_PLASTER, LAYER_SET_LIME_PLASTER, LAYER_SET_XPS_LIME_PLAS
 import { DEFAULT_EMPTY_ASSEMBLY, prefabThresholdAssembly } from './opening.defaults'
 
 const infillAssembly: InfillWallAssemblyConfig = {
-  id: 'wa_infill_default' as WallAssemblyId,
+  id: 'wa_infill_default' as PerimeterWallAssemblyId,
   name: 'Standard Infill',
   nameKey: $ => $.walls.defaults.standardInfill,
   type: 'infill',
@@ -50,7 +50,7 @@ const infillAssembly: InfillWallAssemblyConfig = {
 }
 
 const strawhengeAssembly: StrawhengeWallAssemblyConfig = {
-  id: 'wa_strawhenge_default' as WallAssemblyId,
+  id: 'wa_strawhenge_default' as PerimeterWallAssemblyId,
   name: 'Strawhenge Module',
   nameKey: $ => $.walls.defaults.strawhengeModule,
   type: 'strawhenge',
@@ -92,7 +92,7 @@ const strawhengeAssembly: StrawhengeWallAssemblyConfig = {
 }
 
 const modulesAssembly: ModulesWallAssemblyConfig = {
-  id: 'wa_module_default' as WallAssemblyId,
+  id: 'wa_module_default' as PerimeterWallAssemblyId,
   name: 'Default Module',
   nameKey: $ => $.walls.defaults.defaultModule,
   type: 'modules',
@@ -134,7 +134,7 @@ const modulesAssembly: ModulesWallAssemblyConfig = {
 }
 
 const nonStrawbaleAssembly: NonStrawbaleWallAssemblyConfig = {
-  id: 'wa_non_strawbale_default' as WallAssemblyId,
+  id: 'wa_non_strawbale_default' as PerimeterWallAssemblyId,
   name: 'Concrete Wall',
   nameKey: $ => $.walls.defaults.concreteWall,
   type: 'non-strawbale',
@@ -145,7 +145,7 @@ const nonStrawbaleAssembly: NonStrawbaleWallAssemblyConfig = {
 }
 
 const ecococonAssembly: PrefabModulesWallAssemblyConfig = {
-  id: 'wa_ecococon_default' as WallAssemblyId,
+  id: 'wa_ecococon_default' as PerimeterWallAssemblyId,
   name: 'Ecococon Modules',
   nameKey: $ => $.walls.defaults.ecococonModules,
   type: 'prefab-modules',
@@ -166,7 +166,7 @@ const ecococonAssembly: PrefabModulesWallAssemblyConfig = {
   outsideLayerSetId: LAYER_SET_LIME_PLASTER.id
 }
 
-export const DEFAULT_WALL_ASSEMBLIES = [
+export const DEFAULT_PERIMETER_WALL_ASSEMBLIES = [
   infillAssembly,
   strawhengeAssembly,
   modulesAssembly,
@@ -174,4 +174,4 @@ export const DEFAULT_WALL_ASSEMBLIES = [
   ecococonAssembly
 ]
 
-export const DEFAULT_WALL_ASSEMBLY_ID = infillAssembly.id
+export const DEFAULT_PERIMETER_WALL_ASSEMBLY_ID = infillAssembly.id

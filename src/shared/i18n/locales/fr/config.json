@@ -228,6 +228,7 @@
       "bitumen": "Bitume",
       "boards": "Planches",
       "brick": "Brique",
+      "clayBrick": "Brique d'argile",
       "cementScreed": "Chape ciment",
       "clayPlasterBase": "Enduit à l'argile (base)",
       "clayPlasterFine": "Enduit à l'argile (fin)",
@@ -564,10 +565,14 @@
     "defaultLabel": "{{label}} <gray>(par défaut)</gray>",
     "defaults": {
       "concreteWall": "Mur en béton",
+      "concreteInteriorWall": "Mur intérieur en béton",
+      "clayBrickWall": "Mur en briques d'argile",
       "defaultModule": "Module par défaut",
       "ecococonModules": "Modules Ecococon",
       "standardInfill": "Remplissage standard",
-      "strawhengeModule": "Module Strawhenge"
+      "strawhengeModule": "Module Strawhenge",
+      "standardStrawFilled": "Remplissage standard en paille",
+      "woodStudClayBrick": "Ossature bois avec remplissage en briques d'argile"
     },
     "defaultWallAssembly": "Composition de mur par défaut",
     "deleteConfirm": "Êtes-vous sûr de vouloir supprimer « {{name}} » ? Cette action est irréversible.",

@@ -5,10 +5,10 @@ import type {
   FloorAssemblyId,
   LayerSetId,
   OpeningAssemblyId,
+  PerimeterWallAssemblyId,
   RingBeamAssemblyId,
   RoofAssemblyId,
-  StoreyId,
-  WallAssemblyId
+  StoreyId
 } from '@/building/model/ids'
 import { getModelActions } from '@/building/store'
 import { getConfigActions, useFloorAssemblies, useRoofAssemblies, useWallAssemblies } from '@/config/store'
@@ -41,7 +41,7 @@ export interface RoofAssemblyUsage {
 export interface OpeningAssemblyUsage {
   isUsed: boolean
   isDefault: boolean
-  wallAssemblyIds: WallAssemblyId[]
+  wallAssemblyIds: PerimeterWallAssemblyId[]
   openingAssemblyIds: OpeningAssemblyId[]
   storeyIds: StoreyId[]
 }
@@ -79,9 +79,9 @@ export function getRingBeamAssemblyUsage(
  * Checks if a wall assembly is currently in use by any walls
  */
 export function getWallAssemblyUsage(
-  assemblyId: WallAssemblyId,
+  assemblyId: PerimeterWallAssemblyId,
   walls: PerimeterWallWithGeometry[],
-  defaultWallAssemblyId?: WallAssemblyId
+  defaultWallAssemblyId?: PerimeterWallAssemblyId
 ): WallAssemblyUsage {
   const { getPerimeterById } = getModelActions()
   const storeyIdSet = new Set<StoreyId>()
@@ -158,14 +158,14 @@ export function getRoofAssemblyUsage(
  * - By individual openings that override to use this assembly
  */
 export function getOpeningAssemblyUsage(assemblyId: OpeningAssemblyId): OpeningAssemblyUsage {
-  const { getDefaultOpeningAssemblyId, getAllWallAssemblies, getAllOpeningAssemblies } = getConfigActions()
+  const { getDefaultOpeningAssemblyId, getAllPerimeterWallAssemblies, getAllOpeningAssemblies } = getConfigActions()
   const { getPerimeterById, getAllWallOpenings } = getModelActions()
-  const wallAssemblies = getAllWallAssemblies()
+  const wallAssemblies = getAllPerimeterWallAssemblies()
   const openingAssemblies = getAllOpeningAssemblies()
   const openings = getAllWallOpenings()
 
   const isDefault = assemblyId === getDefaultOpeningAssemblyId()
-  const wallAssemblyIdSet = new Set<WallAssemblyId>()
+  const wallAssemblyIdSet = new Set<PerimeterWallAssemblyId>()
   const openingAssemblyIdSet = new Set<OpeningAssemblyId>()
   const storeyIdSet = new Set<StoreyId>()
 
@@ -205,7 +205,7 @@ export function getOpeningAssemblyUsage(assemblyId: OpeningAssemblyId): OpeningA
 
 export interface LayerSetUsage {
   isUsed: boolean
-  wallAssemblyIds: WallAssemblyId[]
+  wallAssemblyIds: PerimeterWallAssemblyId[]
   floorAssemblyIds: FloorAssemblyId[]
   roofAssemblyIds: RoofAssemblyId[]
 }
@@ -216,7 +216,7 @@ export function useLayerSetUsage(layerSetId: LayerSetId): LayerSetUsage {
   const roofAssemblies = useRoofAssemblies()
 
   return useMemo(() => {
-    const wallIds: WallAssemblyId[] = []
+    const wallIds: PerimeterWallAssemblyId[] = []
     const floorIds: FloorAssemblyId[] = []
     const roofIds: RoofAssemblyId[] = []
 

@@ -75,13 +75,13 @@ export function findColinearWallGroups(perimeter: PerimeterWithGeometry): Coline
 
 export function buildWallCoreModel(wallId: PerimeterWallId): CoreModel {
   const { getPerimeterWallById, getPerimeterById } = getModelActions()
-  const { getWallAssemblyById } = getConfigActions()
+  const { getPerimeterWallAssemblyById } = getConfigActions()
 
   const wall = getPerimeterWallById(wallId)
   const perimeter = getPerimeterById(wall.perimeterId)
   const storeyContext = getWallStoreyContextCached(perimeter.storeyId)
 
-  const assembly = getWallAssemblyById(wall.wallAssemblyId)
+  const assembly = getPerimeterWallAssemblyById(wall.wallAssemblyId)
   if (!assembly) {
     throw new Error(`Wall assembly with ID ${wall.wallAssemblyId} not found for wall ${wall.id}`)
   }

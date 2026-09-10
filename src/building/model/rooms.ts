@@ -43,6 +43,8 @@ export interface PerimeterWallNode extends BaseWallNode {
 export interface InnerWallNode extends BaseWallNode {
   type: 'inner'
   position: Vec2
+  constructedBy?: IntermediateWallId
+  constructedWithColinear?: IntermediateWallId
 }
 
 export interface WallNodeIncidentWall {
@@ -104,7 +106,7 @@ export interface IntermediateWall {
   start: WallAttachment
   end: WallAttachment
   thickness: Length
-  wallAssemblyId?: InteriorWallAssemblyId // TODO
+  wallAssemblyId?: InteriorWallAssemblyId
 }
 
 export interface IntermediateWallGeometry {

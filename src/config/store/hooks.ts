@@ -2,18 +2,20 @@ import { useMemo } from 'react'
 
 import type {
   FloorAssemblyId,
+  InteriorWallAssemblyId,
   LayerSetId,
   OpeningAssemblyId,
+  PerimeterWallAssemblyId,
   RingBeamAssemblyId,
-  RoofAssemblyId,
-  WallAssemblyId
+  RoofAssemblyId
 } from '@/building/model/ids'
 import type {
   FloorAssemblyConfig,
+  InteriorWallAssemblyConfig,
   OpeningAssemblyConfig,
+  PerimeterWallAssemblyConfig,
   RingBeamAssemblyConfig,
-  RoofAssemblyConfig,
-  WallAssemblyConfig
+  RoofAssemblyConfig
 } from '@/config/types'
 import type { LayerSetConfig } from '@/construction/assemblies/layers/types'
 import type { MaterialId } from '@/materials/types'
@@ -38,16 +40,27 @@ export const useDefaultTopRingBeamAssemblyId = (): RingBeamAssemblyId | undefine
   useConfigStore(state => state.actions.getDefaultTopRingBeamAssemblyId())
 
 // Wall assembly selector hooks
-export const useWallAssemblies = (): WallAssemblyConfig[] => {
-  const wallAssemblies = useConfigStore(state => state.wallAssemblyConfigs)
+export const useWallAssemblies = (): PerimeterWallAssemblyConfig[] => {
+  const wallAssemblies = useConfigStore(state => state.perimeterWallAssemblyConfigs)
   return useMemo(() => Object.values(wallAssemblies), [wallAssemblies])
 }
 
-export const useWallAssemblyById = (id: WallAssemblyId): WallAssemblyConfig | null =>
-  useConfigStore(state => state.actions.getWallAssemblyById(id))
+export const useWallAssemblyById = (id: PerimeterWallAssemblyId): PerimeterWallAssemblyConfig | null =>
+  useConfigStore(state => state.actions.getPerimeterWallAssemblyById(id))
 
-export const useDefaultWallAssemblyId = (): WallAssemblyId =>
-  useConfigStore(state => state.actions.getDefaultWallAssemblyId())
+export const useDefaultWallAssemblyId = (): PerimeterWallAssemblyId =>
+  useConfigStore(state => state.actions.getDefaultPerimeterWallAssemblyId())
+
+export const useInteriorWallAssemblies = (): InteriorWallAssemblyConfig[] => {
+  const assemblies = useConfigStore(state => state.interiorWallAssemblyConfigs)
+  return useMemo(() => Object.values(assemblies), [assemblies])
+}
+
+export const useInteriorWallAssemblyById = (id: InteriorWallAssemblyId): InteriorWallAssemblyConfig | null =>
+  useConfigStore(state => state.actions.getInteriorWallAssemblyById(id))
+
+export const useDefaultInteriorWallAssemblyId = (): InteriorWallAssemblyId =>
+  useConfigStore(state => state.actions.getDefaultInteriorWallAssemblyId())
 
 // Floor construction config selector hooks
 export const useFloorAssemblies = (): FloorAssemblyConfig[] => {

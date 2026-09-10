@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest'
 import type { PerimeterWallNodeGeometry } from '@/building/model'
 import { createIntermediateWallId, createWallNodeId } from '@/building/model/ids'
 import { computeWallLines, updateAllWallNodeGeometry } from '@/building/store/slices/intermediateWallGeometry'
+import { DEFAULT_INTERIOR_WALL_ASSEMBLY_ID } from '@/config/store/slices/interiorWalls.defaults'
 import {
   distVec2,
   distanceToInfiniteLine,
@@ -651,7 +652,8 @@ describe('intermediateWallGeometry', () => {
         perimeterId,
         { nodeId: startNode.id, axis: 'left' },
         { nodeId: endNode.id, axis: 'right' },
-        120
+        120,
+        DEFAULT_INTERIOR_WALL_ASSEMBLY_ID
       )
       const geometry = state._intermediateWallGeometry[wall.id]
       const epsilon = 1e-3
@@ -694,7 +696,8 @@ describe('intermediateWallGeometry', () => {
         perimeterId,
         { nodeId: startNode.id, axis: 'left' },
         { nodeId: endNode.id, axis: 'right' },
-        120
+        120,
+        DEFAULT_INTERIOR_WALL_ASSEMBLY_ID
       )
       const opening = state.actions.addWallOpening(wall.id, {
         openingType: 'door',
@@ -724,7 +727,8 @@ describe('intermediateWallGeometry', () => {
         perimeterId,
         { nodeId: nodeA.id, axis: 'left' },
         { nodeId: nodeB.id, axis: 'left' },
-        120
+        120,
+        DEFAULT_INTERIOR_WALL_ASSEMBLY_ID
       )
       const opening = state.actions.addWallOpening(wall.id, {
         openingType: 'door',

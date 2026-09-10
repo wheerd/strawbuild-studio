@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import type { Opening, PerimeterWallId, PerimeterWallWithGeometry } from '@/building/model'
-import { type StoreyId, createOpeningId, createWallAssemblyId } from '@/building/model/ids'
+import { type StoreyId, createOpeningId, createPerimeterWallAssemblyId } from '@/building/model/ids'
 import type { FloorAssembly } from '@/construction/assemblies/floors/types'
 import { constructStraw } from '@/construction/assemblies/straw'
 import { WallConstructionArea } from '@/construction/assemblies/utils/WallConstructionArea'
@@ -167,7 +167,7 @@ function createMockWall(
 ) {
   return partial<PerimeterWallWithGeometry>({
     id: id as PerimeterWallId,
-    wallAssemblyId: createWallAssemblyId(),
+    wallAssemblyId: createPerimeterWallAssemblyId(),
     thickness,
     wallLength,
     insideLength: wallLength,

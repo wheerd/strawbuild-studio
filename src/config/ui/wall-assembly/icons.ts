@@ -1,10 +1,10 @@
 import type { ComponentType } from 'react'
 
-import type { WallAssemblyType } from '@/construction/assemblies/walls/types'
+import type { PerimeterWallAssemblyType } from '@/construction/assemblies/walls/types'
 import { InfillIcon, ModulesIcon, NonStrawbaleIcon, PrefabIcon, StrawhengeIcon } from '@/shared/ui/icons'
 import type { IconProps } from '@/shared/ui/icons/types'
 
-export function getWallAssemblyTypeIcon(type: WallAssemblyType): ComponentType<IconProps> {
+export function getWallAssemblyTypeIcon(type: PerimeterWallAssemblyType): ComponentType<IconProps> {
   switch (type) {
     case 'infill':
       return InfillIcon

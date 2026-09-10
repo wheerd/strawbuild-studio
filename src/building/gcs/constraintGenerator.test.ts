@@ -9,7 +9,7 @@ import type {
   PerimeterWallId,
   PerimeterWallWithGeometry
 } from '@/building/model'
-import type { WallAssemblyId } from '@/building/model/ids'
+import type { PerimeterWallAssemblyId } from '@/building/model/ids'
 import type { Vec2 } from '@/shared/geometry'
 import { addVec2, newVec2, perpendicular } from '@/shared/geometry'
 
@@ -106,7 +106,7 @@ function makeWall(
     endCornerId: endCornerId as PerimeterCornerId,
     entityIds: [],
     thickness: opts.thickness ?? 420,
-    wallAssemblyId: 'asm_1' as WallAssemblyId,
+    wallAssemblyId: 'asm_1' as PerimeterWallAssemblyId,
     insideLength: opts.insideLength,
     outsideLength: opts.outsideLength,
     wallLength: opts.insideLength,

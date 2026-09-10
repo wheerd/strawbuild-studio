@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 
 import type { PerimeterReferenceSide, PerimeterWallWithGeometry, RoofType } from '@/building/model'
-import type { PerimeterId, RingBeamAssemblyId, WallAssemblyId } from '@/building/model/ids'
+import type { PerimeterId, PerimeterWallAssemblyId, RingBeamAssemblyId } from '@/building/model/ids'
 import {
   useModelActions,
   usePerimeterById,
@@ -43,7 +43,7 @@ interface MixedState<T> {
   value: T | null
 }
 
-function detectMixedAssemblies(walls: PerimeterWallWithGeometry[]): MixedState<WallAssemblyId> {
+function detectMixedAssemblies(walls: PerimeterWallWithGeometry[]): MixedState<PerimeterWallAssemblyId> {
   if (walls.length === 0) return { isMixed: false, value: null }
 
   const firstAssembly = walls[0].wallAssemblyId
@@ -290,8 +290,10 @@ export function PerimeterInspector({ selectedId }: PerimeterInspectorProps): Rea
             </Label.Root>
           </div>
           <WallAssemblySelectWithEdit
-            value={wallAssemblyState.isMixed ? undefined : (wallAssemblyState.value as WallAssemblyId | undefined)}
-            onValueChange={(value: WallAssemblyId) => {
+            value={
+              wallAssemblyState.isMixed ? undefined : (wallAssemblyState.value as PerimeterWallAssemblyId | undefined)
+            }
+            onValueChange={(value: PerimeterWallAssemblyId) => {
               updateAllPerimeterWallsAssembly(selectedId, value)
             }}
             placeholder={

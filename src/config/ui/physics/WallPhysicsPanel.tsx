@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next'
 import { computeAssemblyPhysics } from '@/construction/assemblies/physics'
 import type { AssemblyPhysics } from '@/construction/assemblies/physics'
 import { resolveWallAssembly } from '@/construction/assemblies/walls'
-import type { WallConfig } from '@/construction/assemblies/walls/types'
+import type { PerimeterWallConfig } from '@/construction/assemblies/walls/types'
 import type { Length } from '@/shared/geometry'
 import { LengthField } from '@/shared/ui/LengthField'
 import { Card } from '@/shared/ui/components/card'
@@ -14,7 +14,7 @@ import { PhysicsBreakdown } from './shared/PhysicsBreakdown'
 import { PhysicsSummaryValues } from './shared/PhysicsSummaryValues'
 
 interface WallPhysicsPanelProps {
-  config: WallConfig
+  config: PerimeterWallConfig
 }
 
 const DEFAULT_HEIGHT: Length = 3000

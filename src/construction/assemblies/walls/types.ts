@@ -1,4 +1,4 @@
-import type { OpeningAssemblyId, PerimeterWallWithGeometry } from '@/building/model'
+import type { IntermediateWallWithGeometry, OpeningAssemblyId, PerimeterWallWithGeometry } from '@/building/model'
 import type { LayerSetId } from '@/building/model/ids'
 import type { AssemblyPhysicsStructure, PhysicsSeries } from '@/construction/assemblies/physics'
 import type { WallConstructionArea } from '@/construction/assemblies/utils/WallConstructionArea'
@@ -15,7 +15,7 @@ import { assertUnreachable } from '@/shared/utils'
 
 import type { ModuleConfig } from './modules/modules'
 
-export interface WallAssembly {
+export interface PerimeterWallAssembly {
   construct: (wall: PerimeterWallWithGeometry, storeyContext: StoreyContext) => ConstructionModel
 
   get tag(): Tag
@@ -24,10 +24,10 @@ export interface WallAssembly {
   getPhysicsStructure: (totalThickness: Length, height: Length) => AssemblyPhysicsStructure
 }
 
-export type WallAssemblyType = 'infill' | 'strawhenge' | 'non-strawbale' | 'modules' | 'prefab-modules'
+export type PerimeterWallAssemblyType = 'infill' | 'strawhenge' | 'non-strawbale' | 'modules' | 'prefab-modules'
 
-export interface WallBaseConfig {
-  type: WallAssemblyType
+export interface PerimeterWallBaseConfig {
+  type: PerimeterWallAssemblyType
   insideLayerSetId?: LayerSetId
   outsideLayerSetId?: LayerSetId
   openingAssemblyId?: OpeningAssemblyId
@@ -43,28 +43,28 @@ export interface InfillWallSegmentConfig {
   infillMaterial?: MaterialId
 }
 
-export interface InfillWallConfig extends InfillWallSegmentConfig, WallBaseConfig {
+export interface InfillWallConfig extends InfillWallSegmentConfig, PerimeterWallBaseConfig {
   type: 'infill'
 }
 
-export interface ModulesWallConfig extends WallBaseConfig {
+export interface ModulesWallConfig extends PerimeterWallBaseConfig {
   type: 'modules'
   module: ModuleConfig
   infill: InfillWallSegmentConfig
 }
 
-export interface StrawhengeWallConfig extends WallBaseConfig {
+export interface StrawhengeWallConfig extends PerimeterWallBaseConfig {
   type: 'strawhenge'
   module: ModuleConfig
   infill: InfillWallSegmentConfig
 }
 
-export interface NonStrawbaleWallConfig extends WallBaseConfig {
+export interface NonStrawbaleWallConfig extends PerimeterWallBaseConfig {
   type: 'non-strawbale'
   material: MaterialId
 }
 
-export interface PrefabModulesWallConfig extends WallBaseConfig {
+export interface PrefabModulesWallConfig extends PerimeterWallBaseConfig {
   type: 'prefab-modules'
   defaultMaterial: MaterialId
   fallbackMaterial: MaterialId
@@ -80,7 +80,7 @@ export interface PrefabModulesWallConfig extends WallBaseConfig {
   tallReinforceMaterial: MaterialId
 }
 
-export type WallConfig =
+export type PerimeterWallConfig =
   | InfillWallConfig
   | ModulesWallConfig
   | StrawhengeWallConfig
@@ -88,6 +88,48 @@ export type WallConfig =
   | PrefabModulesWallConfig
 
 export type SegmentInfillMethod = (area: WallConstructionArea, type: 'lintel' | 'sill') => Generator<ConstructionResult>
+
+export interface InteriorWallAssembly {
+  construct: (wall: IntermediateWallWithGeometry, storeyContext: StoreyContext) => ConstructionModel
+
+  get tag(): Tag
+  get thicknessRange(): ThicknessRange
+}
+
+export type InteriorWallAssemblyType = 'monolithic' | 'planked-stud' | 'monolithic-stud'
+
+export interface InteriorWallBaseConfig {
+  type: InteriorWallAssemblyType
+  layerSetId: LayerSetId
+  openingAssemblyId?: OpeningAssemblyId
+}
+
+export interface WallStudConfig {
+  minStudSpacing: Length // Default: 70mm
+  desiredStudSpacing: Length // Default: 800mm
+  maxStudSpacing: Length // Default: 900mm
+  studWidth: Length // Default: 60mm
+  studMaterial: MaterialId
+}
+
+export interface MonolithicWallConfig extends InteriorWallBaseConfig {
+  type: 'monolithic'
+  material: MaterialId
+}
+
+export interface PlankedStudWallConfig extends WallStudConfig, InteriorWallBaseConfig {
+  type: 'planked-stud'
+  plankThickness: Length
+  plankMaterial: MaterialId
+  fillMaterial?: MaterialId
+}
+
+export interface MonolithicStudWallConfig extends WallStudConfig, InteriorWallBaseConfig {
+  type: 'monolithic-stud'
+  fillMaterial: MaterialId
+}
+
+export type InteriorWallConfig = MonolithicWallConfig | PlankedStudWallConfig | MonolithicStudWallConfig
 
 // Validation
 
@@ -168,7 +210,7 @@ const validatePrefabModulesWallConfig = (config: PrefabModulesWallConfig): void 
   }
 }
 
-export const validateWallConfig = (config: WallConfig): void => {
+export const validatePerimeterWallConfig = (config: PerimeterWallConfig): void => {
   switch (config.type) {
     case 'infill':
       validateInfillWallConfig(config)
@@ -187,5 +229,37 @@ export const validateWallConfig = (config: WallConfig): void => {
       break
     default:
       assertUnreachable(config, 'Invalid wall assembly type')
+  }
+}
+
+export const validateInteriorWallConfig = (config: InteriorWallConfig): void => {
+  const ensureStudConfig = (studConfig: WallStudConfig): void => {
+    ensurePositive(studConfig.minStudSpacing, 'Minimum stud spacing must be greater than 0')
+    ensurePositive(studConfig.desiredStudSpacing, 'Desired stud spacing must be greater than 0')
+    ensurePositive(studConfig.maxStudSpacing, 'Maximum stud spacing must be greater than 0')
+    ensurePositive(studConfig.studWidth, 'Stud width must be greater than 0')
+    if (studConfig.maxStudSpacing < studConfig.minStudSpacing) {
+      throw new Error('Minimum stud spacing must not be bigger than maximum stud spacing')
+    }
+    if (
+      studConfig.desiredStudSpacing < studConfig.minStudSpacing ||
+      studConfig.desiredStudSpacing > studConfig.maxStudSpacing
+    ) {
+      throw new Error('Desired stud spacing must be between minimum and maximum stud spacing')
+    }
+  }
+
+  switch (config.type) {
+    case 'monolithic':
+      break
+    case 'planked-stud':
+      ensureStudConfig(config)
+      ensurePositive(config.plankThickness, 'Plank thickness must be greater than 0')
+      break
+    case 'monolithic-stud':
+      ensureStudConfig(config)
+      break
+    default:
+      assertUnreachable(config, 'Invalid interior wall assembly type')
   }
 }

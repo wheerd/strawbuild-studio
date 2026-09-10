@@ -3,9 +3,9 @@ import { describe, expect, it, vi } from 'vitest'
 import type { PerimeterWallWithGeometry, PerimeterWithGeometry } from '@/building/model'
 import {
   createOpeningAssemblyId,
+  createPerimeterWallAssemblyId,
   createRingBeamAssemblyId,
-  createStoreyId,
-  createWallAssemblyId
+  createStoreyId
 } from '@/building/model/ids'
 import { getModelActions } from '@/building/store'
 import { getConfigActions } from '@/config/store'
@@ -31,7 +31,7 @@ vi.mocked(getModelActions).mockReturnValue({
 
 vi.mocked(getConfigActions).mockReturnValue({
   getDefaultOpeningAssemblyId: vi.fn(() => createOpeningAssemblyId()),
-  getAllWallAssemblies: vi.fn(() => []),
+  getAllPerimeterWallAssemblies: vi.fn(() => []),
   getAllOpeningAssemblies: vi.fn(() => [])
 } as any)
 
@@ -115,7 +115,7 @@ describe('Assembly Usage Detection', () => {
 
   describe('getWallAssemblyUsage', () => {
     it('should detect wall assembly not in use', () => {
-      const assemblyId = createWallAssemblyId()
+      const assemblyId = createPerimeterWallAssemblyId()
 
       const usage = getWallAssemblyUsage(assemblyId, [])
 
@@ -125,14 +125,14 @@ describe('Assembly Usage Detection', () => {
     })
 
     it('should detect wall assembly used by walls', () => {
-      const assemblyId = createWallAssemblyId()
+      const assemblyId = createPerimeterWallAssemblyId()
 
       const walls = [
         partial<PerimeterWallWithGeometry>({
           wallAssemblyId: assemblyId
         }),
         partial<PerimeterWallWithGeometry>({
-          wallAssemblyId: createWallAssemblyId() // Different assembly
+          wallAssemblyId: createPerimeterWallAssemblyId() // Different assembly
         }),
         partial<PerimeterWallWithGeometry>({
           wallAssemblyId: assemblyId // Same assembly as first wall
@@ -151,7 +151,7 @@ describe('Assembly Usage Detection', () => {
     beforeEach(() => {
       vi.mocked(getConfigActions).mockReturnValue({
         getDefaultOpeningAssemblyId: vi.fn(() => createOpeningAssemblyId()),
-        getAllWallAssemblies: vi.fn(() => []),
+        getAllPerimeterWallAssemblies: vi.fn(() => []),
         getAllOpeningAssemblies: vi.fn(() => [])
       } as any)
     })
@@ -161,7 +161,7 @@ describe('Assembly Usage Detection', () => {
 
       vi.mocked(getConfigActions).mockReturnValue({
         getDefaultOpeningAssemblyId: vi.fn(() => createOpeningAssemblyId()),
-        getAllWallAssemblies: vi.fn(() => []),
+        getAllPerimeterWallAssemblies: vi.fn(() => []),
         getAllOpeningAssemblies: vi.fn(() => [])
       } as any)
 
@@ -184,7 +184,7 @@ describe('Assembly Usage Detection', () => {
 
       vi.mocked(getConfigActions).mockReturnValue({
         getDefaultOpeningAssemblyId: vi.fn(() => assemblyId),
-        getAllWallAssemblies: vi.fn(() => []),
+        getAllPerimeterWallAssemblies: vi.fn(() => []),
         getAllOpeningAssemblies: vi.fn(() => [])
       } as any)
 
@@ -217,7 +217,7 @@ describe('Assembly Usage Detection', () => {
 
       vi.mocked(getConfigActions).mockReturnValue({
         getDefaultOpeningAssemblyId: vi.fn(() => createOpeningAssemblyId()),
-        getAllWallAssemblies: vi.fn(() => []),
+        getAllPerimeterWallAssemblies: vi.fn(() => []),
         getAllOpeningAssemblies: vi.fn(() => [thresholdAssembly])
       } as any)
 
@@ -248,7 +248,7 @@ describe('Assembly Usage Detection', () => {
 
       vi.mocked(getConfigActions).mockReturnValue({
         getDefaultOpeningAssemblyId: vi.fn(() => createOpeningAssemblyId()),
-        getAllWallAssemblies: vi.fn(() => []),
+        getAllPerimeterWallAssemblies: vi.fn(() => []),
         getAllOpeningAssemblies: vi.fn(() => [thresholdAssembly])
       } as any)
 

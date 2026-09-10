@@ -21,7 +21,7 @@ export function PerimeterCornerInspector({ cornerId }: { cornerId: PerimeterCorn
     canSwitchCornerConstructedByWall,
     canRemovePerimeterCorner
   } = useModelActions()
-  const { getWallAssemblyById } = useConfigActions()
+  const { getPerimeterWallAssemblyById: getWallAssemblyById } = useConfigActions()
   const viewportActions = useViewportActions()
 
   const corner = usePerimeterCornerById(cornerId)

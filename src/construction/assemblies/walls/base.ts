@@ -12,9 +12,9 @@ import type { Tag } from '@/construction/model/tags'
 import type { ThicknessRange } from '@/materials/thickness'
 import type { Length } from '@/shared/geometry'
 
-import type { WallAssembly, WallBaseConfig } from './types'
+import type { PerimeterWallAssembly, PerimeterWallBaseConfig } from './types'
 
-export abstract class BaseWallAssembly<T extends WallBaseConfig> implements WallAssembly {
+export abstract class BaseWallAssembly<T extends PerimeterWallBaseConfig> implements PerimeterWallAssembly {
   protected readonly config: T
 
   constructor(config: T) {

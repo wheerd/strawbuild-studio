@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import type { PerimeterReferenceSide } from '@/building/model'
-import type { RingBeamAssemblyId, WallAssemblyId } from '@/building/model/ids'
+import type { PerimeterWallAssemblyId, RingBeamAssemblyId } from '@/building/model/ids'
 import { useWallAssemblyById } from '@/config/store'
 import { RingBeamAssemblySelectWithEdit } from '@/config/ui/ring-beam-assembly/RingBeamAssemblySelectWithEdit'
 import { WallAssemblySelectWithEdit } from '@/config/ui/wall-assembly/WallAssemblySelectWithEdit'
@@ -71,7 +71,7 @@ export function PerimeterToolInspector({ tool }: ToolInspectorProps<PerimeterToo
           </div>
           <WallAssemblySelectWithEdit
             value={state.wallAssemblyId}
-            onValueChange={(value: WallAssemblyId) => {
+            onValueChange={(value: PerimeterWallAssemblyId) => {
               tool.setAssembly(value)
             }}
             size="sm"

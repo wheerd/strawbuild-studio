@@ -3,12 +3,12 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type {
   PerimeterCornerId,
   PerimeterCornerWithGeometry,
+  PerimeterWallAssemblyId,
   PerimeterWallId,
-  PerimeterWallWithGeometry,
-  WallAssemblyId
+  PerimeterWallWithGeometry
 } from '@/building/model'
 import { createPerimeterWallId } from '@/building/model/ids'
-import type { WallAssemblyConfig } from '@/config/types'
+import type { PerimeterWallAssemblyConfig } from '@/config/types'
 import { type Length, type Vec2, ZERO_VEC2, newVec2 } from '@/shared/geometry'
 import { partial } from '@/test/helpers'
 
@@ -19,7 +19,7 @@ const mockLayerSetThicknesses: Record<string, number> = {}
 
 vi.mock('@/config/store', () => ({
   getConfigActions: () => ({
-    getWallAssemblyById: (id: WallAssemblyId) => mockAssemblies.find(a => a.id === id) ?? null
+    getPerimeterWallAssemblyById: (id: PerimeterWallAssemblyId) => mockAssemblies.find(a => a.id === id) ?? null
   }),
   resolveLayerSetThickness: (id: string | undefined) => {
     if (!id) return 0
@@ -34,7 +34,7 @@ vi.mock('@/building/store', () => ({
   })
 }))
 
-const mockAssemblies: WallAssemblyConfig[] = []
+const mockAssemblies: PerimeterWallAssemblyConfig[] = []
 const mockCorners: PerimeterCornerWithGeometry[] = []
 const mockWalls: PerimeterWallWithGeometry[] = []
 
@@ -90,7 +90,7 @@ function createMockAssembly(
   name: string,
   insideThickness: number,
   outsideThickness: number
-): WallAssemblyConfig {
+): PerimeterWallAssemblyConfig {
   const insideLayerSetId = `${id}-inside`
   const outsideLayerSetId = `${id}-outside`
 

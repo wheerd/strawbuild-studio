@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import type { PerimeterCornerId, PerimeterId, StoreyId } from '@/building/model/ids'
-import { createWallAssemblyId } from '@/building/model/ids'
+import { createPerimeterWallAssemblyId } from '@/building/model/ids'
 import { NotFoundError } from '@/building/store/errors'
 import type { MaterialId } from '@/materials/types'
 import { copyVec2 } from '@/shared/geometry'
@@ -47,7 +47,7 @@ describe('perimeterCornerSlice', () => {
 
     // Create a default perimeter for testing
     const boundary = createRectangularBoundary()
-    const wallAssemblyId = createWallAssemblyId()
+    const wallAssemblyId = createPerimeterWallAssemblyId()
     const perimeter = slice.actions.addPerimeter(testStoreyId, boundary, wallAssemblyId, 420)
     perimeterId = perimeter.id
     cornerId = perimeter.cornerIds[0]

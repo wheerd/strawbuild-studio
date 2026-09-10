@@ -118,3 +118,19 @@ export const brick: DimensionalMaterial = {
   primaryEnergy: 2.8,
   embodiedCarbon: 0.25
 }
+
+export const clayBrick: DimensionalMaterial = {
+  id: 'material_clay_brick' as MaterialId,
+  name: 'Clay brick',
+  nameKey: 'clayBrick',
+  type: 'dimensional',
+  color: '#b56f52',
+  crossSections: [{ smallerLength: 71, biggerLength: 115 }],
+  lengths: [240],
+  density: 1800,
+  thermalConductivity: 0.8,
+  vaporDiffusionResistance: 10,
+  specificHeatCapacity: 840,
+  primaryEnergy: 3.5,
+  embodiedCarbon: 0.25
+}

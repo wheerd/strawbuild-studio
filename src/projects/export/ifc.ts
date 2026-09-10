@@ -410,7 +410,7 @@ class IfcExporter {
     const elements: Handle<IFC4.IfcWall>[] = []
     const walls = this.store.getPerimeterWallsById(perimeterId)
     for (const wall of walls) {
-      const assemblyConfig = this.config.getWallAssemblyById(wall.wallAssemblyId)
+      const assemblyConfig = this.config.getPerimeterWallAssemblyById(wall.wallAssemblyId)
       if (!assemblyConfig) continue
 
       const startCorner = this.store.getPerimeterCornerById(wall.startCornerId)

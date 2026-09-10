@@ -7,11 +7,11 @@ import type {
   PerimeterCornerId,
   PerimeterId,
   PerimeterWall,
+  PerimeterWallAssemblyId,
   PerimeterWallId,
   RingBeamAssemblyId,
   RoofOverhang,
   RoofOverhangId,
-  WallAssemblyId,
   WallPost,
   WallPostId,
   WallPostType
@@ -146,7 +146,7 @@ export const migrateToVersion12: Migration = state => {
 
           // Extract wall properties
           const thickness = typeof oldWall.thickness === 'number' ? oldWall.thickness : 420
-          const wallAssemblyId = oldWall.wallAssemblyId as WallAssemblyId
+          const wallAssemblyId = oldWall.wallAssemblyId as PerimeterWallAssemblyId
           const baseRingBeamAssemblyId = oldWall.baseRingBeamAssemblyId as RingBeamAssemblyId | undefined
           const topRingBeamAssemblyId = oldWall.topRingBeamAssemblyId as RingBeamAssemblyId | undefined
 

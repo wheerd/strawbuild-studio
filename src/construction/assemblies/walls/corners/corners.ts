@@ -44,11 +44,11 @@ export interface WallCornerInfo {
 
 export function calculateWallCornerInfo(wall: PerimeterWallWithGeometry, context: WallContext): WallCornerInfo {
   const { startCorner, endCorner, previousWall, nextWall } = context
-  const { getWallAssemblyById } = getConfigActions()
+  const { getPerimeterWallAssemblyById } = getConfigActions()
 
-  const previousAssembly = getWallAssemblyById(previousWall.wallAssemblyId)
-  const nextAssembly = getWallAssemblyById(nextWall.wallAssemblyId)
-  const currentAssembly = getWallAssemblyById(wall.wallAssemblyId)
+  const previousAssembly = getPerimeterWallAssemblyById(previousWall.wallAssemblyId)
+  const nextAssembly = getPerimeterWallAssemblyById(nextWall.wallAssemblyId)
+  const currentAssembly = getPerimeterWallAssemblyById(wall.wallAssemblyId)
 
   if (!previousAssembly || !nextAssembly || !currentAssembly) {
     throw new Error('Invalid wall assembly')

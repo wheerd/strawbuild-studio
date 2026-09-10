@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import type { PerimeterId, PerimeterWallId, StoreyId } from '@/building/model/ids'
-import { createWallAssemblyId } from '@/building/model/ids'
+import { createPerimeterWallAssemblyId } from '@/building/model/ids'
 import { NotFoundError } from '@/building/store/errors'
 import { ensurePolygonIsClockwise, wouldClosingPolygonSelfIntersect } from '@/shared/geometry/polygon'
 
@@ -46,7 +46,7 @@ describe('perimeterWallSlice', () => {
 
     // Create a default perimeter for testing
     const boundary = createLShapedBoundary()
-    const wallAssemblyId = createWallAssemblyId()
+    const wallAssemblyId = createPerimeterWallAssemblyId()
     const perimeter = slice.actions.addPerimeter(testStoreyId, boundary, wallAssemblyId, 420)
     perimeterId = perimeter.id
     wallId = perimeter.wallIds[0]
@@ -55,7 +55,7 @@ describe('perimeterWallSlice', () => {
   describe('Basic Wall Operations', () => {
     describe('updatePerimeterWallAssembly', () => {
       it('should update wall assembly', () => {
-        const newAssemblyId = createWallAssemblyId()
+        const newAssemblyId = createPerimeterWallAssemblyId()
 
         slice.actions.updatePerimeterWallAssembly(wallId, newAssemblyId)
 
@@ -64,7 +64,7 @@ describe('perimeterWallSlice', () => {
       })
 
       it('should not affect other walls', () => {
-        const newAssemblyId = createWallAssemblyId()
+        const newAssemblyId = createPerimeterWallAssemblyId()
         const perimeter = slice.actions.getPerimeterById(perimeterId)
         const otherWallId = perimeter.wallIds[1]
         const originalOtherWall = slice.actions.getPerimeterWallById(otherWallId)
@@ -124,7 +124,7 @@ describe('perimeterWallSlice', () => {
     describe('getPerimeterWallsById', () => {
       it('should return all walls for perimeter', () => {
         const boundary = createRectangularBoundary()
-        const wallAssemblyId = createWallAssemblyId()
+        const wallAssemblyId = createPerimeterWallAssemblyId()
         slice.actions.addPerimeter(testStoreyId, boundary, wallAssemblyId, 420)
 
         const walls = slice.actions.getPerimeterWallsById(perimeterId)
