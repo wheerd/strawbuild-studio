@@ -54,6 +54,8 @@
     "deleteWall": "Delete Wall",
     "fitToView": "Fit to View",
     "thickness": "Thickness",
+    "wallAssembly": "Wall Assembly",
+    "selectAssemblyPlaceholder": "Select assembly",
     "wallLength": "Length"
   },
   "opening": {

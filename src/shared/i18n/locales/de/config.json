@@ -563,6 +563,7 @@
     "battenOutside": "Außen",
     "battenSize": "Größe",
     "configure": "Wandaufbau konfigurieren",
+    "configureInterior": "Innenwandaufbau konfigurieren",
     "copyNameTemplate": "{{name}} (Kopie)",
     "defaultLabel": "{{label}} <gray>(Standard)</gray>",
     "defaults": {

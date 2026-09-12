@@ -52,6 +52,8 @@
     "deleteWall": "Wand löschen",
     "fitToView": "Auf Ansicht anpassen",
     "thickness": "Dicke",
+    "wallAssembly": "Wandaufbau",
+    "selectAssemblyPlaceholder": "Aufbau auswählen",
     "wallLength": "Länge"
   },
   "opening": {

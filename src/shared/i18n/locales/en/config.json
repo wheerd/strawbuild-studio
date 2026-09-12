@@ -563,6 +563,7 @@
     "battenOutside": "Outside",
     "battenSize": "Size",
     "configure": "Configure Wall Assembly",
+    "configureInterior": "Configure Interior Wall Assembly",
     "copyNameTemplate": "{{name}} (Copy)",
     "defaultLabel": "{{label}} <gray>(default)</gray>",
     "defaults": {

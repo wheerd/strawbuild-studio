@@ -563,6 +563,7 @@
     "battenOutside": "Extérieur",
     "battenSize": "Taille",
     "configure": "Configurer la composition du mur",
+    "configureInterior": "Configurer la composition du mur intérieur",
     "copyNameTemplate": "{{name}} (Copie)",
     "defaultLabel": "{{label}} <gray>(par défaut)</gray>",
     "defaults": {

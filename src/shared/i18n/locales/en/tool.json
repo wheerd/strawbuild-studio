@@ -85,6 +85,7 @@
     "infoLeft": "Draw the left edge of your intermediate wall. Click to place points, and finish by clicking an existing wall or node or pressing Enter.",
     "infoRight": "Draw the right edge of your intermediate wall. Click to place points, and finish by clicking an existing wall or node or pressing Enter.",
     "lengthOverride": "Length Override",
+    "wallAssembly": "Wall Assembly",
     "referenceSide": "Alignment Side",
     "referenceSideLeft": "Left",
     "referenceSideRight": "Right",

@@ -747,6 +747,7 @@ interface Resources {
       "battenOutside": "Outside",
       "battenSize": "Size",
       "configure": "Configure Wall Assembly",
+      "configureInterior": "Configure Interior Wall Assembly",
       "copyNameTemplate": "{{name}} (Copy)",
       "defaultInteriorWallAssembly": "Default Interior Wall Assembly",
       "defaultLabel": "{{label}} <gray>(default)</gray>",
@@ -1355,7 +1356,9 @@ interface Resources {
     "intermediateWall": {
       "deleteWall": "Delete Wall",
       "fitToView": "Fit to View",
+      "selectAssemblyPlaceholder": "Select assembly",
       "thickness": "Thickness",
+      "wallAssembly": "Wall Assembly",
       "wallLength": "Length"
     },
     "opening": {
@@ -1761,6 +1764,7 @@ interface Resources {
       "referenceSide": "Alignment Side",
       "referenceSideLeft": "Left",
       "referenceSideRight": "Right",
+      "wallAssembly": "Wall Assembly",
       "wallThickness": "Wall Thickness"
     },
     "keyboard": {

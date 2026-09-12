@@ -56,6 +56,8 @@
     "deleteWall": "Supprimer le mur",
     "fitToView": "Ajuster à la vue",
     "thickness": "Épaisseur",
+    "wallAssembly": "Composition du mur",
+    "selectAssemblyPlaceholder": "Sélectionner une composition",
     "wallLength": "Longueur"
   },
   "opening": {
