@@ -203,7 +203,8 @@
   },
   "wallNode": {
     "deleteNode": "Supprimer le nœud",
-    "fitToView": "Ajuster à la vue"
+    "fitToView": "Ajuster à la vue",
+    "switchConstruction": "Changer le mur constructif"
   },
   "wallPost": {
     "actsAsPost": "Fait office de montant",

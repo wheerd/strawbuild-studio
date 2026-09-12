@@ -1504,7 +1504,8 @@ interface Resources {
     },
     "wallNode": {
       "deleteNode": "Delete Node",
-      "fitToView": "Fit to View"
+      "fitToView": "Fit to View",
+      "switchConstruction": "Switch constructing wall"
     },
     "wallPost": {
       "actsAsPost": "Acts as Post",

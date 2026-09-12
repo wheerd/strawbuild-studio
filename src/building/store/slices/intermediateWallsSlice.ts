@@ -23,6 +23,7 @@ import type {
   WallNodeId
 } from '@/building/model/ids'
 import { createIntermediateWallId, createWallNodeId, isOpeningId } from '@/building/model/ids'
+import { getInnerWallConstructionOptions, isInnerWallConstructionOption } from '@/building/model/wallNodeConstruction'
 import { InvalidOperationError, NotFoundError } from '@/building/store/errors'
 import { cleanUpOrphaned } from '@/building/store/slices/cleanup'
 import {
@@ -65,6 +66,11 @@ export interface IntermediateWallsActions {
   removeIntermediateWall: (wallId: IntermediateWallId) => void
   updateIntermediateWallThickness: (wallId: IntermediateWallId, thickness: Length) => void
   updateIntermediateWallAssembly: (wallId: IntermediateWallId, assemblyId: InteriorWallAssemblyId) => void
+  updateInnerWallNodeConstruction: (
+    nodeId: WallNodeId,
+    constructedBy: IntermediateWallId,
+    constructedWithColinear?: IntermediateWallId
+  ) => void
   updateIntermediateWallAlignment: (wallId: IntermediateWallId, start: WallAxis, end: WallAxis) => void
   updateIntermediateWallAttachmentAxis: (wallId: IntermediateWallId, endpoint: 'start' | 'end', axis: WallAxis) => void
   updateIntermediateWallAlignmentPreservingGeometry: (wallId: IntermediateWallId, axis: WallAxis) => void
@@ -176,6 +182,25 @@ export const createIntermediateWallsSlice: StateCreator<
         cleanUpOrphaned(state)
 
         updateAllWallNodeGeometry(state, wall.perimeterId)
+
+        for (const nodeId of state.perimeters[wall.perimeterId].wallNodeIds) {
+          const node = state.wallNodes[nodeId]
+          if (node.type !== 'inner') continue
+
+          const options = getInnerWallConstructionOptions({ ...node, ...state._wallNodeGeometry[nodeId] })
+          const currentOption = { constructedBy: node.constructedBy, constructedWithColinear: node.constructedWithColinear }
+          if (isInnerWallConstructionOption(currentOption, options)) continue
+
+          if (options.length > 0) {
+            const nextOption = options[0]
+            node.constructedBy = nextOption.constructedBy
+            node.constructedWithColinear = nextOption.constructedWithColinear
+          } else {
+            node.constructedBy = undefined
+            node.constructedWithColinear = undefined
+          }
+          updateTimestampDraft(state, nodeId)
+        }
       })
     },
 
@@ -203,6 +228,30 @@ export const createIntermediateWallsSlice: StateCreator<
         }
         state.intermediateWalls[wallId].wallAssemblyId = assemblyId
         updateTimestampDraft(state, wallId)
+      })
+    },
+
+    updateInnerWallNodeConstruction: (nodeId, constructedBy, constructedWithColinear) => {
+      set(state => {
+        if (!(nodeId in state.wallNodes)) {
+          throw new NotFoundError('Wall node', nodeId)
+        }
+
+        const node = state.wallNodes[nodeId]
+        if (node.type !== 'inner') {
+          throw new InvalidOperationError('Only inner wall nodes have construction choices')
+        }
+
+        const geometry = state._wallNodeGeometry[nodeId]
+        const option = { constructedBy, constructedWithColinear }
+        const options = getInnerWallConstructionOptions({ ...node, ...geometry })
+        if (!isInnerWallConstructionOption(option, options)) {
+          throw new InvalidOperationError('Invalid inner wall node construction choice')
+        }
+
+        node.constructedBy = constructedBy
+        node.constructedWithColinear = constructedWithColinear
+        updateTimestampDraft(state, nodeId)
       })
     },
 

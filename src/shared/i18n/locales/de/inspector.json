@@ -199,7 +199,8 @@
   },
   "wallNode": {
     "deleteNode": "Knoten löschen",
-    "fitToView": "Auf Ansicht anpassen"
+    "fitToView": "Auf Ansicht anpassen",
+    "switchConstruction": "Konstruktionswand wechseln"
   },
   "wallPost": {
     "actsAsPost": "Fungiert als Ständer",
