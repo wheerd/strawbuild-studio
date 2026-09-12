@@ -6,6 +6,7 @@
     "addNew": "Add New",
     "buildingPhysics": "Building Physics",
     "cancel": "Cancel",
+    "default": "default",
     "color": "Color",
     "delete": "Delete",
     "density": "Density",
@@ -534,7 +535,8 @@
     "openings": "Opening Assemblies",
     "ringbeams": "Ring Beam Assemblies",
     "roofs": "Roof Assemblies",
-    "walls": "Wall Assemblies"
+    "perimeterWalls": "Perimeter Wall Assemblies",
+    "interiorWalls": "Interior Wall Assemblies"
   },
   "usage": {
     "globalDefault_floor": "Global Default",
@@ -575,10 +577,12 @@
       "woodStudClayBrick": "Wood Studs with Clay Brick Infill"
     },
     "defaultWallAssembly": "Default Wall Assembly",
+    "defaultInteriorWallAssembly": "Default Interior Wall Assembly",
     "deleteConfirm": "Are you sure you want to delete \"{{name}}\"? This action cannot be undone.",
     "deleteTitle": "Delete Wall Assembly",
     "desiredPostSpacing": "Desired Post Spacing",
     "emptyList": "No wall assemblies available",
+    "emptyInteriorList": "No interior wall assemblies available",
     "frameMaterial": "Frame Material",
     "frameThickness": "Frame Thickness",
     "frameWidth": "Frame Width",
@@ -608,6 +612,20 @@
     "nonStrawbaleConfiguration": "Non-Strawbale Configuration",
     "noOutsideLayers": "No outside layers defined",
     "openingAssembly": "Opening Assembly",
+    "layerSet": "Layer Set",
+    "wallConfiguration": "Wall Configuration",
+    "studConfiguration": "Stud Configuration",
+    "plankingConfiguration": "Planking Configuration",
+    "fillConfiguration": "Fill Configuration",
+    "monolithicConfiguration": "Monolithic Configuration",
+    "material": "Material",
+    "plankThickness": "Plank Thickness",
+    "plankMaterial": "Plank Material",
+    "minStudSpacing": "Minimum Stud Spacing",
+    "desiredStudSpacing": "Desired Stud Spacing",
+    "maxStudSpacing": "Maximum Stud Spacing",
+    "studWidth": "Stud Width",
+    "studMaterial": "Stud Material",
     "openingsSection": "Openings",
     "postsConfiguration": "Posts Configuration",
     "postType": "Post Type",
@@ -643,6 +661,14 @@
       "non-strawbale": "Non-Strawbale",
       "prefab-modules": "Prefab Modules",
       "strawhenge": "Strawhenge"
-    }
+    },
+    "interiorTypes": {
+      "monolithic": "Monolithic",
+      "planked-stud": "Planked Stud",
+      "monolithic-stud": "Monolithic Stud"
+    },
+    "newName_interiorMonolithic": "New Monolithic Interior Assembly",
+    "newName_interiorPlankedStud": "New Planked Stud Interior Assembly",
+    "newName_interiorMonolithicStud": "New Monolithic Stud Interior Assembly"
   }
 }

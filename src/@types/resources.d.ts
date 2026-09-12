@@ -191,6 +191,7 @@ interface Resources {
       "buildingPhysics": "Building Physics",
       "cancel": "Cancel",
       "color": "Color",
+      "default": "default",
       "delete": "Delete",
       "density": "Density",
       "densityUnit": "kg/m³",
@@ -713,12 +714,13 @@ interface Resources {
     },
     "tabs": {
       "floors": "Floor Assemblies",
+      "interiorWalls": "Interior Wall Assemblies",
       "layers": "Layer Sets",
       "materials": "Materials",
       "openings": "Opening Assemblies",
+      "perimeterWalls": "Perimeter Wall Assemblies",
       "ringbeams": "Ring Beam Assemblies",
-      "roofs": "Roof Assemblies",
-      "walls": "Wall Assemblies"
+      "roofs": "Roof Assemblies"
     },
     "usage": {
       "globalDefault_floor": "Global Default",
@@ -746,6 +748,7 @@ interface Resources {
       "battenSize": "Size",
       "configure": "Configure Wall Assembly",
       "copyNameTemplate": "{{name}} (Copy)",
+      "defaultInteriorWallAssembly": "Default Interior Wall Assembly",
       "defaultLabel": "{{label}} <gray>(default)</gray>",
       "defaultWallAssembly": "Default Wall Assembly",
       "defaults": {
@@ -762,27 +765,43 @@ interface Resources {
       "deleteConfirm": "Are you sure you want to delete \"{{name}}\"? This action cannot be undone.",
       "deleteTitle": "Delete Wall Assembly",
       "desiredPostSpacing": "Desired Post Spacing",
+      "desiredStudSpacing": "Desired Stud Spacing",
+      "emptyInteriorList": "No interior wall assemblies available",
       "emptyList": "No wall assemblies available",
+      "fillConfiguration": "Fill Configuration",
       "frameMaterial": "Frame Material",
       "frameThickness": "Frame Thickness",
       "frameWidth": "Frame Width",
       "infillConfiguration": "Infill Configuration",
       "infillMaterial": "Infill Material",
       "infillMaterialTooltip": "If configured, will be used for gaps which are too small for straw",
+      "interiorTypes": {
+        "monolithic": "Monolithic",
+        "monolithic-stud": "Monolithic Stud",
+        "planked-stud": "Planked Stud"
+      },
+      "layerSet": "Layer Set",
       "layers": {
         "inside": "Inside",
         "outside": "Outside"
       },
       "layersSection": "Layers",
+      "material": "Material",
       "maxPostSpacing": "Max Post Spacing",
+      "maxStudSpacing": "Maximum Stud Spacing",
       "maxWidth": "Max Width",
       "minStrawSpace": "Min Straw Space",
+      "minStudSpacing": "Minimum Stud Spacing",
       "minWidth": "Min Width",
       "moduleConfiguration": "Module Configuration",
       "moduleType": "Module Type",
       "moduleTypeDouble": "Double Frame",
       "moduleTypeSingle": "Single Frame",
+      "monolithicConfiguration": "Monolithic Configuration",
       "newName_infill": "New Infill Assembly",
+      "newName_interiorMonolithic": "New Monolithic Interior Assembly",
+      "newName_interiorMonolithicStud": "New Monolithic Stud Interior Assembly",
+      "newName_interiorPlankedStud": "New Planked Stud Interior Assembly",
       "newName_modules": "New Modules Assembly",
       "newName_nonStrawbale": "New Non-Strawbale Assembly",
       "newName_prefab": "New Prefab Modules Assembly",
@@ -793,6 +812,9 @@ interface Resources {
       "nonStrawbaleConfiguration": "Non-Strawbale Configuration",
       "openingAssembly": "Opening Assembly",
       "openingsSection": "Openings",
+      "plankMaterial": "Plank Material",
+      "plankThickness": "Plank Thickness",
+      "plankingConfiguration": "Planking Configuration",
       "postType": "Post Type",
       "postTypeDouble": "Double",
       "postTypeFull": "Full",
@@ -818,6 +840,9 @@ interface Resources {
       "spacerCount": "Spacer Count",
       "spacerMaterial": "Spacer Material",
       "spacerSize": "Spacer Size",
+      "studConfiguration": "Stud Configuration",
+      "studMaterial": "Stud Material",
+      "studWidth": "Stud Width",
       "targetWidth": "Target Width",
       "triangularBattensConfiguration": "Triangular Battens",
       "triangularBattensTooltip": "Triangular battens are placed in the corners between posts and strawbales to prevent them from slipping out. Not needed when there is planking to hold the bales.",
@@ -827,7 +852,8 @@ interface Resources {
         "non-strawbale": "Non-Strawbale",
         "prefab-modules": "Prefab Modules",
         "strawhenge": "Strawhenge"
-      }
+      },
+      "wallConfiguration": "Wall Configuration"
     }
   },
   "construction": {

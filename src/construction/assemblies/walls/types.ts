@@ -91,9 +91,7 @@ export type SegmentInfillMethod = (area: WallConstructionArea, type: 'lintel' | 
 
 export interface InteriorWallAssembly {
   construct: (wall: IntermediateWallWithGeometry, storeyContext: StoreyContext) => ConstructionModel
-
   get tag(): Tag
-  get thicknessRange(): ThicknessRange
 }
 
 export type InteriorWallAssemblyType = 'monolithic' | 'planked-stud' | 'monolithic-stud'

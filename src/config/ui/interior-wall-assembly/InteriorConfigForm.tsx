@@ -1,0 +1,105 @@
+import * as Label from '@radix-ui/react-label'
+import React, { useCallback } from 'react'
+import { useTranslation } from 'react-i18next'
+
+import { useConfigActions } from '@/config/store'
+import type { InteriorWallAssemblyConfig } from '@/config/types'
+import type { ConfigActions } from '@/config/store/types'
+import { LayerSetSelectWithEdit } from '@/config/ui/layers/LayerSetSelect'
+import { OpeningAssemblySelectWithEdit } from '@/config/ui/opening-assembly/OpeningAssemblySelectWithEdit'
+import { MaterialSelectWithEdit } from '@/materials/ui/MaterialSelectWithEdit'
+import { Card } from '@/shared/ui/components/card'
+import { Separator } from '@/shared/ui/components/separator'
+import { TextField } from '@/shared/ui/components/text-field'
+import { LengthField as LengthInput } from '@/shared/ui/LengthField/LengthField'
+import { useDebouncedInput } from '@/shared/ui/hooks/useDebouncedInput'
+import type { MaterialId, MaterialType } from '@/materials/types'
+
+interface InteriorConfigFormProps {
+  assembly: InteriorWallAssemblyConfig
+}
+
+export function InteriorConfigForm({ assembly }: InteriorConfigFormProps): React.JSX.Element {
+  const { t } = useTranslation('config')
+  const { updateInteriorWallAssemblyName, updateInteriorWallAssemblyConfig } = useConfigActions()
+  const nameInput = useDebouncedInput(assembly.nameKey ? t(assembly.nameKey) : assembly.name, name => {
+    updateInteriorWallAssemblyName(assembly.id, name)
+  }, { debounceMs: 1000 })
+  const updateConfig = useCallback((updates: Parameters<ConfigActions['updateInteriorWallAssemblyConfig']>[1]) => {
+    updateInteriorWallAssemblyConfig(assembly.id, updates)
+  }, [assembly.id, updateInteriorWallAssemblyConfig])
+
+  return (
+    <Card className="flex flex-col gap-3 p-3">
+      <div className="grid grid-cols-2 items-center gap-2">
+        <div className="grid grid-cols-[auto_1fr] items-center gap-2">
+          <Label.Root><span className="text-base font-medium">{t($ => $.common.name)}</span></Label.Root>
+          <TextField.Root value={nameInput.value} onChange={event => { nameInput.handleChange(event.target.value); }} onBlur={nameInput.handleBlur} onKeyDown={nameInput.handleKeyDown} />
+        </div>
+        <div className="flex items-center gap-2">
+          <Label.Root><span className="text-base font-medium">{t($ => $.common.type)}</span></Label.Root>
+          <span>{t($ => $.walls.interiorTypes[assembly.type])}</span>
+        </div>
+      </div>
+      <Separator />
+      <div className="grid grid-cols-2 gap-4">
+        <div className="flex flex-col gap-3">
+          {assembly.type === 'monolithic' && (
+            <ConfigSection title={t($ => $.walls.monolithicConfiguration)}>
+              <MaterialField label={t($ => $.walls.material)} value={assembly.material} onChange={material => { if (material) updateConfig({ material }) }} />
+            </ConfigSection>
+          )}
+          {assembly.type !== 'monolithic' && <StudFields assembly={assembly} updateConfig={updateConfig} />}
+          {assembly.type === 'planked-stud' && (
+            <ConfigSection title={t($ => $.walls.plankingConfiguration)}>
+              <LengthField label={t($ => $.walls.plankThickness)} value={assembly.plankThickness} onChange={plankThickness => { updateConfig({ plankThickness }); }} />
+              <MaterialField label={t($ => $.walls.plankMaterial)} value={assembly.plankMaterial} onChange={plankMaterial => { if (plankMaterial) updateConfig({ plankMaterial }) }} preferredTypes={['dimensional']} />
+              <MaterialField label={t($ => $.common.infillMaterial)} value={assembly.fillMaterial ?? null} allowEmpty onChange={fillMaterial => { updateConfig({ fillMaterial: fillMaterial ?? undefined }); }} />
+            </ConfigSection>
+          )}
+          {assembly.type === 'monolithic-stud' && (
+            <ConfigSection title={t($ => $.walls.fillConfiguration)}>
+              <MaterialField label={t($ => $.common.infillMaterial)} value={assembly.fillMaterial} onChange={fillMaterial => { if (fillMaterial) updateConfig({ fillMaterial }) }} />
+            </ConfigSection>
+          )}
+        </div>
+        <ConfigSection title={t($ => $.walls.wallConfiguration)}>
+          <SelectField label={t($ => $.walls.layerSet)}>
+            <LayerSetSelectWithEdit value={assembly.layerSetId} onValueChange={layerSetId => { if (layerSetId) updateConfig({ layerSetId }) }} use="wall" />
+          </SelectField>
+          <SelectField label={t($ => $.walls.openingAssembly)}>
+            <OpeningAssemblySelectWithEdit value={assembly.openingAssemblyId} allowDefault onValueChange={openingAssemblyId => { updateConfig({ openingAssemblyId }); }} size="sm" />
+          </SelectField>
+        </ConfigSection>
+      </div>
+    </Card>
+  )
+}
+
+function StudFields({ assembly, updateConfig }: { assembly: Extract<InteriorWallAssemblyConfig, { type: 'planked-stud' | 'monolithic-stud' }>; updateConfig: (updates: Parameters<ConfigActions['updateInteriorWallAssemblyConfig']>[1]) => void }): React.JSX.Element {
+  const { t } = useTranslation('config')
+  return <ConfigSection title={t($ => $.walls.studConfiguration)}>
+    <LengthField label={t($ => $.walls.minStudSpacing)} value={assembly.minStudSpacing} onChange={minStudSpacing => { updateConfig({ minStudSpacing }); }} min={0} max={assembly.desiredStudSpacing} />
+    <LengthField label={t($ => $.walls.desiredStudSpacing)} value={assembly.desiredStudSpacing} onChange={desiredStudSpacing => { updateConfig({ desiredStudSpacing }); }} min={assembly.minStudSpacing} max={assembly.maxStudSpacing} />
+    <LengthField label={t($ => $.walls.maxStudSpacing)} value={assembly.maxStudSpacing} onChange={maxStudSpacing => { updateConfig({ maxStudSpacing }); }} min={assembly.desiredStudSpacing} />
+    <LengthField label={t($ => $.walls.studWidth)} value={assembly.studWidth} onChange={studWidth => { updateConfig({ studWidth }); }} min={0} />
+    <MaterialField label={t($ => $.walls.studMaterial)} value={assembly.studMaterial} onChange={studMaterial => { if (studMaterial) updateConfig({ studMaterial }) }} preferredTypes={['dimensional']} />
+  </ConfigSection>
+}
+
+function ConfigSection({ title, children }: { title: string; children: React.ReactNode }): React.JSX.Element {
+  return <div className="flex flex-col gap-3"><h2>{title}</h2><div className="grid grid-cols-2 gap-2 gap-x-3">{children}</div></div>
+}
+
+function LengthField({ label, value, onChange, min, max }: { label: string; value: number; onChange: (value: number) => void; min?: number; max?: number }): React.JSX.Element {
+  return <div className="flex flex-col gap-1"><Label.Root><span className="text-sm font-medium">{label}</span></Label.Root><LengthInput value={value} onChange={onChange} unit="mm" size="sm" min={min} max={max} /></div>
+}
+
+function SelectField({ label, children }: { label: string; children: React.ReactNode }): React.JSX.Element {
+  return <div className="flex flex-col gap-1"><Label.Root><span className="text-sm font-medium">{label}</span></Label.Root>{children}</div>
+}
+
+function MaterialField({ label, value, onChange, allowEmpty = false, preferredTypes }: { label: string; value: MaterialId | null | undefined; onChange: (value: MaterialId | null) => void; allowEmpty?: boolean; preferredTypes?: MaterialType[] }): React.JSX.Element {
+  const { t } = useTranslation('config')
+  return <div className="flex flex-col gap-1"><Label.Root><span className="text-sm font-medium">{label}</span></Label.Root><MaterialSelectWithEdit value={value} allowEmpty={allowEmpty} emptyLabel={t($ => $.common.none)} onValueChange={onChange} size="sm" preferredTypes={preferredTypes} /></div>
+}

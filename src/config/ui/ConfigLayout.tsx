@@ -6,7 +6,16 @@ import { cn } from '@/shared/ui/utils'
 
 import type { ConfigTab } from './useConfigNavigation'
 
-const tabs: ConfigTab[] = ['materials', 'layers', 'ringbeams', 'walls', 'openings', 'floors', 'roofs']
+const tabs: ConfigTab[] = [
+  'materials',
+  'layers',
+  'ringbeams',
+  'perimeter-walls',
+  'interior-walls',
+  'openings',
+  'floors',
+  'roofs'
+]
 
 export function ConfigLayout(): React.JSX.Element {
   const { t } = useTranslation('config')
@@ -28,7 +37,13 @@ export function ConfigLayout(): React.JSX.Element {
                 )
               }
             >
-              {t($ => $.tabs[tab])}
+              {t($ =>
+                tab === 'perimeter-walls'
+                  ? $.tabs.perimeterWalls
+                  : tab === 'interior-walls'
+                    ? $.tabs.interiorWalls
+                    : $.tabs[tab as keyof typeof $.tabs]
+              )}
             </NavLink>
           ))}
         </nav>
