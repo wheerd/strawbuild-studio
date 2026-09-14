@@ -1,8 +1,8 @@
 import { generateIntermediateWallConstraints } from '@/building/gcs/constraintGenerator'
 import {
+  type InteriorWallAssemblyId,
   type IntermediateWallId,
   type IntermediateWallWithGeometry,
-  type InteriorWallAssemblyId,
   type PerimeterId,
   type WallId,
   type WallNodeId,

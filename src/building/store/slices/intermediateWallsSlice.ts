@@ -188,7 +188,10 @@ export const createIntermediateWallsSlice: StateCreator<
           if (node.type !== 'inner') continue
 
           const options = getInnerWallConstructionOptions({ ...node, ...state._wallNodeGeometry[nodeId] })
-          const currentOption = { constructedBy: node.constructedBy, constructedWithColinear: node.constructedWithColinear }
+          const currentOption = {
+            constructedBy: node.constructedBy,
+            constructedWithColinear: node.constructedWithColinear
+          }
           if (isInnerWallConstructionOption(currentOption, options)) continue
 
           if (options.length > 0) {

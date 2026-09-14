@@ -113,7 +113,7 @@ export function buildIntermediateWallCoreModel(wallId: IntermediateWallId): Core
   const { getIntermediateWallById } = getModelActions()
   const { getInteriorWallAssemblyById } = getConfigActions()
   const wall = getIntermediateWallById(wallId)
-  const assemblyConfig = wall.wallAssemblyId ? getInteriorWallAssemblyById(wall.wallAssemblyId) : null
+  const assemblyConfig = getInteriorWallAssemblyById(wall.wallAssemblyId)
   if (!assemblyConfig) throw new Error(`Wall assembly with ID ${wall.wallAssemblyId} not found for wall ${wall.id}`)
   const assembly = resolveInteriorWallAssembly(assemblyConfig)
   const perimeter = getModelActions().getPerimeterById(wall.perimeterId)
@@ -224,7 +224,7 @@ export function buildFloorCoreModel(perimeterId: PerimeterId): CoreModel {
     const ceilingPolygons = intersectPolygons([perimeterContext.outerFinishedPolygon], belowInnerUnion)
     const finalCeilingPolygons = subtractPolygons(ceilingPolygons, [
       ...floorHoles,
-      ...(perimeterContext.interiorWallAreas ?? [])
+      ...perimeterContext.interiorWallAreas
     ])
 
     if (finalCeilingPolygons.length > 0) {

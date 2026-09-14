@@ -53,11 +53,7 @@ export function WallNodeInspector({ nodeId }: { nodeId: WallNodeId }): React.JSX
       <div className="flex flex-col gap-3">
         <div className="flex justify-end gap-2">
           {node.type === 'inner' && constructionOptions.length > 1 && (
-            <Button
-              size="icon"
-              title={t($ => $.wallNode.switchConstruction)}
-              onClick={handleCycleConstruction}
-            >
+            <Button size="icon" title={t($ => $.wallNode.switchConstruction)} onClick={handleCycleConstruction}>
               <RotateCw />
             </Button>
           )}

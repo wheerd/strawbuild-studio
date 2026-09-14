@@ -1,6 +1,6 @@
 import type { WallNodeId } from '@/building/model/ids'
 import { useWallNodeById } from '@/building/store'
-import { BidirectionalArrow, Arrow } from '@/editor/canvas/components/Arrow'
+import { Arrow, BidirectionalArrow } from '@/editor/canvas/components/Arrow'
 import { useSelectionStore } from '@/editor/canvas/state/selectionStore'
 import { scaleAddVec2 } from '@/shared/geometry'
 import { MATERIAL_COLORS } from '@/shared/theme/colors'
@@ -29,14 +29,16 @@ export function WallNodeShape({ nodeId }: { nodeId: WallNodeId }): React.JSX.Ele
         strokeOpacity={0.5}
         strokeWidth={10}
       />
-      {isSelected && node.type === 'inner' && node.constructedBy && (
-        <ConstructionArrow node={node} />
-      )}
+      {isSelected && node.type === 'inner' && node.constructedBy && <ConstructionArrow node={node} />}
     </g>
   )
 }
 
-function ConstructionArrow({ node }: { node: Extract<ReturnType<typeof useWallNodeById>, { type: 'inner' }> }): React.JSX.Element | null {
+function ConstructionArrow({
+  node
+}: {
+  node: Extract<ReturnType<typeof useWallNodeById>, { type: 'inner' }>
+}): React.JSX.Element | null {
   const constructingIncident = node.incidentWalls.find(incident => incident.id === node.constructedBy)
   if (!constructingIncident) return null
 

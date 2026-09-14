@@ -5,14 +5,10 @@ import { useTranslation } from 'react-i18next'
 import { useParams } from 'react-router-dom'
 
 import type { InteriorWallAssemblyId } from '@/building/model/ids'
-import {
-  useConfigActions,
-  useDefaultInteriorWallAssemblyId,
-  useInteriorWallAssemblies
-} from '@/config/store'
+import { useConfigActions, useDefaultInteriorWallAssemblyId, useInteriorWallAssemblies } from '@/config/store'
+import { LAYER_SET_CLAY_PLASTER } from '@/config/store/slices/layers.defaults'
 import type { InteriorWallAssemblyType, InteriorWallConfig } from '@/construction/assemblies/walls/types'
 import { clayBrick, roughWood, strawbale } from '@/materials/defaults'
-import { LAYER_SET_CLAY_PLASTER } from '@/config/store/slices/layers.defaults'
 import { AlertDialog } from '@/shared/ui/components/alert-dialog'
 import { Button } from '@/shared/ui/components/button'
 import { DropdownMenu } from '@/shared/ui/components/dropdown-menu'
@@ -116,7 +112,9 @@ export function InteriorWallAssemblyContent(props?: InteriorWallAssemblyContentP
           <select
             className="border-input bg-background h-9 min-w-0 grow rounded-md border px-3 text-sm"
             value={selectedAssemblyId ?? ''}
-            onChange={event => { setSelectedAssemblyId(event.target.value || null); }}
+            onChange={event => {
+              setSelectedAssemblyId(event.target.value || null)
+            }}
           >
             {assemblies.map(assembly => (
               <option key={assembly.id} value={assembly.id}>
@@ -127,61 +125,110 @@ export function InteriorWallAssemblyContent(props?: InteriorWallAssemblyContentP
           </select>
           <DropdownMenu>
             <DropdownMenu.Trigger asChild>
-              <Button size="icon" title={t($ => $.common.addNew)}><Plus /></Button>
+              <Button size="icon" title={t($ => $.common.addNew)}>
+                <Plus />
+              </Button>
             </DropdownMenu.Trigger>
             <DropdownMenu.Content>
               {types.map(type => (
-                <DropdownMenu.Item key={type} onSelect={() => { handleAddNew(type); }}>
+                <DropdownMenu.Item
+                  key={type}
+                  onSelect={() => {
+                    handleAddNew(type)
+                  }}
+                >
                   {t($ => $.walls.interiorTypes[type])}
                 </DropdownMenu.Item>
               ))}
             </DropdownMenu.Content>
           </DropdownMenu>
-          <Button size="icon" onClick={handleDuplicate} disabled={!selectedAssembly} title={t($ => $.common.duplicate)} variant="soft">
+          <Button
+            size="icon"
+            onClick={handleDuplicate}
+            disabled={!selectedAssembly}
+            title={t($ => $.common.duplicate)}
+            variant="soft"
+          >
             <Copy />
           </Button>
           <AlertDialog.Root>
             <AlertDialog.Trigger asChild>
-              <Button size="icon" disabled={!selectedAssembly || selectedAssembly.id === defaultAssemblyId} variant="destructive" title={t($ => $.common.delete)}>
+              <Button
+                size="icon"
+                disabled={!selectedAssembly || selectedAssembly.id === defaultAssemblyId}
+                variant="destructive"
+                title={t($ => $.common.delete)}
+              >
                 <Trash />
               </Button>
             </AlertDialog.Trigger>
             <AlertDialog.Content>
               <AlertDialog.Title>{t($ => $.walls.deleteTitle)}</AlertDialog.Title>
-              <AlertDialog.Description>{t($ => $.walls.deleteConfirm, { name: selectedAssembly?.name })}</AlertDialog.Description>
+              <AlertDialog.Description>
+                {t($ => $.walls.deleteConfirm, { name: selectedAssembly?.name })}
+              </AlertDialog.Description>
               <div className="mt-4 flex justify-end gap-3">
-                <AlertDialog.Cancel asChild><Button variant="soft">{t($ => $.common.cancel)}</Button></AlertDialog.Cancel>
-                <AlertDialog.Action asChild><Button variant="destructive" onClick={handleDelete}>{t($ => $.common.delete)}</Button></AlertDialog.Action>
+                <AlertDialog.Cancel asChild>
+                  <Button variant="soft">{t($ => $.common.cancel)}</Button>
+                </AlertDialog.Cancel>
+                <AlertDialog.Action asChild>
+                  <Button variant="destructive" onClick={handleDelete}>
+                    {t($ => $.common.delete)}
+                  </Button>
+                </AlertDialog.Action>
               </div>
             </AlertDialog.Content>
           </AlertDialog.Root>
           <AlertDialog.Root>
             <AlertDialog.Trigger asChild>
-              <Button size="icon" className="text-destructive" variant="outline" title={t($ => $.common.resetToDefaults)}><Undo2 /></Button>
+              <Button
+                size="icon"
+                className="text-destructive"
+                variant="outline"
+                title={t($ => $.common.resetToDefaults)}
+              >
+                <Undo2 />
+              </Button>
             </AlertDialog.Trigger>
             <AlertDialog.Content>
               <AlertDialog.Title>{t($ => $.walls.resetTitle)}</AlertDialog.Title>
               <AlertDialog.Description>{t($ => $.walls.resetConfirm)}</AlertDialog.Description>
               <div className="mt-4 flex justify-end gap-3">
-                <AlertDialog.Cancel asChild><Button variant="soft">{t($ => $.common.cancel)}</Button></AlertDialog.Cancel>
-                <AlertDialog.Action asChild><Button variant="destructive" onClick={handleReset}>{t($ => $.common.reset)}</Button></AlertDialog.Action>
+                <AlertDialog.Cancel asChild>
+                  <Button variant="soft">{t($ => $.common.cancel)}</Button>
+                </AlertDialog.Cancel>
+                <AlertDialog.Action asChild>
+                  <Button variant="destructive" onClick={handleReset}>
+                    {t($ => $.common.reset)}
+                  </Button>
+                </AlertDialog.Action>
               </div>
             </AlertDialog.Content>
           </AlertDialog.Root>
         </div>
         <div className="grid grid-cols-[auto_1fr] items-center gap-2">
-          <Label.Root><span className="text-sm font-medium">{t($ => $.walls.defaultInteriorWallAssembly)}</span></Label.Root>
+          <Label.Root>
+            <span className="text-sm font-medium">{t($ => $.walls.defaultInteriorWallAssembly)}</span>
+          </Label.Root>
           <select
             className="border-input bg-background h-9 rounded-md border px-3 text-sm"
             value={defaultAssemblyId}
-            onChange={event => { setDefaultInteriorWallAssembly(event.target.value as InteriorWallAssemblyId); }}
+            onChange={event => {
+              setDefaultInteriorWallAssembly(event.target.value as InteriorWallAssemblyId)
+            }}
           >
-            {assemblies.map(assembly => <option key={assembly.id} value={assembly.id}>{assembly.name}</option>)}
+            {assemblies.map(assembly => (
+              <option key={assembly.id} value={assembly.id}>
+                {assembly.name}
+              </option>
+            ))}
           </select>
         </div>
       </div>
       {selectedAssembly && <InteriorConfigForm assembly={selectedAssembly} />}
-      {assemblies.length === 0 && <div className="flex items-center justify-center p-5">{t($ => $.walls.emptyInteriorList)}</div>}
+      {assemblies.length === 0 && (
+        <div className="flex items-center justify-center p-5">{t($ => $.walls.emptyInteriorList)}</div>
+      )}
     </div>
   )
 }
