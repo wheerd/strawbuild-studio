@@ -1,7 +1,7 @@
 import isDeepEqual from 'fast-deep-equal'
 
 import type { Perimeter } from '@/building/model'
-import type { IntermediateWallId, PerimeterId, WallId, WallNodeId } from '@/building/model/ids'
+import type { IntermediateWallId, PerimeterId, WallNodeId } from '@/building/model/ids'
 import { isIntermediateWallId, isOpeningId } from '@/building/model/ids'
 import type {
   InnerWallNode,
@@ -10,9 +10,9 @@ import type {
   IntermediateWallGeometry,
   PerimeterWallNodeGeometry,
   WallAxis,
-  WallNode,
-  WallNodeIncidentWall
+  WallNode
 } from '@/building/model/rooms'
+import { type WallNodeIncidentLine, computeNodeGeometry } from '@/building/model/wallNodeIntersections'
 import type { IntermediateWallsState } from '@/building/store/slices/intermediateWallsSlice'
 import type { PerimetersState } from '@/building/store/slices/perimeterSlice'
 import type { TimestampsState } from '@/building/store/slices/timestampsSlice'
@@ -25,14 +25,11 @@ import {
   type Vec2,
   ZERO_VEC2,
   addVec2,
-  crossVec2,
   direction,
   distVec2,
-  dotAbsVec2,
   dotVec2,
   lenVec2,
   lineFromSegment,
-  lineIntersection,
   midpoint,
   negVec2,
   normVec2,
@@ -47,13 +44,6 @@ import { ensurePolygonIsClockwise } from '@/shared/geometry/polygon'
 
 import { updateEntityGeometry } from './perimeterGeometry'
 
-interface IncidentLine {
-  left: Line2D
-  right: Line2D
-  wallId: WallId
-  dir: Vec2
-}
-
 export function updateAllWallNodeGeometry(
   state: IntermediateWallsState & PerimetersState & WallEntitiesState & TimestampsState,
   perimeterId: PerimeterId
@@ -67,7 +57,7 @@ export function updateAllWallNodeGeometry(
   for (const nodeId of perimeter.wallNodeIds) {
     const node = state.wallNodes[nodeId]
 
-    const incidentWallLines: IncidentLine[] = node.connectedWallIds
+    const incidentWallLines: WallNodeIncidentLine[] = node.connectedWallIds
       .map(wallId => {
         const lines = wallLines.get(wallId)
         const wall = state.intermediateWalls[wallId]
@@ -112,7 +102,9 @@ export function updateAllWallNodeGeometry(
     } else if (node.type === 'inner' && incidentWallLines.length === 1) {
       updateWallEnd(state, incidentWallLines[0], node)
     } else {
-      updateComplexNodeGeometry(node, incidentWallLines, nodePositions, state)
+      const nodePos = nodePositions.get(node.id)
+      if (!nodePos) throw new Error('Missing node position')
+      updateComplexNodeGeometry(node, nodePos, incidentWallLines, state)
     }
   }
 
@@ -238,195 +230,19 @@ function updateWallGeometry(geometry: IntermediateWallGeometry, wall: Intermedia
 
 function updateComplexNodeGeometry(
   node: WallNode,
-  incidents: IncidentLine[],
-  nodePositions: Map<WallNodeId, Vec2>,
+  nodePos: Vec2,
+  incidents: WallNodeIncidentLine[],
   state: IntermediateWallsState & PerimetersState & TimestampsState
 ) {
-  if (node.type === 'inner' && incidents.length === 2) {
-    const dot = dotAbsVec2(incidents[0].dir, incidents[1].dir)
-    if (dot > 0.99) {
-      updateColinearNode(node, incidents[0], incidents[1], nodePositions, state)
-      return
+  const geometry = computeNodeGeometry(node, nodePos, incidents)
+
+  for (const incident of geometry.incidentWalls) {
+    if (isIntermediateWallId(incident.id)) {
+      assignWallEndpointsFromNode(node.id, incident.id, state, incident.leftPoint, incident.rightPoint)
     }
   }
 
-  const intersectionPoints = getWallLineIntersections(incidents, node)
-
-  const n = incidents.length
-  const colinearIndex = intersectionPoints.indexOf(null)
-  let colinearPrev = ZERO_VEC2
-  let colinearNext = ZERO_VEC2
-  let colinearSharedPoint: Vec2 | undefined
-  if (colinearIndex !== -1) {
-    const colinearLine = incidents[colinearIndex].right
-    const prevIndex = (n + colinearIndex - 1) % n
-    const nextIndex = (colinearIndex + 1) % n
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    colinearPrev = projectPointOntoLine(intersectionPoints[prevIndex]!, colinearLine)
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    colinearNext = projectPointOntoLine(intersectionPoints[nextIndex]!, colinearLine)
-    const nodePosition = nodePositions.get(node.id)
-    if (nodePosition) {
-      colinearSharedPoint = projectPointOntoLine(nodePosition, colinearLine)
-    }
-  }
-
-  let insideStart = ZERO_VEC2
-  let insideEnd = ZERO_VEC2
-  let outsideStart = ZERO_VEC2
-  let outsideEnd = ZERO_VEC2
-  const incidentWalls: WallNodeIncidentWall[] = []
-  const polygonPoints: Vec2[] = []
-  for (let i = 0; i < n; i++) {
-    const iNext = (i + 1) % n
-    const line = incidents[iNext]
-
-    const prevIntersection = intersectionPoints[i] ?? colinearPrev
-    const nextIntersection = intersectionPoints[iNext] ?? colinearNext
-    const leftProj = dotVec2(line.dir, prevIntersection)
-    const rightProj = dotVec2(line.dir, nextIntersection)
-    const leftPoint = leftProj < rightProj ? projectPointOntoLine(nextIntersection, line.left) : prevIntersection
-    const rightPoint = leftProj < rightProj ? nextIntersection : projectPointOntoLine(prevIntersection, line.right)
-
-    // Keep the intersection-derived points for the node boundary, but use a
-    // single projected node point for the two walls sharing the colinear side.
-    const wallLeftPoint =
-      colinearSharedPoint && iNext === lineIndexAfter(colinearIndex, n) ? colinearSharedPoint : leftPoint
-    const wallRightPoint = colinearSharedPoint && iNext === colinearIndex ? colinearSharedPoint : rightPoint
-    const wallStartPoint =
-      colinearSharedPoint && iNext === lineIndexAfter(colinearIndex, n) ? colinearSharedPoint : prevIntersection
-    const wallEndPoint = colinearSharedPoint && iNext === colinearIndex ? colinearSharedPoint : nextIntersection
-
-    polygonPoints.push(prevIntersection, leftPoint, rightPoint)
-    incidentWalls.push({ leftPoint: wallLeftPoint, rightPoint: wallRightPoint, direction: line.dir, id: line.wallId })
-
-    if (isIntermediateWallId(line.wallId)) {
-      assignWallEndpointsFromNode(node.id, line.wallId, state, wallStartPoint, wallEndPoint)
-    } else {
-      if (intersectionPoints[iNext] === null) {
-        insideStart = leftPoint
-        outsideStart = rightPoint
-      } else if (intersectionPoints[i] === null) {
-        insideEnd = rightPoint
-        outsideEnd = leftPoint
-      } else {
-        throw new Error('Unreachable')
-      }
-    }
-  }
-
-  const boundary = { points: simplifyNodePolygonPoints(polygonPoints) }
-  const sum = boundary.points.reduce((acc, p) => addVec2(acc, p), ZERO_VEC2)
-  const center = scaleVec2(sum, 1 / boundary.points.length)
-
-  if (node.type === 'inner') {
-    state._wallNodeGeometry[node.id] = {
-      center,
-      boundary,
-      incidentWalls
-    } as InnerWallNodeGeometry
-  } else {
-    const nodePos = nodePositions.get(node.id)
-    state._wallNodeGeometry[node.id] = {
-      position: nodePos,
-      center,
-      boundary,
-      incidentWalls,
-      insideLine: { start: insideStart, end: insideEnd },
-      outsideLine: { start: outsideStart, end: outsideEnd }
-    } as PerimeterWallNodeGeometry
-  }
-}
-
-function getWallLineIntersections(incidents: IncidentLine[], node: WallNode) {
-  const n = incidents.length
-  const intersectionPoints: (Vec2 | null)[] = []
-  for (let i = 0; i < n; i++) {
-    const iNext = (i + 1) % n
-    const a = incidents[i].right
-    const b = incidents[iNext].left
-
-    const dot = dotAbsVec2(a.direction, b.direction)
-    if (dot < 0.99) {
-      const intersection = lineIntersection(a, b)
-      if (!intersection) {
-        throw new Error(`No intersection found between wall lines at node ${node.id}`)
-      }
-      intersectionPoints.push(intersection)
-    } else {
-      intersectionPoints.push(null)
-    }
-  }
-
-  return intersectionPoints
-}
-
-function simplifyNodePolygonPoints(points: Vec2[]): Vec2[] {
-  const deduplicated: Vec2[] = []
-  for (const point of points) {
-    if (deduplicated.length === 0 || distVec2(deduplicated[deduplicated.length - 1], point) > 1e-6) {
-      deduplicated.push(point)
-    }
-  }
-  if (deduplicated.length > 1 && distVec2(deduplicated[0], deduplicated[deduplicated.length - 1]) <= 1e-6) {
-    deduplicated.pop()
-  }
-
-  let changed = true
-  while (changed && deduplicated.length >= 3) {
-    changed = false
-    for (let i = 0; i < deduplicated.length; i++) {
-      const previous = deduplicated[(i + deduplicated.length - 1) % deduplicated.length]
-      const current = deduplicated[i]
-      const next = deduplicated[(i + 1) % deduplicated.length]
-      const incoming = subVec2(current, previous)
-      const outgoing = subVec2(next, current)
-      if (Math.abs(crossVec2(incoming, outgoing)) <= 1e-6 && dotVec2(incoming, outgoing) >= 0) {
-        deduplicated.splice(i, 1)
-        changed = true
-        break
-      }
-    }
-  }
-
-  return deduplicated
-}
-
-function updateColinearNode(
-  node: InnerWallNode,
-  a: IncidentLine,
-  b: IncidentLine,
-  nodePositions: Map<WallNodeId, Vec2>,
-  state: IntermediateWallsState & PerimetersState & TimestampsState
-) {
-  const nodePos = nodePositions.get(node.id)
-  if (!nodePos) {
-    throw new Error(`Node position not found for node ${node.id}`)
-  }
-
-  const aLeft = projectPointOntoLine(nodePos, a.left)
-  const aRight = projectPointOntoLine(nodePos, a.right)
-  assignWallEndpointsFromNode(node.id, a.wallId as IntermediateWallId, state, aLeft, aRight)
-
-  const bLeft = projectPointOntoLine(nodePos, b.left)
-  const bRight = projectPointOntoLine(nodePos, b.right)
-  assignWallEndpointsFromNode(node.id, b.wallId as IntermediateWallId, state, bLeft, bRight)
-
-  state._wallNodeGeometry[node.id] = {
-    center: midpoint(aLeft, aRight),
-    incidentWalls: [
-      { direction: a.dir, leftPoint: aLeft, rightPoint: aRight, id: a.wallId },
-      { direction: b.dir, leftPoint: bLeft, rightPoint: bRight, id: b.wallId }
-    ]
-  } as InnerWallNodeGeometry
-}
-
-function lineIndex(index: number, count: number): number {
-  return (index + count) % count
-}
-
-function lineIndexAfter(index: number, count: number): number {
-  return lineIndex(index + 1, count)
+  state._wallNodeGeometry[node.id] = geometry
 }
 
 function assignWallEndpointsFromNode(
@@ -449,7 +265,7 @@ function assignWallEndpointsFromNode(
 
 function updateWallEnd(
   state: IntermediateWallsState & PerimetersState & TimestampsState,
-  wall: IncidentLine,
+  wall: WallNodeIncidentLine,
   node: InnerWallNode
 ) {
   const left = projectPointOntoLine(node.position, wall.left)

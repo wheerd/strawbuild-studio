@@ -1,7 +1,7 @@
-import { type PerimeterWallWithGeometry, isOpeningId } from '@/building/model'
-import type { LayerSetId } from '@/building/model/ids'
+import { type PerimeterWallWithGeometry, isIntermediateWallId, isOpeningId } from '@/building/model'
+import type { IntermediateWallId, LayerSetId } from '@/building/model/ids'
 import { getModelActions } from '@/building/store'
-import { resolveLayerSetLayers, resolveLayerSetThickness } from '@/config/store'
+import { getConfigActions, resolveLayerSetLayers, resolveLayerSetThickness } from '@/config/store'
 import { LAYER_CONSTRUCTIONS } from '@/construction/assemblies/layers'
 import type { LayerConfig } from '@/construction/assemblies/layers/types'
 import { WallConstructionArea } from '@/construction/assemblies/utils/WallConstructionArea'
@@ -20,18 +20,22 @@ import {
   IDENTITY,
   type Length,
   type Plane3D,
+  type Polygon2D,
   type PolygonWithHoles2D,
   type Vec2,
+  crossVec2,
+  distVec2,
   ensurePolygonIsClockwise,
   newVec2,
   newVec3,
   signedAngleVec2,
-  simplifyPolygon
+  simplifyPolygon,
+  subtractPolygons
 } from '@/shared/geometry'
 import { assertUnreachable } from '@/shared/utils'
 
 import { getWallContext } from './corners/corners'
-import { computeLayerSpan, subtractWallOpenings } from './polygons'
+import { computeLayerSpan, createLayerPolygon, subtractWallOpenings } from './polygons'
 import { convertHeightLineToWallOffsets } from './roofIntegration'
 
 const WALL_LAYER_PLANE: Plane3D = 'xz'
@@ -45,7 +49,7 @@ const clonePolygon = (polygon: PolygonWithHoles2D): PolygonWithHoles2D => ({
   }))
 })
 
-const runLayerConstruction = (
+export const runLayerConstruction = (
   polygon: PolygonWithHoles2D,
   offset: Length,
   plane: Plane3D,
@@ -108,6 +112,14 @@ export function constructWallLayers(
 
     const reversedInsideLayers = [...insideLayers].reverse()
 
+    const interiorWallCutOuts = getPerimeterInnerLayerCutouts(
+      wall,
+      baseInsideSpan.start,
+      baseInsideSpan.end,
+      bottom,
+      top
+    )
+
     reversedInsideLayers.forEach((layer, layerIndex) => {
       const cumulativeInside = insideOffset + layer.thickness
       const span = computeLayerSpan('inside', cumulativeInside, wall, context)
@@ -126,7 +138,10 @@ export function constructWallLayers(
 
       // Extract polygon from area (handles roof slopes)
       const polygon = ensurePolygonIsClockwise(simplifyPolygon(layerArea.getSideProfilePolygon()))
-      const polygonsWithHoles = subtractWallOpenings(polygon, start, end, bottom, top, openings, zAdjustment)
+      const polygonsWithOpenings = subtractWallOpenings(polygon, start, end, bottom, top, openings, zAdjustment)
+      const polygonsWithHoles = polygonsWithOpenings.flatMap(p =>
+        subtractPolygons([p.outer], [...p.holes, ...interiorWallCutOuts])
+      )
       const results = polygonsWithHoles.flatMap(p =>
         runLayerConstruction(p, insideOffset, WALL_LAYER_PLANE, layer, layerDirection)
       )
@@ -214,4 +229,41 @@ export function constructWallLayers(
 
   const rawModel = aggregateLayerResults(layerResults)
   return rawModel
+}
+
+function getPerimeterInnerLayerCutouts(
+  wall: PerimeterWallWithGeometry,
+  start: Length,
+  end: Length,
+  bottom: Length,
+  top: Length
+): Polygon2D[] {
+  const { getWallNodesByPerimeter, getIntermediateWallById } = getModelActions()
+  const { getInteriorWallAssemblyById } = getConfigActions()
+  return getWallNodesByPerimeter(wall.perimeterId)
+    .filter(node => node.type === 'perimeter' && node.wallId === wall.id)
+    .flatMap(node => {
+      if (node.type !== 'perimeter') return []
+      const nodeStart = distVec2(wall.insideLine.start, node.insideLine.start)
+      const nodeEnd = distVec2(wall.insideLine.start, node.insideLine.end)
+      const incidents = node.incidentWalls.filter(w => isIntermediateWallId(w.id))
+      if (incidents.length === 0) return []
+
+      const startIncidentWall = getIntermediateWallById(incidents[0].id as IntermediateWallId)
+      const startAssembly = getInteriorWallAssemblyById(startIncidentWall.wallAssemblyId)
+      const startThickness = resolveLayerSetThickness(startAssembly?.layerSetId)
+      const startCross = crossVec2(incidents[0].direction, wall.direction)
+      const startExtension = startCross > 1e-6 ? startThickness / startCross : 0
+      const cutStart = Math.max(start, nodeStart + startExtension)
+
+      const last = incidents.length - 1
+      const endIncidentWall = getIntermediateWallById(incidents[last].id as IntermediateWallId)
+      const endAssembly = getInteriorWallAssemblyById(endIncidentWall.wallAssemblyId)
+      const endThickness = resolveLayerSetThickness(endAssembly?.layerSetId)
+      const endCross = crossVec2(incidents[last].direction, wall.direction)
+      const endExtension = endCross > 1e-6 ? endThickness / endCross : 0
+      const cutEnd = Math.min(end, nodeEnd - endExtension)
+
+      return cutEnd > cutStart ? [createLayerPolygon(cutStart, cutEnd, bottom, top)] : []
+    })
 }

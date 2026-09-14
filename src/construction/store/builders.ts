@@ -1,9 +1,10 @@
-import type { PerimeterWithGeometry } from '@/building/model'
-import type { PerimeterId, PerimeterWallId, RoofId, StoreyId } from '@/building/model/ids'
+import type { IntermediateWallWithGeometry, PerimeterWithGeometry } from '@/building/model'
+import type { IntermediateWallId, PerimeterId, PerimeterWallId, RoofId, StoreyId } from '@/building/model/ids'
 import { getModelActions } from '@/building/store'
 import { getConfigActions } from '@/config/store'
 import { constructRoof } from '@/construction/assemblies/roofs'
 import { resolveWallAssembly } from '@/construction/assemblies/walls'
+import { resolveInteriorWallAssembly } from '@/construction/assemblies/walls/interior'
 import { getPerimeterContextCached } from '@/construction/context/perimeterContextCache'
 import { getWallStoreyContextCached } from '@/construction/context/storeys'
 import { type ConstructionModel, mergeModels, transformModel } from '@/construction/model/model'
@@ -25,6 +26,10 @@ import { createBasePlateId, createFloorId, createPerimeterMeasurementsId, create
 
 interface ColinearWallGroup {
   wallIds: PerimeterWallId[]
+}
+
+interface IntermediateColinearWallGroup {
+  wallIds: IntermediateWallId[]
 }
 
 export function findColinearWallGroups(perimeter: PerimeterWithGeometry): ColinearWallGroup[] {
@@ -104,13 +109,69 @@ export function buildWallCoreModel(wallId: PerimeterWallId): CoreModel {
   }
 }
 
-export function buildColinearWallComposite(group: ColinearWallGroup): CompositeModel {
-  const { getPerimeterWallById } = getModelActions()
+export function buildIntermediateWallCoreModel(wallId: IntermediateWallId): CoreModel {
+  const { getIntermediateWallById } = getModelActions()
+  const { getInteriorWallAssemblyById } = getConfigActions()
+  const wall = getIntermediateWallById(wallId)
+  const assemblyConfig = wall.wallAssemblyId ? getInteriorWallAssemblyById(wall.wallAssemblyId) : null
+  if (!assemblyConfig) throw new Error(`Wall assembly with ID ${wall.wallAssemblyId} not found for wall ${wall.id}`)
+  const assembly = resolveInteriorWallAssembly(assemblyConfig)
+  const perimeter = getModelActions().getPerimeterById(wall.perimeterId)
+  return { model: assembly.construct(wall, getWallStoreyContextCached(perimeter.storeyId)), sourceId: wall.id }
+}
+
+export function findExplicitIntermediateColinearGroups(
+  walls: IntermediateWallWithGeometry[]
+): IntermediateColinearWallGroup[] {
+  const byId = new Map(walls.map(wall => [wall.id, wall]))
+  const adjacency = new Map<IntermediateWallId, Set<IntermediateWallId>>()
+  for (const wall of walls) adjacency.set(wall.id, new Set())
+  for (const node of getModelActions().getAllWallNodes()) {
+    if (node.type !== 'inner' || !node.constructedWithColinear) continue
+    const a = node.constructedBy
+    const b = node.constructedWithColinear
+    if (typeof a !== 'string' || typeof b !== 'string' || !byId.has(a) || !byId.has(b)) continue
+    adjacency.get(a)?.add(b)
+    adjacency.get(b)?.add(a)
+  }
+  const groups: IntermediateColinearWallGroup[] = []
+  const visited = new Set<IntermediateWallId>()
+  for (const wall of walls) {
+    if (visited.has(wall.id) || adjacency.get(wall.id)?.size === 0) continue
+    const stack = [wall.id]
+    const ids: IntermediateWallId[] = []
+    while (stack.length) {
+      const id = stack.pop()
+      if (!id) continue
+      if (visited.has(id)) continue
+      visited.add(id)
+      ids.push(id)
+      stack.push(...(adjacency.get(id) ?? []))
+    }
+    groups.push({ wallIds: ids })
+  }
+  return groups
+}
+
+export function buildColinearWallComposite(group: ColinearWallGroup | IntermediateColinearWallGroup): CompositeModel {
+  const { getPerimeterWallById, getIntermediateWallById } = getModelActions()
   const models: ModelWithTransform[] = []
   let cumulativeOffset = 0
 
   for (const wallId of group.wallIds) {
-    const wall = getPerimeterWallById(wallId)
+    const wall = wallId.startsWith('intermediate_')
+      ? getIntermediateWallById(wallId as IntermediateWallId)
+      : getPerimeterWallById(wallId as PerimeterWallId)
+    if ('entityReferenceLine' in wall) {
+      models.push({
+        id: wallId,
+        transform: rotateZ(
+          fromTrans(newVec3(wall.entityReferenceLine.start[0], wall.entityReferenceLine.start[1], 0)),
+          dirAngle(wall.entityReferenceLine.start, wall.entityReferenceLine.end)
+        )
+      })
+      continue
+    }
     const transform = cumulativeOffset > 0 ? fromTrans(newVec3(cumulativeOffset, 0, 0)) : IDENTITY
 
     models.push({
@@ -137,7 +198,10 @@ export function buildFloorCoreModel(perimeterId: PerimeterId): CoreModel {
   models.push(transformModel(floorModel, fromTrans(newVec3(0, 0, storeyContext.wallBottom))))
 
   const floorHoles = perimeterContext.floorOpenings
-  const floorPolygons = subtractPolygons([perimeterContext.innerFinishedPolygon], floorHoles)
+  const floorPolygons = subtractPolygons(
+    [perimeterContext.innerFinishedPolygon],
+    [...floorHoles, ...perimeterContext.interiorWallAreas]
+  )
 
   if (floorPolygons.length > 0) {
     const floorLayerResults = storeyContext.floorAssembly.constructFloorLayers(
@@ -158,7 +222,10 @@ export function buildFloorCoreModel(perimeterId: PerimeterId): CoreModel {
     const belowInnerUnion = unionPolygons(belowInnerPolygons)
 
     const ceilingPolygons = intersectPolygons([perimeterContext.outerFinishedPolygon], belowInnerUnion)
-    const finalCeilingPolygons = subtractPolygons(ceilingPolygons, floorHoles)
+    const finalCeilingPolygons = subtractPolygons(ceilingPolygons, [
+      ...floorHoles,
+      ...(perimeterContext.interiorWallAreas ?? [])
+    ])
 
     if (finalCeilingPolygons.length > 0) {
       const ceilingLayerResults = storeyContext.floorAssembly.constructCeilingLayers(
@@ -189,7 +256,7 @@ export function buildRoofCoreModel(roofId: RoofId): CoreModel {
 }
 
 export function buildPerimeterComposite(perimeter: PerimeterWithGeometry): CompositeModel {
-  const { getPerimeterWallsById } = getModelActions()
+  const { getPerimeterWallsById, getIntermediateWallsByPerimeter } = getModelActions()
   const storeyContext = getWallStoreyContextCached(perimeter.storeyId)
 
   const wallModels = getPerimeterWallsById(perimeter.id).map(wall => {
@@ -204,10 +271,20 @@ export function buildPerimeterComposite(perimeter: PerimeterWithGeometry): Compo
       transform
     }
   })
+  const intermediateModels = getIntermediateWallsByPerimeter(perimeter.id).map(wall => ({
+    id: wall.id,
+    transform: rotateZ(
+      fromTrans(
+        newVec3(wall.entityReferenceLine.start[0], wall.entityReferenceLine.start[1], storeyContext.wallBottom)
+      ),
+      dirAngle(wall.entityReferenceLine.start, wall.entityReferenceLine.end)
+    )
+  }))
 
   return {
     models: [
       ...wallModels,
+      ...intermediateModels,
       { id: createFloorId(perimeter.id), transform: IDENTITY },
       { id: createBasePlateId(perimeter.id), transform: IDENTITY },
       { id: createTopPlateId(perimeter.id), transform: IDENTITY },

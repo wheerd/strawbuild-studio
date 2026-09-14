@@ -106,7 +106,7 @@ export interface IntermediateWall {
   start: WallAttachment
   end: WallAttachment
   thickness: Length
-  wallAssemblyId?: InteriorWallAssemblyId
+  wallAssemblyId: InteriorWallAssemblyId
 }
 
 export interface IntermediateWallGeometry {
