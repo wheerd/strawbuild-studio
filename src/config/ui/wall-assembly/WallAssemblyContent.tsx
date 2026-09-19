@@ -10,7 +10,7 @@ import { useConfigActions, useDefaultWallAssemblyId, useWallAssemblies } from '@
 import { type EntityId, useEntityLabel } from '@/config/ui/useEntityLabel'
 import { WallAssemblySelect } from '@/config/ui/wall-assembly/WallAssemblySelect'
 import { type WallAssemblyUsage, getWallAssemblyUsage } from '@/config/usage'
-import type { PerimeterWallAssemblyType, PerimeterWallConfig } from '@/construction/assemblies/walls/types'
+import type { PerimeterWallAssemblyType, PerimeterWallConfig } from '@/construction/assemblies/perimeterWalls/types'
 import {
   battens,
   ecococonBox,

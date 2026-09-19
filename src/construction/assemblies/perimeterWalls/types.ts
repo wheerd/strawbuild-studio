@@ -1,9 +1,9 @@
-import type { IntermediateWallWithGeometry, OpeningAssemblyId, PerimeterWallWithGeometry } from '@/building/model'
+import type { OpeningAssemblyId, PerimeterWallWithGeometry } from '@/building/model'
 import type { LayerSetId } from '@/building/model/ids'
+import { type PostConfig, validatePosts } from '@/construction/assemblies/perimeterWalls/posts'
+import type { TriangularBattenConfig } from '@/construction/assemblies/perimeterWalls/triangularBattens'
 import type { AssemblyPhysicsStructure, PhysicsSeries } from '@/construction/assemblies/physics'
 import type { WallConstructionArea } from '@/construction/assemblies/utils/WallConstructionArea'
-import { type PostConfig, validatePosts } from '@/construction/assemblies/walls/posts'
-import type { TriangularBattenConfig } from '@/construction/assemblies/walls/triangularBattens'
 import type { StoreyContext } from '@/construction/context/storeys'
 import type { ConstructionModel } from '@/construction/model/model'
 import type { ConstructionResult } from '@/construction/model/results'
@@ -88,46 +88,6 @@ export type PerimeterWallConfig =
   | PrefabModulesWallConfig
 
 export type SegmentInfillMethod = (area: WallConstructionArea, type: 'lintel' | 'sill') => Generator<ConstructionResult>
-
-export interface InteriorWallAssembly {
-  construct: (wall: IntermediateWallWithGeometry, storeyContext: StoreyContext) => ConstructionModel
-  get tag(): Tag
-}
-
-export type InteriorWallAssemblyType = 'monolithic' | 'planked-stud' | 'monolithic-stud'
-
-export interface InteriorWallBaseConfig {
-  type: InteriorWallAssemblyType
-  layerSetId: LayerSetId
-  openingAssemblyId?: OpeningAssemblyId
-}
-
-export interface WallStudConfig {
-  minStudSpacing: Length // Default: 70mm
-  desiredStudSpacing: Length // Default: 800mm
-  maxStudSpacing: Length // Default: 900mm
-  studWidth: Length // Default: 60mm
-  studMaterial: MaterialId
-}
-
-export interface MonolithicWallConfig extends InteriorWallBaseConfig {
-  type: 'monolithic'
-  material: MaterialId
-}
-
-export interface PlankedStudWallConfig extends WallStudConfig, InteriorWallBaseConfig {
-  type: 'planked-stud'
-  plankThickness: Length
-  plankMaterial: MaterialId
-  fillMaterial?: MaterialId
-}
-
-export interface MonolithicStudWallConfig extends WallStudConfig, InteriorWallBaseConfig {
-  type: 'monolithic-stud'
-  fillMaterial: MaterialId
-}
-
-export type InteriorWallConfig = MonolithicWallConfig | PlankedStudWallConfig | MonolithicStudWallConfig
 
 // Validation
 
@@ -227,37 +187,5 @@ export const validatePerimeterWallConfig = (config: PerimeterWallConfig): void =
       break
     default:
       assertUnreachable(config, 'Invalid wall assembly type')
-  }
-}
-
-export const validateInteriorWallConfig = (config: InteriorWallConfig): void => {
-  const ensureStudConfig = (studConfig: WallStudConfig): void => {
-    ensurePositive(studConfig.minStudSpacing, 'Minimum stud spacing must be greater than 0')
-    ensurePositive(studConfig.desiredStudSpacing, 'Desired stud spacing must be greater than 0')
-    ensurePositive(studConfig.maxStudSpacing, 'Maximum stud spacing must be greater than 0')
-    ensurePositive(studConfig.studWidth, 'Stud width must be greater than 0')
-    if (studConfig.maxStudSpacing < studConfig.minStudSpacing) {
-      throw new Error('Minimum stud spacing must not be bigger than maximum stud spacing')
-    }
-    if (
-      studConfig.desiredStudSpacing < studConfig.minStudSpacing ||
-      studConfig.desiredStudSpacing > studConfig.maxStudSpacing
-    ) {
-      throw new Error('Desired stud spacing must be between minimum and maximum stud spacing')
-    }
-  }
-
-  switch (config.type) {
-    case 'monolithic':
-      break
-    case 'planked-stud':
-      ensureStudConfig(config)
-      ensurePositive(config.plankThickness, 'Plank thickness must be greater than 0')
-      break
-    case 'monolithic-stud':
-      ensureStudConfig(config)
-      break
-    default:
-      assertUnreachable(config, 'Invalid interior wall assembly type')
   }
 }

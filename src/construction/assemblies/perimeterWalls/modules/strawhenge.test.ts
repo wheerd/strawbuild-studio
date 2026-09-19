@@ -1,10 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
+import { infillWallArea } from '@/construction/assemblies/perimeterWalls/infill/infill'
+import type { StrawhengeWallConfig } from '@/construction/assemblies/perimeterWalls/types'
 import type { PhysicsSeries } from '@/construction/assemblies/physics'
 import { constructStraw } from '@/construction/assemblies/straw'
 import { WallConstructionArea } from '@/construction/assemblies/utils/WallConstructionArea'
-import { infillWallArea } from '@/construction/assemblies/walls/infill/infill'
-import type { StrawhengeWallConfig } from '@/construction/assemblies/walls/types'
 import { createCuboidElement } from '@/construction/model/elements'
 import { aggregateResults, yieldElement } from '@/construction/model/results'
 import type { MaterialId } from '@/materials/types'
@@ -33,7 +33,7 @@ vi.mock('@/construction/assemblies/straw', () => ({
   constructStraw: vi.fn()
 }))
 
-vi.mock('@/construction/assemblies/walls/infill/infill', () => ({
+vi.mock('@/construction/assemblies/perimeterWalls/infill/infill', () => ({
   infillWallArea: vi.fn()
 }))
 

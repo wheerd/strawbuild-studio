@@ -3,12 +3,12 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { Opening, PerimeterWallId, PerimeterWallWithGeometry } from '@/building/model'
 import { type StoreyId, createOpeningId, createPerimeterWallAssemblyId } from '@/building/model/ids'
 import type { FloorAssembly } from '@/construction/assemblies/floors/types'
+import type { PostConfig } from '@/construction/assemblies/perimeterWalls/posts'
+import { constructPost } from '@/construction/assemblies/perimeterWalls/posts'
+import { segmentedWallConstruction } from '@/construction/assemblies/perimeterWalls/segmentation'
+import type { InfillWallConfig, InfillWallSegmentConfig } from '@/construction/assemblies/perimeterWalls/types'
 import { constructStraw } from '@/construction/assemblies/straw'
 import { WallConstructionArea } from '@/construction/assemblies/utils/WallConstructionArea'
-import type { PostConfig } from '@/construction/assemblies/walls/posts'
-import { constructPost } from '@/construction/assemblies/walls/posts'
-import { segmentedWallConstruction } from '@/construction/assemblies/walls/segmentation'
-import type { InfillWallConfig, InfillWallSegmentConfig } from '@/construction/assemblies/walls/types'
 import type { StoreyContext } from '@/construction/context/storeys'
 import {
   type IssueMessageKey,
@@ -55,7 +55,7 @@ vi.mock('@/construction/assemblies/floors', () => ({
   }
 }))
 
-vi.mock('@/construction/assemblies/walls/posts', () => ({
+vi.mock('@/construction/assemblies/perimeterWalls/posts', () => ({
   constructPost: vi.fn()
 }))
 
@@ -67,11 +67,11 @@ vi.mock('@/construction/assemblies/openings/openings', () => ({
   constructOpeningFrame: vi.fn()
 }))
 
-vi.mock('@/construction/assemblies/walls/segmentation', () => ({
+vi.mock('@/construction/assemblies/perimeterWalls/segmentation', () => ({
   segmentedWallConstruction: vi.fn()
 }))
 
-vi.mock('@/construction/assemblies/walls/layers', () => ({
+vi.mock('@/construction/assemblies/perimeterWalls/layers', () => ({
   constructWallLayers: vi.fn(() => ({
     elements: [],
     measurements: [],

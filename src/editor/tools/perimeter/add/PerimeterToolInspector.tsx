@@ -8,7 +8,7 @@ import type { PerimeterWallAssemblyId, RingBeamAssemblyId } from '@/building/mod
 import { useWallAssemblyById } from '@/config/store'
 import { RingBeamAssemblySelectWithEdit } from '@/config/ui/ring-beam-assembly/RingBeamAssemblySelectWithEdit'
 import { WallAssemblySelectWithEdit } from '@/config/ui/wall-assembly/WallAssemblySelectWithEdit'
-import { resolveWallAssembly } from '@/construction/assemblies/walls'
+import { resolveWallAssembly } from '@/construction/assemblies/perimeterWalls'
 import { useReactiveTool } from '@/editor/tools/system/hooks/useReactiveTool'
 import type { ToolInspectorProps } from '@/editor/tools/system/types'
 import { formatThicknessRange } from '@/materials/thickness'

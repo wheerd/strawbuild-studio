@@ -1,11 +1,11 @@
 import { keyFromSelector } from 'i18next'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
+import type { PostConfig } from '@/construction/assemblies/perimeterWalls/posts'
+import { constructPost } from '@/construction/assemblies/perimeterWalls/posts'
+import type { InfillWallSegmentConfig } from '@/construction/assemblies/perimeterWalls/types'
 import { constructStraw } from '@/construction/assemblies/straw'
 import { WallConstructionArea } from '@/construction/assemblies/utils/WallConstructionArea'
-import type { PostConfig } from '@/construction/assemblies/walls/posts'
-import { constructPost } from '@/construction/assemblies/walls/posts'
-import type { InfillWallSegmentConfig } from '@/construction/assemblies/walls/types'
 import {
   type IssueMessageKey,
   aggregateResults,
@@ -21,7 +21,7 @@ import { IDENTITY, type Length, type Vec3, newVec3 } from '@/shared/geometry'
 import { infillWallArea } from './infill'
 
 // Mock dependencies
-vi.mock('@/construction/assemblies/walls/posts', () => ({
+vi.mock('@/construction/assemblies/perimeterWalls/posts', () => ({
   constructPost: vi.fn()
 }))
 

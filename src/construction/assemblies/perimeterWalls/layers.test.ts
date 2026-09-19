@@ -11,8 +11,8 @@ import {
 } from '@/building/model/ids'
 import type { FloorAssembly } from '@/construction/assemblies/floors/types'
 import type { LayerConfig } from '@/construction/assemblies/layers/types'
-import type { WallContext, WallCornerInfo } from '@/construction/assemblies/walls/corners/corners'
-import type { WallLayerSetIds } from '@/construction/assemblies/walls/layers'
+import type { WallContext, WallCornerInfo } from '@/construction/assemblies/perimeterWalls/corners/corners'
+import type { WallLayerSetIds } from '@/construction/assemblies/perimeterWalls/layers'
 import type { StoreyContext } from '@/construction/context/storeys'
 import type { ConstructionElement, GroupOrElement } from '@/construction/model/elements'
 import type { ExtrudedShape } from '@/construction/model/shapes'
@@ -83,7 +83,8 @@ let cornerInfo: WallCornerInfo
 vi.mock('@/config/store', () => ({
   getConfigActions: () => ({
     getPerimeterWallAssemblyById: (id: string) => mockAssemblies.get(id) ?? null,
-    getRingBeamAssemblyById: () => null
+    getRingBeamAssemblyById: () => null,
+    getInteriorWallAssemblyById: () => null
   }),
   resolveLayerSetLayers: (id: LayerSetId | undefined) => (id ? (layerSetLayersMap.get(id) ?? []) : []),
   resolveLayerSetThickness: (id: LayerSetId | undefined) => {
@@ -96,11 +97,13 @@ vi.mock('@/config/store', () => ({
 vi.mock('@/building/store', () => ({
   getModelActions: () => ({
     getWallOpeningById: (id: string) => mockOpenings.get(id) ?? null,
+    getWallNodesByPerimeter: () => [],
+    getIntermediateWallById: () => null,
     getRoofsByStorey: () => []
   })
 }))
 
-vi.mock('@/construction/assemblies/walls/corners/corners', () => ({
+vi.mock('@/construction/assemblies/perimeterWalls/corners/corners', () => ({
   getWallContext: () => wallContext,
   calculateWallCornerInfo: () => cornerInfo
 }))

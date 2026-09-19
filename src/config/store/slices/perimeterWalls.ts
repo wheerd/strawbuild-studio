@@ -3,7 +3,7 @@ import { type StateCreator } from 'zustand'
 import { type PerimeterWallAssemblyId, createPerimeterWallAssemblyId } from '@/building/model/ids'
 import { type TimestampsState, removeTimestampDraft, updateTimestampDraft } from '@/config/store/slices/timestampsSlice'
 import type { PerimeterWallAssemblyConfig } from '@/config/types'
-import { type PerimeterWallConfig, validatePerimeterWallConfig } from '@/construction/assemblies/walls/types'
+import { type PerimeterWallConfig, validatePerimeterWallConfig } from '@/construction/assemblies/perimeterWalls/types'
 
 import { DEFAULT_PERIMETER_WALL_ASSEMBLIES, DEFAULT_PERIMETER_WALL_ASSEMBLY_ID } from './perimeterWalls.defaults'
 

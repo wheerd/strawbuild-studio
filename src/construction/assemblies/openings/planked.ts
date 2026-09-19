@@ -1,7 +1,7 @@
 import { BaseOpeningAssembly } from '@/construction/assemblies/openings/base'
 import type { PlankedOpeningConfig } from '@/construction/assemblies/openings/types'
+import type { SegmentInfillMethod } from '@/construction/assemblies/perimeterWalls/types'
 import { type WallConstructionArea } from '@/construction/assemblies/utils/WallConstructionArea'
-import type { SegmentInfillMethod } from '@/construction/assemblies/walls/types'
 import { type ConstructionResult, yieldElement, yieldError } from '@/construction/model/results'
 import {
   TAG_HEADER,

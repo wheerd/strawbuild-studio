@@ -16,7 +16,7 @@ import {
 import { useDefaultRoofAssemblyId, useWallAssemblyById } from '@/config/store'
 import { RingBeamAssemblySelectWithEdit } from '@/config/ui/ring-beam-assembly/RingBeamAssemblySelectWithEdit'
 import { WallAssemblySelectWithEdit } from '@/config/ui/wall-assembly/WallAssemblySelectWithEdit'
-import { resolveWallAssembly } from '@/construction/assemblies/walls'
+import { resolveWallAssembly } from '@/construction/assemblies/perimeterWalls'
 import { replaceSelection } from '@/editor/canvas/state/selectionStore'
 import { useViewModeActions } from '@/editor/canvas/state/viewModeStore'
 import { useViewportActions } from '@/editor/canvas/state/viewportStore'

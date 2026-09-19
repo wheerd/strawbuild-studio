@@ -3,7 +3,7 @@ import { type StateCreator } from 'zustand'
 import { type InteriorWallAssemblyId, createInteriorWallAssemblyId } from '@/building/model/ids'
 import { type TimestampsState, removeTimestampDraft, updateTimestampDraft } from '@/config/store/slices/timestampsSlice'
 import type { InteriorWallAssemblyConfig } from '@/config/types'
-import { type InteriorWallConfig, validateInteriorWallConfig } from '@/construction/assemblies/walls/types'
+import { type InteriorWallConfig, validateInteriorWallConfig } from '@/construction/assemblies/interiorWalls/types'
 
 import { DEFAULT_INTERIOR_WALL_ASSEMBLIES, DEFAULT_INTERIOR_WALL_ASSEMBLY_ID } from './interiorWalls.defaults'
 

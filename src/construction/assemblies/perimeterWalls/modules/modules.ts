@@ -1,12 +1,12 @@
 import { getConfigActions } from '@/config/store/accessors'
+import {
+  type TriangularBattenConfig,
+  constructTriangularBattens
+} from '@/construction/assemblies/perimeterWalls/triangularBattens'
 import { materialToPhysicsSeriesItem } from '@/construction/assemblies/physics'
 import type { PhysicsSeries } from '@/construction/assemblies/physics/types'
 import { constructStraw } from '@/construction/assemblies/straw'
 import { WallConstructionArea } from '@/construction/assemblies/utils/WallConstructionArea'
-import {
-  type TriangularBattenConfig,
-  constructTriangularBattens
-} from '@/construction/assemblies/walls/triangularBattens'
 import { type ConstructionElement, createCuboidElement } from '@/construction/model/elements'
 import { type ConstructionResult, yieldAsGroup, yieldElement, yieldMeasurement } from '@/construction/model/results'
 import {

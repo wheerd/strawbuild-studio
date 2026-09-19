@@ -14,11 +14,11 @@ import type { OpeningAssemblyConfig } from '@/config/types'
 import type { FloorAssembly } from '@/construction/assemblies/floors/types'
 import { resolveOpeningAssembly, resolveOpeningConfig } from '@/construction/assemblies/openings'
 import type { OpeningAssembly } from '@/construction/assemblies/openings/types'
+import type { WallLayerSetIds } from '@/construction/assemblies/perimeterWalls/layers'
+import { constructWallPost } from '@/construction/assemblies/perimeterWalls/posts'
+import type { SegmentInfillMethod } from '@/construction/assemblies/perimeterWalls/types'
 import { resolveRingBeamAssembly } from '@/construction/assemblies/ringBeams'
 import { WallConstructionArea } from '@/construction/assemblies/utils/WallConstructionArea'
-import type { WallLayerSetIds } from '@/construction/assemblies/walls/layers'
-import { constructWallPost } from '@/construction/assemblies/walls/posts'
-import type { SegmentInfillMethod } from '@/construction/assemblies/walls/types'
 import type { StoreyContext } from '@/construction/context/storeys'
 import { aggregateResults, yieldElement } from '@/construction/model/results'
 import { createCuboid } from '@/construction/model/shapes'
@@ -76,7 +76,7 @@ vi.mock('@/construction/assemblies/ringBeams', () => ({
   resolveRingBeamAssembly: vi.fn()
 }))
 
-vi.mock('@/construction/assemblies/walls/posts', () => ({
+vi.mock('@/construction/assemblies/perimeterWalls/posts', () => ({
   constructWallPost: vi.fn()
 }))
 

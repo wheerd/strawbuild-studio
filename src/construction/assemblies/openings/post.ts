@@ -1,8 +1,8 @@
 import { BaseOpeningAssembly } from '@/construction/assemblies/openings/base'
 import type { PostOpeningConfig } from '@/construction/assemblies/openings/types'
+import { constructPost } from '@/construction/assemblies/perimeterWalls/posts'
+import type { SegmentInfillMethod } from '@/construction/assemblies/perimeterWalls/types'
 import { type WallConstructionArea } from '@/construction/assemblies/utils/WallConstructionArea'
-import { constructPost } from '@/construction/assemblies/walls/posts'
-import type { SegmentInfillMethod } from '@/construction/assemblies/walls/types'
 import { type ConstructionResult, yieldElement, yieldError } from '@/construction/model/results'
 import {
   TAG_HEADER,

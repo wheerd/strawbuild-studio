@@ -2,9 +2,9 @@ import type { IntermediateWallWithGeometry, PerimeterWithGeometry } from '@/buil
 import type { IntermediateWallId, PerimeterId, PerimeterWallId, RoofId, StoreyId } from '@/building/model/ids'
 import { getModelActions } from '@/building/store'
 import { getConfigActions } from '@/config/store'
+import { resolveInteriorWallAssembly } from '@/construction/assemblies/interiorWalls'
+import { resolveWallAssembly } from '@/construction/assemblies/perimeterWalls'
 import { constructRoof } from '@/construction/assemblies/roofs'
-import { resolveWallAssembly } from '@/construction/assemblies/walls'
-import { resolveInteriorWallAssembly } from '@/construction/assemblies/walls/interior'
 import { getPerimeterContextCached } from '@/construction/context/perimeterContextCache'
 import { getWallStoreyContextCached } from '@/construction/context/storeys'
 import { type ConstructionModel, mergeModels, transformModel } from '@/construction/model/model'
@@ -117,7 +117,11 @@ export function buildIntermediateWallCoreModel(wallId: IntermediateWallId): Core
   if (!assemblyConfig) throw new Error(`Wall assembly with ID ${wall.wallAssemblyId} not found for wall ${wall.id}`)
   const assembly = resolveInteriorWallAssembly(assemblyConfig)
   const perimeter = getModelActions().getPerimeterById(wall.perimeterId)
-  return { model: assembly.construct(wall, getWallStoreyContextCached(perimeter.storeyId)), sourceId: wall.id }
+  return {
+    model: assembly.construct(wall, getWallStoreyContextCached(perimeter.storeyId)),
+    tags: [TAG_WALLS, ...assembly.tags],
+    sourceId: wall.id
+  }
 }
 
 export function findExplicitIntermediateColinearGroups(

@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest'
 
 import type { FloorConfig } from '@/construction/assemblies/floors/types'
-import type { InfillWallConfig, PerimeterWallConfig } from '@/construction/assemblies/walls/types'
+import type { InfillWallConfig, PerimeterWallConfig } from '@/construction/assemblies/perimeterWalls/types'
 import { createMaterialId } from '@/materials/types'
 
 import { getConfigActions } from './accessors'

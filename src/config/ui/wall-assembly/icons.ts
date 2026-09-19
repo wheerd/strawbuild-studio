@@ -1,6 +1,6 @@
 import type { ComponentType } from 'react'
 
-import type { PerimeterWallAssemblyType } from '@/construction/assemblies/walls/types'
+import type { PerimeterWallAssemblyType } from '@/construction/assemblies/perimeterWalls/types'
 import { InfillIcon, ModulesIcon, NonStrawbaleIcon, PrefabIcon, StrawhengeIcon } from '@/shared/ui/icons'
 import type { IconProps } from '@/shared/ui/icons/types'
 

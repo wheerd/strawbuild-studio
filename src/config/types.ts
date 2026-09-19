@@ -15,6 +15,11 @@ import type {
   MonolithicFloorConfig
 } from '@/construction/assemblies/floors/types'
 import type {
+  MonolithicStudWallConfig,
+  MonolithicWallConfig,
+  PlankedStudWallConfig
+} from '@/construction/assemblies/interiorWalls/types'
+import type {
   EmptyOpeningConfig,
   PlankedOpeningConfig,
   PostOpeningConfig,
@@ -22,21 +27,18 @@ import type {
   ThresholdAssemblyConfig
 } from '@/construction/assemblies/openings/types'
 import type {
+  InfillWallConfig,
+  ModulesWallConfig,
+  NonStrawbaleWallConfig,
+  PrefabModulesWallConfig,
+  StrawhengeWallConfig
+} from '@/construction/assemblies/perimeterWalls/types'
+import type {
   BrickRingBeamConfig,
   DoubleRingBeamConfig,
   FullRingBeamConfig
 } from '@/construction/assemblies/ringBeams/types'
 import type { MonolithicRoofConfig, PurlinRoofConfig } from '@/construction/assemblies/roofs/types'
-import type {
-  InfillWallConfig,
-  ModulesWallConfig,
-  MonolithicStudWallConfig,
-  MonolithicWallConfig,
-  NonStrawbaleWallConfig,
-  PlankedStudWallConfig,
-  PrefabModulesWallConfig,
-  StrawhengeWallConfig
-} from '@/construction/assemblies/walls/types'
 
 export type AssemblyNameKey = SelectorFn<Resources['config'], string, SelectorOptions<'config'>>
 
