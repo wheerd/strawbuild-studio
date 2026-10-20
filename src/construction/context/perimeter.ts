@@ -3,10 +3,10 @@ import type {
   InnerWallNodeWithGeometry,
   IntermediateWallId,
   IntermediateWallWithGeometry,
-  PerimeterId,
+  PerimeterWallId,
   PerimeterWithGeometry
 } from '@/building/model'
-import { isIntermediateWallId } from '@/building/model/ids'
+import { type WallNodeId, isIntermediateWallId } from '@/building/model/ids'
 import { type WallNodeIncidentLine, computeNodeGeometry } from '@/building/model/wallNodeIntersections'
 import { getModelActions } from '@/building/store'
 import { getConfigActions, resolveLayerSetThickness } from '@/config/store'
@@ -39,14 +39,29 @@ import { ensurePolygonIsClockwise } from '@/shared/geometry/polygon'
 export interface PerimeterConstructionContext {
   outerLines: Line2D[]
   innerLines: Line2D[]
+  innerLinesById: Record<PerimeterWallId, Line2D>
   outerPolygon: Polygon2D
   innerPolygon: Polygon2D
   floorOpenings: Polygon2D[]
   interiorWallAreas: Polygon2D[]
+  interiorWallGeometry: Map<IntermediateWallId, InteriorWallGeometry>
+  interiorWallNodePolygons: Map<WallNodeId, Polygon2D>
   wallFaceOffsets: WallFaceOffset[]
 
   outerFinishedPolygon: Polygon2D
   innerFinishedPolygon: Polygon2D
+}
+
+export interface InteriorWallEndpoint {
+  nodeId: WallNodeId
+  left: Vec2
+  right: Vec2
+}
+
+export interface InteriorWallGeometry {
+  coreLines: CoreWallLines
+  start?: InteriorWallEndpoint
+  end?: InteriorWallEndpoint
 }
 
 export interface WallFaceOffset {
@@ -116,15 +131,22 @@ export const computePerimeterConstructionContext = (
   const adjustedHoles = relevantHoles.map(hole => applyWallFaceOffsets(hole, wallFaces))
   const mergedHoles = unionPolygons(adjustedHoles)
 
-  const interiorWallAreas = createInteriorWallPolygons(perimeter.id)
+  const interiorWallResult = createInteriorWallGeometry(perimeter, inner.lines)
+
+  const innerLinesById: Record<PerimeterWallId, Line2D> = Object.fromEntries(
+    perimeter.wallIds.map((w, i) => [w, inner.lines[i]])
+  )
 
   return {
     innerLines: inner.lines,
+    innerLinesById,
     innerPolygon: inner.polygon,
     outerLines: outer.lines,
     outerPolygon: outer.polygon,
     floorOpenings: mergedHoles,
-    interiorWallAreas,
+    interiorWallAreas: interiorWallResult.areas,
+    interiorWallGeometry: interiorWallResult.wallGeometry,
+    interiorWallNodePolygons: interiorWallResult.nodePolygons,
     wallFaceOffsets: wallFaces,
     innerFinishedPolygon: perimeter.innerPolygon,
     outerFinishedPolygon: perimeter.outerPolygon
@@ -281,12 +303,19 @@ function segmentsOverlap(edgeStart: Vec2, edgeEnd: Vec2, face: WallFaceOffset): 
   return overlapEnd >= overlapStart - DISTANCE_EPSILON
 }
 
-export function createInteriorWallPolygons(perimeterId: PerimeterId): Polygon2D[] {
-  const { getIntermediateWallsByPerimeter, getWallNodesByPerimeter, getPerimeterWallById } = getModelActions()
+export function createInteriorWallGeometry(
+  perimeter: PerimeterWithGeometry,
+  lines: Line2D[]
+): {
+  areas: Polygon2D[]
+  wallGeometry: Map<IntermediateWallId, InteriorWallGeometry>
+  nodePolygons: Map<WallNodeId, Polygon2D>
+} {
+  const { getIntermediateWallsByPerimeter, getWallNodesByPerimeter } = getModelActions()
   const { getInteriorWallAssemblyById } = getConfigActions()
-  const walls = getIntermediateWallsByPerimeter(perimeterId)
-  const wallLines: Partial<Record<IntermediateWallId, CoreWallLines>> = {}
-  const endpoints: Partial<Record<IntermediateWallId, WallEndpoints>> = {}
+  const walls = getIntermediateWallsByPerimeter(perimeter.id)
+  const wallGeometry = new Map<IntermediateWallId, InteriorWallGeometry>()
+  const nodePolygons = new Map<WallNodeId, Polygon2D>()
   const polygons: Polygon2D[] = []
 
   for (const wall of walls) {
@@ -294,45 +323,52 @@ export function createInteriorWallPolygons(perimeterId: PerimeterId): Polygon2D[
     if (!config) continue
 
     const layerThickness = resolveLayerSetThickness(config.layerSetId)
-    wallLines[wall.id] = {
-      left: offsetLine(lineFromSegment(wall.leftLine), layerThickness),
-      right: offsetLine(lineFromSegment(wall.rightLine), -layerThickness)
-    }
-    endpoints[wall.id] = {}
+    wallGeometry.set(wall.id, {
+      coreLines: {
+        left: offsetLine(lineFromSegment(wall.leftLine), layerThickness),
+        right: offsetLine(lineFromSegment(wall.rightLine), -layerThickness)
+      }
+    })
   }
 
-  for (const node of getWallNodesByPerimeter(perimeterId)) {
+  for (const node of getWallNodesByPerimeter(perimeter.id)) {
     if (node.type === 'perimeter') {
-      const outsideLine = lineFromSegment(getPerimeterWallById(node.wallId).outsideLine)
+      const insideLine = lines[perimeter.wallIds.indexOf(node.wallId)]
       for (const wallId of node.connectedWallIds) {
         if (!isIntermediateWallId(wallId)) continue
-        const lines = wallLines[wallId]
+        const geometry = wallGeometry.get(wallId)
         const wall = walls.find(candidate => candidate.id === wallId)
-        if (!lines || !wall) continue
+        if (!geometry || !wall) continue
 
-        const left = lineIntersection(lines.left, outsideLine)
-        const right = lineIntersection(lines.right, outsideLine)
+        const left = lineIntersection(geometry.coreLines.left, insideLine)
+        const right = lineIntersection(geometry.coreLines.right, insideLine)
         if (!left || !right) continue
         setWallEndpoint(
-          endpoints[wallId],
+          geometry,
           wall,
           node.id,
-          wall.start.nodeId === node.id ? { left, right } : { right: left, left: right }
+          wall.start.nodeId === node.id
+            ? { nodeId: node.id, left, right }
+            : { nodeId: node.id, right: left, left: right }
         )
       }
       continue
     }
 
-    const innerResult = createInnerNodePolygons(node, walls, wallLines)
+    const innerResult = createInnerNodePolygons(node, walls, wallGeometry)
     polygons.push(...innerResult.polygons)
+    if (innerResult.nodePolygon) {
+      nodePolygons.set(node.id, innerResult.nodePolygon)
+    }
     for (const [wallId, endpoint] of Object.entries(innerResult.endpoints) as [IntermediateWallId, WallEndpoint][]) {
       const wall = walls.find(candidate => candidate.id === wallId)
-      if (wall) setWallEndpoint(endpoints[wallId], wall, node.id, endpoint)
+      const geometry = wallGeometry.get(wallId)
+      if (wall && geometry) setWallEndpoint(geometry, wall, node.id, endpoint)
     }
   }
 
   for (const wall of walls) {
-    const wallEndpoint = endpoints[wall.id]
+    const wallEndpoint = wallGeometry.get(wall.id)
     if (!wallEndpoint?.start || !wallEndpoint.end) continue
     polygons.push(
       ensurePolygonIsClockwise({
@@ -341,51 +377,57 @@ export function createInteriorWallPolygons(perimeterId: PerimeterId): Polygon2D[
     )
   }
 
-  return unionPolygons(polygons)
+  return {
+    areas: unionPolygons(polygons),
+    wallGeometry,
+    nodePolygons
+  }
 }
 
-interface CoreWallLines {
+export interface CoreWallLines {
   left: Line2D
   right: Line2D
 }
 
 interface WallEndpoint {
+  nodeId: WallNodeId
   left: Vec2
   right: Vec2
 }
 
-interface WallEndpoints {
-  start?: WallEndpoint
-  end?: WallEndpoint
-}
-
 function setWallEndpoint(
-  endpoints: WallEndpoints | undefined,
+  geometry: InteriorWallGeometry,
   wall: IntermediateWallWithGeometry,
-  nodeId: string,
+  nodeId: WallNodeId,
   endpoint: WallEndpoint
 ): void {
-  if (!endpoints) return
-  if (wall.start.nodeId === nodeId) endpoints.start = endpoint
-  if (wall.end.nodeId === nodeId) endpoints.end = { left: endpoint.right, right: endpoint.left }
+  const positionedEndpoint = { ...endpoint, nodeId }
+  if (wall.start.nodeId === nodeId) geometry.start = positionedEndpoint
+  if (wall.end.nodeId === nodeId) {
+    geometry.end = { ...positionedEndpoint, left: endpoint.right, right: endpoint.left }
+  }
 }
 
 function createInnerNodePolygons(
   node: InnerWallNodeWithGeometry,
   walls: IntermediateWallWithGeometry[],
-  wallLines: Partial<Record<IntermediateWallId, CoreWallLines>>
-): { polygons: Polygon2D[]; endpoints: Partial<Record<IntermediateWallId, WallEndpoint>> } {
+  wallGeometry: Map<IntermediateWallId, InteriorWallGeometry>
+): {
+  polygons: Polygon2D[]
+  nodePolygon?: Polygon2D
+  endpoints: Partial<Record<IntermediateWallId, WallEndpoint>>
+} {
   const incidents: WallNodeIncidentLine[] = node.connectedWallIds.flatMap(wallId => {
     const wall = walls.find(candidate => candidate.id === wallId)
-    const lines = wall ? wallLines[wall.id] : undefined
-    if (!wall || !lines) return []
+    const geometry = wall ? wallGeometry.get(wall.id) : undefined
+    if (!wall || !geometry) return []
 
     const atStart = wall.start.nodeId === node.id
     return [
       {
         wallId: wall.id,
-        left: atStart ? lines.left : lines.right,
-        right: atStart ? lines.right : lines.left,
+        left: atStart ? geometry.coreLines.left : geometry.coreLines.right,
+        right: atStart ? geometry.coreLines.right : geometry.coreLines.left,
         dir: atStart ? wall.direction : negVec2(wall.direction)
       }
     ]
@@ -400,11 +442,16 @@ function createInnerNodePolygons(
   for (const incident of geometry.incidentWalls) {
     if (isIntermediateWallId(incident.id)) {
       endpoints[incident.id] = {
+        nodeId: node.id,
         left: incident.leftPoint,
         right: incident.rightPoint
       }
     }
   }
 
-  return { polygons: geometry.boundary ? [geometry.boundary] : [], endpoints }
+  return {
+    polygons: geometry.boundary ? [geometry.boundary] : [],
+    nodePolygon: geometry.boundary,
+    endpoints
+  }
 }

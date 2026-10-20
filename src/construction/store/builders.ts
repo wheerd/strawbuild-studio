@@ -118,7 +118,11 @@ export function buildIntermediateWallCoreModel(wallId: IntermediateWallId): Core
   const assembly = resolveInteriorWallAssembly(assemblyConfig)
   const perimeter = getModelActions().getPerimeterById(wall.perimeterId)
   return {
-    model: assembly.construct(wall, getWallStoreyContextCached(perimeter.storeyId)),
+    model: assembly.construct(
+      wall,
+      getWallStoreyContextCached(perimeter.storeyId),
+      getPerimeterContextCached(wall.perimeterId)
+    ),
     tags: [TAG_WALLS, ...assembly.tags],
     sourceId: wall.id
   }

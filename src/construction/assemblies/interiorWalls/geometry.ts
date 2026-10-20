@@ -1,0 +1,267 @@
+import type { Vec3 } from 'manifold-3d'
+
+import type { IntermediateWallWithGeometry, WallNodeWithGeometry } from '@/building/model'
+import type {
+  InteriorWallEndpoint,
+  InteriorWallGeometry,
+  PerimeterConstructionContext
+} from '@/construction/context/perimeter'
+import { transformManifold } from '@/construction/manifold/operations'
+import { type ConstructionResult, yieldAndClip } from '@/construction/model/results'
+import { createExtrudedPolygon } from '@/construction/model/shapes'
+import {
+  type Length,
+  type Polygon2D,
+  type PolygonWithHoles2D,
+  type Vec2,
+  dotAbsVec2,
+  dotVec2,
+  ensurePolygonIsClockwise,
+  lineFromSegment,
+  lineIntersection,
+  midpoint,
+  newVec2,
+  offsetPolygon,
+  perpendicularCCW,
+  polygonEdges,
+  projectVec2,
+  subVec2,
+  subtractPolygons
+} from '@/shared/geometry'
+
+export interface ClippingPlane {
+  normal: Vec3
+  originOffset: Length
+}
+
+export interface WallExtension {
+  startExtension: Length
+  endExtension: Length
+  startClipPolygon?: Polygon2D
+  endClipPolygon?: Polygon2D
+  startClipPlane?: ClippingPlane
+  endClipPlane?: ClippingPlane
+}
+
+export function computeWallExtensionAndClipping(
+  wall: IntermediateWallWithGeometry,
+  startNode: WallNodeWithGeometry,
+  endNode: WallNodeWithGeometry,
+  perimeterContext: PerimeterConstructionContext
+): WallExtension {
+  const geometry = perimeterContext.interiorWallGeometry.get(wall.id)
+  const startNodePolygon = perimeterContext.interiorWallNodePolygons.get(startNode.id)
+  const endNodePolygon = perimeterContext.interiorWallNodePolygons.get(endNode.id)
+  if (!geometry?.start || !geometry.end) {
+    return { startExtension: 0, endExtension: 0 }
+  }
+  const corePolygon: Polygon2D = ensurePolygonIsClockwise({
+    points: [geometry.start.left, geometry.end.left, geometry.end.right, geometry.start.right]
+  })
+
+  const startGeometry = computeWallEndpoints(geometry, geometry.start, startNode, perimeterContext)
+  const baseStart = dotVec2(wall.entityReferenceLine.start, wall.direction)
+  let startProjection = Math.min(
+    dotVec2(startGeometry.left, wall.direction),
+    dotVec2(startGeometry.right, wall.direction)
+  )
+
+  const endGeometry = computeWallEndpoints(geometry, geometry.end, endNode, perimeterContext)
+  const baseEnd = dotVec2(wall.entityReferenceLine.end, wall.direction)
+  let endProjection = Math.max(dotVec2(endGeometry.left, wall.direction), dotVec2(endGeometry.right, wall.direction))
+
+  let startClipPolygon: Polygon2D | undefined
+  let startClipPlane: ClippingPlane | undefined
+  if (startNode.type === 'inner' && startNode.constructedBy === wall.id && startNodePolygon) {
+    const nodeProjections = startNodePolygon.points.map(p => dotVec2(p, wall.direction))
+    startProjection = Math.min(startProjection, ...nodeProjections)
+    startClipPolygon = subtractPolygons(
+      [offsetPolygon(startNodePolygon, wall.thickness)],
+      [startNodePolygon, corePolygon]
+    )[0].outer
+  } else {
+    startClipPolygon = undefined
+    startClipPlane = computeNodeClipPlane(wall, startNode, 'start', perimeterContext)
+  }
+
+  let endClipPolygon: Polygon2D | undefined
+  let endClipPlane: ClippingPlane | undefined
+  if (endNode.type === 'inner' && endNode.constructedBy === wall.id && endNodePolygon) {
+    const nodeProjections = endNodePolygon.points.map(p => dotVec2(p, wall.direction))
+    endProjection = Math.max(endProjection, ...nodeProjections)
+    endClipPolygon = subtractPolygons([offsetPolygon(endNodePolygon, wall.thickness)], [endNodePolygon, corePolygon])[0]
+      .outer
+  } else {
+    endClipPolygon = undefined
+    endClipPlane = computeNodeClipPlane(wall, endNode, 'end', perimeterContext)
+  }
+
+  const startExtension = Math.max(baseStart - startProjection, 0)
+  const endExtension = Math.max(endProjection - baseEnd, 0)
+
+  return {
+    startExtension,
+    endExtension,
+    startClipPolygon,
+    endClipPolygon,
+    startClipPlane,
+    endClipPlane
+  }
+}
+
+function computeNodeClipPlane(
+  wall: IntermediateWallWithGeometry,
+  node: WallNodeWithGeometry,
+  endpoint: 'start' | 'end',
+  perimeterContext: PerimeterConstructionContext
+): ClippingPlane | undefined {
+  const requiredSign = endpoint === 'start' ? 1 : -1
+
+  if (node.type === 'perimeter') {
+    const line = perimeterContext.innerLinesById[node.wallId]
+    const normal = perpendicularCCW(line.direction)
+    const dot = dotVec2(normal, wall.direction)
+    if (dot * requiredSign <= 1e-6) {
+      return undefined
+    }
+    return asClippingPlane(normal, line.point)
+  }
+
+  if (!node.constructedBy || node.constructedBy === wall.id || node.constructedWithColinear === wall.id) {
+    return undefined
+  }
+
+  const constructing = perimeterContext.interiorWallGeometry.get(node.constructedBy)
+  if (!constructing) return undefined
+
+  const candidates = [
+    { line: constructing.coreLines.left, normal: perpendicularCCW(constructing.coreLines.left.direction) },
+    {
+      line: constructing.coreLines.right,
+      normal: newVec2(constructing.coreLines.right.direction[1], -constructing.coreLines.right.direction[0])
+    }
+  ]
+  const candidate = candidates.find(({ normal }) => {
+    const dot = normal[0] * wall.direction[0] + normal[1] * wall.direction[1]
+    return dot * requiredSign > 1e-6
+  })
+  return candidate ? asClippingPlane(candidate.normal, candidate.line.point) : undefined
+}
+
+function asClippingPlane(normal: Vec2, point: Vec2): ClippingPlane {
+  return {
+    normal: [normal[0], normal[1], 0],
+    originOffset: normal[0] * point[0] + normal[1] * point[1]
+  }
+}
+
+function computeWallEndpoints(
+  wall: InteriorWallGeometry,
+  endpoint: InteriorWallEndpoint,
+  node: WallNodeWithGeometry,
+  perimeterContext: PerimeterConstructionContext
+): { left: Vec2; right: Vec2 } {
+  if (node.type !== 'inner' || !node.constructedBy || !wall.start || !wall.end) return endpoint
+
+  const geometry = perimeterContext.interiorWallGeometry.get(node.constructedBy)
+  if (!geometry) return endpoint
+
+  const left1 = lineIntersection(geometry.coreLines.left, wall.coreLines.left)
+  const left2 = lineIntersection(geometry.coreLines.right, wall.coreLines.left)
+  const right1 = lineIntersection(geometry.coreLines.left, wall.coreLines.right)
+  const right2 = lineIntersection(geometry.coreLines.right, wall.coreLines.right)
+
+  const dir = wall.coreLines.left.direction
+  const midLeft = midpoint(wall.start.left, wall.end.left)
+  const midRight = midpoint(wall.start.right, wall.end.right)
+
+  if (!left1 || !left2 || !right1 || !right2) {
+    const nodePolygon = perimeterContext.interiorWallNodePolygons.get(node.id)
+    if (!nodePolygon) return endpoint
+
+    const polygonLines = [...polygonEdges(nodePolygon)]
+      .map(e => lineFromSegment(e))
+      .filter(l => dotAbsVec2(l.direction, dir) < 0.9999)
+    const leftPoints = polygonLines.map(l => lineIntersection(l, wall.coreLines.left)).filter(p => p != null)
+    const rightPoints = polygonLines.map(l => lineIntersection(l, wall.coreLines.right)).filter(p => p != null)
+
+    let leftDot = Infinity
+    let left = endpoint.left
+    for (const p of leftPoints) {
+      const dot = Math.abs(projectVec2(midLeft, p, dir))
+      if (dot < leftDot) {
+        left = p
+        leftDot = dot
+      }
+    }
+
+    let rightDot = Infinity
+    let right = endpoint.right
+    for (const p of rightPoints) {
+      const dot = Math.abs(projectVec2(midLeft, p, dir))
+      if (dot < rightDot) {
+        right = p
+        rightDot = dot
+      }
+    }
+
+    return { left, right }
+  }
+
+  const dotLeft1 = Math.abs(projectVec2(midLeft, left1, dir))
+  const dotLeft2 = Math.abs(projectVec2(midLeft, left2, dir))
+  const left = dotLeft1 < dotLeft2 ? left1 : left2
+
+  const dotRight1 = Math.abs(projectVec2(midRight, right1, dir))
+  const dotRight2 = Math.abs(projectVec2(midRight, right2, dir))
+  const right = dotRight1 < dotRight2 ? right1 : right2
+
+  return { left, right }
+}
+
+export function transformPolygonToWallCoordinates(polygon: Polygon2D, wall: IntermediateWallWithGeometry): Polygon2D {
+  const origin = wall.entityReferenceLine.start
+  const transverse = perpendicularCCW(wall.direction)
+  const transformPoint = (point: Vec2): Vec2 => {
+    const relative = subVec2(point, origin)
+    return newVec2(dotVec2(relative, wall.direction), dotVec2(relative, transverse))
+  }
+
+  return { points: polygon.points.map(transformPoint) }
+}
+
+function* asResults(results: ConstructionResult[]): Generator<ConstructionResult> {
+  yield* results
+}
+
+export function clipInteriorWallResults(
+  results: ConstructionResult[],
+  extension: WallExtension,
+  wall: IntermediateWallWithGeometry,
+  storeyHeight: Length,
+  perimeterContext: PerimeterConstructionContext
+): ConstructionResult[] {
+  const geometry = perimeterContext.interiorWallGeometry.get(wall.id)
+  if (!geometry) return results
+
+  const clipPolygons = [extension.startClipPolygon, extension.endClipPolygon].filter(p => p != null)
+  const clipPlanes = [extension.startClipPlane, extension.endClipPlane].filter(
+    (plane): plane is ClippingPlane => plane != null
+  )
+  if (clipPolygons.length === 0 && clipPlanes.length === 0) return results
+
+  const localPolygons = clipPolygons.map(p => transformPolygonToWallCoordinates(p, wall))
+  const clippingVolumes = localPolygons.map(p =>
+    createExtrudedPolygon({ outer: p, holes: [] } satisfies PolygonWithHoles2D, 'xy', storeyHeight)
+  )
+
+  return Array.from(
+    yieldAndClip(asResults(results), (manifold, item) => {
+      const clipped = clippingVolumes.reduce(
+        (current, clip) => current.subtract(transformManifold(clip.manifold, item.transform)),
+        manifold
+      )
+      return clipPlanes.reduce((current, plane) => current.trimByPlane(plane.normal, plane.originOffset), clipped)
+    })
+  )
+}

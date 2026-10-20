@@ -1,5 +1,6 @@
 import type { IntermediateWallWithGeometry, OpeningAssemblyId } from '@/building/model'
 import type { LayerSetId } from '@/building/model/ids'
+import type { PerimeterConstructionContext } from '@/construction/context/perimeter'
 import type { StoreyContext } from '@/construction/context/storeys'
 import type { ConstructionModel } from '@/construction/model/model'
 import type { Tag } from '@/construction/model/tags'
@@ -8,7 +9,11 @@ import type { Length } from '@/shared/geometry'
 import { assertUnreachable } from '@/shared/utils'
 
 export interface InteriorWallAssembly {
-  construct: (wall: IntermediateWallWithGeometry, storeyContext: StoreyContext) => ConstructionModel
+  construct: (
+    wall: IntermediateWallWithGeometry,
+    storeyContext: StoreyContext,
+    perimeterContext: PerimeterConstructionContext
+  ) => ConstructionModel
   get tags(): Tag[]
 }
 

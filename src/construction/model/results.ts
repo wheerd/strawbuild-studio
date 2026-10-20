@@ -240,7 +240,7 @@ export function* yieldAsGroup(
 
 export function* yieldAndClip(
   results: Generator<ConstructionResult>,
-  clipping: (m: Manifold) => Manifold
+  clipping: (m: Manifold, item: GroupOrElement) => Manifold
 ): Generator<ConstructionResult> {
   for (const result of results) {
     if (result.type === 'element') {
@@ -254,13 +254,19 @@ export function* yieldAndClip(
   }
 }
 
-export function* withClipping(item: GroupOrElement, clipping: (m: Manifold) => Manifold): Generator<GroupOrElement> {
+export function* withClipping(
+  item: GroupOrElement,
+  clipping: (m: Manifold, item: GroupOrElement) => Manifold
+): Generator<GroupOrElement> {
   if ('shape' in item) {
     // This is an element - apply clipping
     const invertedTransform = invertTransform(item.transform)
     const clippedManifold = invertedTransform
-      ? transformManifold(clipping(transformManifold(item.shape.manifold, item.transform)), invertedTransform)
-      : clipping(item.shape.manifold)
+      ? transformManifold(
+          clipping(transformManifold(item.shape.manifold, item.transform), item),
+          invertedTransform
+        )
+      : clipping(item.shape.manifold, item)
 
     const decomposed = clippedManifold.decompose()
     if (decomposed.length === 1) {
