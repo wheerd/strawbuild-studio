@@ -98,6 +98,28 @@ describe('interior wall geometry', () => {
     expect(transformed.originOffset).toBe(-10)
   })
 
+  it('uses the same global plane for walls with different placement transforms', () => {
+    const horizontalWall = partial<IntermediateWallWithGeometry>({
+      entityReferenceLine: { start: newVec2(0, 0), end: newVec2(100, 0) },
+      direction: newVec2(1, 0)
+    })
+    const verticalWall = partial<IntermediateWallWithGeometry>({
+      entityReferenceLine: { start: newVec2(0, 0), end: newVec2(0, 100) },
+      direction: newVec2(0, 1)
+    })
+    const plane = { normal: newVec3(1, 0, 0), originOffset: 0 }
+
+    const horizontal = transformPlaneToWallCoordinates(plane, horizontalWall)
+    const vertical = transformPlaneToWallCoordinates(plane, verticalWall)
+
+    expect(Array.from(horizontal.normal)).toEqual([1, 0, 0])
+    expect(horizontal.originOffset).toBe(0)
+    expect(vertical.normal[0]).toBeCloseTo(0)
+    expect(vertical.normal[1]).toBe(-1)
+    expect(vertical.normal[2]).toBe(0)
+    expect(vertical.originOffset).toBe(0)
+  })
+
   it('selects the right constructing boundary at the start and the left boundary at the end', () => {
     const context = partial<PerimeterConstructionContext>({
       interiorWallGeometry: new Map([

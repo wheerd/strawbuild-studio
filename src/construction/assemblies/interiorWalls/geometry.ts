@@ -7,10 +7,12 @@ import type {
 import { transformManifold } from '@/construction/manifold/operations'
 import { type ConstructionResult, yieldAndClip } from '@/construction/model/results'
 import { createExtrudedPolygon } from '@/construction/model/shapes'
+import { intermediateWallTransform } from '@/construction/model/transforms'
 import {
   type Length,
   type Polygon2D,
   type PolygonWithHoles2D,
+  type Transform,
   type Vec2,
   type Vec3,
   addVec3,
@@ -18,6 +20,8 @@ import {
   dotVec2,
   dotVec3,
   ensurePolygonIsClockwise,
+  fromTrans,
+  invertTransform,
   lineFromSegment,
   lineIntersection,
   midpoint,
@@ -27,7 +31,6 @@ import {
   perpendicularCCW,
   polygonEdges,
   projectVec2,
-  scaleVec3,
   subVec2,
   subVec3,
   subtractPolygons,
@@ -236,28 +239,23 @@ export function transformPolygonToWallCoordinates(polygon: Polygon2D, wall: Inte
 
 export function transformPlaneToWallCoordinates(
   plane: ClippingPlane,
-  wall: IntermediateWallWithGeometry
+  wall: IntermediateWallWithGeometry,
+  wallBottom: Length = 0
 ): ClippingPlane {
-  const transverse = perpendicularCCW(wall.direction)
-  const localNormal = newVec3(
-    dotVec2(newVec2(plane.normal[0], plane.normal[1]), wall.direction),
-    dotVec2(newVec2(plane.normal[0], plane.normal[1]), transverse),
-    plane.normal[2]
-  )
-  const worldPoint = scaleVec3(plane.normal, plane.originOffset / dotVec3(plane.normal, plane.normal))
-  const relative = subVec2(newVec2(worldPoint[0], worldPoint[1]), wall.entityReferenceLine.start)
-  const localPoint = newVec3(dotVec2(relative, wall.direction), dotVec2(relative, transverse), worldPoint[2])
-
-  return {
-    normal: localNormal,
-    originOffset: dotVec3(localNormal, localPoint)
-  }
+  const wallInverse = invertTransform(intermediateWallTransform(wall, wallBottom))
+  if (!wallInverse) throw new Error(`Unable to invert transform for intermediate wall ${wall.id}`)
+  return transformPlane(plane, wallInverse)
 }
 
-function transformPlane(plane: ClippingPlane, itemTransform: Parameters<typeof transform>[1]): ClippingPlane {
-  const point = scaleVec3(plane.normal, plane.originOffset / dotVec3(plane.normal, plane.normal))
-  const transformedPoint = transform(point, itemTransform)
-  const transformedNormal = subVec3(transform(addVec3(point, plane.normal), itemTransform), transformedPoint)
+function transformPlane(plane: ClippingPlane, transformMatrix: Transform): ClippingPlane {
+  const normalLengthSquared = dotVec3(plane.normal, plane.normal)
+  const point = newVec3(
+    (plane.normal[0] * plane.originOffset) / normalLengthSquared,
+    (plane.normal[1] * plane.originOffset) / normalLengthSquared,
+    (plane.normal[2] * plane.originOffset) / normalLengthSquared
+  )
+  const transformedPoint = transform(point, transformMatrix)
+  const transformedNormal = subVec3(transform(addVec3(point, plane.normal), transformMatrix), transformedPoint)
 
   return {
     normal: transformedNormal,
@@ -274,7 +272,8 @@ export function clipInteriorWallResults(
   extension: WallExtension,
   wall: IntermediateWallWithGeometry,
   storeyHeight: Length,
-  perimeterContext: PerimeterConstructionContext
+  perimeterContext: PerimeterConstructionContext,
+  wallTransform: Transform
 ): ConstructionResult[] {
   const geometry = perimeterContext.interiorWallGeometry.get(wall.id)
   if (!geometry) return results
@@ -286,22 +285,24 @@ export function clipInteriorWallResults(
   if (clipPolygons.length === 0 && clipPlanes.length === 0) return results
 
   const localPolygons = clipPolygons.map(p => transformPolygonToWallCoordinates(p, wall))
-  const localPlanes = clipPlanes.map(plane => transformPlaneToWallCoordinates(plane, wall))
+  const wallInverse = invertTransform(wallTransform)
+  if (!wallInverse) throw new Error(`Unable to invert transform for intermediate wall ${wall.id}`)
+  const localPlanes = clipPlanes.map(plane => transformPlane(plane, wallInverse))
   const clippingVolumes = localPolygons.map(p =>
     createExtrudedPolygon({ outer: p, holes: [] } satisfies PolygonWithHoles2D, 'xy', storeyHeight)
   )
 
   return Array.from(
     yieldAndClip(asResults(results), (manifold, item) => {
+      const verticalOffset = fromTrans(newVec3(0, 0, item.transform[14]))
       const clipped = clippingVolumes.reduce(
-        (current, clip) => current.subtract(transformManifold(clip.manifold, item.transform)),
+        (current, clip) => current.subtract(transformManifold(clip.manifold, verticalOffset)),
         manifold
       )
       return localPlanes.reduce((current, plane) => {
-        const transformedPlane = transformPlane(plane, item.transform)
         return current.trimByPlane(
-          [transformedPlane.normal[0], transformedPlane.normal[1], transformedPlane.normal[2]],
-          transformedPlane.originOffset
+          [plane.normal[0], plane.normal[1], plane.normal[2]],
+          plane.originOffset
         )
       }, clipped)
     })

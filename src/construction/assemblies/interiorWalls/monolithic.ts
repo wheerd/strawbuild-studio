@@ -6,14 +6,15 @@ import { runLayerConstruction } from '@/construction/assemblies/perimeterWalls/l
 import type { PerimeterConstructionContext } from '@/construction/context/perimeter'
 import type { StoreyContext } from '@/construction/context/storeys'
 import { createConstructionElement } from '@/construction/model/elements'
-import { type ConstructionModel } from '@/construction/model/model'
+import { type ConstructionModel, type DebugClippingPlane } from '@/construction/model/model'
+import { intermediateWallTransform } from '@/construction/model/transforms'
 import { aggregateResults, assignDeterministicIdsToResults } from '@/construction/model/results'
 import type { ConstructionResult } from '@/construction/model/results'
 import { createExtrudedPolygon } from '@/construction/model/shapes'
 import { createTag } from '@/construction/model/tags'
 import { Bounds3D, type Polygon2D, type PolygonWithHoles2D, fromTrans, newVec2, newVec3 } from '@/shared/geometry'
 
-import { clipInteriorWallResults, computeWallExtensionAndClipping } from './geometry'
+import { clipInteriorWallResults, computeWallExtensionAndClipping, transformPlaneToWallCoordinates } from './geometry'
 import type { InteriorWallAssembly } from './types'
 
 export class MonolithicInteriorWallAssembly implements InteriorWallAssembly {
@@ -57,6 +58,23 @@ export class MonolithicInteriorWallAssembly implements InteriorWallAssembly {
     const startNode = getWallNodeById(wall.start.nodeId)
     const endNode = getWallNodeById(wall.end.nodeId)
     const extension = computeWallExtensionAndClipping(wall, startNode, endNode, perimeterContext)
+    const debugPlaneEntries: { endpoint: 'start' | 'end'; plane: typeof extension.startClipPlane }[] = [
+      { endpoint: 'start', plane: extension.startClipPlane },
+      { endpoint: 'end', plane: extension.endClipPlane }
+    ]
+    const debugClippingPlanes: DebugClippingPlane[] = debugPlaneEntries.flatMap(({ endpoint, plane }) => {
+      if (!plane) return []
+      const localPlane = transformPlaneToWallCoordinates(plane, wall, storeyContext.wallBottom)
+      return [
+        {
+          id: `${wall.id}-${endpoint}`,
+          sourceWallId: wall.id,
+          endpoint,
+          normal: localPlane.normal,
+          originOffset: localPlane.originOffset
+        }
+      ]
+    })
     const corePolygon: PolygonWithHoles2D = {
       outer: {
         points: [
@@ -96,7 +114,14 @@ export class MonolithicInteriorWallAssembly implements InteriorWallAssembly {
     }
     const results: ConstructionResult[] = [{ type: 'element', element: core }, ...layerResults]
     assignDeterministicIdsToResults(results, wall.id)
-    const clippedResults = clipInteriorWallResults(results, extension, wall, height, perimeterContext)
+    const clippedResults = clipInteriorWallResults(
+      results,
+      extension,
+      wall,
+      height,
+      perimeterContext,
+      intermediateWallTransform(wall, storeyContext.wallBottom)
+    )
     const aggregated = aggregateResults(clippedResults)
     return {
       elements: aggregated.elements,
@@ -104,7 +129,8 @@ export class MonolithicInteriorWallAssembly implements InteriorWallAssembly {
       areas: aggregated.areas,
       errors: aggregated.errors,
       warnings: aggregated.warnings,
-      bounds: Bounds3D.merge(...aggregated.elements.map(element => element.bounds))
+      bounds: Bounds3D.merge(...aggregated.elements.map(element => element.bounds)),
+      debugClippingPlanes
     }
   }
 

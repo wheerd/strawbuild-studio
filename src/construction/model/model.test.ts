@@ -336,6 +336,32 @@ describe('transformModel', () => {
     expect.assert(area.type === 'cut')
     expect(area.position).toBe(15)
   })
+
+  it('should transform clipping-plane debug metadata', () => {
+    const model: ConstructionModel = {
+      elements: [],
+      measurements: [],
+      areas: [],
+      errors: [],
+      warnings: [],
+      bounds: Bounds3D.fromMinMax(newVec3(0, 0, 0), newVec3(1, 1, 1)),
+      debugClippingPlanes: [
+        {
+          id: 'wall-start',
+          sourceWallId: 'wall-1',
+          endpoint: 'start',
+          normal: newVec3(1, 0, 0),
+          originOffset: 0
+        }
+      ]
+    }
+
+    const transformed = transformModel(model, fromTrans(newVec3(10, 20, 30)))
+
+    expect(transformed.debugClippingPlanes).toHaveLength(1)
+    expect(transformed.debugClippingPlanes?.[0].normal).toEqual(newVec3(1, 0, 0))
+    expect(transformed.debugClippingPlanes?.[0].originOffset).toBe(10)
+  })
 })
 
 describe('mergeKey functionality', () => {
