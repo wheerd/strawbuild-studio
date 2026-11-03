@@ -145,4 +145,39 @@ describe('computePerimeterConstructionPolygon', () => {
 
     expect(result.polygon.points).toEqual(expectedPoints)
   })
+
+  it('keeps retained construction lines associated with their wall IDs', () => {
+    const walls = [
+      { id: 'wall-0', point: newVec2(0, 0), direction: newVec2(1, 0) },
+      { id: 'wall-1', point: newVec2(100, 0), direction: newVec2(1, 0) },
+      { id: 'wall-2', point: newVec2(100, 0), direction: newVec2(0, 1) },
+      { id: 'wall-3', point: newVec2(100, 100), direction: newVec2(-1, 0) },
+      { id: 'wall-4', point: newVec2(0, 100), direction: newVec2(0, -1) }
+    ].map(({ id, point, direction: wallDirection }) =>
+      partial<PerimeterWallWithGeometry>({
+        id: id as PerimeterWallId,
+        wallAssemblyId: `assembly-${id}` as PerimeterWallAssemblyId,
+        insideLine: { start: point, end: scaleAddVec2(point, wallDirection, 100) },
+        outsideLine: { start: point, end: scaleAddVec2(point, wallDirection, 100) },
+        direction: wallDirection,
+        outsideDirection: perpendicularCCW(wallDirection)
+      })
+    )
+
+    mockedGetPerimeterWallById.mockImplementation(id => walls.find(wall => wall.id === id))
+    mockedGetWallAssemblyById.mockReturnValue(null)
+
+    const result = computePerimeterConstructionPolygon(
+      partial<PerimeterWithGeometry>({ wallIds: walls.map(wall => wall.id) })
+    )
+
+    expect(result.linesByWallId['wall-1' as PerimeterWallId]).toEqual({
+      point: newVec2(100, 0),
+      direction: newVec2(1, 0)
+    })
+    expect(result.linesByWallId['wall-2' as PerimeterWallId]).toEqual({
+      point: newVec2(100, 0),
+      direction: newVec2(0, 1)
+    })
+  })
 })

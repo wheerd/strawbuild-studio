@@ -1,12 +1,16 @@
 import { describe, expect, it } from 'vitest'
 
 import type { IntermediateWallWithGeometry, WallNodeWithGeometry } from '@/building/model'
-import type { IntermediateWallId, WallNodeId } from '@/building/model/ids'
+import type { IntermediateWallId, PerimeterWallId, WallNodeId } from '@/building/model/ids'
 import type { PerimeterConstructionContext } from '@/construction/context/perimeter'
-import { newVec2 } from '@/shared/geometry'
+import { newVec2, newVec3 } from '@/shared/geometry'
 import { partial } from '@/test/helpers'
 
-import { computeWallExtensionAndClipping, transformPolygonToWallCoordinates } from './geometry'
+import {
+  computeWallExtensionAndClipping,
+  transformPlaneToWallCoordinates,
+  transformPolygonToWallCoordinates
+} from './geometry'
 
 const wallId = 'interior-wall' as IntermediateWallId
 const constructingWallId = 'constructing-wall' as IntermediateWallId
@@ -77,6 +81,23 @@ describe('interior wall geometry', () => {
     ).toEqual({ points: [newVec2(0, 10), newVec2(10, 10), newVec2(10, 0)] })
   })
 
+  it('transforms plan clipping planes into wall-local coordinates', () => {
+    const translatedWall = partial<IntermediateWallWithGeometry>({
+      entityReferenceLine: {
+        start: newVec2(10, 20),
+        end: newVec2(110, 20)
+      },
+      direction: newVec2(1, 0)
+    })
+
+    const transformed = transformPlaneToWallCoordinates(
+      { normal: newVec3(1, 0, 0), originOffset: 0 },
+      translatedWall
+    )
+    expect(Array.from(transformed.normal)).toEqual([1, 0, 0])
+    expect(transformed.originOffset).toBe(-10)
+  })
+
   it('selects the right constructing boundary at the start and the left boundary at the end', () => {
     const context = partial<PerimeterConstructionContext>({
       interiorWallGeometry: new Map([
@@ -121,5 +142,43 @@ describe('interior wall geometry', () => {
     expect(Math.abs(result.startClipPlane?.normal[1] ?? 1)).toBe(0)
     expect(result.endClipPlane?.normal[0]).toBe(-1)
     expect(Math.abs(result.endClipPlane?.normal[1] ?? 1)).toBe(0)
+  })
+
+  it('orients perimeter clipping planes toward the attached wall', () => {
+    const context = partial<PerimeterConstructionContext>({
+      innerLinesById: {
+        ['perimeterWall' as PerimeterWallId]: { point: newVec2(0, 0), direction: newVec2(0, 1) }
+      },
+      interiorWallGeometry: new Map([
+        [
+          wallId,
+          {
+            coreLines: {
+              left: { point: newVec2(0, -5), direction: newVec2(1, 0) },
+              right: { point: newVec2(0, 5), direction: newVec2(1, 0) }
+            },
+            start: { nodeId: startNodeId, left: newVec2(0, -5), right: newVec2(0, 5) },
+            end: { nodeId: endNodeId, left: newVec2(100, -5), right: newVec2(100, 5) }
+          }
+        ]
+      ]),
+      interiorWallNodePolygons: new Map()
+    })
+    const wallWithPerimeterStart = partial<IntermediateWallWithGeometry>({
+      id: wallId,
+      entityReferenceLine: { start: newVec2(0, 0), end: newVec2(100, 0) },
+      direction: newVec2(1, 0)
+    })
+
+    const result = computeWallExtensionAndClipping(
+      wallWithPerimeterStart,
+      partial<WallNodeWithGeometry>({ type: 'perimeter', wallId: 'perimeterWall' as PerimeterWallId }),
+      partial<WallNodeWithGeometry>({ type: 'inner', constructedBy: wallId }),
+      context
+    )
+
+    expect(result.startClipPlane?.normal[0]).toBe(1)
+    expect(result.startClipPlane?.normal[1]).toBeCloseTo(0)
+    expect(result.startClipPlane?.normal[2]).toBe(0)
   })
 })

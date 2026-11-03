@@ -278,7 +278,7 @@ export function* withClipping(
 
     for (const manifold of decomposed) {
       if (!manifold.isEmpty()) {
-        const bounds = getBoundsFromManifold(clippedManifold)
+        const bounds = getBoundsFromManifold(manifold)
         yield {
           ...item,
           partInfo: item.partInfo ? { ...item.partInfo } : undefined,

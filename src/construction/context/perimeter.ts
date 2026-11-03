@@ -75,7 +75,7 @@ export interface WallFaceOffset {
 export function computePerimeterConstructionPolygon(
   perimeter: PerimeterWithGeometry,
   outside = true
-): { polygon: Polygon2D; lines: Line2D[] } {
+): { polygon: Polygon2D; lines: Line2D[]; linesByWallId: Partial<Record<PerimeterWallId, Line2D>> } {
   const { getPerimeterWallById } = getModelActions()
   const { getPerimeterWallAssemblyById } = getConfigActions()
 
@@ -100,22 +100,27 @@ export function computePerimeterConstructionPolygon(
       wall.outsideDirection,
       offsetDistance
     )
-    return { point: offsetPoint, direction: wall.direction }
+    return { wallId: wall.id, line: { point: offsetPoint, direction: wall.direction } }
   })
 
   const filteredLines = offsetLines.filter(
-    (l, i) => !eqVec2(l.direction, offsetLines[(i - 1 + offsetLines.length) % offsetLines.length].direction)
+    (entry, i) =>
+      !eqVec2(entry.line.direction, offsetLines[(i - 1 + offsetLines.length) % offsetLines.length].line.direction)
   )
 
   const points = filteredLines
-    .map((line, index) => {
+    .map((entry, index) => {
       const prevIndex = (index - 1 + filteredLines.length) % filteredLines.length
-      const prevLine = filteredLines[prevIndex]
-      return lineIntersection(prevLine, line)
+      const prevLine = filteredLines[prevIndex].line
+      return lineIntersection(prevLine, entry.line)
     })
     .filter(p => p != null)
 
-  return { polygon: { points }, lines: filteredLines }
+  return {
+    polygon: { points },
+    lines: filteredLines.map(entry => entry.line),
+    linesByWallId: Object.fromEntries(offsetLines.map(entry => [entry.wallId, entry.line]))
+  }
 }
 
 export const computePerimeterConstructionContext = (
@@ -131,11 +136,9 @@ export const computePerimeterConstructionContext = (
   const adjustedHoles = relevantHoles.map(hole => applyWallFaceOffsets(hole, wallFaces))
   const mergedHoles = unionPolygons(adjustedHoles)
 
-  const interiorWallResult = createInteriorWallGeometry(perimeter, inner.lines)
+  const interiorWallResult = createInteriorWallGeometry(perimeter, inner.linesByWallId)
 
-  const innerLinesById: Record<PerimeterWallId, Line2D> = Object.fromEntries(
-    perimeter.wallIds.map((w, i) => [w, inner.lines[i]])
-  )
+  const innerLinesById = inner.linesByWallId as Record<PerimeterWallId, Line2D>
 
   return {
     innerLines: inner.lines,
@@ -305,7 +308,7 @@ function segmentsOverlap(edgeStart: Vec2, edgeEnd: Vec2, face: WallFaceOffset): 
 
 export function createInteriorWallGeometry(
   perimeter: PerimeterWithGeometry,
-  lines: Line2D[]
+  linesByWallId: Partial<Record<PerimeterWallId, Line2D>>
 ): {
   areas: Polygon2D[]
   wallGeometry: Map<IntermediateWallId, InteriorWallGeometry>
@@ -333,7 +336,8 @@ export function createInteriorWallGeometry(
 
   for (const node of getWallNodesByPerimeter(perimeter.id)) {
     if (node.type === 'perimeter') {
-      const insideLine = lines[perimeter.wallIds.indexOf(node.wallId)]
+      const insideLine = linesByWallId[node.wallId]
+      if (!insideLine) continue
       for (const wallId of node.connectedWallIds) {
         if (!isIntermediateWallId(wallId)) continue
         const geometry = wallGeometry.get(wallId)

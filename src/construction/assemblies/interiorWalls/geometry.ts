@@ -1,5 +1,3 @@
-import type { Vec3 } from 'manifold-3d'
-
 import type { IntermediateWallWithGeometry, WallNodeWithGeometry } from '@/building/model'
 import type {
   InteriorWallEndpoint,
@@ -14,19 +12,27 @@ import {
   type Polygon2D,
   type PolygonWithHoles2D,
   type Vec2,
+  type Vec3,
+  addVec3,
   dotAbsVec2,
   dotVec2,
+  dotVec3,
   ensurePolygonIsClockwise,
   lineFromSegment,
   lineIntersection,
   midpoint,
   newVec2,
+  newVec3,
   offsetPolygon,
   perpendicularCCW,
   polygonEdges,
   projectVec2,
+  scaleVec3,
   subVec2,
-  subtractPolygons
+  subVec3,
+  subtractPolygons,
+  transform,
+  vec2To3
 } from '@/shared/geometry'
 
 export interface ClippingPlane {
@@ -119,11 +125,9 @@ function computeNodeClipPlane(
 
   if (node.type === 'perimeter') {
     const line = perimeterContext.innerLinesById[node.wallId]
-    const normal = perpendicularCCW(line.direction)
-    const dot = dotVec2(normal, wall.direction)
-    if (dot * requiredSign <= 1e-6) {
-      return undefined
-    }
+    const baseNormal = perpendicularCCW(line.direction)
+    const normal =
+      dotVec2(baseNormal, wall.direction) * requiredSign > 1e-6 ? baseNormal : newVec2(-baseNormal[0], -baseNormal[1])
     return asClippingPlane(normal, line.point)
   }
 
@@ -150,8 +154,8 @@ function computeNodeClipPlane(
 
 function asClippingPlane(normal: Vec2, point: Vec2): ClippingPlane {
   return {
-    normal: [normal[0], normal[1], 0],
-    originOffset: normal[0] * point[0] + normal[1] * point[1]
+    normal: vec2To3(normal),
+    originOffset: dotVec2(normal, point)
   }
 }
 
@@ -230,6 +234,37 @@ export function transformPolygonToWallCoordinates(polygon: Polygon2D, wall: Inte
   return { points: polygon.points.map(transformPoint) }
 }
 
+export function transformPlaneToWallCoordinates(
+  plane: ClippingPlane,
+  wall: IntermediateWallWithGeometry
+): ClippingPlane {
+  const transverse = perpendicularCCW(wall.direction)
+  const localNormal = newVec3(
+    dotVec2(newVec2(plane.normal[0], plane.normal[1]), wall.direction),
+    dotVec2(newVec2(plane.normal[0], plane.normal[1]), transverse),
+    plane.normal[2]
+  )
+  const worldPoint = scaleVec3(plane.normal, plane.originOffset / dotVec3(plane.normal, plane.normal))
+  const relative = subVec2(newVec2(worldPoint[0], worldPoint[1]), wall.entityReferenceLine.start)
+  const localPoint = newVec3(dotVec2(relative, wall.direction), dotVec2(relative, transverse), worldPoint[2])
+
+  return {
+    normal: localNormal,
+    originOffset: dotVec3(localNormal, localPoint)
+  }
+}
+
+function transformPlane(plane: ClippingPlane, itemTransform: Parameters<typeof transform>[1]): ClippingPlane {
+  const point = scaleVec3(plane.normal, plane.originOffset / dotVec3(plane.normal, plane.normal))
+  const transformedPoint = transform(point, itemTransform)
+  const transformedNormal = subVec3(transform(addVec3(point, plane.normal), itemTransform), transformedPoint)
+
+  return {
+    normal: transformedNormal,
+    originOffset: dotVec3(transformedNormal, transformedPoint)
+  }
+}
+
 function* asResults(results: ConstructionResult[]): Generator<ConstructionResult> {
   yield* results
 }
@@ -251,6 +286,7 @@ export function clipInteriorWallResults(
   if (clipPolygons.length === 0 && clipPlanes.length === 0) return results
 
   const localPolygons = clipPolygons.map(p => transformPolygonToWallCoordinates(p, wall))
+  const localPlanes = clipPlanes.map(plane => transformPlaneToWallCoordinates(plane, wall))
   const clippingVolumes = localPolygons.map(p =>
     createExtrudedPolygon({ outer: p, holes: [] } satisfies PolygonWithHoles2D, 'xy', storeyHeight)
   )
@@ -261,7 +297,13 @@ export function clipInteriorWallResults(
         (current, clip) => current.subtract(transformManifold(clip.manifold, item.transform)),
         manifold
       )
-      return clipPlanes.reduce((current, plane) => current.trimByPlane(plane.normal, plane.originOffset), clipped)
+      return localPlanes.reduce((current, plane) => {
+        const transformedPlane = transformPlane(plane, item.transform)
+        return current.trimByPlane(
+          [transformedPlane.normal[0], transformedPlane.normal[1], transformedPlane.normal[2]],
+          transformedPlane.originOffset
+        )
+      }, clipped)
     })
   )
 }
