@@ -8,9 +8,9 @@ import { constructRoof } from '@/construction/assemblies/roofs'
 import { getPerimeterContextCached } from '@/construction/context/perimeterContextCache'
 import { getWallStoreyContextCached } from '@/construction/context/storeys'
 import { type ConstructionModel, mergeModels, transformModel } from '@/construction/model/model'
-import { intermediateWallTransform } from '@/construction/model/transforms'
 import { assignDeterministicIdsToModel, resultsToModel } from '@/construction/model/results'
 import { TAG_FLOOR, TAG_WALLS, createTag } from '@/construction/model/tags'
+import { intermediateWallTransform } from '@/construction/model/transforms'
 import {
   IDENTITY,
   dirAngle,

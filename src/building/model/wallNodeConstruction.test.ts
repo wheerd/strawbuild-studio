@@ -17,7 +17,8 @@ function makeNode(incidents: { id: string; direction: Vec2 }[]): InnerWallNodeWi
       id: incident.id as never,
       direction: incident.direction,
       leftPoint: [0, 0] as never,
-      rightPoint: [0, 0] as never
+      rightPoint: [0, 0] as never,
+      side: 'start'
     }))
   }
 }

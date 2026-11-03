@@ -52,6 +52,7 @@ export interface WallNodeIncidentWall {
   direction: Vec2
   leftPoint: Vec2
   rightPoint: Vec2
+  side: 'start' | 'end'
 }
 
 export interface BaseWallNodeGeometry {

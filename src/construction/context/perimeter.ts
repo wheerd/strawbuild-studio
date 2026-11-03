@@ -432,7 +432,8 @@ function createInnerNodePolygons(
         wallId: wall.id,
         left: atStart ? geometry.coreLines.left : geometry.coreLines.right,
         right: atStart ? geometry.coreLines.right : geometry.coreLines.left,
-        dir: atStart ? wall.direction : negVec2(wall.direction)
+        dir: atStart ? wall.direction : negVec2(wall.direction),
+        side: atStart ? 'start' : 'end'
       }
     ]
   })

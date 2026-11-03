@@ -262,10 +262,7 @@ export function* withClipping(
     // This is an element - apply clipping
     const invertedTransform = invertTransform(item.transform)
     const clippedManifold = invertedTransform
-      ? transformManifold(
-          clipping(transformManifold(item.shape.manifold, item.transform), item),
-          invertedTransform
-        )
+      ? transformManifold(clipping(transformManifold(item.shape.manifold, item.transform), item), invertedTransform)
       : clipping(item.shape.manifold, item)
 
     const decomposed = clippedManifold.decompose()

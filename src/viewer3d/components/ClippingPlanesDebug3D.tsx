@@ -48,24 +48,20 @@ function createPlaneGeometry(
     [1, -1],
     [1, 1],
     [-1, 1]
-  ].map(([horizontal, vertical]) => [
-    point[0] + horizontalTangent[0] * horizontal * width / 2 + verticalTangent[0] * vertical * height / 2,
-    point[1] + horizontalTangent[1] * horizontal * width / 2 + verticalTangent[1] * vertical * height / 2,
-    point[2] + horizontalTangent[2] * horizontal * width / 2 + verticalTangent[2] * vertical * height / 2
-  ] as [number, number, number])
+  ].map(
+    ([horizontal, vertical]) =>
+      [
+        point[0] + (horizontalTangent[0] * horizontal * width) / 2 + (verticalTangent[0] * vertical * height) / 2,
+        point[1] + (horizontalTangent[1] * horizontal * width) / 2 + (verticalTangent[1] * vertical * height) / 2,
+        point[2] + (horizontalTangent[2] * horizontal * width) / 2 + (verticalTangent[2] * vertical * height) / 2
+      ] as [number, number, number]
+  )
 
   const fill = new BufferGeometry()
   fill.setAttribute(
     'position',
     new Float32BufferAttribute(
-      [
-        ...corners[0],
-        ...corners[1],
-        ...corners[2],
-        ...corners[0],
-        ...corners[2],
-        ...corners[3]
-      ],
+      [...corners[0], ...corners[1], ...corners[2], ...corners[0], ...corners[2], ...corners[3]],
       3
     )
   )
@@ -88,7 +84,10 @@ export function ClippingPlanesDebug3D({ model }: ClippingPlanesDebug3DProps): Re
   const boundsCenter = model.bounds.center as readonly [number, number, number]
   const boundsSize = model.bounds.size as readonly [number, number, number]
   const geometries = useMemo(
-    () => planes.map(plane => createPlaneGeometry(plane, boundsCenter, boundsSize, model.bounds.min[2], model.bounds.max[2])),
+    () =>
+      planes.map(plane =>
+        createPlaneGeometry(plane, boundsCenter, boundsSize, model.bounds.min[2], model.bounds.max[2])
+      ),
     [planes, boundsCenter, boundsSize, model.bounds.min, model.bounds.max]
   )
 

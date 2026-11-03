@@ -65,7 +65,14 @@ export function updateAllWallNodeGeometry(
         const left = wall.start.nodeId === node.id ? lines.left : lines.right
         const right = wall.start.nodeId === node.id ? lines.right : lines.left
         const dir = wall.start.nodeId === node.id ? lines.left.direction : negVec2(lines.left.direction)
-        return { wallId, left, right, dir, kind: 'intermediate' as const }
+        const side = wall.start.nodeId === node.id ? 'start' : 'end'
+        return {
+          wallId,
+          left,
+          right,
+          dir,
+          side
+        } satisfies WallNodeIncidentLine
       })
       .filter(item => item != null)
 
@@ -78,13 +85,15 @@ export function updateAllWallNodeGeometry(
           wallId: node.wallId,
           dir: perimeterWall.direction,
           left: outsideLine,
-          right: insideLine
+          right: insideLine,
+          side: 'end'
         },
         {
           wallId: node.wallId,
           dir: negVec2(perimeterWall.direction),
           left: insideLine,
-          right: outsideLine
+          right: outsideLine,
+          side: 'start'
         }
       )
     }
@@ -274,7 +283,7 @@ function updateWallEnd(
 
   state._wallNodeGeometry[node.id] = {
     center: midpoint(left, right),
-    incidentWalls: [{ direction: wall.dir, leftPoint: left, rightPoint: right, id: wall.wallId }]
+    incidentWalls: [{ direction: wall.dir, leftPoint: left, rightPoint: right, id: wall.wallId, side: wall.side }]
   } as InnerWallNodeGeometry
 }
 

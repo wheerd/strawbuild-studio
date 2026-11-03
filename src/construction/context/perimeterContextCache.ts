@@ -82,7 +82,11 @@ export class PerimeterContextCacheService {
 
     subscribeToIntermediateWallGeometry(id => {
       for (const perimeter of getAllPerimeters()) {
-        if (getModelActions().getIntermediateWallsByPerimeter(perimeter.id).some(wall => wall.id === id)) {
+        if (
+          getModelActions()
+            .getIntermediateWallsByPerimeter(perimeter.id)
+            .some(wall => wall.id === id)
+        ) {
           this.invalidate(perimeter.id)
         }
       }
@@ -95,7 +99,11 @@ export class PerimeterContextCacheService {
 
     subscribeToWallNodeGeometry(id => {
       for (const perimeter of getAllPerimeters()) {
-        if (getModelActions().getWallNodesByPerimeter(perimeter.id).some(node => node.id === id)) {
+        if (
+          getModelActions()
+            .getWallNodesByPerimeter(perimeter.id)
+            .some(node => node.id === id)
+        ) {
           this.invalidate(perimeter.id)
         }
       }

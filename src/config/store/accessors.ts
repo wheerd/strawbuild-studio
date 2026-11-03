@@ -110,11 +110,7 @@ export const subscribeToWallAssemblies = (
 ) => subscribeRecords(useConfigStore, s => s.perimeterWallAssemblyConfigs, cb)
 
 export const subscribeToInteriorWallAssemblies = (
-  cb: (
-    id: InteriorWallAssemblyId,
-    current?: InteriorWallAssemblyConfig,
-    previous?: InteriorWallAssemblyConfig
-  ) => void
+  cb: (id: InteriorWallAssemblyId, current?: InteriorWallAssemblyConfig, previous?: InteriorWallAssemblyConfig) => void
 ) => subscribeRecords(useConfigStore, s => s.interiorWallAssemblyConfigs, cb)
 
 export const subscribeToFloorAssemblies = (

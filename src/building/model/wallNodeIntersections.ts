@@ -29,6 +29,7 @@ export interface WallNodeIncidentLine {
   right: Line2D
   wallId: WallId
   dir: Vec2
+  side: 'start' | 'end'
 }
 
 /** Computes adjacent incident intersections; null marks an angularly colinear pair. */
@@ -56,7 +57,7 @@ function computeWallEnd(nodePos: Vec2, wall: WallNodeIncidentLine) {
 
   return {
     center: midpoint(left, right),
-    incidentWalls: [{ direction: wall.dir, leftPoint: left, rightPoint: right, id: wall.wallId }]
+    incidentWalls: [{ direction: wall.dir, leftPoint: left, rightPoint: right, id: wall.wallId, side: wall.side }]
   } as InnerWallNodeGeometry
 }
 
@@ -116,7 +117,13 @@ export function computeNodeGeometry(node: WallNode, nodePos: Vec2, incidents: Wa
     const wallRightPoint = colinearSharedPoint && iNext === colinearIndex ? colinearSharedPoint : nextIntersection
 
     polygonPoints.push(prevIntersection, leftPoint, rightPoint)
-    incidentWalls.push({ leftPoint: wallLeftPoint, rightPoint: wallRightPoint, direction: line.dir, id: line.wallId })
+    incidentWalls.push({
+      leftPoint: wallLeftPoint,
+      rightPoint: wallRightPoint,
+      direction: line.dir,
+      id: line.wallId,
+      side: line.side
+    })
 
     if (!isIntermediateWallId(line.wallId)) {
       if (intersectionPoints[iNext] === null) {
@@ -207,8 +214,8 @@ function computeColinearNodeGeometry(nodePos: Vec2, a: WallNodeIncidentLine, b: 
   return {
     center: midpoint(aLeft, aRight),
     incidentWalls: [
-      { direction: a.dir, leftPoint: aLeft, rightPoint: aRight, id: a.wallId },
-      { direction: b.dir, leftPoint: bLeft, rightPoint: bRight, id: b.wallId }
+      { direction: a.dir, leftPoint: aLeft, rightPoint: aRight, id: a.wallId, side: a.side },
+      { direction: b.dir, leftPoint: bLeft, rightPoint: bRight, id: b.wallId, side: b.side }
     ]
   } as InnerWallNodeGeometry
 }

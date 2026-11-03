@@ -1,4 +1,5 @@
-import type { IntermediateWallWithGeometry, WallNodeWithGeometry } from '@/building/model'
+import { isIntermediateWallId } from '@/building/model'
+import type { IntermediateWallWithGeometry, WallNodeIncidentWall, WallNodeWithGeometry } from '@/building/model'
 import type {
   InteriorWallEndpoint,
   InteriorWallGeometry,
@@ -10,6 +11,7 @@ import { createExtrudedPolygon } from '@/construction/model/shapes'
 import { intermediateWallTransform } from '@/construction/model/transforms'
 import {
   type Length,
+  type Line2D,
   type Polygon2D,
   type PolygonWithHoles2D,
   type Transform,
@@ -25,10 +27,12 @@ import {
   lineFromSegment,
   lineIntersection,
   midpoint,
+  negVec2,
   newVec2,
   newVec3,
   offsetPolygon,
   perpendicularCCW,
+  perpendicularCW,
   polygonEdges,
   projectVec2,
   subVec2,
@@ -43,14 +47,35 @@ export interface ClippingPlane {
   originOffset: Length
 }
 
-export interface WallExtension {
+export interface LayerClipping {
+  start?: ClippingPlane
+  end?: ClippingPlane
+}
+
+export interface LayerExtension {
   startExtension: Length
   endExtension: Length
+  startClipPlane?: ClippingPlane
+  endClipPlane?: ClippingPlane
+}
+
+export interface InteriorWallClipping {
   startClipPolygon?: Polygon2D
   endClipPolygon?: Polygon2D
   startClipPlane?: ClippingPlane
   endClipPlane?: ClippingPlane
 }
+
+export interface WallExtension extends InteriorWallClipping {
+  startExtension: Length
+  endExtension: Length
+  layerClipping: {
+    left: LayerClipping
+    right: LayerClipping
+  }
+}
+
+export type InteriorWallLayerSide = 'left' | 'right'
 
 export function computeWallExtensionAndClipping(
   wall: IntermediateWallWithGeometry,
@@ -58,11 +83,12 @@ export function computeWallExtensionAndClipping(
   endNode: WallNodeWithGeometry,
   perimeterContext: PerimeterConstructionContext
 ): WallExtension {
+  const layerClipping = computeLayerClipping(wall, startNode, endNode, perimeterContext)
   const geometry = perimeterContext.interiorWallGeometry.get(wall.id)
   const startNodePolygon = perimeterContext.interiorWallNodePolygons.get(startNode.id)
   const endNodePolygon = perimeterContext.interiorWallNodePolygons.get(endNode.id)
   if (!geometry?.start || !geometry.end) {
-    return { startExtension: 0, endExtension: 0 }
+    return { startExtension: 0, endExtension: 0, layerClipping }
   }
   const corePolygon: Polygon2D = ensurePolygonIsClockwise({
     points: [geometry.start.left, geometry.end.left, geometry.end.right, geometry.start.right]
@@ -114,8 +140,118 @@ export function computeWallExtensionAndClipping(
     startClipPolygon,
     endClipPolygon,
     startClipPlane,
-    endClipPlane
+    endClipPlane,
+    layerClipping
   }
+}
+
+function computeLayerClipping(
+  wall: IntermediateWallWithGeometry,
+  startNode: WallNodeWithGeometry,
+  endNode: WallNodeWithGeometry,
+  perimeterContext: PerimeterConstructionContext
+): WallExtension['layerClipping'] {
+  return {
+    left: {
+      start: computeNeighborLayerPlane(wall, startNode, 'start', 'left', perimeterContext),
+      end: computeNeighborLayerPlane(wall, endNode, 'end', 'left', perimeterContext)
+    },
+    right: {
+      start: computeNeighborLayerPlane(wall, startNode, 'start', 'right', perimeterContext),
+      end: computeNeighborLayerPlane(wall, endNode, 'end', 'right', perimeterContext)
+    }
+  }
+}
+
+export function computeLayerExtension(
+  wall: IntermediateWallWithGeometry,
+  clipping: LayerClipping,
+  band: { start: Length; end: Length }
+): LayerExtension {
+  const startPlane = clipping.start
+  const endPlane = clipping.end
+  const startLocalPlane = startPlane ? transformPlaneToWallCoordinates(startPlane, wall) : undefined
+  const endLocalPlane = endPlane ? transformPlaneToWallCoordinates(endPlane, wall) : undefined
+
+  return {
+    startExtension: startLocalPlane ? extensionAtStart(startLocalPlane, band) : 0,
+    endExtension: endLocalPlane ? extensionAtEnd(endLocalPlane, band, wall.wallLength) : 0,
+    startClipPlane: startPlane,
+    endClipPlane: endPlane
+  }
+}
+
+function computeNeighborLayerPlane(
+  wall: IntermediateWallWithGeometry,
+  node: WallNodeWithGeometry,
+  endpoint: 'start' | 'end',
+  side: InteriorWallLayerSide,
+  perimeterContext: PerimeterConstructionContext
+): ClippingPlane | undefined {
+  if (node.incidentWalls.length <= 1) return undefined
+
+  const target = node.incidentWalls.find(incident => incident.id === wall.id)
+  if (!target) return undefined
+
+  const targetIndex = node.incidentWalls.indexOf(target)
+  const targetUsesLeftBoundary = target.side === 'start' ? side === 'left' : side === 'right'
+  const neighborIndex = targetUsesLeftBoundary
+    ? (targetIndex + node.incidentWalls.length - 1) % node.incidentWalls.length
+    : (targetIndex + 1) % node.incidentWalls.length
+  const neighbor = node.incidentWalls[neighborIndex]
+
+  const collinear = dotAbsVec2(target.direction, neighbor.direction) > 1 - 1e-6
+  if (collinear) {
+    const baseNormal = endpoint === 'start' ? wall.direction : negVec2(wall.direction)
+    const nodePoint = node.type === 'perimeter' ? node.position : node.center
+    return asClippingPlane(baseNormal, nodePoint)
+  }
+
+  const constructionLine = getConstructionBoundaryLine(
+    neighbor,
+    neighbor.side === 'start'
+      ? targetUsesLeftBoundary
+        ? 'right'
+        : 'left'
+      : targetUsesLeftBoundary
+        ? 'left'
+        : 'right',
+    perimeterContext
+  )
+  if (!constructionLine) return undefined
+
+  const point = constructionLine.point
+  const normal = perpendicularCW(neighbor.direction)
+  const orientedNormal =
+    dotVec2(normal, wall.direction) * (endpoint === 'start' ? 1 : -1) > 1e-6 ? normal : negVec2(normal)
+  return asClippingPlane(orientedNormal, point)
+}
+
+function getConstructionBoundaryLine(
+  incident: WallNodeIncidentWall,
+  side: 'left' | 'right',
+  perimeterContext: PerimeterConstructionContext
+): Line2D | undefined {
+  if (isIntermediateWallId(incident.id)) {
+    return perimeterContext.interiorWallGeometry.get(incident.id)?.coreLines[side]
+  }
+  return perimeterContext.innerLinesById[incident.id]
+}
+
+function extensionAtStart(plane: ClippingPlane, band: { start: Length; end: Length }): Length {
+  const xs = planeLongitudinalPositions(plane, band)
+  return xs ? Math.max(0, -Math.min(...xs)) : 0
+}
+
+function extensionAtEnd(plane: ClippingPlane, band: { start: Length; end: Length }, wallLength: Length): Length {
+  const xs = planeLongitudinalPositions(plane, band)
+  return xs ? Math.max(0, Math.max(...xs) - wallLength) : 0
+}
+
+function planeLongitudinalPositions(plane: ClippingPlane, band: { start: Length; end: Length }): number[] | undefined {
+  const normalX = plane.normal[0]
+  if (Math.abs(normalX) <= 1e-6) return undefined
+  return [band.start, band.end].map(v => (plane.originOffset - plane.normal[1] * v) / normalX)
 }
 
 function computeNodeClipPlane(
@@ -269,7 +405,7 @@ function* asResults(results: ConstructionResult[]): Generator<ConstructionResult
 
 export function clipInteriorWallResults(
   results: ConstructionResult[],
-  extension: WallExtension,
+  extension: InteriorWallClipping,
   wall: IntermediateWallWithGeometry,
   storeyHeight: Length,
   perimeterContext: PerimeterConstructionContext,
@@ -300,10 +436,7 @@ export function clipInteriorWallResults(
         manifold
       )
       return localPlanes.reduce((current, plane) => {
-        return current.trimByPlane(
-          [plane.normal[0], plane.normal[1], plane.normal[2]],
-          plane.originOffset
-        )
+        return current.trimByPlane([plane.normal[0], plane.normal[1], plane.normal[2]], plane.originOffset)
       }, clipped)
     })
   )

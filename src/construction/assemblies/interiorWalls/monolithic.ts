@@ -7,14 +7,20 @@ import type { PerimeterConstructionContext } from '@/construction/context/perime
 import type { StoreyContext } from '@/construction/context/storeys'
 import { createConstructionElement } from '@/construction/model/elements'
 import { type ConstructionModel, type DebugClippingPlane } from '@/construction/model/model'
-import { intermediateWallTransform } from '@/construction/model/transforms'
 import { aggregateResults, assignDeterministicIdsToResults } from '@/construction/model/results'
 import type { ConstructionResult } from '@/construction/model/results'
 import { createExtrudedPolygon } from '@/construction/model/shapes'
 import { createTag } from '@/construction/model/tags'
+import { intermediateWallTransform } from '@/construction/model/transforms'
 import { Bounds3D, type Polygon2D, type PolygonWithHoles2D, fromTrans, newVec2, newVec3 } from '@/shared/geometry'
 
-import { clipInteriorWallResults, computeWallExtensionAndClipping, transformPlaneToWallCoordinates } from './geometry'
+import {
+  clipInteriorWallResults,
+  computeLayerExtension,
+  computeWallExtensionAndClipping,
+  transformPlaneToWallCoordinates
+} from './geometry'
+import type { LayerExtension } from './geometry'
 import type { InteriorWallAssembly } from './types'
 
 export class MonolithicInteriorWallAssembly implements InteriorWallAssembly {
@@ -101,28 +107,71 @@ export class MonolithicInteriorWallAssembly implements InteriorWallAssembly {
         .slice(0, index)
         .filter(candidate => !candidate.overlap)
         .reduce((sum, candidate) => sum + candidate.thickness, 0)
-      const polygon: PolygonWithHoles2D = {
+      const leftBand = {
+        start: wall.thickness / 2 - faceThickness + offset,
+        end: wall.thickness / 2 - faceThickness + offset + layer.thickness
+      }
+      const rightBand = {
+        start: -wall.thickness / 2 + offset,
+        end: -wall.thickness / 2 + offset + layer.thickness
+      }
+      const leftExtension = computeLayerExtension(wall, extension.layerClipping.left, leftBand)
+      const rightExtension = computeLayerExtension(wall, extension.layerClipping.right, rightBand)
+      const createLayerPolygon = (layerExtension: LayerExtension): PolygonWithHoles2D => ({
         outer: {
-          points: [newVec2(0, 0), newVec2(wall.wallLength, 0), newVec2(wall.wallLength, height), newVec2(0, height)]
+          points: [
+            newVec2(-layerExtension.startExtension, 0),
+            newVec2(wall.wallLength + layerExtension.endExtension, 0),
+            newVec2(wall.wallLength + layerExtension.endExtension, height),
+            newVec2(-layerExtension.startExtension, height)
+          ]
         },
         holes: openingHoles
-      }
-      layerResults.push(...runLayerConstruction(polygon, -wall.thickness / 2 + offset, 'xz', layer, layerDirection))
+      })
+      const leftResults = runLayerConstruction(
+        createLayerPolygon(leftExtension),
+        wall.thickness / 2 - faceThickness + offset,
+        'xz',
+        layer,
+        layerDirection
+      )
+      const rightResults = runLayerConstruction(
+        createLayerPolygon(rightExtension),
+        -wall.thickness / 2 + offset,
+        'xz',
+        layer,
+        layerDirection
+      )
+      assignDeterministicIdsToResults(leftResults, `${wall.id}_left_${index}`)
+      assignDeterministicIdsToResults(rightResults, `${wall.id}_right_${index}`)
       layerResults.push(
-        ...runLayerConstruction(polygon, wall.thickness / 2 - faceThickness + offset, 'xz', layer, layerDirection)
+        ...clipInteriorWallResults(
+          leftResults,
+          leftExtension,
+          wall,
+          height,
+          perimeterContext,
+          intermediateWallTransform(wall, storeyContext.wallBottom)
+        ),
+        ...clipInteriorWallResults(
+          rightResults,
+          rightExtension,
+          wall,
+          height,
+          perimeterContext,
+          intermediateWallTransform(wall, storeyContext.wallBottom)
+        )
       )
     }
-    const results: ConstructionResult[] = [{ type: 'element', element: core }, ...layerResults]
-    assignDeterministicIdsToResults(results, wall.id)
-    const clippedResults = clipInteriorWallResults(
-      results,
+    const clippedCoreResults = clipInteriorWallResults(
+      [{ type: 'element', element: core }],
       extension,
       wall,
       height,
       perimeterContext,
       intermediateWallTransform(wall, storeyContext.wallBottom)
     )
-    const aggregated = aggregateResults(clippedResults)
+    const aggregated = aggregateResults([...clippedCoreResults, ...layerResults])
     return {
       elements: aggregated.elements,
       measurements: aggregated.measurements,
