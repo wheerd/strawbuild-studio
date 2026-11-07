@@ -113,8 +113,8 @@ export class MonolithicInteriorWallAssembly implements InteriorWallAssembly {
         end: wall.thickness / 2 - faceThickness + offset + layer.thickness
       }
       const rightBand = {
-        start: -wall.thickness / 2 + offset,
-        end: -wall.thickness / 2 + offset + layer.thickness
+        start: -wall.thickness / 2 + faceThickness - offset - layer.thickness,
+        end: -wall.thickness / 2 + faceThickness - offset
       }
       const leftExtension = computeLayerExtension(wall, extension.layerClipping.left, leftBand)
       const rightExtension = computeLayerExtension(wall, extension.layerClipping.right, rightBand)
@@ -138,7 +138,7 @@ export class MonolithicInteriorWallAssembly implements InteriorWallAssembly {
       )
       const rightResults = runLayerConstruction(
         createLayerPolygon(rightExtension),
-        -wall.thickness / 2 + offset,
+        rightBand.start,
         'xz',
         layer,
         layerDirection
