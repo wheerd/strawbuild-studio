@@ -182,6 +182,16 @@ export function computeLayerExtension(
   }
 }
 
+export function computeTerminalCapLayerOffset(
+  endpoint: 'start' | 'end',
+  capX: Length,
+  faceThickness: Length,
+  layerOffset: Length,
+  layerThickness: Length
+): Length {
+  return endpoint === 'start' ? capX + faceThickness - layerOffset - layerThickness : capX - faceThickness + layerOffset
+}
+
 function computeNeighborLayerPlane(
   wall: IntermediateWallWithGeometry,
   node: WallNodeWithGeometry,

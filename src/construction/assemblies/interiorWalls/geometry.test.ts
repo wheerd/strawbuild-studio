@@ -8,6 +8,7 @@ import { partial } from '@/test/helpers'
 
 import {
   computeLayerExtension,
+  computeTerminalCapLayerOffset,
   computeWallExtensionAndClipping,
   transformPlaneToWallCoordinates,
   transformPolygonToWallCoordinates
@@ -438,5 +439,12 @@ describe('interior wall geometry', () => {
     expect(extension.endExtension).toBe(-5)
     expect(extension.layerClipping.left.start?.originOffset).toBe(0)
     expect(extension.layerClipping.left.end?.originOffset).toBe(-100)
+  })
+
+  it('orders terminal cap layers from the core toward the cap surface', () => {
+    expect(computeTerminalCapLayerOffset('start', 0, 20, 0, 8)).toBe(12)
+    expect(computeTerminalCapLayerOffset('start', 0, 20, 8, 12)).toBe(0)
+    expect(computeTerminalCapLayerOffset('end', 100, 20, 0, 8)).toBe(80)
+    expect(computeTerminalCapLayerOffset('end', 100, 20, 8, 12)).toBe(88)
   })
 })

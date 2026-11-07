@@ -17,6 +17,7 @@ import { Bounds3D, type Polygon2D, type PolygonWithHoles2D, fromTrans, newVec2, 
 import {
   clipInteriorWallResults,
   computeLayerExtension,
+  computeTerminalCapLayerOffset,
   computeWallExtensionAndClipping,
   transformPlaneToWallCoordinates
 } from './geometry'
@@ -162,6 +163,42 @@ export class MonolithicInteriorWallAssembly implements InteriorWallAssembly {
           intermediateWallTransform(wall, storeyContext.wallBottom)
         )
       )
+    }
+
+    const capPolygon: PolygonWithHoles2D = {
+      outer: {
+        points: [
+          newVec2(-wall.thickness / 2, 0),
+          newVec2(wall.thickness / 2, 0),
+          newVec2(wall.thickness / 2, height),
+          newVec2(-wall.thickness / 2, height)
+        ]
+      },
+      holes: []
+    }
+    for (const [endpoint, node] of [
+      ['start', startNode],
+      ['end', endNode]
+    ] as const) {
+      if (node.incidentWalls.length !== 1) continue
+      const capPlane = endpoint === 'start' ? extension.layerClipping.left.start : extension.layerClipping.left.end
+      if (!capPlane) continue
+
+      const localCapPlane = transformPlaneToWallCoordinates(capPlane, wall)
+      const normalX = localCapPlane.normal[0]
+      if (Math.abs(normalX) <= 1e-6) continue
+      const capX = localCapPlane.originOffset / normalX
+
+      for (const [index, layer] of layers.entries()) {
+        const offset = layers
+          .slice(0, index)
+          .filter(candidate => !candidate.overlap)
+          .reduce((sum, candidate) => sum + candidate.thickness, 0)
+        const layerX = computeTerminalCapLayerOffset(endpoint, capX, faceThickness, offset, layer.thickness)
+        const capResults = runLayerConstruction(capPolygon, layerX, 'yz', layer, newVec2(1, 0))
+        assignDeterministicIdsToResults(capResults, `${wall.id}_cap_${endpoint}_${index}`)
+        layerResults.push(...capResults)
+      }
     }
     const clippedCoreResults = clipInteriorWallResults(
       [{ type: 'element', element: core }],
