@@ -81,7 +81,8 @@ export function computeWallExtensionAndClipping(
   wall: IntermediateWallWithGeometry,
   startNode: WallNodeWithGeometry,
   endNode: WallNodeWithGeometry,
-  perimeterContext: PerimeterConstructionContext
+  perimeterContext: PerimeterConstructionContext,
+  faceThickness: Length
 ): WallExtension {
   const layerClipping = computeLayerClipping(wall, startNode, endNode, perimeterContext)
   const geometry = perimeterContext.interiorWallGeometry.get(wall.id)
@@ -131,8 +132,8 @@ export function computeWallExtensionAndClipping(
     endClipPlane = computeNodeClipPlane(wall, endNode, 'end', perimeterContext)
   }
 
-  const startExtension = Math.max(baseStart - startProjection, 0)
-  const endExtension = Math.max(endProjection - baseEnd, 0)
+  const startExtension = Math.max(baseStart - startProjection, 0) - (isTerminalNode(startNode) ? faceThickness : 0)
+  const endExtension = Math.max(endProjection - baseEnd, 0) - (isTerminalNode(endNode) ? faceThickness : 0)
 
   return {
     startExtension,
@@ -188,10 +189,14 @@ function computeNeighborLayerPlane(
   side: InteriorWallLayerSide,
   perimeterContext: PerimeterConstructionContext
 ): ClippingPlane | undefined {
-  if (node.incidentWalls.length <= 1) return undefined
-
   const target = node.incidentWalls.find(incident => incident.id === wall.id)
   if (!target) return undefined
+
+  if (node.incidentWalls.length === 1) {
+    const normal = endpoint === 'start' ? wall.direction : negVec2(wall.direction)
+    const nodePoint = node.type === 'perimeter' ? node.position : node.center
+    return asClippingPlane(normal, nodePoint)
+  }
 
   const targetIndex = node.incidentWalls.indexOf(target)
   const targetUsesLeftBoundary = target.side === 'start' ? side === 'left' : side === 'right'
@@ -200,24 +205,24 @@ function computeNeighborLayerPlane(
     : (targetIndex + 1) % node.incidentWalls.length
   const neighbor = node.incidentWalls[neighborIndex]
 
-  const collinear = dotAbsVec2(target.direction, neighbor.direction) > 1 - 1e-6
+  const collinear =
+    Math.abs(target.direction[0] * neighbor.direction[1] - target.direction[1] * neighbor.direction[0]) < 1e-6
   if (collinear) {
     const baseNormal = endpoint === 'start' ? wall.direction : negVec2(wall.direction)
     const nodePoint = node.type === 'perimeter' ? node.position : node.center
     return asClippingPlane(baseNormal, nodePoint)
   }
 
-  const constructionLine = getConstructionBoundaryLine(
-    neighbor,
-    neighbor.side === 'start'
-      ? targetUsesLeftBoundary
-        ? 'right'
-        : 'left'
-      : targetUsesLeftBoundary
-        ? 'left'
-        : 'right',
-    perimeterContext
-  )
+  const neighborIncidentSide = targetUsesLeftBoundary ? 'right' : 'left'
+  const neighborConstructionSide =
+    neighbor.side === 'start' ? neighborIncidentSide : neighborIncidentSide === 'left' ? 'right' : 'left'
+  const angle = targetUsesLeftBoundary
+    ? directedAngle(target.direction, neighbor.direction)
+    : directedAngle(neighbor.direction, target.direction)
+  const constructionLine =
+    angle > Math.PI
+      ? getFinishedBoundaryLine(neighbor, neighborIncidentSide)
+      : getConstructionBoundaryLine(neighbor, neighborConstructionSide, perimeterContext)
   if (!constructionLine) return undefined
 
   const point = constructionLine.point
@@ -225,6 +230,22 @@ function computeNeighborLayerPlane(
   const orientedNormal =
     dotVec2(normal, wall.direction) * (endpoint === 'start' ? 1 : -1) > 1e-6 ? normal : negVec2(normal)
   return asClippingPlane(orientedNormal, point)
+}
+
+function isTerminalNode(node: WallNodeWithGeometry): boolean {
+  return node.incidentWalls.length === 1
+}
+
+function directedAngle(from: Vec2, to: Vec2): number {
+  const angle = Math.atan2(from[0] * to[1] - from[1] * to[0], dotVec2(from, to))
+  return angle >= 0 ? angle : angle + Math.PI * 2
+}
+
+function getFinishedBoundaryLine(incident: WallNodeIncidentWall, side: 'left' | 'right'): Line2D {
+  return {
+    point: side === 'left' ? incident.leftPoint : incident.rightPoint,
+    direction: incident.direction
+  }
 }
 
 function getConstructionBoundaryLine(

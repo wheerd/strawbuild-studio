@@ -63,7 +63,7 @@ export class MonolithicInteriorWallAssembly implements InteriorWallAssembly {
 
     const startNode = getWallNodeById(wall.start.nodeId)
     const endNode = getWallNodeById(wall.end.nodeId)
-    const extension = computeWallExtensionAndClipping(wall, startNode, endNode, perimeterContext)
+    const extension = computeWallExtensionAndClipping(wall, startNode, endNode, perimeterContext, faceThickness)
     const debugPlaneEntries: { endpoint: 'start' | 'end'; plane: typeof extension.startClipPlane }[] = [
       { endpoint: 'start', plane: extension.startClipPlane },
       { endpoint: 'end', plane: extension.endClipPlane }

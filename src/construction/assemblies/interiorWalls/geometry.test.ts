@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest'
 import type { IntermediateWallWithGeometry, WallNodeWithGeometry } from '@/building/model'
 import type { IntermediateWallId, PerimeterWallId, WallNodeId } from '@/building/model/ids'
 import type { PerimeterConstructionContext } from '@/construction/context/perimeter'
-import { newVec2, newVec3 } from '@/shared/geometry'
+import { type Vec2, newVec2, newVec3 } from '@/shared/geometry'
 import { partial } from '@/test/helpers'
 
 import {
@@ -66,7 +66,8 @@ describe('interior wall geometry', () => {
           position: newVec2(100, 0),
           incidentWalls: []
         }),
-        context
+        context,
+        0
       )
     ).toMatchObject({ startExtension: 25, endExtension: 25 })
   })
@@ -168,7 +169,8 @@ describe('interior wall geometry', () => {
         constructedBy: constructingWallId,
         incidentWalls: []
       }),
-      context
+      context,
+      0
     )
 
     expect(result.startClipPlane?.normal[0]).toBe(1)
@@ -211,7 +213,8 @@ describe('interior wall geometry', () => {
         incidentWalls: []
       }),
       partial<WallNodeWithGeometry>({ type: 'inner', constructedBy: wallId, incidentWalls: [] }),
-      context
+      context,
+      0
     )
 
     expect(result.startClipPlane?.normal[0]).toBe(1)
@@ -273,7 +276,7 @@ describe('interior wall geometry', () => {
       ]
     })
 
-    const wallExtension = computeWallExtensionAndClipping(layerWall, node, node, context)
+    const wallExtension = computeWallExtensionAndClipping(layerWall, node, node, context, 0)
     const extension = computeLayerExtension(layerWall, wallExtension.layerClipping.left, { start: 0, end: 10 })
 
     expect(extension.startClipPlane?.normal[0]).toBe(1)
@@ -334,10 +337,106 @@ describe('interior wall geometry', () => {
       ]
     })
 
-    const wallExtension = computeWallExtensionAndClipping(layerWall, node, node, context)
+    const wallExtension = computeWallExtensionAndClipping(layerWall, node, node, context, 0)
     const extension = computeLayerExtension(layerWall, wallExtension.layerClipping.right, { start: -10, end: 0 })
 
     expect(extension.startClipPlane?.originOffset).toBe(-25)
     expect(extension.startExtension).toBe(25)
+  })
+
+  it('uses the finished neighbor boundary for a reflex corner', () => {
+    const context = partial<PerimeterConstructionContext>({
+      interiorWallGeometry: new Map([
+        [
+          wallId,
+          {
+            coreLines: {
+              left: { point: newVec2(0, -5), direction: newVec2(1, 0) },
+              right: { point: newVec2(0, 5), direction: newVec2(1, 0) }
+            },
+            start: { nodeId: startNodeId, left: newVec2(0, -5), right: newVec2(0, 5) },
+            end: { nodeId: endNodeId, left: newVec2(100, -5), right: newVec2(100, 5) }
+          }
+        ],
+        [
+          neighborWallId,
+          {
+            coreLines: {
+              left: { point: newVec2(10, 0), direction: newVec2(-1, -1) },
+              right: { point: newVec2(10, 0), direction: newVec2(-1, -1) }
+            }
+          }
+        ]
+      ]),
+      interiorWallNodePolygons: new Map()
+    })
+    const node = partial<WallNodeWithGeometry>({
+      id: startNodeId,
+      type: 'inner',
+      center: newVec2(0, 0),
+      incidentWalls: [
+        {
+          id: neighborWallId,
+          direction: newVec2(-1, -1),
+          leftPoint: newVec2(60, 20),
+          rightPoint: newVec2(50, 20),
+          side: 'start'
+        },
+        {
+          id: wallId,
+          direction: newVec2(1, 0),
+          leftPoint: newVec2(0, 5),
+          rightPoint: newVec2(0, -5),
+          side: 'start'
+        }
+      ]
+    })
+
+    const extension = computeWallExtensionAndClipping(wall, node, node, context, 0)
+
+    expect(extension.layerClipping.left.start?.originOffset).toBe(30)
+  })
+
+  it('caps layers and shortens the core at terminal nodes', () => {
+    const context = partial<PerimeterConstructionContext>({
+      interiorWallGeometry: new Map([
+        [
+          wallId,
+          {
+            coreLines: {
+              left: { point: newVec2(0, -5), direction: newVec2(1, 0) },
+              right: { point: newVec2(0, 5), direction: newVec2(1, 0) }
+            },
+            start: { nodeId: startNodeId, left: newVec2(0, -5), right: newVec2(0, 5) },
+            end: { nodeId: endNodeId, left: newVec2(100, -5), right: newVec2(100, 5) }
+          }
+        ]
+      ]),
+      interiorWallNodePolygons: new Map()
+    })
+    const makeTerminal = (id: WallNodeId, center: Vec2, side: 'start' | 'end') =>
+      partial<WallNodeWithGeometry>({
+        id,
+        type: 'inner',
+        center,
+        incidentWalls: [
+          {
+            id: wallId,
+            direction: side === 'start' ? newVec2(1, 0) : newVec2(-1, 0),
+            leftPoint: center,
+            rightPoint: center,
+            side
+          }
+        ]
+      })
+    const start = makeTerminal(startNodeId, newVec2(0, 0), 'start')
+    const end = makeTerminal(endNodeId, newVec2(100, 0), 'end')
+
+    const extension = computeWallExtensionAndClipping(wall, start, end, context, 5)
+
+    expect(extension.startExtension).toBe(-5)
+    expect(extension.endExtension).toBe(-5)
+    expect(extension.layerClipping.left.start?.originOffset).toBe(0)
+    expect(extension.layerClipping.left.end?.originOffset).toBe(-100)
   })
 })
