@@ -255,7 +255,7 @@ describe('intermediateWallGeometry', () => {
       expect(nodeBGeometry.boundary).toBeUndefined()
     })
 
-    it('should compute node boundary with 4 points for simple 90-degree corner (2 walls)', () => {
+    it('should not create a node boundary for a simple 90-degree corner (2 walls)', () => {
       const { state, perimeterData } = setupIntermediateWallsSlice()
       const { perimeterId } = perimeterData
 
@@ -311,7 +311,7 @@ describe('intermediateWallGeometry', () => {
 
       const nodeGeometry = state._wallNodeGeometry[nodeId]
       expect(nodeGeometry).toBeDefined()
-      expect(nodeGeometry.boundary?.points).toHaveLength(4)
+      expect(nodeGeometry.boundary).toBeUndefined()
 
       const geometryA = state._intermediateWallGeometry[wallAId]
       const geometryB = state._intermediateWallGeometry[wallBId]

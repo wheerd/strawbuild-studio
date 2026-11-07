@@ -119,6 +119,10 @@ export function computeWallExtensionAndClipping(
     startClipPolygon = undefined
     startClipPlane = computeNodeClipPlane(wall, startNode, 'start', perimeterContext)
   }
+  if (isTwoWallCorner(startNode) && startClipPlane) {
+    const planeProjections = wallPlaneLongitudinalPositions(startClipPlane, geometry, wall.direction)
+    startProjection = Math.min(startProjection, ...planeProjections)
+  }
 
   let endClipPolygon: Polygon2D | undefined
   let endClipPlane: ClippingPlane | undefined
@@ -130,6 +134,10 @@ export function computeWallExtensionAndClipping(
   } else {
     endClipPolygon = undefined
     endClipPlane = computeNodeClipPlane(wall, endNode, 'end', perimeterContext)
+  }
+  if (isTwoWallCorner(endNode) && endClipPlane) {
+    const planeProjections = wallPlaneLongitudinalPositions(endClipPlane, geometry, wall.direction)
+    endProjection = Math.max(endProjection, ...planeProjections)
   }
 
   const startExtension = Math.max(baseStart - startProjection, 0) - (isTerminalNode(startNode) ? faceThickness : 0)
@@ -301,6 +309,28 @@ function computeNodeClipPlane(
     return asClippingPlane(normal, line.point)
   }
 
+  if (isTwoWallCorner(node) && node.constructedBy) {
+    const otherIncident = node.incidentWalls.find(incident => incident.id !== wall.id)
+    const otherGeometry = otherIncident && isIntermediateWallId(otherIncident.id)
+      ? perimeterContext.interiorWallGeometry.get(otherIncident.id)
+      : undefined
+    if (!otherGeometry) return undefined
+
+    const targetLine = lineFromSegment(wall.entityReferenceLine)
+    const candidates = [otherGeometry.coreLines.left, otherGeometry.coreLines.right]
+      .map(line => ({ line, intersection: lineIntersection(line, targetLine) }))
+      .filter((candidate): candidate is { line: Line2D; intersection: Vec2 } => candidate.intersection != null)
+    if (candidates.length !== 2) return undefined
+
+    const projections = candidates.map(candidate => dotVec2(wall.direction, candidate.intersection))
+    const farIndex = endpoint === 'start' ? (projections[0] < projections[1] ? 0 : 1) : projections[0] > projections[1] ? 0 : 1
+    const useFarLine = node.constructedBy === wall.id
+    const selected = candidates[useFarLine ? farIndex : 1 - farIndex].line
+    const baseNormal = perpendicularCCW(selected.direction)
+    const normal = dotVec2(baseNormal, wall.direction) * requiredSign > 1e-6 ? baseNormal : negVec2(baseNormal)
+    return asClippingPlane(normal, selected.point)
+  }
+
   if (!node.constructedBy || node.constructedBy === wall.id || node.constructedWithColinear === wall.id) {
     return undefined
   }
@@ -327,6 +357,29 @@ function asClippingPlane(normal: Vec2, point: Vec2): ClippingPlane {
     normal: vec2To3(normal),
     originOffset: dotVec2(normal, point)
   }
+}
+
+function isTwoWallCorner(node: WallNodeWithGeometry): boolean {
+  if (node.type !== 'inner' || node.incidentWalls.length !== 2) return false
+  const [first, second] = node.incidentWalls
+  return Math.abs(first.direction[0] * second.direction[1] - first.direction[1] * second.direction[0]) > 1e-6
+}
+
+function wallPlaneLongitudinalPositions(
+  plane: ClippingPlane,
+  geometry: InteriorWallGeometry,
+  wallDirection: Vec2
+): number[] {
+  const normal = newVec2(plane.normal[0], plane.normal[1])
+  const normalLengthSquared = dotVec2(normal, normal)
+  if (normalLengthSquared <= 1e-12) return []
+  const line = {
+    point: newVec2((normal[0] * plane.originOffset) / normalLengthSquared, (normal[1] * plane.originOffset) / normalLengthSquared),
+    direction: perpendicularCCW(normal)
+  }
+  return [lineIntersection(line, geometry.coreLines.left), lineIntersection(line, geometry.coreLines.right)]
+    .filter((point): point is Vec2 => point != null)
+    .map(point => dotVec2(wallDirection, point))
 }
 
 function computeWallEndpoints(

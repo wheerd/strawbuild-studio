@@ -70,6 +70,7 @@ export function computeNodeGeometry(node: WallNode, nodePos: Vec2, incidents: Wa
       if (dot > 0.99) {
         return computeColinearNodeGeometry(nodePos, incidents[0], incidents[1])
       }
+      return computeTwoWallNodeGeometry(node.id, nodePos, incidents)
     }
   }
 
@@ -158,6 +159,27 @@ export function computeNodeGeometry(node: WallNode, nodePos: Vec2, incidents: Wa
       outsideLine: { start: outsideStart, end: outsideEnd }
     } as PerimeterWallNodeGeometry
   }
+}
+
+function computeTwoWallNodeGeometry(nodeId: WallNodeId, nodePos: Vec2, incidents: WallNodeIncidentLine[]) {
+  const intersections = computeAdjacentWallLineIntersections(incidents, nodeId)
+  const incidentWalls = incidents.map((incident, index) => {
+    const leftPoint = intersections[(index + incidents.length - 1) % incidents.length]
+    const rightPoint = intersections[index]
+    if (!leftPoint || !rightPoint) throw new Error(`Missing two-wall intersection at node ${nodeId}`)
+    return {
+      direction: incident.dir,
+      leftPoint,
+      rightPoint,
+      id: incident.wallId,
+      side: incident.side
+    }
+  })
+
+  return {
+    center: nodePos,
+    incidentWalls
+  } as InnerWallNodeGeometry
 }
 
 function clampPointToLineSegment(point: Vec2, start: Vec2, end: Vec2): Vec2 {
