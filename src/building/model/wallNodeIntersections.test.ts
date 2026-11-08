@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest'
 import { newVec2 } from '@/shared/geometry'
 
 import type { InnerWallNode } from './rooms'
-import { computeNodeGeometry, type WallNodeIncidentLine } from './wallNodeIntersections'
+import { type WallNodeIncidentLine, computeNodeGeometry } from './wallNodeIntersections'
 
 describe('computeNodeGeometry', () => {
   it('uses endpoint intersections without creating a polygon for two non-collinear walls', () => {

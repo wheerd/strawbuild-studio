@@ -5,7 +5,7 @@ import { transformBounds } from '@/construction/assemblies/utils/geometry'
 import { getBoundsFromManifold, transformManifold } from '@/construction/manifold/operations'
 import type { Tag } from '@/construction/model/tags'
 import type { PartInfo } from '@/parts/types'
-import { Bounds3D, IDENTITY, type Transform, invertTransform } from '@/shared/geometry'
+import { Bounds3D, IDENTITY, type Transform, composeTransform, invertTransform } from '@/shared/geometry'
 
 import {
   type ConstructionElement,
@@ -256,13 +256,19 @@ export function* yieldAndClip(
 
 export function* withClipping(
   item: GroupOrElement,
-  clipping: (m: Manifold, item: GroupOrElement) => Manifold
+  clipping: (m: Manifold, item: GroupOrElement) => Manifold,
+  parentTransform: Transform = IDENTITY
 ): Generator<GroupOrElement> {
+  const accumulatedTransform = composeTransform(parentTransform, item.transform)
+
   if ('shape' in item) {
     // This is an element - apply clipping
-    const invertedTransform = invertTransform(item.transform)
+    const invertedTransform = invertTransform(accumulatedTransform)
     const clippedManifold = invertedTransform
-      ? transformManifold(clipping(transformManifold(item.shape.manifold, item.transform), item), invertedTransform)
+      ? transformManifold(
+          clipping(transformManifold(item.shape.manifold, accumulatedTransform), item),
+          invertedTransform
+        )
       : clipping(item.shape.manifold, item)
 
     const decomposed = clippedManifold.decompose()
@@ -286,7 +292,7 @@ export function* withClipping(
       }
     }
   } else if ('children' in item) {
-    const children = item.children.flatMap(c => Array.from(withClipping(c, clipping)))
+    const children = item.children.flatMap(c => Array.from(withClipping(c, clipping, accumulatedTransform)))
     const bounds = Bounds3D.merge(...children.map(c => transformBounds(c.bounds, item.transform)))
     yield {
       ...item,

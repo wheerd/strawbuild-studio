@@ -431,7 +431,13 @@ describe('interior wall geometry', () => {
       center: newVec2(0, 0),
       incidentWalls: [
         { id: wallId, direction: newVec2(1, 0), leftPoint: newVec2(0, 5), rightPoint: newVec2(0, -5), side: 'start' },
-        { id: neighborWallId, direction: newVec2(0, 1), leftPoint: newVec2(0, 20), rightPoint: newVec2(0, 10), side: 'start' }
+        {
+          id: neighborWallId,
+          direction: newVec2(0, 1),
+          leftPoint: newVec2(0, 20),
+          rightPoint: newVec2(0, 10),
+          side: 'start'
+        }
       ]
     })
 
@@ -486,7 +492,13 @@ describe('interior wall geometry', () => {
       center: newVec2(0, 0),
       incidentWalls: [
         { id: wallId, direction: newVec2(1, 0), leftPoint: newVec2(0, 5), rightPoint: newVec2(0, -5), side: 'start' },
-        { id: neighborWallId, direction: newVec2(0, 1), leftPoint: newVec2(0, 20), rightPoint: newVec2(0, 10), side: 'start' }
+        {
+          id: neighborWallId,
+          direction: newVec2(0, 1),
+          leftPoint: newVec2(0, 20),
+          rightPoint: newVec2(0, 10),
+          side: 'start'
+        }
       ]
     })
 

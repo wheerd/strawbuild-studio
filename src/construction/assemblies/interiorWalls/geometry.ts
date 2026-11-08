@@ -5,7 +5,6 @@ import type {
   InteriorWallGeometry,
   PerimeterConstructionContext
 } from '@/construction/context/perimeter'
-import { transformManifold } from '@/construction/manifold/operations'
 import { type ConstructionResult, yieldAndClip } from '@/construction/model/results'
 import { createExtrudedPolygon } from '@/construction/model/shapes'
 import { intermediateWallTransform } from '@/construction/model/transforms'
@@ -18,11 +17,11 @@ import {
   type Vec2,
   type Vec3,
   addVec3,
+  distVec2,
   dotAbsVec2,
   dotVec2,
   dotVec3,
   ensurePolygonIsClockwise,
-  fromTrans,
   invertTransform,
   lineFromSegment,
   lineIntersection,
@@ -67,6 +66,7 @@ export interface InteriorWallClipping {
 }
 
 export interface WallExtension extends InteriorWallClipping {
+  totalLength: Length
   startExtension: Length
   endExtension: Length
   layerClipping: {
@@ -84,12 +84,13 @@ export function computeWallExtensionAndClipping(
   perimeterContext: PerimeterConstructionContext,
   faceThickness: Length
 ): WallExtension {
+  const baseLength = distVec2(wall.entityReferenceLine.start, wall.entityReferenceLine.end)
   const layerClipping = computeLayerClipping(wall, startNode, endNode, perimeterContext)
   const geometry = perimeterContext.interiorWallGeometry.get(wall.id)
   const startNodePolygon = perimeterContext.interiorWallNodePolygons.get(startNode.id)
   const endNodePolygon = perimeterContext.interiorWallNodePolygons.get(endNode.id)
   if (!geometry?.start || !geometry.end) {
-    return { startExtension: 0, endExtension: 0, layerClipping }
+    return { startExtension: 0, endExtension: 0, totalLength: baseLength, layerClipping }
   }
   const corePolygon: Polygon2D = ensurePolygonIsClockwise({
     points: [geometry.start.left, geometry.end.left, geometry.end.right, geometry.start.right]
@@ -146,6 +147,7 @@ export function computeWallExtensionAndClipping(
   return {
     startExtension,
     endExtension,
+    totalLength: baseLength + startExtension + endExtension,
     startClipPolygon,
     endClipPolygon,
     startClipPlane,
@@ -311,9 +313,10 @@ function computeNodeClipPlane(
 
   if (isTwoWallCorner(node) && node.constructedBy) {
     const otherIncident = node.incidentWalls.find(incident => incident.id !== wall.id)
-    const otherGeometry = otherIncident && isIntermediateWallId(otherIncident.id)
-      ? perimeterContext.interiorWallGeometry.get(otherIncident.id)
-      : undefined
+    const otherGeometry =
+      otherIncident && isIntermediateWallId(otherIncident.id)
+        ? perimeterContext.interiorWallGeometry.get(otherIncident.id)
+        : undefined
     if (!otherGeometry) return undefined
 
     const targetLine = lineFromSegment(wall.entityReferenceLine)
@@ -323,7 +326,8 @@ function computeNodeClipPlane(
     if (candidates.length !== 2) return undefined
 
     const projections = candidates.map(candidate => dotVec2(wall.direction, candidate.intersection))
-    const farIndex = endpoint === 'start' ? (projections[0] < projections[1] ? 0 : 1) : projections[0] > projections[1] ? 0 : 1
+    const farIndex =
+      endpoint === 'start' ? (projections[0] < projections[1] ? 0 : 1) : projections[0] > projections[1] ? 0 : 1
     const useFarLine = node.constructedBy === wall.id
     const selected = candidates[useFarLine ? farIndex : 1 - farIndex].line
     const baseNormal = perpendicularCCW(selected.direction)
@@ -374,7 +378,10 @@ function wallPlaneLongitudinalPositions(
   const normalLengthSquared = dotVec2(normal, normal)
   if (normalLengthSquared <= 1e-12) return []
   const line = {
-    point: newVec2((normal[0] * plane.originOffset) / normalLengthSquared, (normal[1] * plane.originOffset) / normalLengthSquared),
+    point: newVec2(
+      (normal[0] * plane.originOffset) / normalLengthSquared,
+      (normal[1] * plane.originOffset) / normalLengthSquared
+    ),
     direction: perpendicularCCW(normal)
   }
   return [lineIntersection(line, geometry.coreLines.left), lineIntersection(line, geometry.coreLines.right)]
@@ -487,41 +494,46 @@ function* asResults(results: ConstructionResult[]): Generator<ConstructionResult
   yield* results
 }
 
-export function clipInteriorWallResults(
+export function* clipInteriorWallResults(
   results: ConstructionResult[],
   extension: InteriorWallClipping,
   wall: IntermediateWallWithGeometry,
   storeyHeight: Length,
   perimeterContext: PerimeterConstructionContext,
   wallTransform: Transform
-): ConstructionResult[] {
+): Generator<ConstructionResult> {
   const geometry = perimeterContext.interiorWallGeometry.get(wall.id)
-  if (!geometry) return results
+  if (!geometry) {
+    yield* results
+    return
+  }
 
   const clipPolygons = [extension.startClipPolygon, extension.endClipPolygon].filter(p => p != null)
   const clipPlanes = [extension.startClipPlane, extension.endClipPlane].filter(
     (plane): plane is ClippingPlane => plane != null
   )
-  if (clipPolygons.length === 0 && clipPlanes.length === 0) return results
+  if (clipPolygons.length === 0 && clipPlanes.length === 0) {
+    yield* results
+    return
+  }
 
   const localPolygons = clipPolygons.map(p => transformPolygonToWallCoordinates(p, wall))
   const wallInverse = invertTransform(wallTransform)
   if (!wallInverse) throw new Error(`Unable to invert transform for intermediate wall ${wall.id}`)
   const localPlanes = clipPlanes.map(plane => transformPlane(plane, wallInverse))
   const clippingVolumes = localPolygons.map(p =>
-    createExtrudedPolygon({ outer: p, holes: [] } satisfies PolygonWithHoles2D, 'xy', storeyHeight)
+    createExtrudedPolygon(
+      { outer: p, holes: [] } satisfies PolygonWithHoles2D,
+      'xy',
+      3 * storeyHeight
+    ).manifold.translate([0, 0, -storeyHeight])
   )
 
-  return Array.from(
-    yieldAndClip(asResults(results), (manifold, item) => {
-      const verticalOffset = fromTrans(newVec3(0, 0, item.transform[14]))
-      const clipped = clippingVolumes.reduce(
-        (current, clip) => current.subtract(transformManifold(clip.manifold, verticalOffset)),
-        manifold
-      )
-      return localPlanes.reduce((current, plane) => {
-        return current.trimByPlane([plane.normal[0], plane.normal[1], plane.normal[2]], plane.originOffset)
-      }, clipped)
-    })
-  )
+  yield* yieldAndClip(asResults(results), manifold => {
+    const clipped = clippingVolumes.reduce((current, clip) => current.subtract(clip), manifold)
+    return localPlanes.reduce(
+      (current, plane) => current.trimByPlane([plane.normal[0], plane.normal[1], plane.normal[2]], plane.originOffset),
+      clipped
+    )
+  })
 }

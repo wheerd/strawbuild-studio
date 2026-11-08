@@ -1,11 +1,16 @@
 import { describe, expect, it } from 'vitest'
 
+import { getBoundsFromManifold } from '@/construction/manifold/operations'
+import { createCuboidElement } from '@/construction/model/elements'
+import { createConstructionGroup } from '@/construction/model/model'
 import {
   type ConstructionIssue,
   type ConstructionIssueId,
   type ConstructionResult,
-  aggregateResults
+  aggregateResults,
+  withClipping
 } from '@/construction/model/results'
+import { fromTrans, newVec3 } from '@/shared/geometry'
 
 const issueId = (suffix: string): ConstructionIssueId => `ci_${suffix}` as ConstructionIssueId
 
@@ -116,5 +121,23 @@ describe('aggregateResults', () => {
     expect(aggregated.warnings).toHaveLength(1)
     expect(aggregated.errors[0].severity).toBe('error')
     expect(aggregated.warnings[0].severity).toBe('warning')
+  })
+})
+
+describe('withClipping', () => {
+  it('applies parent group transforms before clipping child geometry', () => {
+    const child = createCuboidElement('material' as never, newVec3(0, 0, 0), newVec3(10, 10, 10))
+    const group = createConstructionGroup([child], fromTrans(newVec3(0, 25, 0)))
+    let clippedBounds: ReturnType<typeof getBoundsFromManifold> | undefined
+
+    Array.from(
+      withClipping(group, manifold => {
+        clippedBounds = getBoundsFromManifold(manifold)
+        return manifold
+      })
+    )
+
+    expect(clippedBounds?.min[1]).toBe(25)
+    expect(clippedBounds?.max[1]).toBe(35)
   })
 })
