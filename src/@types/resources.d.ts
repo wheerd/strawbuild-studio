@@ -1156,6 +1156,8 @@ interface Resources {
       "floor-part_subfloor": "Subfloor",
       "floor-part_wall-beam": "Wall Beam",
       "interior-wall-assembly_monolithic": "Type: Monolithic",
+      "interior-wall-assembly_monolithic-stud": "Type: Monolithic Stud",
+      "interior-wall-assembly_planked-stud": "Type: Planked Stud",
       "module-part_frame": "Frame",
       "module-part_infill": "Infill",
       "module-part_spacer": "Spacer",

@@ -303,6 +303,8 @@
     "opening-measurement_opening-width": "Largeur de l'ouverture",
     "opening-measurement_sill-height": "Hauteur du seuil",
     "interior-wall-assembly_monolithic": "Type : Monolithique",
+    "interior-wall-assembly_monolithic-stud": "Type : Montants monolithiques",
+    "interior-wall-assembly_planked-stud": "Type : Montants et planches",
     "ring-beam-measurement_ring-beam-height": "Hauteur du linteau",
     "ring-beam-measurement_ring-beam-inner": "Linteau intérieur",
     "ring-beam-measurement_ring-beam-outer": "Linteau extérieur",

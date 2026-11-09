@@ -301,6 +301,8 @@
     "opening-measurement_opening-width": "Opening Width",
     "opening-measurement_sill-height": "Sill Height",
     "interior-wall-assembly_monolithic": "Type: Monolithic",
+    "interior-wall-assembly_monolithic-stud": "Type: Monolithic Stud",
+    "interior-wall-assembly_planked-stud": "Type: Planked Stud",
     "ring-beam-measurement_ring-beam-height": "Ring Beam Height",
     "ring-beam-measurement_ring-beam-inner": "Ring Beam Inner",
     "ring-beam-measurement_ring-beam-outer": "Ring Beam Outer",

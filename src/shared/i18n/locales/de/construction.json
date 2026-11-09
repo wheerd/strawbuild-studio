@@ -301,6 +301,8 @@
     "opening-measurement_opening-width": "Öffnungsbreite",
     "opening-measurement_sill-height": "Schwellenhöhe",
     "interior-wall-assembly_monolithic": "Typ: Massiv",
+    "interior-wall-assembly_monolithic-stud": "Typ: Massiv mit Ständern",
+    "interior-wall-assembly_planked-stud": "Typ: Ständer mit Beplankung",
     "ring-beam-measurement_ring-beam-height": "Ringankerhöhe",
     "ring-beam-measurement_ring-beam-inner": "Ringanker innen",
     "ring-beam-measurement_ring-beam-outer": "Ringanker außen",

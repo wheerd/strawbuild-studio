@@ -14,7 +14,6 @@ import { WallConstructionArea } from '@/construction/assemblies/utils/WallConstr
 import type { PerimeterConstructionContext } from '@/construction/context/perimeter'
 import { getRoofHeightLineCached } from '@/construction/context/roofHeightLineCache'
 import type { StoreyContext } from '@/construction/context/storeys'
-import { type ConstructionElement } from '@/construction/model/elements'
 import { type ConstructionModel, type DebugClippingPlane, createConstructionGroup } from '@/construction/model/model'
 import { aggregateResults, assignDeterministicIdsToResults } from '@/construction/model/results'
 import type { ConstructionResult } from '@/construction/model/results'
@@ -26,7 +25,6 @@ import {
   type Length,
   type Polygon2D,
   type PolygonWithHoles2D,
-  fromTrans,
   newVec2,
   newVec3,
   scaleAddVec2
@@ -60,7 +58,7 @@ export abstract class BaseInteriorWallAssembly<
     storeyContext: StoreyContext,
     perimeterContext: PerimeterConstructionContext,
     extension: WallExtension
-  ): Generator<ConstructionElement>
+  ): Generator<ConstructionResult>
 
   construct(
     wall: IntermediateWallWithGeometry,
@@ -149,12 +147,17 @@ export abstract class BaseInteriorWallAssembly<
     const coreResults = [
       ...this.constructCore(wall, wallArea, openings, openingHoles, storeyContext, perimeterContext, extension)
     ]
-    const coreGroup = createConstructionGroup(
-      coreResults,
-      fromTrans(
-        newVec3(0, -wall.thickness / 2 + faceThickness, storeyContext.floorConstructionTop - storeyContext.wallBottom)
+
+    const clippedCoreResults = [
+      ...clipInteriorWallResults(
+        coreResults,
+        extension,
+        wall,
+        wallHeight,
+        perimeterContext,
+        intermediateWallTransform(wall, storeyContext.wallBottom)
       )
-    )
+    ]
 
     const layerResults = [
       ...this.buildLayers(
@@ -169,14 +172,6 @@ export abstract class BaseInteriorWallAssembly<
       )
     ]
 
-    const clippedCoreResults = clipInteriorWallResults(
-      [{ type: 'element', element: coreGroup }],
-      extension,
-      wall,
-      wallHeight,
-      perimeterContext,
-      intermediateWallTransform(wall, storeyContext.wallBottom)
-    )
     const aggregated = aggregateResults([...clippedCoreResults, ...layerResults])
     return {
       elements: aggregated.elements,

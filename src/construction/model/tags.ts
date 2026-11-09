@@ -583,3 +583,13 @@ export const TAG_MONOLITHIC_WALL: PredefinedTag = {
   id: 'interior-wall-assembly_monolithic',
   category: 'interior-wall-assembly'
 }
+
+export const TAG_PLANKED_STUD_WALL: PredefinedTag = {
+  id: 'interior-wall-assembly_planked-stud',
+  category: 'interior-wall-assembly'
+}
+
+export const TAG_MONOLITHIC_STUD_WALL: PredefinedTag = {
+  id: 'interior-wall-assembly_monolithic-stud',
+  category: 'interior-wall-assembly'
+}
