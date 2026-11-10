@@ -1,6 +1,6 @@
 import { WallConstructionArea } from '@/construction/assemblies/utils/WallConstructionArea'
 import { type ConstructionResult, yieldElement, yieldMeasurement } from '@/construction/model/results'
-import { TAG_INFILL, TAG_POST, TAG_POST_SPACING } from '@/construction/model/tags'
+import { TAG_INFILL, TAG_POST, TAG_POST_SPACING, TAG_WALL_REINFORCEMENT } from '@/construction/model/tags'
 import type { MaterialId } from '@/materials/types'
 import type { Length } from '@/shared/geometry'
 import { newVec3 } from '@/shared/geometry'
@@ -12,6 +12,9 @@ export interface StudLayoutConfig {
   studWidth: Length
   studMaterial: MaterialId
   fillMaterial?: MaterialId
+  nogginMaterial?: MaterialId
+  nogginThickness: Length
+  nogginSpacing: Length
 }
 
 function getStudPositions(
@@ -75,6 +78,29 @@ export function* constructStudSegment(
       area.withXAdjustment(current).createMeasurement('width', [TAG_POST_SPACING])
       const fill = area.withXAdjustment(current).extrude(config.fillMaterial, [TAG_INFILL])
       if (fill) yield* yieldElement(fill)
+    }
+  }
+
+  if (config.nogginMaterial && config.nogginThickness > 0 && config.nogginSpacing > 0) {
+    for (let index = 1; index < positions.length; index++) {
+      const gapStart = positions[index - 1] + config.studWidth
+      const gapWidth = positions[index] - gapStart
+      if (gapWidth <= 0) continue
+
+      const gapArea = area.withXAdjustment(gapStart, gapWidth)
+      for (
+        let z = config.nogginSpacing;
+        z + config.nogginThickness <= gapArea.minTopHeight;
+        z += config.nogginSpacing
+      ) {
+        const noggin = gapArea
+          .withZAdjustment(z, config.nogginThickness)
+          .extrude(config.nogginMaterial, [TAG_WALL_REINFORCEMENT], {
+            type: 'noggin',
+            requiresSinglePiece: true
+          })
+        if (noggin) yield* yieldElement(noggin)
+      }
     }
   }
 

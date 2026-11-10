@@ -148,50 +148,117 @@ function StudFields({
 }): React.JSX.Element {
   const { t } = useTranslation('config')
   return (
-    <ConfigSection title={t($ => $.walls.studConfiguration)}>
-      <LengthField
-        label={t($ => $.walls.minStudSpacing)}
-        value={assembly.minStudSpacing}
-        onChange={minStudSpacing => {
-          updateConfig({ minStudSpacing })
-        }}
-        min={0}
-        max={assembly.desiredStudSpacing}
-      />
-      <LengthField
-        label={t($ => $.walls.desiredStudSpacing)}
-        value={assembly.desiredStudSpacing}
-        onChange={desiredStudSpacing => {
-          updateConfig({ desiredStudSpacing })
-        }}
-        min={assembly.minStudSpacing}
-        max={assembly.maxStudSpacing}
-      />
-      <LengthField
-        label={t($ => $.walls.maxStudSpacing)}
-        value={assembly.maxStudSpacing}
-        onChange={maxStudSpacing => {
-          updateConfig({ maxStudSpacing })
-        }}
-        min={assembly.desiredStudSpacing}
-      />
-      <LengthField
-        label={t($ => $.walls.studWidth)}
-        value={assembly.studWidth}
-        onChange={studWidth => {
-          updateConfig({ studWidth })
-        }}
-        min={0}
-      />
-      <MaterialField
-        label={t($ => $.walls.studMaterial)}
-        value={assembly.studMaterial}
-        onChange={studMaterial => {
-          if (studMaterial) updateConfig({ studMaterial })
-        }}
-        preferredTypes={['dimensional']}
-      />
-    </ConfigSection>
+    <>
+      <ConfigSection title={t($ => $.walls.studConfiguration)}>
+        <LengthField
+          label={t($ => $.walls.minStudSpacing)}
+          value={assembly.minStudSpacing}
+          onChange={minStudSpacing => {
+            updateConfig({ minStudSpacing })
+          }}
+          min={0}
+          max={assembly.desiredStudSpacing}
+        />
+        <LengthField
+          label={t($ => $.walls.desiredStudSpacing)}
+          value={assembly.desiredStudSpacing}
+          onChange={desiredStudSpacing => {
+            updateConfig({ desiredStudSpacing })
+          }}
+          min={assembly.minStudSpacing}
+          max={assembly.maxStudSpacing}
+        />
+        <LengthField
+          label={t($ => $.walls.maxStudSpacing)}
+          value={assembly.maxStudSpacing}
+          onChange={maxStudSpacing => {
+            updateConfig({ maxStudSpacing })
+          }}
+          min={assembly.desiredStudSpacing}
+        />
+        <LengthField
+          label={t($ => $.walls.studWidth)}
+          value={assembly.studWidth}
+          onChange={studWidth => {
+            updateConfig({ studWidth })
+          }}
+          min={0}
+        />
+        <MaterialField
+          label={t($ => $.walls.studMaterial)}
+          value={assembly.studMaterial}
+          onChange={studMaterial => {
+            if (studMaterial) updateConfig({ studMaterial })
+          }}
+          preferredTypes={['dimensional']}
+        />
+      </ConfigSection>
+      <ConfigSection title={t($ => $.walls.headPlateConfiguration)}>
+        <LengthField
+          label={t($ => $.common.thickness)}
+          value={assembly.headPlateThickness}
+          onChange={headPlateThickness => {
+            updateConfig({ headPlateThickness })
+          }}
+          min={0}
+        />
+        <MaterialField
+          label={t($ => $.walls.material)}
+          value={assembly.headPlateMaterial}
+          allowEmpty
+          onChange={headPlateMaterial => {
+            updateConfig({ headPlateMaterial: headPlateMaterial ?? undefined })
+          }}
+          preferredTypes={['dimensional']}
+        />
+      </ConfigSection>
+      <ConfigSection title={t($ => $.walls.solePlateConfiguration)}>
+        <LengthField
+          label={t($ => $.common.thickness)}
+          value={assembly.solePlateThickness}
+          onChange={solePlateThickness => {
+            updateConfig({ solePlateThickness })
+          }}
+          min={0}
+        />
+        <MaterialField
+          label={t($ => $.walls.material)}
+          value={assembly.solePlateMaterial}
+          allowEmpty
+          onChange={solePlateMaterial => {
+            updateConfig({ solePlateMaterial: solePlateMaterial ?? undefined })
+          }}
+          preferredTypes={['dimensional']}
+        />
+      </ConfigSection>
+      <ConfigSection title={t($ => $.walls.nogginConfiguration)}>
+        <LengthField
+          label={t($ => $.common.spacing)}
+          value={assembly.nogginSpacing}
+          onChange={nogginSpacing => {
+            updateConfig({ nogginSpacing })
+          }}
+          min={0}
+        />
+        <LengthField
+          label={t($ => $.common.thickness)}
+          value={assembly.nogginThickness}
+          onChange={nogginThickness => {
+            updateConfig({ nogginThickness })
+          }}
+          min={0}
+        />
+        <MaterialField
+          label={t($ => $.walls.material)}
+          value={assembly.nogginMaterial}
+          allowEmpty
+          onChange={nogginMaterial => {
+            updateConfig({ nogginMaterial: nogginMaterial ?? undefined })
+          }}
+          preferredTypes={['dimensional']}
+        />
+      </ConfigSection>
+    </>
   )
 }
 

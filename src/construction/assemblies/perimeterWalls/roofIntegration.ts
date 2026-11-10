@@ -4,8 +4,6 @@ import type { Vec2 } from '@/shared/geometry'
 import { newVec2 } from '@/shared/geometry'
 
 // Use smaller epsilon for position comparisons
-const POSITION_EPSILON = 0.0001
-
 /**
  * Result of converting height line to wall offsets
  */
@@ -50,31 +48,5 @@ function isHeightJumpItem(item: HeightJumpItem | HeightItem): item is HeightJump
  * Returns array of continuous segments
  */
 export function splitAtHeightJumps(area: WallConstructionArea): WallConstructionArea[] {
-  if (!area.topOffsets || area.topOffsets.length === 0) {
-    return [area]
-  }
-
-  const segments: WallConstructionArea[] = []
-  let start = 0
-
-  // Find positions where jumps occur (same X position, different offsets)
-  for (let i = 0; i < area.topOffsets.length - 1; i++) {
-    const current = area.topOffsets[i]
-    const next = area.topOffsets[i + 1]
-    if (Math.abs(current[0] - next[0]) < POSITION_EPSILON) {
-      const end = current[0]
-      const subArea = area.withXAdjustment(start, end - start)
-      if (!subArea.isEmpty) segments.push(subArea)
-      start = end
-    }
-  }
-
-  if (segments.length === 0) {
-    return [area]
-  }
-
-  const subArea = area.withXAdjustment(start)
-  if (!subArea.isEmpty) segments.push(subArea)
-
-  return segments
+  return area.splitAtHeightJumps()
 }

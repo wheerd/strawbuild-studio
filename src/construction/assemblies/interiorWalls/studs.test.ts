@@ -18,7 +18,9 @@ describe('constructStudSegment', () => {
           maxStudSpacing: 900,
           studWidth: 40,
           studMaterial: 'material_stud' as never,
-          fillMaterial: 'material_fill' as never
+          fillMaterial: 'material_fill' as never,
+          nogginThickness: 60,
+          nogginSpacing: 1500
         },
         true,
         true
@@ -41,7 +43,9 @@ describe('constructStudSegment', () => {
           maxStudSpacing: 900,
           studWidth: 40,
           studMaterial: 'material_stud' as never,
-          fillMaterial: 'material_fill' as never
+          fillMaterial: 'material_fill' as never,
+          nogginThickness: 60,
+          nogginSpacing: 1500
         },
         false,
         false

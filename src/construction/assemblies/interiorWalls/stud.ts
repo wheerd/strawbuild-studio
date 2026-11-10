@@ -10,12 +10,15 @@ import { createConstructionElement } from '@/construction/model/elements'
 import { type ConstructionResult, yieldElement } from '@/construction/model/results'
 import { createExtrudedPolygon } from '@/construction/model/shapes'
 import {
+  TAG_BASE_PLATE,
   TAG_LAYERS,
   TAG_MONOLITHIC_STUD_WALL,
   TAG_PLANKED_STUD_WALL,
+  TAG_TOP_PLATE,
   TAG_WALL_LAYER_INTERIOR
 } from '@/construction/model/tags'
-import { type Polygon2D, fromTrans, newVec3 } from '@/shared/geometry'
+import type { MaterialId } from '@/materials/types'
+import { type Polygon2D, fromTrans, newVec3, subtractPolygons } from '@/shared/geometry'
 
 import type { WallExtension } from './geometry'
 
@@ -57,6 +60,77 @@ function* constructPlanking(
   yield* yieldElement(right)
 }
 
+function* constructPlate(
+  area: WallConstructionArea,
+  openingHoles: Polygon2D[],
+  material: MaterialId,
+  tags: (typeof TAG_BASE_PLATE)[],
+  partType: 'head-plate' | 'sole-plate'
+): Generator<ConstructionResult> {
+  if (area.isEmpty) return
+  const polygons = subtractPolygons([area.getSideProfilePolygon()], openingHoles)
+  for (const polygon of polygons) {
+    const shape = createExtrudedPolygon({ outer: polygon.outer, holes: polygon.holes }, 'xz', area.size[1])
+    yield* yieldElement(
+      createConstructionElement(material, shape, fromTrans(newVec3(0, area.position[1], 0)), tags, {
+        type: partType,
+        requiresSinglePiece: true
+      })
+    )
+  }
+}
+
+function* constructFramedCore(
+  wall: IntermediateWallWithGeometry,
+  area: WallConstructionArea,
+  openingHoles: Polygon2D[],
+  extension: WallExtension,
+  config: MonolithicStudWallAssemblyConfig | PlankedStudWallAssemblyConfig
+): Generator<ConstructionResult> {
+  let workingArea = area
+  if (config.solePlateMaterial) {
+    yield* constructPlate(
+      workingArea.withZAdjustment(0, config.solePlateThickness),
+      openingHoles,
+      config.solePlateMaterial,
+      [TAG_BASE_PLATE],
+      'sole-plate'
+    )
+    workingArea = workingArea.withZAdjustment(config.solePlateThickness)
+  }
+
+  let studAreas = [workingArea]
+  if (config.headPlateMaterial) {
+    studAreas = []
+    for (const continuousArea of workingArea.splitAtHeightJumps()) {
+      const [headPlate, remaining] = continuousArea.splitAtTop(config.headPlateThickness)
+      yield* constructPlate(headPlate, openingHoles, config.headPlateMaterial, [TAG_TOP_PLATE], 'head-plate')
+      if (!remaining.isEmpty) studAreas.push(remaining)
+    }
+  }
+
+  for (const [index, studArea] of studAreas.entries()) {
+    const areaStartOffset = studArea.position[0] - area.position[0]
+    const localExtensionStart = extension.startExtension - areaStartOffset
+    const startsWithStand = index === 0
+    const endsWithStand = index === studAreas.length - 1
+    const segment = (segmentArea: WallConstructionArea, starts: boolean, ends: boolean) =>
+      constructStudSegment(segmentArea, config, starts, ends)
+    const infill = (infillArea: WallConstructionArea) => constructStudInfill(infillArea, config)
+    yield* constructInteriorWallSegments(
+      wall,
+      studArea,
+      localExtensionStart,
+      0,
+      startsWithStand,
+      endsWithStand,
+      segment,
+      infill,
+      config.openingAssemblyId
+    )
+  }
+}
+
 export class MonolithicStudInteriorWallAssembly extends BaseInteriorWallAssembly<MonolithicStudWallAssemblyConfig> {
   readonly assemblyTypeTag = TAG_MONOLITHIC_STUD_WALL
 
@@ -69,20 +143,7 @@ export class MonolithicStudInteriorWallAssembly extends BaseInteriorWallAssembly
     _perimeterContext: PerimeterConstructionContext,
     extension: WallExtension
   ): Generator<ConstructionResult> {
-    const segment = (segmentArea: WallConstructionArea, starts: boolean, ends: boolean) =>
-      constructStudSegment(segmentArea, this.config, starts, ends)
-    const infill = (infillArea: WallConstructionArea) => constructStudInfill(infillArea, this.config)
-    yield* constructInteriorWallSegments(
-      wall,
-      area,
-      extension.startExtension,
-      0,
-      true,
-      true,
-      segment,
-      infill,
-      this.config.openingAssemblyId
-    )
+    yield* constructFramedCore(wall, area, _openingHoles, extension, this.config)
   }
 }
 
@@ -101,19 +162,6 @@ export class PlankedStudInteriorWallAssembly extends BaseInteriorWallAssembly<Pl
     yield* constructPlanking(area, openingHoles, this.config)
 
     const studArea = area.withYAdjustment(this.config.plankThickness, area.size[1] - 2 * this.config.plankThickness)
-    const segment = (segmentArea: WallConstructionArea, starts: boolean, ends: boolean) =>
-      constructStudSegment(segmentArea, this.config, starts, ends)
-    const infill = (infillArea: WallConstructionArea) => constructStudInfill(infillArea, this.config)
-    yield* constructInteriorWallSegments(
-      wall,
-      studArea,
-      extension.startExtension,
-      0,
-      true,
-      true,
-      segment,
-      infill,
-      this.config.openingAssemblyId
-    )
+    yield* constructFramedCore(wall, studArea, openingHoles, extension, this.config)
   }
 }

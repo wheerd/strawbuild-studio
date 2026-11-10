@@ -21,6 +21,13 @@ const plankedStudAssembly: PlankedStudWallAssemblyConfig = {
   fillMaterial: strawbale.id,
   plankMaterial: roughWood.id,
   plankThickness: 25,
+  headPlateMaterial: roughWood.id,
+  headPlateThickness: 60,
+  solePlateMaterial: roughWood.id,
+  solePlateThickness: 60,
+  nogginMaterial: roughWood.id,
+  nogginThickness: 60,
+  nogginSpacing: 1500,
   layerSetId: LAYER_SET_CLAY_PLASTER.id
 }
 
@@ -53,6 +60,10 @@ const woodStudClayBrickAssembly: MonolithicStudWallAssemblyConfig = {
   studMaterial: roughWood.id,
   studWidth: 40,
   fillMaterial: clayBrick.id,
+  headPlateThickness: 60,
+  solePlateThickness: 60,
+  nogginThickness: 60,
+  nogginSpacing: 1500,
   layerSetId: LAYER_SET_CLAY_PLASTER.id
 }
 

@@ -55,6 +55,10 @@ export function InteriorWallAssemblyContent(props?: InteriorWallAssemblyContentP
                 plankThickness: 25,
                 plankMaterial: roughWood.id,
                 fillMaterial: strawbale.id,
+                headPlateThickness: 60,
+                solePlateThickness: 60,
+                nogginThickness: 60,
+                nogginSpacing: 1500,
                 layerSetId: LAYER_SET_CLAY_PLASTER.id
               }
             : {
@@ -65,6 +69,10 @@ export function InteriorWallAssemblyContent(props?: InteriorWallAssemblyContentP
                 studWidth: 40,
                 studMaterial: roughWood.id,
                 fillMaterial: clayBrick.id,
+                headPlateThickness: 60,
+                solePlateThickness: 60,
+                nogginThickness: 60,
+                nogginSpacing: 1500,
                 layerSetId: LAYER_SET_CLAY_PLASTER.id
               }
       const names = {
