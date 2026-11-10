@@ -18,6 +18,7 @@ const plankedStudAssembly: PlankedStudWallAssemblyConfig = {
   minStudSpacing: 70,
   studMaterial: roughWood.id,
   studWidth: 40,
+  equidistantStuds: true,
   fillMaterial: strawbale.id,
   plankMaterial: roughWood.id,
   plankThickness: 25,
@@ -28,6 +29,8 @@ const plankedStudAssembly: PlankedStudWallAssemblyConfig = {
   nogginMaterial: roughWood.id,
   nogginThickness: 60,
   nogginSpacing: 1500,
+  equidistantNoggins: false,
+  staggerNoggins: false,
   layerSetId: LAYER_SET_CLAY_PLASTER.id
 }
 
@@ -60,10 +63,13 @@ const woodStudClayBrickAssembly: MonolithicStudWallAssemblyConfig = {
   studMaterial: roughWood.id,
   studWidth: 40,
   fillMaterial: clayBrick.id,
+  equidistantStuds: true,
   headPlateThickness: 60,
   solePlateThickness: 60,
   nogginThickness: 60,
   nogginSpacing: 1500,
+  equidistantNoggins: false,
+  staggerNoggins: false,
   layerSetId: LAYER_SET_CLAY_PLASTER.id
 }
 

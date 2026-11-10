@@ -31,6 +31,7 @@ export interface WallStudConfig {
   maxStudSpacing: Length // Default: 900mm
   studWidth: Length // Default: 60mm
   studMaterial: MaterialId
+  equidistantStuds: boolean
 
   headPlateMaterial?: MaterialId
   headPlateThickness: Length // Default: 60mm
@@ -40,6 +41,8 @@ export interface WallStudConfig {
   nogginMaterial?: MaterialId
   nogginThickness: Length // Default: 60mm
   nogginSpacing: Length // Default: 1500mm
+  equidistantNoggins: boolean
+  staggerNoggins: boolean
 }
 
 export interface MonolithicWallConfig extends InteriorWallBaseConfig {

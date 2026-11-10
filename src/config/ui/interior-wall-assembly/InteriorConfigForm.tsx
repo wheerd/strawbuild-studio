@@ -12,6 +12,7 @@ import { MaterialSelectWithEdit } from '@/materials/ui/MaterialSelectWithEdit'
 import { LengthField as LengthInput } from '@/shared/ui/LengthField/LengthField'
 import { Card } from '@/shared/ui/components/card'
 import { Separator } from '@/shared/ui/components/separator'
+import { Switch } from '@/shared/ui/components/switch'
 import { TextField } from '@/shared/ui/components/text-field'
 import { useDebouncedInput } from '@/shared/ui/hooks/useDebouncedInput'
 
@@ -192,6 +193,13 @@ function StudFields({
           }}
           preferredTypes={['dimensional']}
         />
+        <BooleanField
+          label={t($ => $.walls.equidistantStuds)}
+          checked={assembly.equidistantStuds}
+          onCheckedChange={equidistantStuds => {
+            updateConfig({ equidistantStuds })
+          }}
+        />
       </ConfigSection>
       <ConfigSection title={t($ => $.walls.headPlateConfiguration)}>
         <LengthField
@@ -257,6 +265,20 @@ function StudFields({
           }}
           preferredTypes={['dimensional']}
         />
+        <BooleanField
+          label={t($ => $.walls.equidistantNoggins)}
+          checked={assembly.equidistantNoggins}
+          onCheckedChange={equidistantNoggins => {
+            updateConfig({ equidistantNoggins })
+          }}
+        />
+        <BooleanField
+          label={t($ => $.walls.staggerNoggins)}
+          checked={assembly.staggerNoggins}
+          onCheckedChange={staggerNoggins => {
+            updateConfig({ staggerNoggins })
+          }}
+        />
       </ConfigSection>
     </>
   )
@@ -301,6 +323,25 @@ function SelectField({ label, children }: { label: string; children: React.React
         <span className="text-sm font-medium">{label}</span>
       </Label.Root>
       {children}
+    </div>
+  )
+}
+
+function BooleanField({
+  label,
+  checked,
+  onCheckedChange
+}: {
+  label: string
+  checked: boolean
+  onCheckedChange: (checked: boolean) => void
+}): React.JSX.Element {
+  return (
+    <div className="flex items-center justify-between gap-2">
+      <Label.Root>
+        <span className="text-sm font-medium">{label}</span>
+      </Label.Root>
+      <Switch checked={checked} onCheckedChange={onCheckedChange} size="sm" />
     </div>
   )
 }
