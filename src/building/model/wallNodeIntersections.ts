@@ -217,6 +217,7 @@ function clampPointToLineSegment(point: Vec2, start: Vec2, end: Vec2): Vec2 {
 
   return scaleAddVec2(point, lineDirection, clampedProjection - pointProjection)
 }
+
 function simplifyNodePolygonPoints(points: Vec2[]): Vec2[] {
   const deduplicated: Vec2[] = []
   for (const point of points) {
