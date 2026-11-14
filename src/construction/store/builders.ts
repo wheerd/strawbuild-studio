@@ -271,7 +271,7 @@ export function buildPerimeterComposite(perimeter: PerimeterWithGeometry): Compo
   const wallModels = getPerimeterWallsById(perimeter.id).map(wall => {
     const segmentAngle = dirAngle(wall.insideLine.start, wall.insideLine.end)
     const transform = rotateZ(
-      fromTrans(newVec3(wall.insideLine.start[0], wall.insideLine.start[1], storeyContext.wallBottom)),
+      fromTrans(newVec3(wall.insideLine.start[0], wall.insideLine.start[1], storeyContext.finishedFloorTop)),
       segmentAngle
     )
 
@@ -282,7 +282,7 @@ export function buildPerimeterComposite(perimeter: PerimeterWithGeometry): Compo
   })
   const intermediateModels = getIntermediateWallsByPerimeter(perimeter.id).map(wall => ({
     id: wall.id,
-    transform: intermediateWallTransform(wall, storeyContext.wallBottom)
+    transform: intermediateWallTransform(wall, storeyContext.finishedFloorTop)
   }))
 
   return {

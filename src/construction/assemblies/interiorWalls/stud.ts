@@ -119,7 +119,6 @@ function* constructFramedCore(
       wall,
       studArea,
       localExtensionStart,
-      0,
       startsWithStand,
       endsWithStand,
       segment,

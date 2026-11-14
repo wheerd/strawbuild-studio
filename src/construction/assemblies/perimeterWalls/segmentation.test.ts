@@ -389,7 +389,7 @@ describe('segmentedWallConstruction', () => {
       expect(mockWallConstruction).toHaveBeenCalledTimes(1)
       expect(mockWallConstruction).toHaveBeenCalledWith(
         expectArea(
-          newVec3(-0, 30, 60), // position: [-extensionStart, insideThickness, basePlateHeight]
+          newVec3(-0, 30, 40), // position relative to finished floor
           newVec3(3000, 220, 2380) // size: [constructionLength, thickness-layers, wallHeight-plates]
         ),
         true, // startsWithStand
@@ -428,7 +428,7 @@ describe('segmentedWallConstruction', () => {
       // Should include extensions in wall construction
       expect(mockWallConstruction).toHaveBeenCalledWith(
         expectArea(
-          newVec3(-100, 30, 60), // position includes start extension
+          newVec3(-100, 30, 40), // position includes start extension
           newVec3(3250, 220, 2380) // size includes total construction length
         ),
         true,
@@ -469,7 +469,7 @@ describe('segmentedWallConstruction', () => {
       expect(mockWallConstruction).toHaveBeenCalledTimes(1)
       expect(mockWallConstruction).toHaveBeenCalledWith(
         expectArea(
-          newVec3(-0, 30, 80), // z position = base plate height
+          newVec3(-0, 30, 60), // z position relative to finished floor
           newVec3(3000, 220, 2320) // z size = wallHeight - base - top
         ),
         true,
@@ -504,7 +504,7 @@ describe('segmentedWallConstruction', () => {
       // First wall segment (before opening)
       expect(mockWallConstruction).toHaveBeenNthCalledWith(
         1,
-        expectArea(newVec3(0, 30, 60), newVec3(1000, 220, 2380)),
+        expectArea(newVec3(0, 30, 40), newVec3(1000, 220, 2380)),
         true,
         true,
         false
@@ -514,7 +514,7 @@ describe('segmentedWallConstruction', () => {
       expect(mockWallConstruction).toHaveBeenNthCalledWith(
         2,
         expectArea(
-          newVec3(1800, 30, 60), // 1000 + 800
+          newVec3(1800, 30, 40), // 1000 + 800
           newVec3(1200, 220, 2380) // 3000 - 1800
         ),
         true,
@@ -525,7 +525,7 @@ describe('segmentedWallConstruction', () => {
       // Should call opening construction once
       expect(mockOpeningConstruction).toHaveBeenCalledTimes(1)
       expect(mockOpeningConstruction).toHaveBeenCalledWith(
-        expectArea(newVec3(1000, 30, 60), newVec3(800, 220, 2380)),
+        expectArea(newVec3(1000, 30, 40), newVec3(800, 220, 2380)),
         2060,
         860,
         mockInfillMethod,
@@ -558,7 +558,7 @@ describe('segmentedWallConstruction', () => {
       // Should call wall construction once (after opening)
       expect(mockWallConstruction).toHaveBeenCalledTimes(1)
       expect(mockWallConstruction).toHaveBeenCalledWith(
-        expectArea(newVec3(800, 30, 60), newVec3(2200, 220, 2380)),
+        expectArea(newVec3(800, 30, 40), newVec3(2200, 220, 2380)),
         true,
         true,
         true
@@ -566,7 +566,7 @@ describe('segmentedWallConstruction', () => {
 
       // Should call opening construction once
       expect(mockOpeningConstruction).toHaveBeenCalledWith(
-        expectArea(newVec3(0, 30, 60), newVec3(800, 220, 2380)),
+        expectArea(newVec3(0, 30, 40), newVec3(800, 220, 2380)),
         2060,
         860,
         mockInfillMethod,
@@ -595,7 +595,7 @@ describe('segmentedWallConstruction', () => {
       // Should call wall construction once (before opening)
       expect(mockWallConstruction).toHaveBeenCalledTimes(1)
       expect(mockWallConstruction).toHaveBeenCalledWith(
-        expectArea(newVec3(0, 30, 60), newVec3(2200, 220, 2380)),
+        expectArea(newVec3(0, 30, 40), newVec3(2200, 220, 2380)),
         true,
         true,
         false
@@ -603,7 +603,7 @@ describe('segmentedWallConstruction', () => {
 
       // Should call opening construction once
       expect(mockOpeningConstruction).toHaveBeenCalledWith(
-        expectArea(newVec3(2200, 30, 60), newVec3(800, 220, 2380)),
+        expectArea(newVec3(2200, 30, 40), newVec3(800, 220, 2380)),
         2060,
         860,
         mockInfillMethod,
@@ -634,7 +634,7 @@ describe('segmentedWallConstruction', () => {
       expect(mockOpeningConstruction).toHaveBeenCalledTimes(1)
       expect(mockOpeningConstruction).toHaveBeenCalledWith(
         expectArea(
-          newVec3(1000, 30, 60),
+          newVec3(1000, 30, 40),
           newVec3(1400, 220, 2380) // combined width: 800 + 600
         ),
         2060,
@@ -713,7 +713,7 @@ describe('segmentedWallConstruction', () => {
       // Should process opening2 first (at position 500), then opening1 (at position 2000)
       expect(mockOpeningConstruction).toHaveBeenNthCalledWith(
         1,
-        expectArea(newVec3(500, 30, 60), newVec3(800, 220, 2380)),
+        expectArea(newVec3(500, 30, 40), newVec3(800, 220, 2380)),
         2060,
         860,
         mockInfillMethod,
@@ -721,7 +721,7 @@ describe('segmentedWallConstruction', () => {
       )
       expect(mockOpeningConstruction).toHaveBeenNthCalledWith(
         2,
-        expectArea(newVec3(2000, 30, 60), newVec3(600, 220, 2380)),
+        expectArea(newVec3(2000, 30, 40), newVec3(600, 220, 2380)),
         2060,
         860,
         mockInfillMethod,
@@ -758,7 +758,7 @@ describe('segmentedWallConstruction', () => {
       expect(mockWallConstruction).toHaveBeenCalledTimes(1)
       expect(mockWallConstruction).toHaveBeenCalledWith(
         expectArea(
-          newVec3(-0, 30, 0), // z = 0 when no base plate
+          newVec3(-0, 30, -20), // position relative to finished floor
           newVec3(3000, 220, 2500) // full wall height when no plates
         ),
         true,
@@ -881,7 +881,7 @@ describe('segmentedWallConstruction', () => {
       // First wall segment (before post)
       expect(mockWallConstruction).toHaveBeenNthCalledWith(
         1,
-        expectArea(newVec3(0, 30, 60), newVec3(1470, 220, 2380)), // 1500 - 30 (half of 60mm post width)
+        expectArea(newVec3(0, 30, 40), newVec3(1470, 220, 2380)), // 1500 - 30 (half of 60mm post width)
         true,
         false, // post replacesPosts=true, so no stand needed
         false
@@ -891,7 +891,7 @@ describe('segmentedWallConstruction', () => {
       expect(mockWallConstruction).toHaveBeenNthCalledWith(
         2,
         expectArea(
-          newVec3(1530, 30, 60), // 1500 + 30 (half of 60mm post width)
+          newVec3(1530, 30, 40), // 1500 + 30 (half of 60mm post width)
           newVec3(1470, 220, 2380) // 3000 - 1530
         ),
         false, // post replacesPosts=true, so no stand needed
@@ -902,7 +902,7 @@ describe('segmentedWallConstruction', () => {
       // Should call post construction once
       expect(mockConstructWallPost).toHaveBeenCalledTimes(1)
       expect(mockConstructWallPost).toHaveBeenCalledWith(
-        expectArea(newVec3(1470, 30, 60), newVec3(60, 220, 2380)),
+        expectArea(newVec3(1470, 30, 40), newVec3(60, 220, 2380)),
         post
       )
 
@@ -935,7 +935,7 @@ describe('segmentedWallConstruction', () => {
       // First segment should END with stand (replacesPosts=false means stand needed)
       expect(mockWallConstruction).toHaveBeenNthCalledWith(
         1,
-        expectArea(newVec3(0, 30, 60), newVec3(1470, 220, 2380)),
+        expectArea(newVec3(0, 30, 40), newVec3(1470, 220, 2380)),
         true,
         true, // replacesPosts=false, so stand needed
         false
@@ -944,7 +944,7 @@ describe('segmentedWallConstruction', () => {
       // Second segment should START with stand
       expect(mockWallConstruction).toHaveBeenNthCalledWith(
         2,
-        expectArea(newVec3(1530, 30, 60), newVec3(1470, 220, 2380)),
+        expectArea(newVec3(1530, 30, 40), newVec3(1470, 220, 2380)),
         true, // replacesPosts=false, so stand needed
         true,
         true

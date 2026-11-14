@@ -75,6 +75,7 @@ export abstract class BaseInteriorWallAssembly<
     const extension = computeWallExtensionAndClipping(wall, startNode, endNode, perimeterContext, faceThickness)
 
     const ceilingOffset = storeyContext.roofBottom - storeyContext.ceilingConstructionBottom
+    const wallBottom = storeyContext.floorConstructionTop - storeyContext.finishedFloorTop
     const wallHeight = storeyContext.ceilingConstructionBottom - storeyContext.floorConstructionTop
 
     const geometry = perimeterContext.interiorWallGeometry.get(wall.id)
@@ -101,21 +102,19 @@ export abstract class BaseInteriorWallAssembly<
 
     // Create overall wall construction area ONCE with roof offsets
     const wallArea = new WallConstructionArea(
-      newVec3(-extension.startExtension, -halfCoreThickness, 0),
+      newVec3(-extension.startExtension, -halfCoreThickness, wallBottom),
       newVec3(extension.totalLength, coreThickness, wallHeight),
       roofOffsets
     )
 
-    // console.log(wallArea, left, right, extension)
-
     const openings = wall.entityIds.filter(isOpeningId).map(getWallOpeningById)
-    const finishedFloorZLevel = storeyContext.finishedFloorTop - storeyContext.floorConstructionTop
+    const wallTop = storeyContext.ceilingConstructionBottom - storeyContext.finishedFloorTop
 
     const openingHoles = openings.flatMap(opening => {
       const start = Math.max(0, opening.centerOffsetFromWallStart - opening.width / 2)
       const end = Math.min(wall.wallLength, opening.centerOffsetFromWallStart + opening.width / 2)
-      const bottom = Math.max(0, finishedFloorZLevel + (opening.sillHeight ?? 0))
-      const top = Math.min(wallHeight, bottom + opening.height)
+      const bottom = Math.max(0, opening.sillHeight ?? 0)
+      const top = Math.min(wallTop, bottom + opening.height)
       return end > start && top > bottom
         ? [
             {
@@ -131,7 +130,7 @@ export abstract class BaseInteriorWallAssembly<
     ]
     const debugClippingPlanes: DebugClippingPlane[] = debugPlaneEntries.flatMap(({ endpoint, plane }) => {
       if (!plane) return []
-      const localPlane = transformPlaneToWallCoordinates(plane, wall, storeyContext.wallBottom)
+      const localPlane = transformPlaneToWallCoordinates(plane, wall, storeyContext.finishedFloorTop)
       return [
         {
           id: `${wall.id}-${endpoint}`,
@@ -153,7 +152,7 @@ export abstract class BaseInteriorWallAssembly<
         wall,
         wallHeight,
         perimeterContext,
-        intermediateWallTransform(wall, storeyContext.wallBottom)
+        intermediateWallTransform(wall, storeyContext.finishedFloorTop)
       )
     ]
 
@@ -243,11 +242,11 @@ export abstract class BaseInteriorWallAssembly<
     extension: WallExtension,
     height: Length
   ) {
-    const finishedFloorZLevel = storeyContext.finishedFloorTop - storeyContext.floorConstructionTop
+    const finishedFloorZLevel = 0
 
     if (!capPlane) return
 
-    const localCapPlane = transformPlaneToWallCoordinates(capPlane, wall)
+    const localCapPlane = transformPlaneToWallCoordinates(capPlane, wall, storeyContext.finishedFloorTop)
     const normalX = localCapPlane.normal[0]
     if (Math.abs(normalX) <= 1e-6) return
     const capX = localCapPlane.originOffset / normalX
@@ -260,7 +259,7 @@ export abstract class BaseInteriorWallAssembly<
       const endpointX =
         endpoint === 'start' ? layerExtension.startExtension : layerExtension.startExtension + wall.wallLength
       const [startTop, endTop] = layerArea.getTopOffsetsAt(endpointX, endpoint === 'start' ? 1 : -1)
-      const roofTop = layerArea.size[2] + (endpoint === 'start' ? startTop : endTop)
+      const roofTop = layerArea.position[2] + layerArea.size[2] + (endpoint === 'start' ? startTop : endTop)
       const capPolygon: PolygonWithHoles2D = {
         outer: {
           points: [
@@ -304,7 +303,7 @@ export abstract class BaseInteriorWallAssembly<
     perimeterContext: PerimeterConstructionContext,
     storeyContext: StoreyContext
   ) {
-    const finishedFloorZLevel = storeyContext.finishedFloorTop - storeyContext.floorConstructionTop
+    const finishedFloorAdjustment = storeyContext.finishedFloorTop - storeyContext.floorConstructionTop
 
     let offset = 0
     for (const [index, layer] of layers.entries()) {
@@ -314,7 +313,7 @@ export abstract class BaseInteriorWallAssembly<
       const rightExtension = computeLayerExtension(wall, extension.layerClipping.right, rightBand)
 
       const leftArea = this.createLayerArea(wall, leftExtension, leftBand, height, storeyContext).withZAdjustment(
-        finishedFloorZLevel
+        finishedFloorAdjustment
       )
       yield* this.buildSideLayer(
         { outer: leftArea.getSideProfilePolygon(), holes: openingHoles },
@@ -329,7 +328,7 @@ export abstract class BaseInteriorWallAssembly<
       )
 
       const rightArea = this.createLayerArea(wall, rightExtension, rightBand, height, storeyContext).withZAdjustment(
-        finishedFloorZLevel
+        finishedFloorAdjustment
       )
       yield* this.buildSideLayer(
         { outer: rightArea.getSideProfilePolygon(), holes: openingHoles },
@@ -386,6 +385,7 @@ export abstract class BaseInteriorWallAssembly<
       end: scaleAddVec2(end, wall.leftDirection, layerBand.end)
     }
     const roofHeightLine = getRoofHeightLineCached(storeyContext.storeyId, [startLine, endLine])
+    const wallBottom = storeyContext.floorConstructionTop - storeyContext.finishedFloorTop
     const ceilingOffset = storeyContext.roofBottom - storeyContext.ceilingConstructionBottom
     const roofOffsets = convertHeightLineToWallOffsets(roofHeightLine, layerLength) ?? [
       newVec2(0, -ceilingOffset),
@@ -393,7 +393,7 @@ export abstract class BaseInteriorWallAssembly<
     ]
 
     return new WallConstructionArea(
-      newVec3(-layerExtension.startExtension, layerBand.start, 0),
+      newVec3(-layerExtension.startExtension, layerBand.start, wallBottom),
       newVec3(layerLength, layerBand.end - layerBand.start, height),
       roofOffsets
     )
@@ -429,7 +429,7 @@ export abstract class BaseInteriorWallAssembly<
         wall,
         height,
         perimeterContext,
-        intermediateWallTransform(wall, storeyContext.wallBottom)
+        intermediateWallTransform(wall, storeyContext.finishedFloorTop)
       )
     }
   }

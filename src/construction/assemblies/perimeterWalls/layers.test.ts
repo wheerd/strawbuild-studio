@@ -301,18 +301,18 @@ describe('constructWallLayers', () => {
 
     expect(insidePolygon.polygon.outer.points).toHaveLength(4)
     expect(insidePolygon.polygon.outer.points).toEqual([
-      newVec2(-30, -30),
-      newVec2(3030, -30),
-      newVec2(3030, 2850),
-      newVec2(-30, 2850)
+      newVec2(-30, -180),
+      newVec2(3030, -180),
+      newVec2(3030, 2700),
+      newVec2(-30, 2700)
     ])
 
     expect(outsidePolygon.polygon.outer.points).toHaveLength(4)
     expect(outsidePolygon.polygon.outer.points).toEqual([
-      newVec2(-300, -250),
-      newVec2(3300, -250),
-      newVec2(3300, 2950),
-      newVec2(-300, 2950)
+      newVec2(-300, -400),
+      newVec2(3300, -400),
+      newVec2(3300, 2800),
+      newVec2(-300, 2800)
     ])
 
     const layerGroups = model.elements.filter((element): element is GroupOrElement => 'children' in element)
@@ -367,8 +367,8 @@ describe('constructWallLayers', () => {
 
     expect(Math.min(...xs)).toBeCloseTo(1000)
     expect(Math.max(...xs)).toBeCloseTo(1000 + 900)
-    expect(Math.min(...ys)).toBeCloseTo(900 + 200 - 50)
-    expect(Math.max(...ys)).toBeCloseTo(900 + 1200 + 200 - 50)
+    expect(Math.min(...ys)).toBeCloseTo(900)
+    expect(Math.max(...ys)).toBeCloseTo(900 + 1200)
   })
 
   it('extends exterior layers when wall constructs the corner', () => {

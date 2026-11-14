@@ -101,6 +101,21 @@ describe('interior wall geometry', () => {
     expect(transformed.originOffset).toBe(-10)
   })
 
+  it('preserves the finished-floor wall datum when transforming clipping planes', () => {
+    const planeWall = partial<IntermediateWallWithGeometry>({
+      entityReferenceLine: {
+        start: newVec2(0, 0),
+        end: newVec2(100, 0)
+      },
+      direction: newVec2(1, 0)
+    })
+
+    const transformed = transformPlaneToWallCoordinates({ normal: newVec3(0, 0, 1), originOffset: 120 }, planeWall, 120)
+
+    expect(Array.from(transformed.normal)).toEqual([0, 0, 1])
+    expect(transformed.originOffset).toBe(0)
+  })
+
   it('uses the same global plane for walls with different placement transforms', () => {
     const horizontalWall = partial<IntermediateWallWithGeometry>({
       entityReferenceLine: { start: newVec2(0, 0), end: newVec2(100, 0) },

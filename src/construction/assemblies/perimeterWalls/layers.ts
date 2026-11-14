@@ -106,9 +106,8 @@ export function constructWallLayers(
     let insideOffset: Length = 0
     let previousSpan = baseInsideSpan
 
-    const bottom = storeyContext.floorConstructionTop - storeyContext.wallBottom
-    const top = storeyContext.ceilingConstructionBottom - storeyContext.wallBottom
-    const zAdjustment = storeyContext.finishedFloorTop - storeyContext.wallBottom
+    const bottom = storeyContext.floorConstructionTop - storeyContext.finishedFloorTop
+    const top = storeyContext.ceilingConstructionBottom - storeyContext.finishedFloorTop
 
     const reversedInsideLayers = [...insideLayers].reverse()
 
@@ -138,7 +137,7 @@ export function constructWallLayers(
 
       // Extract polygon from area (handles roof slopes)
       const polygon = ensurePolygonIsClockwise(simplifyPolygon(layerArea.getSideProfilePolygon()))
-      const polygonsWithOpenings = subtractWallOpenings(polygon, start, end, bottom, top, openings, zAdjustment)
+      const polygonsWithOpenings = subtractWallOpenings(polygon, start, end, bottom, top, openings)
       const polygonsWithHoles = polygonsWithOpenings.flatMap(p =>
         subtractPolygons([p.outer], [...p.holes, ...interiorWallCutOuts])
       )
@@ -172,9 +171,8 @@ export function constructWallLayers(
   }
 
   if (outsideLayers.length > 0) {
-    const bottom = storeyContext.floorBottom - storeyContext.wallBottom
-    const top = storeyContext.wallTop - storeyContext.wallBottom
-    const zAdjustment = storeyContext.finishedFloorTop - storeyContext.wallBottom
+    const bottom = storeyContext.floorBottom - storeyContext.finishedFloorTop
+    const top = storeyContext.wallTop - storeyContext.finishedFloorTop
 
     let outsideOffset: Length = wall.thickness - outsideThickness
     let previousSpan = baseOutsideSpan
@@ -197,7 +195,7 @@ export function constructWallLayers(
 
       // Extract polygon from area (handles roof slopes)
       const polygon = ensurePolygonIsClockwise(simplifyPolygon(layerArea.getSideProfilePolygon()))
-      const polygonsWithHoles = subtractWallOpenings(polygon, start, end, bottom, top, openings, zAdjustment)
+      const polygonsWithHoles = subtractWallOpenings(polygon, start, end, bottom, top, openings)
       const results = polygonsWithHoles.flatMap(p =>
         runLayerConstruction(p, outsideOffset, WALL_LAYER_PLANE, layer, layerDirection)
       )

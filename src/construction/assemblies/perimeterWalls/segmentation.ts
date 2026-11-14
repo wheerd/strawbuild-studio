@@ -67,7 +67,6 @@ export function* segmentedWallConstruction(
 
   // Generate corner areas, plate areas, and measurements
   yield* generateAreasAndMeasurements(
-    dimensions.finishedFloorZLevel,
     overallWallArea,
     basePlateHeight,
     topPlateHeight,
@@ -154,7 +153,6 @@ interface WallDimensions {
   sizeY: Length
   z: Length
   sizeZ: Length
-  finishedFloorZLevel: Length
   totalConstructionHeight: Length
   ceilingOffset: Length
 }
@@ -195,17 +193,14 @@ function calculateWallDimensions(
 
   const y = insideThickness
   const sizeY = wall.thickness - insideThickness - outsideThickness
-  const z = basePlateHeight
+  const z = storeyContext.wallBottom + basePlateHeight - storeyContext.finishedFloorTop
   const sizeZ = totalConstructionHeight - basePlateHeight - topPlateHeight
-
-  const finishedFloorZLevel = storeyContext.finishedFloorTop - storeyContext.wallBottom
 
   return {
     y,
     sizeY,
     z,
     sizeZ,
-    finishedFloorZLevel,
     totalConstructionHeight,
     ceilingOffset
   }
@@ -270,9 +265,8 @@ function* constructOpeningGroup(
   const groupWidth = end - start
   const openingArea = overallWallArea.withXAdjustment(start, groupWidth)
 
-  const zAdjustment = dimensions.finishedFloorZLevel - dimensions.z
   const sillHeight = Math.max(group[0].sillHeight ?? 0)
-  const adjustedSill = sillHeight + zAdjustment
+  const adjustedSill = sillHeight - dimensions.z
   const adjustedHeader = adjustedSill + group[0].height
   yield* item.assembly.construct(openingArea, adjustedHeader, adjustedSill, infillMethod, group)
 
@@ -558,7 +552,6 @@ function* createPlateAreas(
 }
 
 function* generateAreasAndMeasurements(
-  finishedFloorZLevel: Length,
   overallWallArea: WallConstructionArea,
   basePlateHeight: number,
   topPlateHeight: number,
@@ -585,7 +578,7 @@ function* generateAreasAndMeasurements(
     areaType: 'floor-level',
     renderPosition: 'top',
     axis: 'z',
-    position: finishedFloorZLevel,
+    position: 0,
     mergeKey: `floor-level-${storeyId}`
   })
 

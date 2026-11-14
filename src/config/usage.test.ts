@@ -2,8 +2,8 @@ import { describe, expect, it, vi } from 'vitest'
 
 import type { IntermediateWallWithGeometry, PerimeterWallWithGeometry, PerimeterWithGeometry } from '@/building/model'
 import {
-  createOpeningAssemblyId,
   createInteriorWallAssemblyId,
+  createOpeningAssemblyId,
   createPerimeterWallAssemblyId,
   createRingBeamAssemblyId,
   createStoreyId

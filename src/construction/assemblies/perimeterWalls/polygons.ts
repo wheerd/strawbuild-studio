@@ -101,8 +101,7 @@ export const subtractWallOpenings = (
   end: Length,
   bottom: Length,
   top: Length,
-  openings: OpeningWithGeometry[],
-  finishedFloorHeight: Length
+  openings: OpeningWithGeometry[]
 ): PolygonWithHoles2D[] => {
   const holes = openings
     .map(opening => {
@@ -116,9 +115,8 @@ export const subtractWallOpenings = (
       }
 
       const sill = Math.max(opening.sillHeight ?? 0, 0)
-      const openingBottom = finishedFloorHeight + sill
-      const openingTop = openingBottom + opening.height
-      const clampedBottom = Math.max(openingBottom, bottom)
+      const openingTop = sill + opening.height
+      const clampedBottom = Math.max(sill, bottom)
       const clampedTop = Math.min(openingTop, top)
       if (clampedTop <= clampedBottom) {
         return null
@@ -153,8 +151,7 @@ export interface WallPolygonBounds {
 
 export const createWallPolygonWithOpenings = (
   area: WallConstructionArea,
-  openings: OpeningWithGeometry[],
-  finishedFloorHeight: Length
+  openings: OpeningWithGeometry[]
 ): PolygonWithHoles2D[] =>
   subtractWallOpenings(
     area.getSideProfilePolygon(),
@@ -162,6 +159,5 @@ export const createWallPolygonWithOpenings = (
     area.position[0] + area.size[0],
     area.position[2],
     area.position[2] + area.size[2],
-    openings,
-    finishedFloorHeight
+    openings
   )

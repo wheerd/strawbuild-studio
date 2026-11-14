@@ -467,9 +467,9 @@ export function transformPolygonToWallCoordinates(polygon: Polygon2D, wall: Inte
 export function transformPlaneToWallCoordinates(
   plane: ClippingPlane,
   wall: IntermediateWallWithGeometry,
-  wallBottom: Length = 0
+  wallDatum: Length = 0
 ): ClippingPlane {
-  const wallInverse = invertTransform(intermediateWallTransform(wall, wallBottom))
+  const wallInverse = invertTransform(intermediateWallTransform(wall, wallDatum))
   if (!wallInverse) throw new Error(`Unable to invert transform for intermediate wall ${wall.id}`)
   return transformPlane(plane, wallInverse)
 }

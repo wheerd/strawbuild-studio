@@ -101,7 +101,6 @@ export function* constructInteriorWallSegments(
   wall: IntermediateWallWithGeometry,
   overallArea: WallConstructionArea,
   extensionStart: Length,
-  finishedFloorZLevel: Length,
   startsWithStand: boolean,
   endsWithStand: boolean,
   segmentConstruction: InteriorWallSegmentConstruction,
@@ -147,7 +146,7 @@ export function* constructInteriorWallSegments(
     if (item.type === 'opening-group') {
       const openingArea = overallArea.withXAdjustment(item.start, item.end - item.start)
       const first = item.openings[0]
-      const sill = Math.max(first.sillHeight ?? 0) + finishedFloorZLevel
+      const sill = Math.max(first.sillHeight ?? 0) - openingArea.position[2]
       yield* item.assembly.construct(openingArea, sill + first.height, sill, infillMethod, item.openings)
 
       for (const opening of item.openings) {

@@ -41,6 +41,7 @@ export class NonStrawbaleWallAssembly extends BaseWallAssembly<NonStrawbaleWallC
     const topPlateHeight = topPlateAssembly ? resolveRingBeamAssembly(topPlateAssembly).height : 0
 
     const totalConstructionHeight = storeyContext.wallTop - storeyContext.wallBottom
+    const wallBottom = storeyContext.wallBottom + basePlateHeight - storeyContext.finishedFloorTop
     const ceilingOffset = storeyContext.roofBottom - storeyContext.wallTop
 
     const insideThickness = resolveLayerSetThickness(this.config.insideLayerSetId)
@@ -66,7 +67,7 @@ export class NonStrawbaleWallAssembly extends BaseWallAssembly<NonStrawbaleWallC
 
     // Create overall wall construction area ONCE with roof offsets
     const wallArea = new WallConstructionArea(
-      newVec3(-cornerInfo.extensionStart, 0, basePlateHeight),
+      newVec3(-cornerInfo.extensionStart, 0, wallBottom),
       newVec3(
         cornerInfo.constructionLength,
         wall.thickness,
@@ -77,8 +78,7 @@ export class NonStrawbaleWallAssembly extends BaseWallAssembly<NonStrawbaleWallC
 
     const { getWallOpeningById } = getModelActions()
     const openings = wall.entityIds.filter(isOpeningId).map(getWallOpeningById)
-    const finishedFloorZLevel = storeyContext.finishedFloorTop - storeyContext.wallBottom
-    const structuralPolygons = createWallPolygonWithOpenings(wallArea, openings, finishedFloorZLevel)
+    const structuralPolygons = createWallPolygonWithOpenings(wallArea, openings)
 
     const structureShapes = structuralPolygons.map(p =>
       createExtrudedPolygon(p, WALL_POLYGON_PLANE, structuralThickness)
