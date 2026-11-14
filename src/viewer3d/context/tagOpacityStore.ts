@@ -23,7 +23,8 @@ export function createTagOpacityStore(options?: CreateTagOpacityStoreOptions): T
     options?.initialOpacities ?? [
       ['wall-layer', 0],
       ['floor-layer', 0],
-      ['roof-layer', 0]
+      ['roof-layer', 0],
+      ['wall-part_planking', 0.5]
     ]
   )
 

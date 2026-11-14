@@ -11,11 +11,10 @@ import { type ConstructionResult, yieldElement } from '@/construction/model/resu
 import { createExtrudedPolygon } from '@/construction/model/shapes'
 import {
   TAG_BASE_PLATE,
-  TAG_LAYERS,
   TAG_MONOLITHIC_STUD_WALL,
   TAG_PLANKED_STUD_WALL,
   TAG_TOP_PLATE,
-  TAG_WALL_LAYER_INTERIOR
+  TAG_WALL_PLANKING
 } from '@/construction/model/tags'
 import type { MaterialId } from '@/materials/types'
 import { type Polygon2D, fromTrans, newVec3, subtractPolygons } from '@/shared/geometry'
@@ -26,7 +25,7 @@ function* constructStudInfill(
   area: WallConstructionArea,
   config: MonolithicStudWallAssemblyConfig | PlankedStudWallAssemblyConfig
 ): Generator<ConstructionResult> {
-  yield* constructStudSegment(area, config, true, true)
+  yield* constructStudSegment(area, config, false, false)
 }
 
 function* constructPlanking(
@@ -41,19 +40,18 @@ function* constructPlanking(
     holes: openingHoles
   }
   const shape = createExtrudedPolygon(polygon, 'xz', config.plankThickness)
-  const tags = [TAG_WALL_LAYER_INTERIOR, TAG_LAYERS]
   const left = createConstructionElement(
     config.plankMaterial,
     shape,
     fromTrans(newVec3(0, area.position[1], 0)),
-    tags,
+    [TAG_WALL_PLANKING],
     { type: 'wall-plank', requiresSinglePiece: true }
   )
   const right = createConstructionElement(
     config.plankMaterial,
     shape,
     fromTrans(newVec3(0, area.position[1] + area.size[1] - config.plankThickness, 0)),
-    tags,
+    [TAG_WALL_PLANKING],
     { type: 'wall-plank', requiresSinglePiece: true }
   )
   yield* yieldElement(left)

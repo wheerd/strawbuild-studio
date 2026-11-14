@@ -36,6 +36,7 @@ export function getStudPositions(
   equidistant: boolean
 ): Length[] {
   if (width <= 0 || studWidth > width) return []
+  if (width <= maxSpacing && !startsWithStand && !endsWithStand) return []
 
   const lastStart = width - studWidth
   const firstStart = startsWithStand ? 0 : Math.min(desiredSpacing, lastStart)
