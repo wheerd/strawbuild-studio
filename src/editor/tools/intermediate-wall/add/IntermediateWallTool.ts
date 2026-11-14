@@ -483,8 +483,9 @@ export class IntermediateWallTool extends BaseTool implements ToolImplementation
   }
 
   private checkValidation(): boolean {
+    const currentPos = this.getPreviewPosition()
     const isInsideValidationPolygons = Object.values(this.validationPolygons).some(polygon =>
-      isPointInPolygon(this.state.pointer, polygon)
+      isPointInPolygon(currentPos, polygon)
     )
     if (!isInsideValidationPolygons) {
       return false
@@ -492,7 +493,6 @@ export class IntermediateWallTool extends BaseTool implements ToolImplementation
 
     if (this.state.points.length > 0) {
       const lastPoint = this.state.points[this.state.points.length - 1]
-      const currentPos = this.state.snapResult?.position ?? this.state.pointer
       const snapMeta = this.state.snapResult?.meta
       const snapEntityId = snapMeta !== 'origin' ? snapMeta : undefined
       const snapWallIds = this.resolveEntityToWallIds(snapEntityId)
@@ -503,7 +503,7 @@ export class IntermediateWallTool extends BaseTool implements ToolImplementation
         for (const wallId of startWallIds) excludedWallIds.add(wallId)
       }
 
-      const perimeterId = this.findPerimeterContainingPoint(this.state.pointer)
+      const perimeterId = this.findPerimeterContainingPoint(currentPos)
       if (!perimeterId) return false
 
       const existingLines = Object.entries(this.validationLines).flatMap(([wallId, lines]) =>
@@ -537,6 +537,7 @@ export class IntermediateWallTool extends BaseTool implements ToolImplementation
 
   public setLengthOverride(length: Length | null): void {
     this.state.lengthOverride = length
+    this.state.isValid = this.checkValidation()
     this.triggerRender()
   }
 

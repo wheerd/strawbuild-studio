@@ -71,7 +71,7 @@ export function findColinearWallGroups(perimeter: PerimeterWithGeometry): Coline
     const firstCorner = getPerimeterCornerById(walls[0].startCornerId)
     if (firstCorner.interiorAngle === 180) {
       // Merge first and last group (wrap around)
-      groups[0].wallIds = [...groups[groups.length - 1].wallIds, ...groups[groups.length - 1].wallIds]
+      groups[0].wallIds = [...groups[groups.length - 1].wallIds, ...groups[0].wallIds]
       groups.pop()
     }
   }

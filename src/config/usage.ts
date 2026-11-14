@@ -12,7 +12,20 @@ import type {
   StoreyId
 } from '@/building/model/ids'
 import { getModelActions } from '@/building/store'
-import { getConfigActions, useFloorAssemblies, useRoofAssemblies, useWallAssemblies } from '@/config/store'
+import {
+  getConfigActions,
+  useFloorAssemblies,
+  useInteriorWallAssemblies,
+  useRoofAssemblies,
+  useWallAssemblies
+} from '@/config/store'
+
+import type {
+  FloorAssemblyConfig,
+  InteriorWallAssemblyConfig,
+  PerimeterWallAssemblyConfig,
+  RoofAssemblyConfig
+} from './types'
 
 export interface RingBeamAssemblyUsage {
   isUsed: boolean
@@ -239,47 +252,64 @@ export function getOpeningAssemblyUsage(assemblyId: OpeningAssemblyId): OpeningA
 export interface LayerSetUsage {
   isUsed: boolean
   wallAssemblyIds: PerimeterWallAssemblyId[]
+  interiorWallAssemblyIds: InteriorWallAssemblyId[]
   floorAssemblyIds: FloorAssemblyId[]
   roofAssemblyIds: RoofAssemblyId[]
 }
 
+export function getLayerSetUsage(
+  layerSetId: LayerSetId,
+  wallAssemblies: PerimeterWallAssemblyConfig[],
+  interiorWallAssemblies: InteriorWallAssemblyConfig[],
+  floorAssemblies: FloorAssemblyConfig[],
+  roofAssemblies: RoofAssemblyConfig[]
+): LayerSetUsage {
+  const wallIds: PerimeterWallAssemblyId[] = []
+  const interiorWallIds: InteriorWallAssemblyId[] = []
+  const floorIds: FloorAssemblyId[] = []
+  const roofIds: RoofAssemblyId[] = []
+
+  wallAssemblies.forEach(assembly => {
+    if (assembly.insideLayerSetId === layerSetId || assembly.outsideLayerSetId === layerSetId) wallIds.push(assembly.id)
+  })
+
+  interiorWallAssemblies.forEach(assembly => {
+    if (assembly.layerSetId === layerSetId) {
+      interiorWallIds.push(assembly.id)
+    }
+  })
+
+  floorAssemblies.forEach(assembly => {
+    if (assembly.topLayerSetId === layerSetId || assembly.bottomLayerSetId === layerSetId) floorIds.push(assembly.id)
+  })
+
+  roofAssemblies.forEach(assembly => {
+    if (
+      assembly.insideLayerSetId === layerSetId ||
+      assembly.topLayerSetId === layerSetId ||
+      assembly.overhangLayerSetId === layerSetId
+    ) {
+      roofIds.push(assembly.id)
+    }
+  })
+
+  return {
+    isUsed: wallIds.length > 0 || interiorWallIds.length > 0 || floorIds.length > 0 || roofIds.length > 0,
+    wallAssemblyIds: wallIds,
+    interiorWallAssemblyIds: interiorWallIds,
+    floorAssemblyIds: floorIds,
+    roofAssemblyIds: roofIds
+  }
+}
+
 export function useLayerSetUsage(layerSetId: LayerSetId): LayerSetUsage {
   const wallAssemblies = useWallAssemblies()
+  const interiorWallAssemblies = useInteriorWallAssemblies()
   const floorAssemblies = useFloorAssemblies()
   const roofAssemblies = useRoofAssemblies()
 
-  return useMemo(() => {
-    const wallIds: PerimeterWallAssemblyId[] = []
-    const floorIds: FloorAssemblyId[] = []
-    const roofIds: RoofAssemblyId[] = []
-
-    wallAssemblies.forEach(assembly => {
-      if (assembly.insideLayerSetId === layerSetId || assembly.outsideLayerSetId === layerSetId) {
-        wallIds.push(assembly.id)
-      }
-    })
-
-    floorAssemblies.forEach(assembly => {
-      if (assembly.topLayerSetId === layerSetId || assembly.bottomLayerSetId === layerSetId) {
-        floorIds.push(assembly.id)
-      }
-    })
-
-    roofAssemblies.forEach(assembly => {
-      if (
-        assembly.insideLayerSetId === layerSetId ||
-        assembly.topLayerSetId === layerSetId ||
-        assembly.overhangLayerSetId === layerSetId
-      ) {
-        roofIds.push(assembly.id)
-      }
-    })
-
-    return {
-      isUsed: wallIds.length > 0 || floorIds.length > 0 || roofIds.length > 0,
-      wallAssemblyIds: wallIds,
-      floorAssemblyIds: floorIds,
-      roofAssemblyIds: roofIds
-    }
-  }, [layerSetId, wallAssemblies, floorAssemblies, roofAssemblies])
+  return useMemo(
+    () => getLayerSetUsage(layerSetId, wallAssemblies, interiorWallAssemblies, floorAssemblies, roofAssemblies),
+    [layerSetId, wallAssemblies, interiorWallAssemblies, floorAssemblies, roofAssemblies]
+  )
 }

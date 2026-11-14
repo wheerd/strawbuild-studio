@@ -13,17 +13,29 @@ Implement interior walls and rooms in the floor plan editor, enabling:
 
 ## Status Overview
 
-| Phase                                        | Status      |
-| -------------------------------------------- | ----------- |
-| Phase 1: Store & Geometry                    | Done        |
-| Phase 2: Drawing Tools                       | Done        |
-| Phase 3: UI Components                       | Done        |
-| Phase A: Constraints for Intermediate Walls  | In progress |
-| Phase B: Wall Entities on Intermediate Walls | Done        |
-| Phase C: Interior Wall Assembly System       | Not started |
-| Phase D: Room Detection & Labeling           | Not started |
-| Phase E: Room Preset Tool                    | Not started |
-| Phase F: Room Split Tool                     | Not started |
+| Phase                                        | Status                       |
+| -------------------------------------------- | ---------------------------- |
+| Phase 1: Store & Geometry                    | Done                         |
+| Phase 2: Drawing Tools                       | Done                         |
+| Phase 3: UI Components                       | Done                         |
+| Phase A: Constraints for Intermediate Walls  | Implemented                  |
+| Phase B: Wall Entities on Intermediate Walls | Core done; inspector partial |
+| Phase C: Interior Wall Assembly System       | Implemented                  |
+| Phase D: Room Detection & Labeling           | Not started                  |
+| Phase E: Room Preset Tool                    | Not started                  |
+| Phase F: Room Split Tool                     | Not started                  |
+
+## Current Branch Update
+
+The branch has implemented substantially more than the original status table described:
+
+- Phase A GCS registration, synchronization, translation, constraint generation, movement, and solver validation are implemented.
+- Perpendicular snapping to existing walls remains a Phase A gap; perpendicular snapping currently covers the active drawing chain.
+- Phase B shared wall-entity storage, CRUD, geometry, split/merge handling, and cleanup are implemented. The dedicated entity-management UI described in B.6 remains incomplete; generic opening and post tools support intermediate walls.
+- Phase C interior-wall assembly configuration, assignment, construction, segmentation, and 3D integration are implemented.
+- Phases D, E, and F remain unimplemented: room detection, room labeling, room presets, and room splitting.
+
+The implementation intentionally differs from some proposed names in this document. GCS uses the existing wall reference/non-reference primitives instead of a separate `intermediate_*` primitive family. Intermediate-wall geometry uses `entityReferenceLine` rather than `centerLine`, and intermediate walls require an interior assembly ID supplied by the default-assembly migration.
 
 ## Data Model
 
@@ -209,7 +221,7 @@ Enable the GCS (geometric constraint solver) to enforce constraints on intermedi
 - **Constraint model** (`src/building/model/constraints.ts`): Already supports `IntermediateWallId` and `WallNodeId` as `ConstraintEntityId` in the reverse index
 - **Constraint types**: `WallLengthConstraint`, `HorizontalWallConstraint`, `VerticalWallConstraint` etc. already accept `WallId` (which includes `IntermediateWallId`)
 - **Constraint store** (`constraintsSlice.ts`): Wall split/merge constraint transfer already handles `WallId`
-- **BUT**: No GCS sync, no constraint generation, no translator support for intermediate walls
+- GCS synchronization, constraint generation, and translator support are implemented through the existing perimeter rebuild and wall reference/non-reference abstractions.
 - Wall entities are already implemented for intermediate walls and are not deferred to Phase B.
 
 ### Constraint Scope
@@ -534,7 +546,7 @@ Enable full entity support (openings, posts) on intermediate walls, matching the
 - **Entity model** (`src/building/model/wallEntities.ts`): `BaseWallEntity.wallId` already uses `WallId`.
 - **Entity storage**: Shared records and actions are implemented in `wallEntitiesSlice.ts`.
 - **Entity CRUD**: Generic opening and post actions accept perimeter or intermediate wall IDs.
-- **Entity geometry**: Intermediate entities are computed from `centerLine`, `leftLine`, and `rightLine`.
+- **Entity geometry**: Intermediate entities are computed from `entityReferenceLine`, `leftLine`, and `rightLine`.
 - **Intermediate wall storage**: `IntermediateWall.entityIds` tracks both openings and posts.
 - **Split/merge/cleanup**: Entity offsets, wall lists, and orphan cleanup are implemented.
 
@@ -661,12 +673,12 @@ Enable configurable wall assemblies for intermediate walls with 3D construction,
 
 ## Current State
 
-- **`InteriorWallAssemblyId`**: Type and generator exist (`iwa_*` prefix)
-- **`IntermediateWall.wallAssemblyId`**: TODO placeholder
-- **Config store**: No interior wall assembly config slice exists
-- **Assembly interface**: `WallAssembly.construct()` takes `PerimeterWallWithGeometry` only
-- **Segmentation**: Tied to `PerimeterWallWithGeometry`
-- **3D builder**: No `buildIntermediateWallCoreModel()` function
+- **`InteriorWallAssemblyId`**: Implemented with the `iwa_*` prefix.
+- **`IntermediateWall.wallAssemblyId`**: Required and migrated to the default interior assembly when missing or invalid.
+- **Config store**: Implemented in `src/config/store/slices/interiorWalls.ts` with defaults and usage tracking.
+- **Assembly interface**: Implemented for `IntermediateWallWithGeometry` with perimeter construction context.
+- **Segmentation**: Implemented independently from perimeter-wall segmentation.
+- **3D builder**: `buildIntermediateWallCoreModel()` and composite integration are implemented.
 
 ## C.1: Interior Wall Assembly Config
 
@@ -1516,3 +1528,26 @@ SVG overlay rendering:
 - Test room detection after split
 - Test minimum area validation
 - Test split of L-shaped room
+
+---
+
+# Review Follow-ups
+
+These are implementation follow-ups identified while reviewing the feature branch against this document.
+
+## Completed or Reclassified
+
+- **Colinear wall grouping wrap-around bug**: Fixed in `src/construction/store/builders.ts`.
+- **Movement validation helper**: Reclassified as obsolete. `GcsService.applySolution()` calls `src/building/gcs/validator.ts`, which is the active solver validation path. The unused editor-side validation context and helper code were removed.
+- **Zero-length wall creation**: Reviewed and currently considered acceptable for the supported drawing flow; no follow-up is tracked here.
+- **Assembly deletion protection**: Reviewed and currently considered acceptable because the configuration UI enforces usage protection; no follow-up is tracked here.
+
+## TODO
+
+- [x] Include interior-wall assemblies in layer-set usage tracking so layer sets referenced only by interior walls cannot be treated as unused.
+- [x] Validate the effective endpoint produced by a drawing length override, not only the pointer/snap position.
+- [x] Validate perimeter wall ownership, finiteness, and range when creating or updating perimeter wall nodes.
+- [x] Validate all opening fields on update, including width, height, sill height, and center offset.
+- [x] Add regression coverage for the four items above.
+- [ ] Add direct regression coverage for three-way and higher-degree wall-node geometry, mixed attachment axes, and perimeter rebuild ordering.
+- [ ] Add the dedicated intermediate-wall entity list and editing controls described in Phase B.6.

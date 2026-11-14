@@ -437,6 +437,19 @@ export const createIntermediateWallsSlice: StateCreator<
           throw new NotFoundError('Perimeter wall', wallId)
         }
 
+        const perimeterWall = state.perimeterWalls[wallId]
+        if (perimeterWall.perimeterId !== perimeterId) {
+          throw new InvalidOperationError('Perimeter wall does not belong to perimeter')
+        }
+        if (!Number.isFinite(offsetFromCornerStart) || offsetFromCornerStart < 0) {
+          throw new InvalidOperationError('Wall node offset must be finite and non-negative')
+        }
+
+        const wallGeometry = state._perimeterWallGeometry[wallId]
+        if (offsetFromCornerStart > wallGeometry.insideLength) {
+          throw new InvalidOperationError('Wall node offset must be within the perimeter wall')
+        }
+
         const perimeter = state.perimeters[perimeterId]
 
         const nodeId = createWallNodeId()
@@ -793,6 +806,15 @@ export const createIntermediateWallsSlice: StateCreator<
         const node = state.wallNodes[nodeId]
         if (node.type !== 'perimeter') {
           throw new Error('Cannot update offset of inner wall node')
+        }
+
+        if (!Number.isFinite(offsetFromCornerStart) || offsetFromCornerStart < 0) {
+          throw new InvalidOperationError('Wall node offset must be finite and non-negative')
+        }
+
+        const wallGeometry = state._perimeterWallGeometry[node.wallId]
+        if (offsetFromCornerStart > wallGeometry.insideLength) {
+          throw new InvalidOperationError('Wall node offset must be within the perimeter wall')
         }
 
         node.offsetFromCornerStart = offsetFromCornerStart

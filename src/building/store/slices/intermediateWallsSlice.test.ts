@@ -106,6 +106,31 @@ describe('intermediateWallsSlice', () => {
         state.actions.addPerimeterWallNode(perimeterData.perimeterId, 'outwall_nonexistent' as any, 1000)
       ).toThrow(NotFoundError)
     })
+
+    it('should reject a wall from another perimeter', () => {
+      const { state, perimeterData } = setupIntermediateWallsSlice()
+      state.perimeterWalls[perimeterData.wallIds[0]].perimeterId = 'perimeter_other' as any
+
+      expect(() =>
+        state.actions.addPerimeterWallNode(perimeterData.perimeterId, perimeterData.wallIds[0], 1000)
+      ).toThrow(InvalidOperationError)
+    })
+
+    it('should reject invalid or out-of-range offsets', () => {
+      const { state, perimeterData } = setupIntermediateWallsSlice()
+      const wallGeometry = state._perimeterWallGeometry[perimeterData.wallIds[0]]
+
+      expect(() => state.actions.addPerimeterWallNode(perimeterData.perimeterId, perimeterData.wallIds[0], -1)).toThrow(
+        InvalidOperationError
+      )
+      expect(() =>
+        state.actions.addPerimeterWallNode(
+          perimeterData.perimeterId,
+          perimeterData.wallIds[0],
+          wallGeometry.insideLength + 1
+        )
+      ).toThrow(InvalidOperationError)
+    })
   })
 
   describe('addIntermediateWall', () => {
@@ -978,6 +1003,19 @@ describe('intermediateWallsSlice', () => {
       expect(() => {
         state.actions.updatePerimeterWallNodeOffset(node.id, 1000)
       }).toThrow('Cannot update offset of inner wall node')
+    })
+
+    it('should reject invalid or out-of-range offsets', () => {
+      const { state, perimeterData } = setupIntermediateWallsSlice()
+      const node = state.actions.addPerimeterWallNode(perimeterData.perimeterId, perimeterData.wallIds[0], 3000)
+      const wallGeometry = state._perimeterWallGeometry[node.wallId]
+
+      expect(() => {
+        state.actions.updatePerimeterWallNodeOffset(node.id, Number.NaN)
+      }).toThrow(InvalidOperationError)
+      expect(() => {
+        state.actions.updatePerimeterWallNodeOffset(node.id, wallGeometry.insideLength + 1)
+      }).toThrow(InvalidOperationError)
     })
   })
 

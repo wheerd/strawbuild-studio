@@ -11,22 +11,19 @@ import type {
   MovementState,
   PointerMovementState
 } from '@/editor/tools/basic/movement/types'
-import type { WallValidationContext } from '@/editor/tools/intermediate-wall/wallValidation'
 import { type LineSegment2D, type Vec2, subVec2 } from '@/shared/geometry'
 
 import {
   getAffectedIntermediateWalls,
   getFixedWallPointIds,
   getSolvedIntermediateWallLines,
-  getWallNodePositions,
-  getWallValidationContext
-} from './wallMovementValidation'
+  getWallNodePositions
+} from './wallMovement'
 
 export interface WallNodeEntityContext {
   node: WallNodeWithGeometry
   perimeterId: WallNodeWithGeometry['perimeterId']
   gcs: WrappedGcs
-  validationContext: WallValidationContext
   affectedWallIds: WallId[]
 }
 
@@ -47,13 +44,11 @@ export class WallNodeMovementBehavior implements MovementBehavior<WallNodeEntity
     const directNodeIds = new Set<WallNodeId>([node.id])
     const perimeters = store.getPerimetersByStorey(store.getActiveStoreyId())
     const gcs = gcsService.getGcs(undefined, getFixedWallPointIds(perimeters, directNodeIds))
-    const validationContext = getWallValidationContext(store, node.perimeterId)
     const affectedWalls = getAffectedIntermediateWalls(store, node.perimeterId, new Set([node.id]))
     return {
       node,
       perimeterId: node.perimeterId,
       gcs,
-      validationContext,
       affectedWallIds: affectedWalls.map(w => w.id)
     }
   }
@@ -90,7 +85,7 @@ export class WallNodeMovementBehavior implements MovementBehavior<WallNodeEntity
   }
 
   validatePosition(_movementState: WallNodeMovementState, _context: MovementContext<WallNodeEntityContext>): boolean {
-    // The GCS solver's internal validator already checks all geometric validity.
+    // GcsService validates the solved geometry before exposing it as a valid solution.
     return true
   }
 

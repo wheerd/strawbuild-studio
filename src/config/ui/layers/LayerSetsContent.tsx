@@ -194,7 +194,12 @@ function UsageBadge({ id }: { id: EntityId }) {
 function UsageDisplay({ usage }: { usage: LayerSetUsage }): React.JSX.Element {
   const { t } = useTranslation('config')
 
-  const allIds = [...usage.wallAssemblyIds, ...usage.floorAssemblyIds, ...usage.roofAssemblyIds]
+  const allIds = [
+    ...usage.wallAssemblyIds,
+    ...usage.interiorWallAssemblyIds,
+    ...usage.floorAssemblyIds,
+    ...usage.roofAssemblyIds
+  ]
 
   return (
     <div className="grid grid-cols-[auto_1fr] items-center gap-2 gap-x-3">

@@ -15,6 +15,7 @@ import { partial } from '@/test/helpers'
 
 import {
   getInteriorWallAssemblyUsage,
+  getLayerSetUsage,
   getOpeningAssemblyUsage,
   getRingBeamAssemblyUsage,
   getWallAssemblyUsage
@@ -43,6 +44,22 @@ vi.mocked(getConfigActions).mockReturnValue({
 
 describe('Assembly Usage Detection', () => {
   const storeyId = createStoreyId()
+
+  it('detects layer sets used by interior wall assemblies', () => {
+    const layerSetId = 'layer_set_used' as any
+    const assemblyId = createInteriorWallAssemblyId()
+
+    const usage = getLayerSetUsage(
+      layerSetId,
+      [],
+      [{ id: assemblyId, name: 'Interior', type: 'monolithic', layerSetId } as any],
+      [],
+      []
+    )
+
+    expect(usage.isUsed).toBe(true)
+    expect(usage.interiorWallAssemblyIds).toEqual([assemblyId])
+  })
 
   beforeEach(() => {
     mockedGetPerimeterById.mockReturnValue(

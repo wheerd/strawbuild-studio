@@ -91,17 +91,8 @@ export const createWallEntitiesSlice: StateCreator<
 
   actions: {
     addWallOpening: (wallId: WallId, openingParams: OpeningParams) => {
-      if (openingParams.width <= 0) {
-        throw new InvalidOperationError('Opening width must be greater than 0')
-      }
-      if (openingParams.height <= 0) {
-        throw new InvalidOperationError('Opening height must be greater than 0')
-      }
-      if (openingParams.sillHeight != null && openingParams.sillHeight < 0) {
-        throw new InvalidOperationError('Window sill height must be non-negative')
-      }
-      if (openingParams.centerOffsetFromWallStart < 0) {
-        throw new InvalidOperationError('Opening center offset from start must be non-negative')
+      if (!isOpeningParamsValid(openingParams)) {
+        throw new InvalidOperationError('Invalid opening dimensions or offset')
       }
 
       if (!validateOpeningOnWall(get(), wallId, openingParams.centerOffsetFromWallStart, openingParams.width)) {
@@ -153,12 +144,14 @@ export const createWallEntitiesSlice: StateCreator<
       set(state => {
         if (!(openingId in state.openings)) throw new NotFoundError('Wall opening', openingId)
         const opening = state.openings[openingId]
+        const nextOpening = { ...opening, ...updates }
+        if (!isOpeningParamsValid(nextOpening)) return
         if (
           validateOpeningOnWall(
             state,
             opening.wallId,
-            updates.centerOffsetFromWallStart ?? opening.centerOffsetFromWallStart,
-            updates.width ?? opening.width,
+            nextOpening.centerOffsetFromWallStart,
+            nextOpening.width,
             openingId
           )
         ) {
@@ -466,6 +459,15 @@ const validateOpeningOnWall = (
   width: Length,
   excludedOpening?: OpeningId
 ): boolean => validateWallItemPlacement(state, wallId, centerOffsetFromWallStart, width, 0, 0, excludedOpening)
+
+const isOpeningParamsValid = (opening: OpeningParams): boolean =>
+  Number.isFinite(opening.centerOffsetFromWallStart) &&
+  opening.centerOffsetFromWallStart >= 0 &&
+  Number.isFinite(opening.width) &&
+  opening.width > 0 &&
+  Number.isFinite(opening.height) &&
+  opening.height > 0 &&
+  (opening.sillHeight == null || (Number.isFinite(opening.sillHeight) && opening.sillHeight >= 0))
 
 const validatePostOnWall = (
   state: StoreState & TimestampsState,

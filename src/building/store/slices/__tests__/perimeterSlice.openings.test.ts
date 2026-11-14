@@ -278,6 +278,16 @@ describe('openingSlice', () => {
         expect(opening.width).toBe(originalOpening.width)
       })
 
+      it('should reject invalid height and sill updates', () => {
+        const originalOpening = { ...slice.openings[openingId] }
+
+        slice.actions.updateWallOpening(openingId, { height: 0 })
+        expect(slice.openings[openingId]).toEqual(originalOpening)
+
+        slice.actions.updateWallOpening(openingId, { sillHeight: -1 })
+        expect(slice.openings[openingId]).toEqual(originalOpening)
+      })
+
       it('should throw for non-existent opening', () => {
         expect(() => {
           slice.actions.updateWallOpening('opening_fake' as any, {
