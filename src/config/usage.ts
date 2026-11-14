@@ -1,8 +1,9 @@
 import { useMemo } from 'react'
 
-import type { PerimeterWallWithGeometry, Roof, Storey } from '@/building/model'
+import type { IntermediateWallWithGeometry, PerimeterWallWithGeometry, Roof, Storey } from '@/building/model'
 import type {
   FloorAssemblyId,
+  InteriorWallAssemblyId,
   LayerSetId,
   OpeningAssemblyId,
   PerimeterWallAssemblyId,
@@ -21,6 +22,12 @@ export interface RingBeamAssemblyUsage {
 }
 
 export interface WallAssemblyUsage {
+  isUsed: boolean
+  isDefault: boolean
+  storeyIds: StoreyId[]
+}
+
+export interface InteriorWallAssemblyUsage {
   isUsed: boolean
   isDefault: boolean
   storeyIds: StoreyId[]
@@ -93,6 +100,32 @@ export function getWallAssemblyUsage(
   })
 
   const isDefault = assemblyId === defaultWallAssemblyId
+
+  return {
+    isUsed: storeyIdSet.size > 0 || isDefault,
+    isDefault,
+    storeyIds: Array.from(storeyIdSet)
+  }
+}
+
+/**
+ * Checks if an interior wall assembly is currently in use by any intermediate walls
+ */
+export function getInteriorWallAssemblyUsage(
+  assemblyId: InteriorWallAssemblyId,
+  walls: IntermediateWallWithGeometry[],
+  defaultInteriorWallAssemblyId?: InteriorWallAssemblyId
+): InteriorWallAssemblyUsage {
+  const { getPerimeterById } = getModelActions()
+  const storeyIdSet = new Set<StoreyId>()
+
+  walls.forEach(wall => {
+    if (wall.wallAssemblyId === assemblyId) {
+      storeyIdSet.add(getPerimeterById(wall.perimeterId).storeyId)
+    }
+  })
+
+  const isDefault = assemblyId === defaultInteriorWallAssemblyId
 
   return {
     isUsed: storeyIdSet.size > 0 || isDefault,

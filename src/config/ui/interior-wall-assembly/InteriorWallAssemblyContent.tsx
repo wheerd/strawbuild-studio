@@ -1,15 +1,19 @@
 import * as Label from '@radix-ui/react-label'
 import { Copy, Plus, Trash, Undo2 } from 'lucide-react'
-import React, { useCallback, useState } from 'react'
+import React, { useCallback, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useParams } from 'react-router-dom'
 
 import type { InteriorWallAssemblyId } from '@/building/model/ids'
+import { useIntermediateWalls } from '@/building/store'
 import { useConfigActions, useDefaultInteriorWallAssemblyId, useInteriorWallAssemblies } from '@/config/store'
+import { type EntityId, useEntityLabel } from '@/config/ui/useEntityLabel'
+import { type InteriorWallAssemblyUsage, getInteriorWallAssemblyUsage } from '@/config/usage'
 import { LAYER_SET_CLAY_PLASTER } from '@/config/store/slices/layers.defaults'
 import type { InteriorWallAssemblyType, InteriorWallConfig } from '@/construction/assemblies/interiorWalls/types'
 import { clayBrick, roughWood, strawbale } from '@/materials/defaults'
 import { AlertDialog } from '@/shared/ui/components/alert-dialog'
+import { Badge } from '@/shared/ui/components/badge'
 import { Button } from '@/shared/ui/components/button'
 import { DropdownMenu } from '@/shared/ui/components/dropdown-menu'
 
@@ -21,6 +25,7 @@ export interface InteriorWallAssemblyContentProps {
 
 export function InteriorWallAssemblyContent(props?: InteriorWallAssemblyContentProps): React.JSX.Element {
   const assemblies = useInteriorWallAssemblies()
+  const walls = useIntermediateWalls()
   const defaultAssemblyId = useDefaultInteriorWallAssemblyId()
   const {
     addInteriorWallAssembly,
@@ -38,6 +43,13 @@ export function InteriorWallAssemblyContent(props?: InteriorWallAssemblyContentP
   })
 
   const selectedAssembly = assemblies.find(assembly => assembly.id === selectedAssemblyId) ?? null
+  const usage = useMemo(
+    () =>
+      selectedAssembly
+        ? getInteriorWallAssemblyUsage(selectedAssembly.id, walls, defaultAssemblyId)
+        : { isUsed: false, isDefault: false, storeyIds: [] },
+    [selectedAssembly, walls, defaultAssemblyId]
+  )
 
   const handleAddNew = useCallback(
     (type: InteriorWallAssemblyType) => {
@@ -99,7 +111,7 @@ export function InteriorWallAssemblyContent(props?: InteriorWallAssemblyContentP
   }, [duplicateInteriorWallAssembly, selectedAssembly, t])
 
   const handleDelete = useCallback(() => {
-    if (!selectedAssembly || selectedAssembly.id === defaultAssemblyId) return
+    if (!selectedAssembly || usage.isUsed) return
     const index = assemblies.findIndex(assembly => assembly.id === selectedAssembly.id)
     removeInteriorWallAssembly(selectedAssembly.id)
     if (assemblies.length > 1) {
@@ -108,7 +120,7 @@ export function InteriorWallAssemblyContent(props?: InteriorWallAssemblyContentP
     } else {
       setSelectedAssemblyId(null)
     }
-  }, [assemblies, defaultAssemblyId, removeInteriorWallAssembly, selectedAssembly])
+  }, [assemblies, removeInteriorWallAssembly, selectedAssembly, usage.isUsed])
 
   const handleReset = useCallback(() => {
     resetInteriorWallAssembliesToDefaults()
@@ -169,9 +181,9 @@ export function InteriorWallAssemblyContent(props?: InteriorWallAssemblyContentP
             <AlertDialog.Trigger asChild>
               <Button
                 size="icon"
-                disabled={!selectedAssembly || selectedAssembly.id === defaultAssemblyId}
+                disabled={!selectedAssembly || usage.isUsed}
                 variant="destructive"
-                title={t($ => $.common.delete)}
+                title={usage.isUsed ? t($ => $.common.inUseCannotDelete) : t($ => $.common.delete)}
               >
                 <Trash />
               </Button>
@@ -243,6 +255,38 @@ export function InteriorWallAssemblyContent(props?: InteriorWallAssemblyContentP
       {assemblies.length === 0 && (
         <div className="flex items-center justify-center p-5">{t($ => $.walls.emptyInteriorList)}</div>
       )}
+      {usage.isUsed && <UsageDisplay usage={usage} />}
+    </div>
+  )
+}
+
+function UsageBadge({ id }: { id: EntityId }) {
+  const label = useEntityLabel(id)
+  return (
+    <Badge variant="soft" key={id}>
+      {label}
+    </Badge>
+  )
+}
+
+function UsageDisplay({ usage }: { usage: InteriorWallAssemblyUsage }): React.JSX.Element {
+  const { t } = useTranslation('config')
+
+  return (
+    <div className="grid grid-cols-[auto_1fr] items-center gap-2 gap-x-3">
+      <Label.Root>
+        <span className="text-base font-medium">{t($ => $.usage.usedBy)}</span>
+      </Label.Root>
+      <div className="flex flex-wrap gap-1">
+        {usage.isDefault && (
+          <Badge variant="soft" color="blue">
+            {t($ => $.usage.globalDefault_wall)}
+          </Badge>
+        )}
+        {usage.storeyIds.map(id => (
+          <UsageBadge key={id} id={id} />
+        ))}
+      </div>
     </div>
   )
 }
