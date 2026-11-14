@@ -381,12 +381,14 @@ export function createInteriorWallGeometry(
     const layerThickness = resolveLayerSetThickness(config?.layerSetId)
     const startNode = nodesById.get(wall.start.nodeId)
     const endNode = nodesById.get(wall.end.nodeId)
-    const start = startNode?.incidentWalls.length === 1
-      ? shortenTerminalEndpoint(wallEndpoint.start, wall, layerThickness, 'start')
-      : wallEndpoint.start
-    const end = endNode?.incidentWalls.length === 1
-      ? shortenTerminalEndpoint(wallEndpoint.end, wall, layerThickness, 'end')
-      : wallEndpoint.end
+    const start =
+      startNode?.incidentWalls.length === 1
+        ? shortenTerminalEndpoint(wallEndpoint.start, wall, layerThickness, 'start')
+        : wallEndpoint.start
+    const end =
+      endNode?.incidentWalls.length === 1
+        ? shortenTerminalEndpoint(wallEndpoint.end, wall, layerThickness, 'end')
+        : wallEndpoint.end
 
     polygons.push(
       ensurePolygonIsClockwise({

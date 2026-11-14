@@ -31,7 +31,7 @@ import {
 } from '@/shared/geometry'
 import { partial, partialMock } from '@/test/helpers'
 
-import { createInteriorWallGeometry, computePerimeterConstructionPolygon } from './perimeter'
+import { computePerimeterConstructionPolygon, createInteriorWallGeometry } from './perimeter'
 
 const outsideThicknessByLayerSetId = new Map<LayerSetId, number>()
 
@@ -220,7 +220,15 @@ describe('createInteriorWallGeometry', () => {
         type: 'perimeter',
         wallId: perimeterWallId,
         connectedWallIds: [wallId],
-        incidentWalls: [{ id: wallId, direction: newVec2(1, 0), leftPoint: newVec2(x, 0), rightPoint: newVec2(x, 100), side: id === startNodeId ? 'start' : 'end' }],
+        incidentWalls: [
+          {
+            id: wallId,
+            direction: newVec2(1, 0),
+            leftPoint: newVec2(x, 0),
+            rightPoint: newVec2(x, 100),
+            side: id === startNodeId ? 'start' : 'end'
+          }
+        ],
         insideLine: { start: newVec2(x, -100), end: newVec2(x, 200) },
         outsideLine: { start: newVec2(x, -100), end: newVec2(x, 200) }
       })
@@ -238,19 +246,16 @@ describe('createInteriorWallGeometry', () => {
     } as any)
     outsideThicknessByLayerSetId.set(layerSetId, 20)
 
-    const result = createInteriorWallGeometry(
-      partial<PerimeterWithGeometry>({ id: 'perimeter-1' as PerimeterId }),
-      {
-        [startPerimeterWallId]: {
-          point: newVec2(0, 0),
-          direction: newVec2(0, 1)
-        },
-        [endPerimeterWallId]: {
-          point: newVec2(100, 0),
-          direction: newVec2(0, 1)
-        }
+    const result = createInteriorWallGeometry(partial<PerimeterWithGeometry>({ id: 'perimeter-1' as PerimeterId }), {
+      [startPerimeterWallId]: {
+        point: newVec2(0, 0),
+        direction: newVec2(0, 1)
+      },
+      [endPerimeterWallId]: {
+        point: newVec2(100, 0),
+        direction: newVec2(0, 1)
       }
-    )
+    })
 
     const points = result.areas[0].points
     expect(Math.min(...points.map(point => point[0]))).toBeCloseTo(20)

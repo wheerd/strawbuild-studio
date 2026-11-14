@@ -6,7 +6,7 @@ import type { InnerWallNode } from './rooms'
 import { type WallNodeIncidentLine, computeNodeGeometry } from './wallNodeIntersections'
 
 describe('computeNodeGeometry', () => {
-  it('uses endpoint intersections without creating a polygon for two non-collinear walls', () => {
+  it('uses endpoint intersections while creating a polygon for two non-collinear walls', () => {
     const incidents: WallNodeIncidentLine[] = [
       {
         wallId: 'wall_a' as never,
@@ -33,7 +33,8 @@ describe('computeNodeGeometry', () => {
 
     const result = computeNodeGeometry(node, newVec2(0, 0), incidents)
 
-    expect(result.boundary).toBeUndefined()
+    expect(result.boundary?.points).toHaveLength(4)
+    expect(result.center).toEqual(newVec2(-1.25, 1.25))
     expect(result.incidentWalls).toHaveLength(2)
     expect(result.incidentWalls[0].leftPoint).toEqual(newVec2(-15, -5))
     expect(result.incidentWalls[0].rightPoint).toEqual(newVec2(5, 5))

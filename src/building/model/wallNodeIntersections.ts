@@ -70,7 +70,7 @@ export function computeNodeGeometry(node: WallNode, nodePos: Vec2, incidents: Wa
       if (dot > 0.99) {
         return computeColinearNodeGeometry(nodePos, incidents[0], incidents[1])
       }
-      return computeTwoWallNodeGeometry(node.id, nodePos, incidents)
+      return computeTwoWallNodeGeometry(node.id, incidents)
     }
   }
 
@@ -161,7 +161,7 @@ export function computeNodeGeometry(node: WallNode, nodePos: Vec2, incidents: Wa
   }
 }
 
-function computeTwoWallNodeGeometry(nodeId: WallNodeId, nodePos: Vec2, incidents: WallNodeIncidentLine[]) {
+function computeTwoWallNodeGeometry(nodeId: WallNodeId, incidents: WallNodeIncidentLine[]) {
   const intersections = computeAdjacentWallLineIntersections(incidents, nodeId)
   const incidentWalls = incidents.map((incident, index) => {
     const leftPoint = intersections[(index + incidents.length - 1) % incidents.length]
@@ -175,9 +175,30 @@ function computeTwoWallNodeGeometry(nodeId: WallNodeId, nodePos: Vec2, incidents
       side: incident.side
     }
   })
+  const polygonPoints: Vec2[] = []
+  for (let i = 0; i < incidents.length; i++) {
+    const iNext = (i + 1) % incidents.length
+    const line = incidents[iNext]
+    const prevIntersection = intersections[i]
+    const nextIntersection = intersections[iNext]
+    if (!prevIntersection || !nextIntersection) {
+      throw new Error(`Missing two-wall boundary intersection at node ${nodeId}`)
+    }
+
+    const leftProj = dotVec2(line.dir, prevIntersection)
+    const rightProj = dotVec2(line.dir, nextIntersection)
+    const leftPoint = leftProj < rightProj ? projectPointOntoLine(nextIntersection, line.left) : prevIntersection
+    const rightPoint = leftProj < rightProj ? nextIntersection : projectPointOntoLine(prevIntersection, line.right)
+    polygonPoints.push(prevIntersection, leftPoint, rightPoint)
+  }
+
+  const boundary = { points: simplifyNodePolygonPoints(polygonPoints) }
+  const sum = boundary.points.reduce((acc, point) => addVec2(acc, point), ZERO_VEC2)
+  const center = scaleVec2(sum, 1 / boundary.points.length)
 
   return {
-    center: nodePos,
+    center,
+    boundary,
     incidentWalls
   } as InnerWallNodeGeometry
 }
