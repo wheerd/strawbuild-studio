@@ -236,6 +236,12 @@ export const usePerimeterWalls = (): PerimeterWallWithGeometry[] => {
   const getAllPerimeterWalls = useModelStore(state => state.actions.getAllPerimeterWalls)
   return useMemo(() => getAllPerimeterWalls(), [walls, geometries])
 }
+export const useIntermediateWalls = (): IntermediateWallWithGeometry[] => {
+  const walls = useModelStore(state => state.intermediateWalls)
+  const geometries = useModelStore(state => state._intermediateWallGeometry)
+  const getAllIntermediateWalls = useModelStore(state => state.actions.getAllIntermediateWalls)
+  return useMemo(() => getAllIntermediateWalls(), [walls, geometries])
+}
 export const usePerimeterWallsById = (id: PerimeterId): PerimeterWallWithGeometry[] => {
   const perimeter = useModelStore(state => state.perimeters[id])
   const walls = useModelStore(state => state.perimeterWalls)

@@ -85,6 +85,7 @@
     "infoLeft": "Dessinez le bord gauche de votre mur intermédiaire. Cliquez pour placer des points et terminez en cliquant sur un mur ou un nœud existant ou en appuyant sur Entrée.",
     "infoRight": "Dessinez le bord droit de votre mur intermédiaire. Cliquez pour placer des points et terminez en cliquant sur un mur ou un nœud existant ou en appuyant sur Entrée.",
     "lengthOverride": "Longueur saisie",
+    "wallAssembly": "Composition du mur",
     "referenceSide": "Côté d'alignement",
     "referenceSideLeft": "Gauche",
     "referenceSideRight": "Droite",

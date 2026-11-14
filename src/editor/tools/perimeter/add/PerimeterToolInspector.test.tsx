@@ -2,7 +2,7 @@ import '@testing-library/jest-dom'
 import { fireEvent, render, screen } from '@testing-library/react'
 import { type Mock, vi } from 'vitest'
 
-import { createWallAssemblyId } from '@/building/model/ids'
+import { createPerimeterWallAssemblyId } from '@/building/model/ids'
 import type { SnappingService } from '@/editor/canvas/services/SnappingService'
 import { ToolSystem } from '@/editor/tools/system/ToolSystem'
 import { ZERO_VEC2 } from '@/shared/geometry'
@@ -84,7 +84,7 @@ describe('PerimeterToolInspector', () => {
       }),
       isCurrentSegmentValid: true,
       isClosingSegmentValid: true,
-      wallAssemblyId: createWallAssemblyId(),
+      wallAssemblyId: createPerimeterWallAssemblyId(),
       wallThickness: 420,
       baseRingBeamAssemblyId: undefined,
       topRingBeamAssemblyId: undefined,

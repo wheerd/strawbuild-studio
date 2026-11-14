@@ -9,7 +9,8 @@ import type {
   PerimeterWallId,
   PerimeterWallWithGeometry
 } from '@/building/model'
-import type { WallAssemblyId } from '@/building/model/ids'
+import type { PerimeterWallAssemblyId } from '@/building/model/ids'
+import { DEFAULT_INTERIOR_WALL_ASSEMBLY_ID } from '@/config/store/slices/interiorWalls.defaults'
 import type { Vec2 } from '@/shared/geometry'
 import { addVec2, newVec2, perpendicular } from '@/shared/geometry'
 
@@ -37,6 +38,7 @@ function makeIntermediateWall(
     start: { nodeId: startNodeId as `wallnode_${string}`, axis: 'left' },
     end: { nodeId: endNodeId as `wallnode_${string}`, axis: 'left' },
     thickness: 10,
+    wallAssemblyId: DEFAULT_INTERIOR_WALL_ASSEMBLY_ID,
     boundary: { points: [] },
     entityReferenceLine: { start, end },
     wallLength: 100,
@@ -106,7 +108,7 @@ function makeWall(
     endCornerId: endCornerId as PerimeterCornerId,
     entityIds: [],
     thickness: opts.thickness ?? 420,
-    wallAssemblyId: 'asm_1' as WallAssemblyId,
+    wallAssemblyId: 'asm_1' as PerimeterWallAssemblyId,
     insideLength: opts.insideLength,
     outsideLength: opts.outsideLength,
     wallLength: opts.insideLength,

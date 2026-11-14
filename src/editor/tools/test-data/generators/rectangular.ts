@@ -42,7 +42,7 @@ export function createRectangularPerimeter(): void {
     const configStore = getConfigActions()
     const defaultBaseId = configStore.getDefaultBaseRingBeamAssemblyId()
     const defaultTopId = configStore.getDefaultTopRingBeamAssemblyId()
-    const defaultAssemblyId = configStore.getDefaultWallAssemblyId()
+    const defaultAssemblyId = configStore.getDefaultPerimeterWallAssemblyId()
 
     // Add the perimeter to the store with default assemblies
     const newPerimeter = modelStore.addPerimeter(

@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import type { OpeningId, StoreyId, WallEntityId } from '@/building/model/ids'
-import { createStoreyId, createWallAssemblyId, isOpeningId, isWallPostId } from '@/building/model/ids'
+import { createPerimeterWallAssemblyId, createStoreyId, isOpeningId, isWallPostId } from '@/building/model/ids'
 import { ensurePolygonIsClockwise, wouldClosingPolygonSelfIntersect } from '@/shared/geometry/polygon'
 
 import {
@@ -46,7 +46,7 @@ describe('perimeterIntegration', () => {
     describe('Add perimeter → add openings → split wall → verify redistribution', () => {
       it('should redistribute openings correctly after wall split', () => {
         const boundary = createRectangularBoundary()
-        const wallAssemblyId = createWallAssemblyId()
+        const wallAssemblyId = createPerimeterWallAssemblyId()
         const perimeter = slice.actions.addPerimeter(testStoreyId, boundary, wallAssemblyId, 420)
         const wallId = perimeter.wallIds[0]
         const wall = slice.actions.getPerimeterWallById(wallId)
@@ -112,7 +112,7 @@ describe('perimeterIntegration', () => {
     describe('Add perimeter → remove corner → verify walls merged and entities preserved', () => {
       it('should merge walls and remove all wall entities when corner is removed', () => {
         const boundary = createRectangularBoundary()
-        const wallAssemblyId = createWallAssemblyId()
+        const wallAssemblyId = createPerimeterWallAssemblyId()
         const perimeter = slice.actions.addPerimeter(testStoreyId, boundary, wallAssemblyId, 420)
         const cornerToRemove = perimeter.cornerIds[0]
         const corner = slice.actions.getPerimeterCornerById(cornerToRemove)
@@ -174,7 +174,7 @@ describe('perimeterIntegration', () => {
 
       it('should merge walls and preserve entities when corner is removed between two colinear walls', () => {
         const boundary = createRectangularBoundary()
-        const wallAssemblyId = createWallAssemblyId()
+        const wallAssemblyId = createPerimeterWallAssemblyId()
         const perimeter = slice.actions.addPerimeter(testStoreyId, boundary, wallAssemblyId, 420)
         const firstWall = slice.actions.getPerimeterWallById(perimeter.wallIds[0])
         const secondWallId = slice.actions.splitPerimeterWall(firstWall.id, firstWall.wallLength / 2)!
@@ -251,7 +251,7 @@ describe('perimeterIntegration', () => {
     describe('Add perimeter → change all thicknesses → verify geometry recalculated', () => {
       it('should recalculate all geometry when all wall thicknesses change', () => {
         const boundary = createRectangularBoundary()
-        const wallAssemblyId = createWallAssemblyId()
+        const wallAssemblyId = createPerimeterWallAssemblyId()
         const perimeter = slice.actions.addPerimeter(testStoreyId, boundary, wallAssemblyId, 420)
 
         // Add entities
@@ -315,8 +315,8 @@ describe('perimeterIntegration', () => {
       it('should maintain independence between perimeters on same storey', () => {
         const boundary1 = createRectangularBoundary(10000, 5000)
         const boundary2 = createRectangularBoundary(8000, 4000)
-        const wallAssemblyId1 = createWallAssemblyId()
-        const wallAssemblyId2 = createWallAssemblyId()
+        const wallAssemblyId1 = createPerimeterWallAssemblyId()
+        const wallAssemblyId2 = createPerimeterWallAssemblyId()
 
         const perimeter1 = slice.actions.addPerimeter(testStoreyId, boundary1, wallAssemblyId1, 420)
         const perimeter2 = slice.actions.addPerimeter(testStoreyId, boundary2, wallAssemblyId2, 500)
@@ -384,7 +384,7 @@ describe('perimeterIntegration', () => {
         const storey1 = createStoreyId()
         const storey2 = createStoreyId()
         const boundary = createRectangularBoundary()
-        const wallAssemblyId = createWallAssemblyId()
+        const wallAssemblyId = createPerimeterWallAssemblyId()
 
         const perimeter1 = slice.actions.addPerimeter(storey1, boundary, wallAssemblyId, 420)
         const perimeter2 = slice.actions.addPerimeter(storey1, boundary, wallAssemblyId, 420)
@@ -411,7 +411,7 @@ describe('perimeterIntegration', () => {
         const storey1 = createStoreyId()
         const storey2 = createStoreyId()
         const boundary = createRectangularBoundary()
-        const wallAssemblyId = createWallAssemblyId()
+        const wallAssemblyId = createPerimeterWallAssemblyId()
 
         const perimeter1 = slice.actions.addPerimeter(storey1, boundary, wallAssemblyId, 420)
         const perimeter2 = slice.actions.addPerimeter(storey2, boundary, wallAssemblyId, 420)
@@ -435,7 +435,7 @@ describe('perimeterIntegration', () => {
     describe('After complex operations, all references are valid', () => {
       it('should maintain valid references after multiple operations', () => {
         const boundary = createRectangularBoundary()
-        const wallAssemblyId = createWallAssemblyId()
+        const wallAssemblyId = createPerimeterWallAssemblyId()
         const perimeter = slice.actions.addPerimeter(testStoreyId, boundary, wallAssemblyId, 420)
 
         // Add entities
@@ -474,7 +474,7 @@ describe('perimeterIntegration', () => {
     describe('No orphaned entities after complex operations', () => {
       it('should not create orphaned entities', () => {
         const boundary = createRectangularBoundary()
-        const wallAssemblyId = createWallAssemblyId()
+        const wallAssemblyId = createPerimeterWallAssemblyId()
 
         // Create and delete perimeters
         const perimeter1 = slice.actions.addPerimeter(testStoreyId, boundary, wallAssemblyId, 420)
@@ -504,7 +504,7 @@ describe('perimeterIntegration', () => {
     describe('No orphaned geometry records', () => {
       it('should clean up all geometry when entities are removed', () => {
         const boundary = createRectangularBoundary()
-        const wallAssemblyId = createWallAssemblyId()
+        const wallAssemblyId = createPerimeterWallAssemblyId()
         const perimeter = slice.actions.addPerimeter(testStoreyId, boundary, wallAssemblyId, 420)
 
         const wallId = perimeter.wallIds[0]
@@ -552,7 +552,7 @@ describe('perimeterIntegration', () => {
     describe('Multiple split operations', () => {
       it('should handle splitting the same wall multiple times', () => {
         const boundary = createRectangularBoundary(20000, 10000)
-        const wallAssemblyId = createWallAssemblyId()
+        const wallAssemblyId = createPerimeterWallAssemblyId()
         const perimeter = slice.actions.addPerimeter(testStoreyId, boundary, wallAssemblyId, 420)
 
         let wallId = perimeter.wallIds[0]
@@ -577,7 +577,7 @@ describe('perimeterIntegration', () => {
     describe('Many entities on single wall', () => {
       it('should handle wall with many entities', () => {
         const boundary = createLShapedBoundary()
-        const wallAssemblyId = createWallAssemblyId()
+        const wallAssemblyId = createPerimeterWallAssemblyId()
         const perimeter = slice.actions.addPerimeter(testStoreyId, boundary, wallAssemblyId, 420)
         const wallId = perimeter.wallIds[0]
 
@@ -613,7 +613,7 @@ describe('perimeterIntegration', () => {
     describe('Cascade deletion chain', () => {
       it('should handle cascade deletion correctly', () => {
         const boundary = createRectangularBoundary()
-        const wallAssemblyId = createWallAssemblyId()
+        const wallAssemblyId = createPerimeterWallAssemblyId()
         const perimeter = slice.actions.addPerimeter(testStoreyId, boundary, wallAssemblyId, 420)
 
         // Add entities to multiple walls

@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 
 import { mockPost, setupIntermediateWallsSlice } from '@/building/store/slices/__tests__/testHelpers'
 import type { StoreActions } from '@/building/store/types'
+import { DEFAULT_INTERIOR_WALL_ASSEMBLY_ID } from '@/config/store/slices/interiorWalls.defaults'
 import { dotVec2, newVec2 } from '@/shared/geometry'
 
 import { WallPostMovementBehavior } from './WallPostMovementBehavior'
@@ -16,7 +17,8 @@ describe('WallPostMovementBehavior', () => {
       perimeterId,
       { nodeId: start.id, axis: 'left' },
       { nodeId: end.id, axis: 'right' },
-      120
+      120,
+      DEFAULT_INTERIOR_WALL_ASSEMBLY_ID
     )
     const post = state.actions.addWallPost(wall.id, mockPost({ centerOffsetFromWallStart: 2000, width: 100 }))
     const behavior = new WallPostMovementBehavior()

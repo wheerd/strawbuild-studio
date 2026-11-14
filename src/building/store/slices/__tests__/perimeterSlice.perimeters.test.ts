@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { type StoreyId, createStoreyId, createWallAssemblyId } from '@/building/model/ids'
+import { type StoreyId, createPerimeterWallAssemblyId, createStoreyId } from '@/building/model/ids'
 import { NotFoundError } from '@/building/store/errors'
 import { newVec2 } from '@/shared/geometry'
 import { ensurePolygonIsClockwise, wouldClosingPolygonSelfIntersect } from '@/shared/geometry/polygon'
@@ -47,7 +47,7 @@ describe('perimeterSlice - Basic CRUD', () => {
   describe('addPerimeter', () => {
     it('should create perimeter with walls and corners', () => {
       const boundary = createRectangularBoundary()
-      const wallAssemblyId = createWallAssemblyId()
+      const wallAssemblyId = createPerimeterWallAssemblyId()
       const thickness = 420
 
       const perimeter = slice.actions.addPerimeter(testStoreyId, boundary, wallAssemblyId, thickness)
@@ -62,7 +62,7 @@ describe('perimeterSlice - Basic CRUD', () => {
 
     it('should create walls with correct properties', () => {
       const boundary = createRectangularBoundary()
-      const wallAssemblyId = createWallAssemblyId()
+      const wallAssemblyId = createPerimeterWallAssemblyId()
       const thickness = 420
 
       const perimeter = slice.actions.addPerimeter(testStoreyId, boundary, wallAssemblyId, thickness)
@@ -78,7 +78,7 @@ describe('perimeterSlice - Basic CRUD', () => {
 
     it('should create corners with correct properties', () => {
       const boundary = createRectangularBoundary()
-      const wallAssemblyId = createWallAssemblyId()
+      const wallAssemblyId = createPerimeterWallAssemblyId()
       const thickness = 420
 
       const perimeter = slice.actions.addPerimeter(testStoreyId, boundary, wallAssemblyId, thickness)
@@ -95,7 +95,7 @@ describe('perimeterSlice - Basic CRUD', () => {
 
     it('should normalize polygon to clockwise', () => {
       const boundary = createRectangularBoundary()
-      const wallAssemblyId = createWallAssemblyId()
+      const wallAssemblyId = createPerimeterWallAssemblyId()
 
       slice.actions.addPerimeter(testStoreyId, boundary, wallAssemblyId, 420)
 
@@ -104,7 +104,7 @@ describe('perimeterSlice - Basic CRUD', () => {
 
     it('should handle triangular perimeter', () => {
       const boundary = createTriangularBoundary()
-      const wallAssemblyId = createWallAssemblyId()
+      const wallAssemblyId = createPerimeterWallAssemblyId()
 
       const perimeter = slice.actions.addPerimeter(testStoreyId, boundary, wallAssemblyId, 420)
 
@@ -114,7 +114,7 @@ describe('perimeterSlice - Basic CRUD', () => {
 
     it('should handle L-shaped perimeter with reflex angles', () => {
       const boundary = createLShapedBoundary()
-      const wallAssemblyId = createWallAssemblyId()
+      const wallAssemblyId = createPerimeterWallAssemblyId()
 
       const perimeter = slice.actions.addPerimeter(testStoreyId, boundary, wallAssemblyId, 420)
 
@@ -124,7 +124,7 @@ describe('perimeterSlice - Basic CRUD', () => {
 
     it('should support optional ring beam assemblies', () => {
       const boundary = createRectangularBoundary()
-      const wallAssemblyId = createWallAssemblyId()
+      const wallAssemblyId = createPerimeterWallAssemblyId()
       const baseRingBeamId = 'rb_base' as any
       const topRingBeamId = 'rb_top' as any
 
@@ -146,7 +146,7 @@ describe('perimeterSlice - Basic CRUD', () => {
 
     it('should support custom reference side', () => {
       const boundary = createRectangularBoundary()
-      const wallAssemblyId = createWallAssemblyId()
+      const wallAssemblyId = createPerimeterWallAssemblyId()
 
       const perimeter = slice.actions.addPerimeter(
         testStoreyId,
@@ -165,7 +165,7 @@ describe('perimeterSlice - Basic CRUD', () => {
       const invalidBoundary = {
         points: [newVec2(0, 0), newVec2(100, 0)]
       }
-      const wallAssemblyId = createWallAssemblyId()
+      const wallAssemblyId = createPerimeterWallAssemblyId()
 
       expect(() => {
         slice.actions.addPerimeter(testStoreyId, invalidBoundary as any, wallAssemblyId, 420)
@@ -175,7 +175,7 @@ describe('perimeterSlice - Basic CRUD', () => {
     it('should reject self-intersecting polygon', () => {
       wouldClosingPolygonSelfIntersectMock.mockReturnValue(true)
       const boundary = createRectangularBoundary()
-      const wallAssemblyId = createWallAssemblyId()
+      const wallAssemblyId = createPerimeterWallAssemblyId()
 
       expect(() => {
         slice.actions.addPerimeter(testStoreyId, boundary, wallAssemblyId, 420)
@@ -184,7 +184,7 @@ describe('perimeterSlice - Basic CRUD', () => {
 
     it('should reject invalid thickness (zero)', () => {
       const boundary = createRectangularBoundary()
-      const wallAssemblyId = createWallAssemblyId()
+      const wallAssemblyId = createPerimeterWallAssemblyId()
 
       expect(() => {
         slice.actions.addPerimeter(testStoreyId, boundary, wallAssemblyId, 0)
@@ -193,7 +193,7 @@ describe('perimeterSlice - Basic CRUD', () => {
 
     it('should reject invalid thickness (negative)', () => {
       const boundary = createRectangularBoundary()
-      const wallAssemblyId = createWallAssemblyId()
+      const wallAssemblyId = createPerimeterWallAssemblyId()
 
       expect(() => {
         slice.actions.addPerimeter(testStoreyId, boundary, wallAssemblyId, -100)
@@ -204,7 +204,7 @@ describe('perimeterSlice - Basic CRUD', () => {
   describe('Reference Consistency', () => {
     it('should maintain correct references between perimeter, walls, and corners', () => {
       const boundary = createRectangularBoundary()
-      const wallAssemblyId = createWallAssemblyId()
+      const wallAssemblyId = createPerimeterWallAssemblyId()
 
       const perimeter = slice.actions.addPerimeter(testStoreyId, boundary, wallAssemblyId, 420)
 
@@ -213,7 +213,7 @@ describe('perimeterSlice - Basic CRUD', () => {
 
     it('should maintain references for complex polygon', () => {
       const boundary = createLShapedBoundary()
-      const wallAssemblyId = createWallAssemblyId()
+      const wallAssemblyId = createPerimeterWallAssemblyId()
 
       const perimeter = slice.actions.addPerimeter(testStoreyId, boundary, wallAssemblyId, 420)
 
@@ -224,7 +224,7 @@ describe('perimeterSlice - Basic CRUD', () => {
   describe('Geometry Creation', () => {
     it('should create geometry for all entities', () => {
       const boundary = createRectangularBoundary()
-      const wallAssemblyId = createWallAssemblyId()
+      const wallAssemblyId = createPerimeterWallAssemblyId()
 
       const perimeter = slice.actions.addPerimeter(testStoreyId, boundary, wallAssemblyId, 420)
 
@@ -233,7 +233,7 @@ describe('perimeterSlice - Basic CRUD', () => {
 
     it('should compute wall geometry correctly', () => {
       const boundary = createRectangularBoundary(10000, 5000)
-      const wallAssemblyId = createWallAssemblyId()
+      const wallAssemblyId = createPerimeterWallAssemblyId()
       const thickness = 420
 
       const perimeter = slice.actions.addPerimeter(testStoreyId, boundary, wallAssemblyId, thickness)
@@ -249,7 +249,7 @@ describe('perimeterSlice - Basic CRUD', () => {
 
     it('should compute corner angles correctly for rectangular perimeter', () => {
       const boundary = createRectangularBoundary()
-      const wallAssemblyId = createWallAssemblyId()
+      const wallAssemblyId = createPerimeterWallAssemblyId()
 
       const perimeter = slice.actions.addPerimeter(testStoreyId, boundary, wallAssemblyId, 420)
       const corners = perimeter.cornerIds.map(id => slice.actions.getPerimeterCornerById(id))
@@ -265,7 +265,7 @@ describe('perimeterSlice - Basic CRUD', () => {
   describe('removePerimeter', () => {
     it('should remove perimeter from collection', () => {
       const boundary = createRectangularBoundary()
-      const wallAssemblyId = createWallAssemblyId()
+      const wallAssemblyId = createPerimeterWallAssemblyId()
 
       const perimeter = slice.actions.addPerimeter(testStoreyId, boundary, wallAssemblyId, 420)
       expect(slice.perimeters[perimeter.id]).toBeDefined()
@@ -277,7 +277,7 @@ describe('perimeterSlice - Basic CRUD', () => {
 
     it('should cascade delete all walls', () => {
       const boundary = createRectangularBoundary()
-      const wallAssemblyId = createWallAssemblyId()
+      const wallAssemblyId = createPerimeterWallAssemblyId()
 
       const perimeter = slice.actions.addPerimeter(testStoreyId, boundary, wallAssemblyId, 420)
       const wallIds = [...perimeter.wallIds]
@@ -291,7 +291,7 @@ describe('perimeterSlice - Basic CRUD', () => {
 
     it('should cascade delete all corners', () => {
       const boundary = createRectangularBoundary()
-      const wallAssemblyId = createWallAssemblyId()
+      const wallAssemblyId = createPerimeterWallAssemblyId()
 
       const perimeter = slice.actions.addPerimeter(testStoreyId, boundary, wallAssemblyId, 420)
       const cornerIds = [...perimeter.cornerIds]
@@ -305,7 +305,7 @@ describe('perimeterSlice - Basic CRUD', () => {
 
     it('should clean up all geometry', () => {
       const boundary = createRectangularBoundary()
-      const wallAssemblyId = createWallAssemblyId()
+      const wallAssemblyId = createPerimeterWallAssemblyId()
 
       const perimeter = slice.actions.addPerimeter(testStoreyId, boundary, wallAssemblyId, 420)
       const wallIds = [...perimeter.wallIds]
@@ -331,7 +331,7 @@ describe('perimeterSlice - Basic CRUD', () => {
     it('should not affect other perimeters', () => {
       const boundary1 = createRectangularBoundary()
       const boundary2 = createTriangularBoundary()
-      const wallAssemblyId = createWallAssemblyId()
+      const wallAssemblyId = createPerimeterWallAssemblyId()
 
       const perimeter1 = slice.actions.addPerimeter(testStoreyId, boundary1, wallAssemblyId, 420)
       const perimeter2 = slice.actions.addPerimeter(testStoreyId, boundary2, wallAssemblyId, 420)
@@ -347,7 +347,7 @@ describe('perimeterSlice - Basic CRUD', () => {
   describe('No Orphaned Entities', () => {
     it('should have no orphaned entities after add', () => {
       const boundary = createRectangularBoundary()
-      const wallAssemblyId = createWallAssemblyId()
+      const wallAssemblyId = createPerimeterWallAssemblyId()
 
       slice.actions.addPerimeter(testStoreyId, boundary, wallAssemblyId, 420)
 
@@ -356,7 +356,7 @@ describe('perimeterSlice - Basic CRUD', () => {
 
     it('should have no orphaned entities after remove', () => {
       const boundary = createRectangularBoundary()
-      const wallAssemblyId = createWallAssemblyId()
+      const wallAssemblyId = createPerimeterWallAssemblyId()
 
       const perimeter = slice.actions.addPerimeter(testStoreyId, boundary, wallAssemblyId, 420)
       slice.actions.removePerimeter(perimeter.id)
@@ -365,7 +365,7 @@ describe('perimeterSlice - Basic CRUD', () => {
     })
 
     it('should have no orphaned entities with multiple perimeters', () => {
-      const wallAssemblyId = createWallAssemblyId()
+      const wallAssemblyId = createPerimeterWallAssemblyId()
 
       slice.actions.addPerimeter(testStoreyId, createRectangularBoundary(), wallAssemblyId, 420)
       const perimeter2 = slice.actions.addPerimeter(testStoreyId, createTriangularBoundary(), wallAssemblyId, 420)
@@ -380,7 +380,7 @@ describe('perimeterSlice - Basic CRUD', () => {
   describe('getPerimeterById', () => {
     it('should return perimeter with geometry', () => {
       const boundary = createRectangularBoundary()
-      const wallAssemblyId = createWallAssemblyId()
+      const wallAssemblyId = createPerimeterWallAssemblyId()
 
       const created = slice.actions.addPerimeter(testStoreyId, boundary, wallAssemblyId, 420)
       const retrieved = slice.actions.getPerimeterById(created.id)
@@ -397,7 +397,7 @@ describe('perimeterSlice - Basic CRUD', () => {
 
   describe('getPerimetersByStorey', () => {
     it('should return all perimeters for storey', () => {
-      const wallAssemblyId = createWallAssemblyId()
+      const wallAssemblyId = createPerimeterWallAssemblyId()
       const storey1 = testStoreyId
       const storey2 = createStoreyId()
 
@@ -424,7 +424,7 @@ describe('perimeterSlice - Basic CRUD', () => {
     describe('movePerimeter', () => {
       it('should translate all corners by offset', () => {
         const boundary = createRectangularBoundary()
-        const wallAssemblyId = createWallAssemblyId()
+        const wallAssemblyId = createPerimeterWallAssemblyId()
         const perimeter = slice.actions.addPerimeter(testStoreyId, boundary, wallAssemblyId, 420)
 
         const originalCorners = perimeter.cornerIds.map(id => slice.actions.getPerimeterCornerById(id))
@@ -441,7 +441,7 @@ describe('perimeterSlice - Basic CRUD', () => {
 
       it('should recalculate geometry after move', () => {
         const boundary = createRectangularBoundary()
-        const wallAssemblyId = createWallAssemblyId()
+        const wallAssemblyId = createPerimeterWallAssemblyId()
         const perimeter = slice.actions.addPerimeter(testStoreyId, boundary, wallAssemblyId, 420)
 
         const offset = newVec2(1000, 500)
@@ -456,7 +456,7 @@ describe('perimeterSlice - Basic CRUD', () => {
 
       it('should preserve perimeter shape', () => {
         const boundary = createRectangularBoundary(10000, 5000)
-        const wallAssemblyId = createWallAssemblyId()
+        const wallAssemblyId = createPerimeterWallAssemblyId()
         const perimeter = slice.actions.addPerimeter(testStoreyId, boundary, wallAssemblyId, 420)
 
         const originalWalls = perimeter.wallIds.map(id => slice.actions.getPerimeterWallById(id))
@@ -474,7 +474,7 @@ describe('perimeterSlice - Basic CRUD', () => {
     describe('updatePerimeterBoundary', () => {
       it('should update boundary with new points', () => {
         const boundary = createRectangularBoundary()
-        const wallAssemblyId = createWallAssemblyId()
+        const wallAssemblyId = createPerimeterWallAssemblyId()
         const perimeter = slice.actions.addPerimeter(testStoreyId, boundary, wallAssemblyId, 420)
 
         const newBoundary = [newVec2(0, 0), newVec2(15000, 0), newVec2(15000, 8000), newVec2(0, 8000)]
@@ -488,7 +488,7 @@ describe('perimeterSlice - Basic CRUD', () => {
 
       it('should do nothing when point count changes', () => {
         const boundary = createRectangularBoundary()
-        const wallAssemblyId = createWallAssemblyId()
+        const wallAssemblyId = createPerimeterWallAssemblyId()
         const perimeter = slice.actions.addPerimeter(testStoreyId, boundary, wallAssemblyId, 420)
 
         expect(perimeter.wallIds).toHaveLength(4)
@@ -503,10 +503,10 @@ describe('perimeterSlice - Basic CRUD', () => {
 
       it('should preserve wall properties where possible', () => {
         const boundary = createRectangularBoundary()
-        const wallAssemblyId = createWallAssemblyId()
+        const wallAssemblyId = createPerimeterWallAssemblyId()
         const perimeter = slice.actions.addPerimeter(testStoreyId, boundary, wallAssemblyId, 420)
 
-        const newAssemblyId = createWallAssemblyId()
+        const newAssemblyId = createPerimeterWallAssemblyId()
         slice.actions.updateAllPerimeterWallsAssembly(perimeter.id, newAssemblyId)
 
         const newBoundary = [newVec2(0, 0), newVec2(12000, 0), newVec2(12000, 6000), newVec2(0, 6000)]
@@ -522,7 +522,7 @@ describe('perimeterSlice - Basic CRUD', () => {
 
       it('should reject boundary with less than 3 points', () => {
         const boundary = createRectangularBoundary()
-        const wallAssemblyId = createWallAssemblyId()
+        const wallAssemblyId = createPerimeterWallAssemblyId()
         const perimeter = slice.actions.addPerimeter(testStoreyId, boundary, wallAssemblyId, 420)
 
         const invalidBoundary = [newVec2(0, 0), newVec2(100, 0)]
@@ -544,10 +544,10 @@ describe('perimeterSlice - Basic CRUD', () => {
     describe('updateAllPerimeterWallsAssembly', () => {
       it('should update assembly for all walls', () => {
         const boundary = createRectangularBoundary()
-        const wallAssemblyId = createWallAssemblyId()
+        const wallAssemblyId = createPerimeterWallAssemblyId()
         const perimeter = slice.actions.addPerimeter(testStoreyId, boundary, wallAssemblyId, 420)
 
-        const newAssemblyId = createWallAssemblyId()
+        const newAssemblyId = createPerimeterWallAssemblyId()
         slice.actions.updateAllPerimeterWallsAssembly(perimeter.id, newAssemblyId)
 
         const walls = perimeter.wallIds.map(id => slice.actions.getPerimeterWallById(id))
@@ -560,7 +560,7 @@ describe('perimeterSlice - Basic CRUD', () => {
     describe('updateAllPerimeterWallsThickness', () => {
       it('should update thickness for all walls and recalculate geometry', () => {
         const boundary = createRectangularBoundary()
-        const wallAssemblyId = createWallAssemblyId()
+        const wallAssemblyId = createPerimeterWallAssemblyId()
         const perimeter = slice.actions.addPerimeter(testStoreyId, boundary, wallAssemblyId, 420)
 
         const newThickness = 300
@@ -577,7 +577,7 @@ describe('perimeterSlice - Basic CRUD', () => {
 
       it('should reject invalid thickness', () => {
         const boundary = createRectangularBoundary()
-        const wallAssemblyId = createWallAssemblyId()
+        const wallAssemblyId = createPerimeterWallAssemblyId()
         const perimeter = slice.actions.addPerimeter(testStoreyId, boundary, wallAssemblyId, 420)
 
         expect(() => {
@@ -590,7 +590,7 @@ describe('perimeterSlice - Basic CRUD', () => {
   describe('Ring Beam Bulk Operations', () => {
     it('should set base ring beam for all walls', () => {
       const boundary = createRectangularBoundary()
-      const wallAssemblyId = createWallAssemblyId()
+      const wallAssemblyId = createPerimeterWallAssemblyId()
       const perimeter = slice.actions.addPerimeter(testStoreyId, boundary, wallAssemblyId, 420)
 
       const ringBeamId = 'rb_base' as any
@@ -604,7 +604,7 @@ describe('perimeterSlice - Basic CRUD', () => {
 
     it('should set top ring beam for all walls', () => {
       const boundary = createRectangularBoundary()
-      const wallAssemblyId = createWallAssemblyId()
+      const wallAssemblyId = createPerimeterWallAssemblyId()
       const perimeter = slice.actions.addPerimeter(testStoreyId, boundary, wallAssemblyId, 420)
 
       const ringBeamId = 'rb_top' as any
@@ -618,7 +618,7 @@ describe('perimeterSlice - Basic CRUD', () => {
 
     it('should remove base ring beam from all walls', () => {
       const boundary = createRectangularBoundary()
-      const wallAssemblyId = createWallAssemblyId()
+      const wallAssemblyId = createPerimeterWallAssemblyId()
       const ringBeamId = 'rb_base' as any
       const perimeter = slice.actions.addPerimeter(testStoreyId, boundary, wallAssemblyId, 420, ringBeamId)
 
@@ -632,7 +632,7 @@ describe('perimeterSlice - Basic CRUD', () => {
 
     it('should remove top ring beam from all walls', () => {
       const boundary = createRectangularBoundary()
-      const wallAssemblyId = createWallAssemblyId()
+      const wallAssemblyId = createPerimeterWallAssemblyId()
       const ringBeamId = 'rb_top' as any
       const perimeter = slice.actions.addPerimeter(testStoreyId, boundary, wallAssemblyId, 420, undefined, ringBeamId)
 
@@ -648,7 +648,7 @@ describe('perimeterSlice - Basic CRUD', () => {
   describe('setPerimeterReferenceSide', () => {
     it('should update reference side', () => {
       const boundary = createRectangularBoundary()
-      const wallAssemblyId = createWallAssemblyId()
+      const wallAssemblyId = createPerimeterWallAssemblyId()
       const perimeter = slice.actions.addPerimeter(testStoreyId, boundary, wallAssemblyId, 420)
 
       expect(perimeter.referenceSide).toBe('inside')
@@ -661,7 +661,7 @@ describe('perimeterSlice - Basic CRUD', () => {
 
     it('geometry should stay the same when changing reference side', () => {
       const boundary = createRectangularBoundary()
-      const wallAssemblyId = createWallAssemblyId()
+      const wallAssemblyId = createPerimeterWallAssemblyId()
       const perimeter = slice.actions.addPerimeter(testStoreyId, boundary, wallAssemblyId, 420)
 
       const insideGeometry = slice.actions.getPerimeterById(perimeter.id)

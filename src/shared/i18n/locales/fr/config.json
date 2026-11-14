@@ -6,6 +6,7 @@
     "addNew": "Nouveau",
     "buildingPhysics": "Physique du bâtiment",
     "cancel": "Annuler",
+    "default": "par défaut",
     "color": "Couleur",
     "delete": "Supprimer",
     "density": "Masse volumique",
@@ -228,6 +229,7 @@
       "bitumen": "Bitume",
       "boards": "Planches",
       "brick": "Brique",
+      "clayBrick": "Brique d'argile",
       "cementScreed": "Chape ciment",
       "clayPlasterBase": "Enduit à l'argile (base)",
       "clayPlasterFine": "Enduit à l'argile (fin)",
@@ -533,7 +535,8 @@
     "openings": "Compositions d'ouverture",
     "ringbeams": "Compositions de linteau",
     "roofs": "Compositions de toiture",
-    "walls": "Compositions de mur"
+    "perimeterWalls": "Compositions de murs extérieurs",
+    "interiorWalls": "Compositions de murs intérieurs"
   },
   "usage": {
     "globalDefault_floor": "Par défaut global",
@@ -560,20 +563,27 @@
     "battenOutside": "Extérieur",
     "battenSize": "Taille",
     "configure": "Configurer la composition du mur",
+    "configureInterior": "Configurer la composition du mur intérieur",
     "copyNameTemplate": "{{name}} (Copie)",
     "defaultLabel": "{{label}} <gray>(par défaut)</gray>",
     "defaults": {
       "concreteWall": "Mur en béton",
+      "concreteInteriorWall": "Mur intérieur en béton",
+      "clayBrickWall": "Mur en briques d'argile",
       "defaultModule": "Module par défaut",
       "ecococonModules": "Modules Ecococon",
       "standardInfill": "Remplissage standard",
-      "strawhengeModule": "Module Strawhenge"
+      "strawhengeModule": "Module Strawhenge",
+      "standardStrawFilled": "Remplissage standard en paille",
+      "woodStudClayBrick": "Ossature bois avec remplissage en briques d'argile"
     },
     "defaultWallAssembly": "Composition de mur par défaut",
+    "defaultInteriorWallAssembly": "Composition de mur intérieur par défaut",
     "deleteConfirm": "Êtes-vous sûr de vouloir supprimer « {{name}} » ? Cette action est irréversible.",
     "deleteTitle": "Supprimer la composition de mur",
     "desiredPostSpacing": "Espacement souhaité des montants",
     "emptyList": "Aucune composition de mur disponible",
+    "emptyInteriorList": "Aucune composition de mur intérieur disponible",
     "frameMaterial": "Matériau de l'ossature",
     "frameThickness": "Épaisseur de l'ossature",
     "frameWidth": "Largeur de l'ossature",
@@ -603,6 +613,26 @@
     "nonStrawbaleConfiguration": "Configuration non-paille",
     "noOutsideLayers": "Aucune couche extérieure définie",
     "openingAssembly": "Composition d'ouverture",
+    "layerSet": "Ensemble de couches",
+    "wallConfiguration": "Configuration du mur",
+    "studConfiguration": "Configuration des montants",
+    "equidistantStuds": "Montants équidistants",
+    "equidistantNoggins": "Entretoises équidistantes",
+    "staggerNoggins": "Décaler les entretoises",
+    "headPlateConfiguration": "Configuration de la lisse haute",
+    "solePlateConfiguration": "Configuration de la lisse basse",
+    "nogginConfiguration": "Configuration des entretoises",
+    "plankingConfiguration": "Configuration des planches",
+    "fillConfiguration": "Configuration du remplissage",
+    "monolithicConfiguration": "Configuration monolithique",
+    "material": "Matériau",
+    "plankThickness": "Épaisseur des planches",
+    "plankMaterial": "Matériau des planches",
+    "minStudSpacing": "Espacement minimal des montants",
+    "desiredStudSpacing": "Espacement souhaité des montants",
+    "maxStudSpacing": "Espacement maximal des montants",
+    "studWidth": "Largeur du montant",
+    "studMaterial": "Matériau des montants",
     "openingsSection": "Ouvertures",
     "postsConfiguration": "Configuration des montants",
     "postType": "Type de montant",
@@ -638,6 +668,14 @@
       "non-strawbale": "Non-paille",
       "prefab-modules": "Modules préfabriqués",
       "strawhenge": "Strawhenge"
-    }
+    },
+    "interiorTypes": {
+      "monolithic": "Monolithique",
+      "planked-stud": "Montants et planches",
+      "monolithic-stud": "Monolithique avec montants"
+    },
+    "newName_interiorMonolithic": "Nouvel assemblage intérieur monolithique",
+    "newName_interiorPlankedStud": "Nouvel assemblage intérieur à montants et planches",
+    "newName_interiorMonolithicStud": "Nouvel assemblage intérieur monolithique avec montants"
   }
 }

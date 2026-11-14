@@ -1,6 +1,6 @@
 import { generateFreeformConstraints } from '@/building/gcs/constraintGenerator'
 import type { PerimeterReferenceSide } from '@/building/model'
-import type { RingBeamAssemblyId, WallAssemblyId } from '@/building/model/ids'
+import type { PerimeterWallAssemblyId, RingBeamAssemblyId } from '@/building/model/ids'
 import { getModelActions } from '@/building/store'
 import { getConfigActions } from '@/config/store'
 import { getViewModeActions } from '@/editor/canvas/state/viewModeStore'
@@ -13,7 +13,7 @@ import { PerimeterToolInspector } from './PerimeterToolInspector'
 import { PerimeterToolOverlay } from './PerimeterToolOverlay'
 
 interface PerimeterToolState extends PolygonToolStateBase {
-  wallAssemblyId: WallAssemblyId
+  wallAssemblyId: PerimeterWallAssemblyId
   wallThickness: Length
   baseRingBeamAssemblyId?: RingBeamAssemblyId
   topRingBeamAssemblyId?: RingBeamAssemblyId
@@ -27,13 +27,13 @@ export class PerimeterTool extends BasePolygonTool<PerimeterToolState> implement
 
   constructor(toolSystem: ToolSystem) {
     super(toolSystem, {
-      wallAssemblyId: '' as WallAssemblyId,
+      wallAssemblyId: '' as PerimeterWallAssemblyId,
       wallThickness: 420,
       referenceSide: 'inside'
     })
   }
 
-  public setAssembly(assemblyId: WallAssemblyId): void {
+  public setAssembly(assemblyId: PerimeterWallAssemblyId): void {
     this.state.wallAssemblyId = assemblyId
     this.triggerRender()
   }
@@ -63,7 +63,7 @@ export class PerimeterTool extends BasePolygonTool<PerimeterToolState> implement
     const configStore = getConfigActions()
     this.state.baseRingBeamAssemblyId = configStore.getDefaultBaseRingBeamAssemblyId()
     this.state.topRingBeamAssemblyId = configStore.getDefaultTopRingBeamAssemblyId()
-    this.state.wallAssemblyId = configStore.getDefaultWallAssemblyId()
+    this.state.wallAssemblyId = configStore.getDefaultPerimeterWallAssemblyId()
     this.state.referenceSide = 'inside'
   }
 

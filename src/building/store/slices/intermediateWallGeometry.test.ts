@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest'
 import type { PerimeterWallNodeGeometry } from '@/building/model'
 import { createIntermediateWallId, createWallNodeId } from '@/building/model/ids'
 import { computeWallLines, updateAllWallNodeGeometry } from '@/building/store/slices/intermediateWallGeometry'
+import { DEFAULT_INTERIOR_WALL_ASSEMBLY_ID } from '@/config/store/slices/interiorWalls.defaults'
 import {
   distVec2,
   distanceToInfiniteLine,
@@ -189,7 +190,8 @@ describe('intermediateWallGeometry', () => {
         entityIds: [],
         start: { nodeId: nodeAId, axis: 'left' },
         end: { nodeId: nodeBId, axis: 'left' },
-        thickness: 120
+        thickness: 120,
+        wallAssemblyId: DEFAULT_INTERIOR_WALL_ASSEMBLY_ID
       }
       state.perimeters[perimeterId].intermediateWallIds.push(wallId)
       state.perimeters[perimeterId].wallNodeIds.push(nodeAId, nodeBId)
@@ -236,7 +238,8 @@ describe('intermediateWallGeometry', () => {
         entityIds: [],
         start: { nodeId: nodeAId, axis: 'left' },
         end: { nodeId: nodeBId, axis: 'left' },
-        thickness: 120
+        thickness: 120,
+        wallAssemblyId: DEFAULT_INTERIOR_WALL_ASSEMBLY_ID
       }
       state.perimeters[perimeterId].intermediateWallIds.push(wallId)
       state.perimeters[perimeterId].wallNodeIds.push(nodeAId, nodeBId)
@@ -252,7 +255,7 @@ describe('intermediateWallGeometry', () => {
       expect(nodeBGeometry.boundary).toBeUndefined()
     })
 
-    it('should compute node boundary with 4 points for simple 90-degree corner (2 walls)', () => {
+    it('should create a node boundary with 4 points for a simple 90-degree corner (2 walls)', () => {
       const { state, perimeterData } = setupIntermediateWallsSlice()
       const { perimeterId } = perimeterData
 
@@ -289,7 +292,8 @@ describe('intermediateWallGeometry', () => {
         entityIds: [],
         start: { nodeId: nodeAId, axis: 'left' },
         end: { nodeId, axis: 'left' },
-        thickness: 120
+        thickness: 120,
+        wallAssemblyId: DEFAULT_INTERIOR_WALL_ASSEMBLY_ID
       }
       state.intermediateWalls[wallBId] = {
         id: wallBId,
@@ -297,7 +301,8 @@ describe('intermediateWallGeometry', () => {
         entityIds: [],
         start: { nodeId, axis: 'left' },
         end: { nodeId: nodeBId, axis: 'left' },
-        thickness: 120
+        thickness: 120,
+        wallAssemblyId: DEFAULT_INTERIOR_WALL_ASSEMBLY_ID
       }
       state.perimeters[perimeterId].intermediateWallIds.push(wallAId, wallBId)
       state.perimeters[perimeterId].wallNodeIds.push(nodeId, nodeAId, nodeBId)
@@ -351,7 +356,8 @@ describe('intermediateWallGeometry', () => {
         entityIds: [],
         start: { nodeId: nodeAId, axis: 'left' },
         end: { nodeId, axis: 'left' },
-        thickness: 120
+        thickness: 120,
+        wallAssemblyId: DEFAULT_INTERIOR_WALL_ASSEMBLY_ID
       }
       state.intermediateWalls[wallBId] = {
         id: wallBId,
@@ -359,7 +365,8 @@ describe('intermediateWallGeometry', () => {
         entityIds: [],
         start: { nodeId, axis: 'left' },
         end: { nodeId: nodeBId, axis: 'left' },
-        thickness: 120
+        thickness: 120,
+        wallAssemblyId: DEFAULT_INTERIOR_WALL_ASSEMBLY_ID
       }
       state.perimeters[perimeterId].intermediateWallIds.push(wallAId, wallBId)
       state.perimeters[perimeterId].wallNodeIds.push(nodeId, nodeAId, nodeBId)
@@ -416,7 +423,8 @@ describe('intermediateWallGeometry', () => {
           entityIds: [],
           start: { nodeId, axis: 'left' },
           end: { nodeId: endNodeId, axis: 'left' },
-          thickness: 120
+          thickness: 120,
+          wallAssemblyId: DEFAULT_INTERIOR_WALL_ASSEMBLY_ID
         }
       }
 
@@ -462,7 +470,8 @@ describe('intermediateWallGeometry', () => {
           entityIds: [],
           start: { nodeId, axis: 'left' },
           end: { nodeId: endNodeId, axis: 'left' },
-          thickness: 120
+          thickness: 120,
+          wallAssemblyId: DEFAULT_INTERIOR_WALL_ASSEMBLY_ID
         }
       }
 
@@ -510,7 +519,8 @@ describe('intermediateWallGeometry', () => {
           entityIds: [],
           start: { nodeId: i === 1 ? endNodeId : nodeId, axis: 'left' },
           end: { nodeId: i === 1 ? nodeId : endNodeId, axis: 'left' },
-          thickness: 200
+          thickness: 200,
+          wallAssemblyId: DEFAULT_INTERIOR_WALL_ASSEMBLY_ID
         }
       }
 
@@ -557,7 +567,8 @@ describe('intermediateWallGeometry', () => {
         entityIds: [],
         start: { nodeId, axis: 'left' },
         end: { nodeId: innerNodeId, axis: 'left' },
-        thickness: 120
+        thickness: 120,
+        wallAssemblyId: DEFAULT_INTERIOR_WALL_ASSEMBLY_ID
       }
       state.perimeters[perimeterId].intermediateWallIds.push(wallId)
       state.perimeters[perimeterId].wallNodeIds.push(nodeId, innerNodeId)
@@ -622,7 +633,8 @@ describe('intermediateWallGeometry', () => {
         entityIds: [],
         start: { nodeId: nodeAId, axis: 'left' },
         end: { nodeId: nodeBId, axis: 'left' },
-        thickness: 120
+        thickness: 120,
+        wallAssemblyId: DEFAULT_INTERIOR_WALL_ASSEMBLY_ID
       }
       state.perimeters[perimeterId].intermediateWallIds.push(wallId)
       state.perimeters[perimeterId].wallNodeIds.push(nodeAId, nodeBId)
@@ -651,7 +663,8 @@ describe('intermediateWallGeometry', () => {
         perimeterId,
         { nodeId: startNode.id, axis: 'left' },
         { nodeId: endNode.id, axis: 'right' },
-        120
+        120,
+        DEFAULT_INTERIOR_WALL_ASSEMBLY_ID
       )
       const geometry = state._intermediateWallGeometry[wall.id]
       const epsilon = 1e-3
@@ -694,7 +707,8 @@ describe('intermediateWallGeometry', () => {
         perimeterId,
         { nodeId: startNode.id, axis: 'left' },
         { nodeId: endNode.id, axis: 'right' },
-        120
+        120,
+        DEFAULT_INTERIOR_WALL_ASSEMBLY_ID
       )
       const opening = state.actions.addWallOpening(wall.id, {
         openingType: 'door',
@@ -724,7 +738,8 @@ describe('intermediateWallGeometry', () => {
         perimeterId,
         { nodeId: nodeA.id, axis: 'left' },
         { nodeId: nodeB.id, axis: 'left' },
-        120
+        120,
+        DEFAULT_INTERIOR_WALL_ASSEMBLY_ID
       )
       const opening = state.actions.addWallOpening(wall.id, {
         openingType: 'door',

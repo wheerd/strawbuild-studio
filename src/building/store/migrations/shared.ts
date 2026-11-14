@@ -1,6 +1,6 @@
-import type { FloorAssemblyId, OpeningAssemblyId, WallAssemblyId } from '@/building/model/ids'
+import type { FloorAssemblyId, OpeningAssemblyId, PerimeterWallAssemblyId } from '@/building/model/ids'
 import type { StoreState } from '@/building/store/types'
-import type { FloorAssemblyConfig, OpeningAssemblyConfig, WallAssemblyConfig } from '@/config/types'
+import type { FloorAssemblyConfig, OpeningAssemblyConfig, PerimeterWallAssemblyConfig } from '@/config/types'
 import { type Vec2, newVec2 } from '@/shared/geometry'
 
 export type MigrationState = Partial<StoreState> & Record<string, unknown>
@@ -31,7 +31,7 @@ const CONFIG_STORAGE_KEY = 'strawbuild-config'
 
 export interface PersistedConfigStoreState {
   floorAssemblyConfigs?: Record<FloorAssemblyId, FloorAssemblyConfig>
-  wallAssemblyConfigs?: Record<WallAssemblyId, WallAssemblyConfig>
+  wallAssemblyConfigs?: Record<PerimeterWallAssemblyId, PerimeterWallAssemblyConfig>
   openingAssemblyConfigs?: Record<OpeningAssemblyId, OpeningAssemblyConfig>
   defaultOpeningAssemblyId?: OpeningAssemblyId
 }

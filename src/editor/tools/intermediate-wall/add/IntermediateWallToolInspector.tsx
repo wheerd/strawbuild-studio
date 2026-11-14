@@ -3,6 +3,7 @@ import { Info, X } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 
+import { InteriorWallAssemblySelectWithEdit } from '@/config/ui/interior-wall-assembly/InteriorWallAssemblySelectWithEdit'
 import { useReactiveTool } from '@/editor/tools/system/hooks/useReactiveTool'
 import type { ToolInspectorProps } from '@/editor/tools/system/types'
 import { useFormatters } from '@/shared/i18n/useFormatters'
@@ -49,6 +50,21 @@ export function IntermediateWallToolInspector({ tool }: ToolInspectorProps<Inter
 
         {/* Tool Properties */}
         <div className="grid grid-cols-[auto_1fr] gap-2">
+          <div className="flex items-center gap-1">
+            <Label.Root>
+              <span className="text-muted-foreground text-xs font-medium">
+                {t($ => $.intermediateWall.wallAssembly)}
+              </span>
+            </Label.Root>
+          </div>
+          <InteriorWallAssemblySelectWithEdit
+            value={state.wallAssemblyId}
+            onValueChange={value => {
+              tool.setAssembly(value)
+            }}
+            size="sm"
+          />
+
           {/* Wall Thickness */}
           <div className="flex items-center gap-1">
             <Label.Root htmlFor="wall-thickness">

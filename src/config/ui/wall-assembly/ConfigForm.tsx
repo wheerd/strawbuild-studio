@@ -3,9 +3,9 @@ import React, { useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { useConfigActions } from '@/config/store'
-import type { WallAssemblyConfig } from '@/config/types'
-import { resolveWallAssembly } from '@/construction/assemblies/walls'
-import type { WallConfig } from '@/construction/assemblies/walls/types'
+import type { PerimeterWallAssemblyConfig } from '@/config/types'
+import { resolveWallAssembly } from '@/construction/assemblies/perimeterWalls'
+import type { PerimeterWallConfig } from '@/construction/assemblies/perimeterWalls/types'
 import { formatThicknessRange } from '@/materials/thickness'
 import { Card } from '@/shared/ui/components/card'
 import { Separator } from '@/shared/ui/components/separator'
@@ -21,11 +21,14 @@ import { StrawhengeConfigForm } from './StrawhengeConfigForm'
 import { getWallAssemblyTypeIcon } from './icons'
 
 interface ConfigFormProps {
-  assembly: WallAssemblyConfig
+  assembly: PerimeterWallAssemblyConfig
 }
 
 export function ConfigForm({ assembly }: ConfigFormProps): React.JSX.Element {
-  const { updateWallAssemblyName, updateWallAssemblyConfig } = useConfigActions()
+  const {
+    updatePerimeterWallAssemblyName: updateWallAssemblyName,
+    updatePerimeterWallAssemblyConfig: updateWallAssemblyConfig
+  } = useConfigActions()
 
   const { t } = useTranslation('config')
   const nameKey = assembly.nameKey
@@ -41,7 +44,7 @@ export function ConfigForm({ assembly }: ConfigFormProps): React.JSX.Element {
   )
 
   const updateConfig = useCallback(
-    (updates: Partial<WallConfig>) => {
+    (updates: Partial<PerimeterWallConfig>) => {
       updateWallAssemblyConfig(assembly.id, updates)
     },
     [assembly.id, assembly, updateWallAssemblyConfig]

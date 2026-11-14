@@ -7,7 +7,7 @@ const PERIMETER_CORNER_ID_PREFIX = 'outcorner_'
 const OPENING_ID_PREFIX = 'opening_'
 const POST_ID_PREFIX = 'post_'
 const RING_BEAM_ID_PREFIX = 'ringbeam_'
-const WALL_ASSEMBLY_ID_PREFIX = 'wa_'
+const PERIMETER_WALL_ASSEMBLY_ID_PREFIX = 'wa_'
 const INTERIOR_WALL_ASSEMBLY_ID_PREFIX = 'iwa_'
 const FLOOR_ASSEMBLY_ID_PREFIX = 'fa_'
 const ROOF_ASSEMBLY_ID_PREFIX = 'ra_'
@@ -57,7 +57,7 @@ export type LayerSetId = `${typeof LAYER_SET_ID_PREFIX}${string}`
 
 export type AssemblyId =
   | RingBeamAssemblyId
-  | WallAssemblyId
+  | PerimeterWallAssemblyId
   | InteriorWallAssemblyId
   | FloorAssemblyId
   | RoofAssemblyId
@@ -81,11 +81,12 @@ export type SelectableId =
 
 // Config ids
 export type RingBeamAssemblyId = `${typeof RING_BEAM_ID_PREFIX}${string}`
-export type WallAssemblyId = `${typeof WALL_ASSEMBLY_ID_PREFIX}${string}`
+export type PerimeterWallAssemblyId = `${typeof PERIMETER_WALL_ASSEMBLY_ID_PREFIX}${string}`
 export type FloorAssemblyId = `${typeof FLOOR_ASSEMBLY_ID_PREFIX}${string}`
 export type RoofAssemblyId = `${typeof ROOF_ASSEMBLY_ID_PREFIX}${string}`
 export type OpeningAssemblyId = `${typeof OPENING_ASSEMBLY_ID_PREFIX}${string}`
 export type InteriorWallAssemblyId = `${typeof INTERIOR_WALL_ASSEMBLY_ID_PREFIX}${string}`
+
 // ID generation helpers
 export const createStoreyId = (): StoreyId => createId(STOREY_ID_PREFIX)
 export const createPerimeterId = (): PerimeterId => createId(PERIMETER_ID_PREFIX)
@@ -106,7 +107,7 @@ export const createIntermediateWallId = (): IntermediateWallId => createId(INTER
 
 // Config ID generators
 export const createRingBeamAssemblyId = (): RingBeamAssemblyId => createId(RING_BEAM_ID_PREFIX)
-export const createWallAssemblyId = (): WallAssemblyId => createId(WALL_ASSEMBLY_ID_PREFIX)
+export const createPerimeterWallAssemblyId = (): PerimeterWallAssemblyId => createId(PERIMETER_WALL_ASSEMBLY_ID_PREFIX)
 export const createFloorAssemblyId = (): FloorAssemblyId => createId(FLOOR_ASSEMBLY_ID_PREFIX)
 export const createRoofAssemblyId = (): RoofAssemblyId => createId(ROOF_ASSEMBLY_ID_PREFIX)
 export const createOpeningAssemblyId = (): OpeningAssemblyId => createId(OPENING_ASSEMBLY_ID_PREFIX)
@@ -136,7 +137,8 @@ export const isIntermediateWallId = (id: string): id is IntermediateWallId => id
 
 // Config type guards
 export const isRingBeamAssemblyId = (id: string): id is RingBeamAssemblyId => id.startsWith(RING_BEAM_ID_PREFIX)
-export const isWallAssemblyId = (id: string): id is WallAssemblyId => id.startsWith(WALL_ASSEMBLY_ID_PREFIX)
+export const isPerimeterWallAssemblyId = (id: string): id is PerimeterWallAssemblyId =>
+  id.startsWith(PERIMETER_WALL_ASSEMBLY_ID_PREFIX)
 export const isFloorAssemblyId = (id: string): id is FloorAssemblyId => id.startsWith(FLOOR_ASSEMBLY_ID_PREFIX)
 export const isRoofAssemblyId = (id: string): id is RoofAssemblyId => id.startsWith(ROOF_ASSEMBLY_ID_PREFIX)
 export const isOpeningAssemblyId = (id: string): id is OpeningAssemblyId => id.startsWith(OPENING_ASSEMBLY_ID_PREFIX)

@@ -34,6 +34,7 @@ export function LayersConfigForm({ assemblyId, config }: LayersConfigFormProps):
           }}
           use="floor"
           placeholder={t($ => $.floors.layers.noTopLayers)}
+          size="sm"
         />
       </div>
 
@@ -54,6 +55,7 @@ export function LayersConfigForm({ assemblyId, config }: LayersConfigFormProps):
           }}
           use="ceiling"
           placeholder={t($ => $.floors.layers.noBottomLayers)}
+          size="sm"
         />
       </div>
     </div>

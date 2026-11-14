@@ -1,6 +1,6 @@
 import React from 'react'
 
-import type { StrawhengeWallConfig } from '@/construction/assemblies/walls/types'
+import type { StrawhengeWallConfig } from '@/construction/assemblies/perimeterWalls/types'
 import { Separator } from '@/shared/ui/components/separator'
 
 import { InfillConfigForm } from './InfillConfigForm'

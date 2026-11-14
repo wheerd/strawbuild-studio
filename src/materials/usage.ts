@@ -4,9 +4,9 @@ import type {
   FloorAssemblyId,
   LayerSetId,
   OpeningAssemblyId,
+  PerimeterWallAssemblyId,
   RingBeamAssemblyId,
-  RoofAssemblyId,
-  WallAssemblyId
+  RoofAssemblyId
 } from '@/building/model/ids'
 import { useWallPosts } from '@/building/store'
 import {
@@ -21,9 +21,9 @@ import {
 import type {
   FloorAssemblyConfig,
   OpeningAssemblyConfig,
+  PerimeterWallAssemblyConfig,
   RingBeamAssemblyConfig,
-  RoofAssemblyConfig,
-  WallAssemblyConfig
+  RoofAssemblyConfig
 } from '@/config/types'
 import type { LayerConfig } from '@/construction/assemblies/layers/types'
 import { assertUnreachable } from '@/shared/utils'
@@ -32,7 +32,7 @@ import type { MaterialId } from './types'
 
 export type MaterialUsageId =
   | RingBeamAssemblyId
-  | WallAssemblyId
+  | PerimeterWallAssemblyId
   | FloorAssemblyId
   | RoofAssemblyId
   | OpeningAssemblyId
@@ -155,7 +155,7 @@ function isMaterialUsedInRingBeam(materialId: MaterialId, assembly: RingBeamAsse
   return false
 }
 
-function isMaterialUsedInWall(materialId: MaterialId, assembly: WallAssemblyConfig): boolean {
+function isMaterialUsedInWall(materialId: MaterialId, assembly: PerimeterWallAssemblyConfig): boolean {
   switch (assembly.type) {
     case 'infill':
       if (assembly.posts.material === materialId) return true

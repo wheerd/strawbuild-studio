@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest'
 
 import type { FloorConfig } from '@/construction/assemblies/floors/types'
-import type { InfillWallConfig, WallConfig } from '@/construction/assemblies/walls/types'
+import type { InfillWallConfig, PerimeterWallConfig } from '@/construction/assemblies/perimeterWalls/types'
 import { createMaterialId } from '@/materials/types'
 
 import { getConfigActions } from './accessors'
@@ -105,36 +105,36 @@ describe('ConfigStore', () => {
       const store = getConfigActions()
       const config = createValidWallConfig()
 
-      const assembly = store.addWallAssembly('Standard Infill', config)
+      const assembly = store.addPerimeterWallAssembly('Standard Infill', config)
 
       expect(assembly.name).toBe('Standard Infill')
       expect(assembly.type).toBe('infill')
-      expect(store.getAllWallAssemblies()).toHaveLength(1)
+      expect(store.getAllPerimeterWallAssemblies()).toHaveLength(1)
     })
 
     it('should validate wall assembly on add', () => {
       const store = getConfigActions()
-      const invalidConfig: WallConfig = {
+      const invalidConfig: PerimeterWallConfig = {
         ...createValidWallConfig(),
         maxPostSpacing: 0
       }
 
-      expect(() => store.addWallAssembly('Invalid Wall', invalidConfig)).toThrow(
+      expect(() => store.addPerimeterWallAssembly('Invalid Wall', invalidConfig)).toThrow(
         'Maximum post spacing must be greater than 0'
       )
     })
 
     it('should validate wall assembly on update', () => {
       const store = getConfigActions()
-      const assembly = store.addWallAssembly('Standard Infill', createValidWallConfig())
+      const assembly = store.addPerimeterWallAssembly('Standard Infill', createValidWallConfig())
 
       expect(() => {
-        store.updateWallAssemblyConfig(assembly.id, {
+        store.updatePerimeterWallAssemblyConfig(assembly.id, {
           desiredPostSpacing: -1
         })
       }).toThrow('Desired post spacing must be greater than 0')
 
-      const fetched = store.getWallAssemblyById(assembly.id)
+      const fetched = store.getPerimeterWallAssemblyById(assembly.id)
       expect(fetched?.type).toBe('infill')
       expect.assert(fetched?.type === 'infill')
       expect(fetched.desiredPostSpacing).toBe(800)
@@ -142,17 +142,17 @@ describe('ConfigStore', () => {
 
     it('should update wall assembly layer set references', () => {
       const store = getConfigActions()
-      const assembly = store.addWallAssembly('Layered Wall', createValidWallConfig())
+      const assembly = store.addPerimeterWallAssembly('Layered Wall', createValidWallConfig())
 
       const insideLayerSet = store.addLayerSet('Inside Plaster', [], 'wall')
       const outsideLayerSet = store.addLayerSet('Outside Render', [], 'wall')
 
-      store.updateWallAssemblyConfig(assembly.id, {
+      store.updatePerimeterWallAssemblyConfig(assembly.id, {
         insideLayerSetId: insideLayerSet.id,
         outsideLayerSetId: outsideLayerSet.id
       })
 
-      const updated = store.getWallAssemblyById(assembly.id)
+      const updated = store.getPerimeterWallAssemblyById(assembly.id)
       expect(updated?.insideLayerSetId).toBe(insideLayerSet.id)
       expect(updated?.outsideLayerSetId).toBe(outsideLayerSet.id)
     })
@@ -166,8 +166,8 @@ describe('ConfigStore', () => {
         insideLayerSetId: layerSet.id
       }
 
-      const assembly = store.addWallAssembly('Original', config)
-      const duplicated = store.duplicateWallAssembly(assembly.id, 'Copy')
+      const assembly = store.addPerimeterWallAssembly('Original', config)
+      const duplicated = store.duplicatePerimeterWallAssembly(assembly.id, 'Copy')
 
       expect(duplicated.insideLayerSetId).toBe(layerSet.id)
       expect(duplicated.name).toBe('Copy')

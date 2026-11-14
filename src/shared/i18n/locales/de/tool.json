@@ -85,6 +85,7 @@
     "infoLeft": "Zeichne die linke Kante deiner Zwischenwand. Klicke, um Punkte zu platzieren, und schließe ab, indem du auf eine bestehende Wand oder einen Knoten klickst oder Eingabe drückst.",
     "infoRight": "Zeichne die rechte Kante deiner Zwischenwand. Klicke, um Punkte zu platzieren, und schließe ab, indem du auf eine bestehende Wand oder einen Knoten klickst oder Eingabe drückst.",
     "lengthOverride": "Längenüberschreibung",
+    "wallAssembly": "Wandaufbau",
     "referenceSide": "Ausrichtungsseite",
     "referenceSideLeft": "Links",
     "referenceSideRight": "Rechts",

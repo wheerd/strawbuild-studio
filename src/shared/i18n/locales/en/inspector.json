@@ -54,6 +54,8 @@
     "deleteWall": "Delete Wall",
     "fitToView": "Fit to View",
     "thickness": "Thickness",
+    "wallAssembly": "Wall Assembly",
+    "selectAssemblyPlaceholder": "Select assembly",
     "wallLength": "Length"
   },
   "opening": {
@@ -199,7 +201,8 @@
   },
   "wallNode": {
     "deleteNode": "Delete Node",
-    "fitToView": "Fit to View"
+    "fitToView": "Fit to View",
+    "switchConstruction": "Switch constructing wall"
   },
   "wallPost": {
     "actsAsPost": "Acts as Post",

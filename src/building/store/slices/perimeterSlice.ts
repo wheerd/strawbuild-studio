@@ -15,10 +15,10 @@ import type {
 import type {
   PerimeterCornerId,
   PerimeterId,
+  PerimeterWallAssemblyId,
   PerimeterWallId,
   RingBeamAssemblyId,
   StoreyId,
-  WallAssemblyId,
   WallEntityId,
   WallNodeId
 } from '@/building/model/ids'
@@ -54,7 +54,7 @@ export interface PerimetersActions {
   addPerimeter: (
     storeyId: StoreyId,
     boundary: Polygon2D,
-    wallAssemblyId: WallAssemblyId,
+    wallAssemblyId: PerimeterWallAssemblyId,
     thickness: Length,
     baseRingBeamAssemblyId?: RingBeamAssemblyId,
     topRingBeamAssemblyId?: RingBeamAssemblyId,
@@ -77,10 +77,10 @@ export interface PerimetersActions {
 
   splitPerimeterWall: (wallId: PerimeterWallId, splitPosition: Length) => PerimeterWallId | null
 
-  updatePerimeterWallAssembly: (wallId: PerimeterWallId, assemblyId: WallAssemblyId) => void
+  updatePerimeterWallAssembly: (wallId: PerimeterWallId, assemblyId: PerimeterWallAssemblyId) => void
   updatePerimeterWallThickness: (wallId: PerimeterWallId, thickness: Length) => void
 
-  updateAllPerimeterWallsAssembly: (perimeterId: PerimeterId, assemblyId: WallAssemblyId) => void
+  updateAllPerimeterWallsAssembly: (perimeterId: PerimeterId, assemblyId: PerimeterWallAssemblyId) => void
   updateAllPerimeterWallsThickness: (perimeterId: PerimeterId, thickness: Length) => void
 
   updatePerimeterCornerConstructedByWall: (cornerId: PerimeterCornerId, constructedByWall: 'previous' | 'next') => void
@@ -128,7 +128,7 @@ export const createPerimetersSlice: StateCreator<
     addPerimeter: (
       storeyId: StoreyId,
       boundary: Polygon2D,
-      wallAssemblyId: WallAssemblyId,
+      wallAssemblyId: PerimeterWallAssemblyId,
       thickness: Length,
       baseRingBeamAssemblyId?: RingBeamAssemblyId,
       topRingBeamAssemblyId?: RingBeamAssemblyId,
@@ -423,7 +423,7 @@ export const createPerimetersSlice: StateCreator<
       return newWallId
     },
 
-    updatePerimeterWallAssembly: (wallId: PerimeterWallId, assemblyId: WallAssemblyId) => {
+    updatePerimeterWallAssembly: (wallId: PerimeterWallId, assemblyId: PerimeterWallAssemblyId) => {
       set(state => {
         if (!(wallId in state.perimeterWalls)) throw new NotFoundError('Perimeter wall', wallId)
         const wall = state.perimeterWalls[wallId]
@@ -448,7 +448,7 @@ export const createPerimetersSlice: StateCreator<
       })
     },
 
-    updateAllPerimeterWallsAssembly: (perimeterId: PerimeterId, assemblyId: WallAssemblyId) => {
+    updateAllPerimeterWallsAssembly: (perimeterId: PerimeterId, assemblyId: PerimeterWallAssemblyId) => {
       set(state => {
         if (!(perimeterId in state.perimeters)) throw new NotFoundError('Perimeter', perimeterId)
         const perimeter = state.perimeters[perimeterId]

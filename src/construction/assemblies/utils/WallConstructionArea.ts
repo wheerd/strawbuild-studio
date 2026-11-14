@@ -248,6 +248,48 @@ export class WallConstructionArea {
   }
 
   /**
+   * Split the area into continuous top-contour segments at height jumps.
+   */
+  public splitAtHeightJumps(): WallConstructionArea[] {
+    if (!this.topOffsets || this.topOffsets.length === 0) return [this]
+
+    const segments: WallConstructionArea[] = []
+    let start = 0
+    for (let index = 0; index < this.topOffsets.length - 1; index++) {
+      const current = this.topOffsets[index]
+      const next = this.topOffsets[index + 1]
+      if (Math.abs(current[0] - next[0]) < 0.0001 && Math.abs(current[1] - next[1]) > 0.0001) {
+        const segment = this.withXAdjustment(start, current[0] - start)
+        if (!segment.isEmpty) segments.push(segment)
+        start = current[0]
+      }
+    }
+
+    if (segments.length === 0) return [this]
+    const finalSegment = this.withXAdjustment(start)
+    if (!finalSegment.isEmpty) segments.push(finalSegment)
+    return segments
+  }
+
+  /**
+   * Split off a strip following the top contour. The first result is the top
+   * strip and the second result is the remaining area below it.
+   */
+  public splitAtTop(thickness: Length): [WallConstructionArea, WallConstructionArea] {
+    if (thickness <= 0) throw new Error('Top split thickness must be greater than 0')
+    if (this.isEmpty) return [this, this]
+    if (thickness >= this.minTopHeight) {
+      return [this, new WallConstructionArea(this.position, newVec3(this.size[0], this.size[1], 0))]
+    }
+
+    const top = this.getAbsoluteTopPoints()
+    const offsetBottom = offsetContour(top, thickness)
+    const bottom = this.getAbsoluteBottomPoints()
+
+    return [this.createAreaFromBoundaries(offsetBottom, top), this.createAreaFromBoundaries(bottom, offsetBottom)]
+  }
+
+  /**
    * Create a copy with adjusted Z position/height
    * Adds intersection points where roof line crosses the new top boundary to preserve slope information
    * Adds intersection points where floor line crosses the new base boundary for bottom offsets
@@ -395,6 +437,34 @@ export class WallConstructionArea {
     // Linear interpolation to find X where Z = targetZ
     const t = (targetZ - z1) / (z2 - z1)
     return x1 + t * (x2 - x1)
+  }
+
+  private getAbsoluteTopPoints(): Vec2[] {
+    if (!this.topOffsets || this.topOffsets.length === 0) {
+      return [newVec2(0, this.position[2] + this.size[2]), newVec2(this.size[0], this.position[2] + this.size[2])]
+    }
+    return this.topOffsets.map(offset => newVec2(offset[0], this.position[2] + this.size[2] + offset[1]))
+  }
+
+  private getAbsoluteBottomPoints(): Vec2[] {
+    if (!this.bottomOffsets || this.bottomOffsets.length === 0) {
+      return [newVec2(0, this.position[2]), newVec2(this.size[0], this.position[2])]
+    }
+    return this.bottomOffsets.map(offset => newVec2(offset[0], this.position[2] + offset[1]))
+  }
+
+  private createAreaFromBoundaries(bottom: Vec2[], top: Vec2[]): WallConstructionArea {
+    const baseZ = Math.min(...bottom.map(point => point[1]))
+    const topZ = Math.max(...top.map(point => point[1]))
+    const topOffsets = top.map(point => newVec2(point[0], point[1] - topZ))
+    const bottomOffsets = bottom.map(point => newVec2(point[0], point[1] - baseZ))
+
+    return new WallConstructionArea(
+      newVec3(this.position[0], this.position[1], baseZ),
+      newVec3(this.size[0], this.size[1], Math.max(topZ - baseZ, 0)),
+      topOffsets,
+      bottomOffsets
+    )
   }
 
   /**
@@ -579,4 +649,53 @@ export class WallConstructionArea {
   public get isFlat() {
     return this.isTopFlat && this.isBottomFlat
   }
+}
+
+function offsetContour(contour: Vec2[], distance: Length): Vec2[] {
+  if (contour.length < 2) return contour
+
+  const lines = contour.slice(0, -1).map((start, index) => {
+    const end = contour[index + 1]
+    const dx = end[0] - start[0]
+    const dz = end[1] - start[1]
+    const length = Math.hypot(dx, dz)
+    if (length < 0.0001) throw new Error('Cannot offset a zero-length top contour segment')
+
+    const normal = newVec2((dz / length) * distance, (-dx / length) * distance)
+    return {
+      point: newVec2(start[0] + normal[0], start[1] + normal[1]),
+      direction: newVec2(dx, dz)
+    }
+  })
+
+  const first = intersectLineWithVertical(lines[0].point, lines[0].direction, contour[0][0])
+  const lastLine = lines[lines.length - 1]
+  const last = intersectLineWithVertical(lastLine.point, lastLine.direction, contour[contour.length - 1][0])
+  const result = [first]
+
+  for (let index = 0; index < lines.length - 1; index++) {
+    result.push(
+      intersectLines(lines[index].point, lines[index].direction, lines[index + 1].point, lines[index + 1].direction)
+    )
+  }
+  result.push(last)
+  return result
+}
+
+function intersectLineWithVertical(point: Vec2, direction: Vec2, x: number): Vec2 {
+  if (Math.abs(direction[0]) < 0.0001) return newVec2(x, point[1])
+  const ratio = (x - point[0]) / direction[0]
+  return newVec2(x, point[1] + ratio * direction[1])
+}
+
+function intersectLines(firstPoint: Vec2, firstDirection: Vec2, secondPoint: Vec2, secondDirection: Vec2): Vec2 {
+  const determinant = firstDirection[0] * secondDirection[1] - firstDirection[1] * secondDirection[0]
+  if (Math.abs(determinant) < 0.0001) {
+    return newVec2(secondPoint[0], (firstPoint[1] + secondPoint[1]) / 2)
+  }
+
+  const dx = secondPoint[0] - firstPoint[0]
+  const dz = secondPoint[1] - firstPoint[1]
+  const ratio = (dx * secondDirection[1] - dz * secondDirection[0]) / determinant
+  return newVec2(firstPoint[0] + ratio * firstDirection[0], firstPoint[1] + ratio * firstDirection[1])
 }

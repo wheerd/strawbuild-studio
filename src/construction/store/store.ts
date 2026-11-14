@@ -2,7 +2,6 @@ import { create } from 'zustand'
 import { subscribeWithSelector } from 'zustand/middleware'
 import { shallow } from 'zustand/shallow'
 
-import type { PerimeterWallId } from '@/building/model/ids'
 import { getModelActions, subscribeToModelChanges } from '@/building/store'
 import { subscribeToConfigChanges } from '@/config/store'
 import { createPerimeterMeasurementsModel } from '@/construction/assemblies/perimeters/construction'
@@ -17,11 +16,13 @@ import {
   buildColinearWallComposite,
   buildFloorCoreModel,
   buildFullPerimeterComposite,
+  buildIntermediateWallCoreModel,
   buildPerimeterComposite,
   buildRoofCoreModel,
   buildStoreyComposite,
   buildWallCoreModel,
-  findColinearWallGroups
+  findColinearWallGroups,
+  findExplicitIntermediateColinearGroups
 } from './builders'
 import {
   BUILDING_ID,
@@ -108,12 +109,12 @@ export const useConstructionStore = create<ConstructionStore>()(
 
 function rebuildModel(): {
   models: Partial<Record<ModelId, ModelEntry>>
-  conlinearMapping: Record<`outwall_${string}`, `colinear_${string}`>
+  conlinearMapping: Record<string, ColinearWallId>
 } {
   const { getStoreysOrderedByLevel, getPerimetersByStorey, getRoofsByStorey } = getModelActions()
 
   const models: ConstructionStoreState['models'] = {}
-  const conlinearMapping: Record<PerimeterWallId, ColinearWallId> = {}
+  const conlinearMapping: Record<string, ColinearWallId> = {}
 
   const storeys = getStoreysOrderedByLevel()
 
@@ -123,6 +124,14 @@ function rebuildModel(): {
     for (const perimeter of perimeters) {
       for (const wallId of perimeter.wallIds) {
         models[wallId] = buildWallCoreModel(wallId)
+      }
+
+      const intermediateWalls = getModelActions().getIntermediateWallsByPerimeter(perimeter.id)
+      for (const wall of intermediateWalls) models[wall.id] = buildIntermediateWallCoreModel(wall.id)
+      for (const group of findExplicitIntermediateColinearGroups(intermediateWalls)) {
+        const colinearId = createColinearWallId(group.wallIds[0])
+        models[colinearId] = buildColinearWallComposite(group)
+        for (const wallId of group.wallIds) conlinearMapping[wallId] = colinearId
       }
 
       const colinearGroups = findColinearWallGroups(perimeter)

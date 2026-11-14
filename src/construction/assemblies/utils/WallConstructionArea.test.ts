@@ -58,6 +58,85 @@ describe('withZAdjustment', () => {
   })
 })
 
+describe('splitAtHeightJumps', () => {
+  it('returns the original area when the top contour is continuous', () => {
+    const area = new WallConstructionArea(newVec3(0, 0, 0), newVec3(3000, 300, 3000), [
+      newVec2(0, 0),
+      newVec2(3000, -300)
+    ])
+
+    expect(area.splitAtHeightJumps()).toEqual([area])
+  })
+
+  it('splits the area into continuous sections at height jumps', () => {
+    const area = new WallConstructionArea(newVec3(0, 0, 0), newVec3(3000, 300, 3000), [
+      newVec2(0, 0),
+      newVec2(1000, 0),
+      newVec2(1000, -500),
+      newVec2(3000, -500)
+    ])
+
+    const sections = area.splitAtHeightJumps()
+
+    expect(sections).toHaveLength(2)
+    expect(sections[0].position[0]).toBe(0)
+    expect(sections[0].size[0]).toBe(1000)
+    expect(sections[1].position[0]).toBe(1000)
+    expect(sections[1].size[0]).toBe(2000)
+    expect(
+      sections.every(
+        section =>
+          section.topOffsets == null ||
+          section.topOffsets.every((offset, index, offsets) => index === 0 || offset[0] > offsets[index - 1][0])
+      )
+    ).toBe(true)
+  })
+})
+
+describe('splitAtTop', () => {
+  it('splits a flat top by the requested thickness', () => {
+    const area = new WallConstructionArea(newVec3(0, 0, 0), newVec3(3000, 300, 3000))
+
+    const [top, remainder] = area.splitAtTop(100)
+
+    expect(top.position[2]).toBe(2900)
+    expect(top.size[2]).toBe(100)
+    expect(remainder.position[2]).toBe(0)
+    expect(remainder.size[2]).toBe(2900)
+  })
+
+  it('keeps a sloped top strip perpendicular to the contour', () => {
+    const area = new WallConstructionArea(newVec3(0, 0, 0), newVec3(3000, 300, 3000), [
+      newVec2(0, 0),
+      newVec2(3000, -300)
+    ])
+
+    const [top] = area.splitAtTop(100)
+    const bottomAtStart = top.position[2] + top.getBottomOffsetsAt(0)[0]
+    const topAtStart = area.position[2] + area.size[2]
+    const slope = -300 / 3000
+    const verticalDistance = topAtStart - bottomAtStart
+
+    expect(verticalDistance / Math.sqrt(1 + slope * slope)).toBeCloseTo(100)
+    expect(top.getBottomOffsetsAt(0)[0]).toBeGreaterThan(0)
+    expect(top.getBottomOffsetsAt(3000)[0]).toBeCloseTo(0)
+  })
+
+  it('preserves the source bottom contour in the remainder', () => {
+    const area = new WallConstructionArea(
+      newVec3(0, 0, 0),
+      newVec3(3000, 300, 3000),
+      [newVec2(0, 0), newVec2(3000, -300)],
+      [newVec2(0, 100), newVec2(3000, 0)]
+    )
+
+    const [, remainder] = area.splitAtTop(100)
+
+    expect(remainder.getBottomOffsetsAt(0)[0]).toBe(100)
+    expect(remainder.getBottomOffsetsAt(3000)[0]).toBe(0)
+  })
+})
+
 describe('bottomOffsets', () => {
   it('should normalize bottom offsets so minimum is 0', () => {
     const area = new WallConstructionArea(newVec3(0, 0, 0), newVec3(3000, 300, 3000), undefined, [

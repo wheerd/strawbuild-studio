@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest'
 
-import { createWallAssemblyId } from '@/building/model/ids'
+import { createPerimeterWallAssemblyId } from '@/building/model/ids'
 import { LShapedPresetDialog } from '@/editor/tools/perimeter/preset/presets/LShapedPresetDialog'
 import { ZERO_VEC2, newVec2 } from '@/shared/geometry'
 import { LShape0Icon } from '@/shared/ui/icons'
@@ -22,7 +22,7 @@ describe('LShapedPreset', () => {
     length2: 3000,
     rotation: 0,
     thickness: 420,
-    wallAssemblyId: createWallAssemblyId(),
+    wallAssemblyId: createPerimeterWallAssemblyId(),
     referenceSide: 'inside',
     ...overrides
   })

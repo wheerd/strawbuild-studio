@@ -1,7 +1,7 @@
 import React from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 
-import type { WallAssemblyId } from '@/building/model/ids'
+import type { PerimeterWallAssemblyId } from '@/building/model/ids'
 import { useWallAssemblies } from '@/config/store'
 import type { NamedAssembly } from '@/config/types'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/ui/components/select'
@@ -10,13 +10,13 @@ import { cn } from '@/shared/ui/utils'
 import { getWallAssemblyTypeIcon } from './icons'
 
 export interface WallAssemblySelectProps {
-  value: WallAssemblyId | null | undefined
-  onValueChange: (assemblyId: WallAssemblyId) => void
+  value: PerimeterWallAssemblyId | null | undefined
+  onValueChange: (assemblyId: PerimeterWallAssemblyId) => void
   placeholder?: string
   size?: 'sm' | 'base' | 'lg'
   disabled?: boolean
   showDefaultIndicator?: boolean
-  defaultAssemblyId?: WallAssemblyId
+  defaultAssemblyId?: PerimeterWallAssemblyId
 }
 
 const sizeClasses = {
@@ -45,7 +45,7 @@ export function WallAssemblySelect({
     <Select
       value={value ?? ''}
       onValueChange={val => {
-        onValueChange(val as WallAssemblyId)
+        onValueChange(val as PerimeterWallAssemblyId)
       }}
       disabled={disabled}
     >

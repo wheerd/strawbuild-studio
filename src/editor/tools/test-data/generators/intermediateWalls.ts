@@ -1,4 +1,5 @@
 import { getModelActions } from '@/building/store'
+import { DEFAULT_INTERIOR_WALL_ASSEMBLY_ID } from '@/config/store/slices/interiorWalls.defaults'
 import { getSelectionActions } from '@/editor/canvas/state/selectionStore'
 import { newVec2 } from '@/shared/geometry'
 
@@ -27,7 +28,8 @@ export function createIntermediateWallTestData(): void {
     perimeter.id,
     { nodeId: outerStart.id, axis: 'left' },
     { nodeId: outerEnd.id, axis: 'left' },
-    wallThickness
+    wallThickness,
+    DEFAULT_INTERIOR_WALL_ASSEMBLY_ID
   )
 
   // A standalone wall whose endpoints are not attached to outer walls.
@@ -37,7 +39,8 @@ export function createIntermediateWallTestData(): void {
     perimeter.id,
     { nodeId: standaloneStart.id, axis: 'left' },
     { nodeId: standaloneEnd.id, axis: 'left' },
-    wallThickness
+    wallThickness,
+    DEFAULT_INTERIOR_WALL_ASSEMBLY_ID
   )
 
   // A second wall shares a node with the standalone wall.
@@ -46,7 +49,8 @@ export function createIntermediateWallTestData(): void {
     perimeter.id,
     { nodeId: standaloneEnd.id, axis: 'left' },
     { nodeId: junctionEnd.id, axis: 'left' },
-    wallThickness
+    wallThickness,
+    DEFAULT_INTERIOR_WALL_ASSEMBLY_ID
   )
 
   getSelectionActions().replaceSelection([perimeter.id])

@@ -62,7 +62,8 @@ export const ALL_CATEGORIES = {
   'finished-measurement': { id: 'finished-measurement' as const },
   area: { id: 'area' as const },
   construction: { id: 'construction' as const },
-  'storey-name': { id: 'storey-name' as const }
+  'storey-name': { id: 'storey-name' as const },
+  'interior-wall-assembly': { id: 'interior-wall-assembly' as const }
 } as const satisfies Record<TagCategoryId, TagCategory>
 
 export const CATEGORIES: Record<TagCategoryId, TagCategory> = ALL_CATEGORIES
@@ -145,6 +146,11 @@ export const TAG_WALL_REINFORCEMENT: PredefinedTag = {
   category: 'wall-part'
 }
 
+export const TAG_WALL_PLANKING: PredefinedTag = {
+  id: 'wall-part_planking',
+  category: 'wall-part'
+}
+
 // Wall assembly type tags
 export const TAG_INFILL_CONSTRUCTION: PredefinedTag = {
   id: 'wall-assembly_infill',
@@ -179,6 +185,11 @@ export const TAG_WALL_LAYER_INSIDE: PredefinedTag = {
 
 export const TAG_WALL_LAYER_OUTSIDE: PredefinedTag = {
   id: 'wall-layer_outside',
+  category: 'wall-layer'
+}
+
+export const TAG_WALL_LAYER_INTERIOR: PredefinedTag = {
+  id: 'wall-layer_interior',
   category: 'wall-layer'
 }
 
@@ -385,6 +396,11 @@ export const TAG_WALLS: PredefinedTag = {
   category: 'construction'
 }
 
+export const TAG_INTERIOR_WALLS: PredefinedTag = {
+  id: 'construction_interior_walls',
+  category: 'construction'
+}
+
 export const TAG_MODULE: PredefinedTag = {
   id: 'construction_module',
   category: 'construction'
@@ -565,4 +581,20 @@ export const TAG_MODULE_SPACER: PredefinedTag = {
 export const TAG_MODULE_INFILL: PredefinedTag = {
   id: 'module-part_infill',
   category: 'module-part'
+}
+
+// Interior wall assembly type tags
+export const TAG_MONOLITHIC_WALL: PredefinedTag = {
+  id: 'interior-wall-assembly_monolithic',
+  category: 'interior-wall-assembly'
+}
+
+export const TAG_PLANKED_STUD_WALL: PredefinedTag = {
+  id: 'interior-wall-assembly_planked-stud',
+  category: 'interior-wall-assembly'
+}
+
+export const TAG_MONOLITHIC_STUD_WALL: PredefinedTag = {
+  id: 'interior-wall-assembly_monolithic-stud',
+  category: 'interior-wall-assembly'
 }

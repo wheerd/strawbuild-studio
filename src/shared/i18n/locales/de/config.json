@@ -6,6 +6,7 @@
     "addNew": "Neu hinzufügen",
     "buildingPhysics": "Bauphysik",
     "cancel": "Abbrechen",
+    "default": "Standard",
     "color": "Farbe",
     "delete": "Löschen",
     "density": "Dichte",
@@ -228,6 +229,7 @@
       "bitumen": "Bitumen",
       "boards": "Bretter",
       "brick": "Ziegel",
+      "clayBrick": "Lehmziegel",
       "cementScreed": "Zementestrich",
       "clayPlasterBase": "Lehmputz (Grund)",
       "clayPlasterFine": "Lehmputz (Fein)",
@@ -533,7 +535,8 @@
     "openings": "Öffnungsaufbauten",
     "ringbeams": "Ringankeraufbauten",
     "roofs": "Dachaufbauten",
-    "walls": "Wandaufbauten"
+    "perimeterWalls": "Außenwandaufbauten",
+    "interiorWalls": "Innenwandaufbauten"
   },
   "usage": {
     "globalDefault_floor": "Standard Bodenaufbau",
@@ -560,20 +563,27 @@
     "battenOutside": "Außen",
     "battenSize": "Größe",
     "configure": "Wandaufbau konfigurieren",
+    "configureInterior": "Innenwandaufbau konfigurieren",
     "copyNameTemplate": "{{name}} (Kopie)",
     "defaultLabel": "{{label}} <gray>(Standard)</gray>",
     "defaults": {
       "concreteWall": "Betonwand",
+      "concreteInteriorWall": "Beton-Innenwand",
+      "clayBrickWall": "Lehmziegelwand",
       "defaultModule": "Standard-Modul",
       "ecococonModules": "Ecococon Module",
       "standardInfill": "Standard-Ausfachung",
-      "strawhengeModule": "Strawhenge-Modul"
+      "strawhengeModule": "Strawhenge-Modul",
+      "standardStrawFilled": "Standard mit Strohfüllung",
+      "woodStudClayBrick": "Holzständer mit Lehmziegelfüllung"
     },
     "defaultWallAssembly": "Standard-Wandaufbau",
+    "defaultInteriorWallAssembly": "Standard-Innenwandaufbau",
     "deleteConfirm": "Möchtest du \"{{name}}\" wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.",
     "deleteTitle": "Wandaufbau löschen",
     "desiredPostSpacing": "Gewünschter Ständerabstand",
     "emptyList": "Keine Wandaufbauten verfügbar",
+    "emptyInteriorList": "Keine Innenwandaufbauten verfügbar",
     "frameMaterial": "Rahmenmaterial",
     "frameThickness": "Rahmendicke",
     "frameWidth": "Rahmenbreite",
@@ -603,6 +613,26 @@
     "nonStrawbaleConfiguration": "Massivkonfiguration",
     "noOutsideLayers": "Keine Außenschichten definiert",
     "openingAssembly": "Öffnungsaufbau",
+    "layerSet": "Schichtaufbau",
+    "wallConfiguration": "Wandkonfiguration",
+    "studConfiguration": "Ständer",
+    "equidistantStuds": "Gleichmäßige Ständerabstände",
+    "equidistantNoggins": "Gleichmäßige Riegelabstände",
+    "staggerNoggins": "Riegel versetzen",
+    "headPlateConfiguration": "Kopfschwellenkonfiguration",
+    "solePlateConfiguration": "Fußschwellenkonfiguration",
+    "nogginConfiguration": "Riegelkonfiguration",
+    "plankingConfiguration": "Beplankung",
+    "fillConfiguration": "Füllung",
+    "monolithicConfiguration": "Monolithische Konfiguration",
+    "material": "Material",
+    "plankThickness": "Brettdicke",
+    "plankMaterial": "Brettmaterial",
+    "minStudSpacing": "Minimaler Ständerabstand",
+    "desiredStudSpacing": "Gewünschter Ständerabstand",
+    "maxStudSpacing": "Maximaler Ständerabstand",
+    "studWidth": "Ständerbreite",
+    "studMaterial": "Ständermaterial",
     "openingsSection": "Öffnungen",
     "postsConfiguration": "Ständerkonfiguration",
     "postType": "Ständertyp",
@@ -638,6 +668,14 @@
       "non-strawbale": "Massiv",
       "prefab-modules": "Fertigteile",
       "strawhenge": "Strawhenge"
-    }
+    },
+    "interiorTypes": {
+      "monolithic": "Monolithisch",
+      "planked-stud": "Brettständer",
+      "monolithic-stud": "Monolithisch mit Ständern"
+    },
+    "newName_interiorMonolithic": "Neuer monolithischer Innenwandaufbau",
+    "newName_interiorPlankedStud": "Neuer Brettständer-Innenwandaufbau",
+    "newName_interiorMonolithicStud": "Neuer monolithischer Ständer-Innenwandaufbau"
   }
 }

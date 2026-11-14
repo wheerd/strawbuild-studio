@@ -3,7 +3,7 @@ import { Info } from 'lucide-react'
 import React from 'react'
 import { useTranslation } from 'react-i18next'
 
-import type { TriangularBattenConfig } from '@/construction/assemblies/walls/triangularBattens'
+import type { TriangularBattenConfig } from '@/construction/assemblies/perimeterWalls/triangularBattens'
 import { MaterialSelectWithEdit } from '@/materials/ui/MaterialSelectWithEdit'
 import { LengthField } from '@/shared/ui/LengthField/LengthField'
 import { Checkbox } from '@/shared/ui/components/checkbox'
