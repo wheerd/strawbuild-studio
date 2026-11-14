@@ -94,12 +94,10 @@ export abstract class BaseInteriorWallAssembly<
     const roofHeightLine = getRoofHeightLineCached(storeyContext.storeyId, [left, right])
 
     // Convert roof height line to wall offsets
-    let roofOffsets
-    if (roofHeightLine.length === 0) {
-      roofOffsets = convertHeightLineToWallOffsets(roofHeightLine, extension.totalLength)
-    } else {
-      roofOffsets = [newVec2(0, -ceilingOffset), newVec2(extension.totalLength, -ceilingOffset)]
-    }
+    const roofOffsets = convertHeightLineToWallOffsets(roofHeightLine, extension.totalLength) ?? [
+      newVec2(0, -ceilingOffset),
+      newVec2(extension.totalLength, -ceilingOffset)
+    ]
 
     // Create overall wall construction area ONCE with roof offsets
     const wallArea = new WallConstructionArea(
@@ -215,12 +213,23 @@ export abstract class BaseInteriorWallAssembly<
         extension.layerClipping.left.start,
         'start',
         layers,
-        faceThickness
+        faceThickness,
+        extension,
+        height
       )
     }
 
     if (endNode.connectedWallIds.length === 1) {
-      yield* this.buildCapLayers(wall, storeyContext, extension.layerClipping.left.end, 'end', layers, faceThickness)
+      yield* this.buildCapLayers(
+        wall,
+        storeyContext,
+        extension.layerClipping.left.end,
+        'end',
+        layers,
+        faceThickness,
+        extension,
+        height
+      )
     }
   }
 
@@ -230,22 +239,11 @@ export abstract class BaseInteriorWallAssembly<
     capPlane: ClippingPlane | undefined,
     endpoint: 'start' | 'end',
     layers: LayerConfig[],
-    faceThickness: number
+    faceThickness: number,
+    extension: WallExtension,
+    height: Length
   ) {
     const finishedFloorZLevel = storeyContext.finishedFloorTop - storeyContext.floorConstructionTop
-    const finishedCeilingZLevel = storeyContext.finishedCeilingBottom - storeyContext.floorConstructionTop
-
-    const capPolygon: PolygonWithHoles2D = {
-      outer: {
-        points: [
-          newVec2(-wall.thickness / 2, finishedFloorZLevel),
-          newVec2(wall.thickness / 2, finishedFloorZLevel),
-          newVec2(wall.thickness / 2, finishedCeilingZLevel),
-          newVec2(-wall.thickness / 2, finishedCeilingZLevel)
-        ]
-      },
-      holes: []
-    }
 
     if (!capPlane) return
 
@@ -256,6 +254,24 @@ export abstract class BaseInteriorWallAssembly<
 
     let offset = 0
     for (const [index, layer] of layers.entries()) {
+      const layerBand = this.getLayerBand(wall, faceThickness, offset, layer.thickness, 'left')
+      const layerExtension = computeLayerExtension(wall, extension.layerClipping.left, layerBand)
+      const layerArea = this.createLayerArea(wall, layerExtension, layerBand, height, storeyContext)
+      const endpointX =
+        endpoint === 'start' ? layerExtension.startExtension : layerExtension.startExtension + wall.wallLength
+      const [startTop, endTop] = layerArea.getTopOffsetsAt(endpointX, endpoint === 'start' ? 1 : -1)
+      const roofTop = layerArea.size[2] + (endpoint === 'start' ? startTop : endTop)
+      const capPolygon: PolygonWithHoles2D = {
+        outer: {
+          points: [
+            newVec2(-wall.thickness / 2, finishedFloorZLevel),
+            newVec2(wall.thickness / 2, finishedFloorZLevel),
+            newVec2(wall.thickness / 2, roofTop),
+            newVec2(-wall.thickness / 2, roofTop)
+          ]
+        },
+        holes: []
+      }
       const layerX = computeTerminalCapLayerOffset(endpoint, capX, faceThickness, offset, layer.thickness)
       const results = runLayerConstruction(capPolygon, layerX, 'yz', layer, newVec2(1, 0))
       assignDeterministicIdsToResults(results, `${wall.id}_cap_${endpoint}_${index}`)
@@ -289,35 +305,19 @@ export abstract class BaseInteriorWallAssembly<
     storeyContext: StoreyContext
   ) {
     const finishedFloorZLevel = storeyContext.finishedFloorTop - storeyContext.floorConstructionTop
-    const finishedCeilingZLevel = storeyContext.finishedCeilingBottom - storeyContext.floorConstructionTop
-    const createLayerPolygon = (layerExtension: LayerExtension): PolygonWithHoles2D => ({
-      outer: {
-        points: [
-          newVec2(-layerExtension.startExtension, finishedFloorZLevel),
-          newVec2(wall.wallLength + layerExtension.endExtension, finishedFloorZLevel),
-          newVec2(wall.wallLength + layerExtension.endExtension, finishedCeilingZLevel),
-          newVec2(-layerExtension.startExtension, finishedCeilingZLevel)
-        ]
-      },
-      holes: openingHoles
-    })
 
     let offset = 0
     for (const [index, layer] of layers.entries()) {
-      const leftBand = {
-        start: wall.thickness / 2 - faceThickness + offset,
-        end: wall.thickness / 2 - faceThickness + offset + layer.thickness
-      }
-      const rightBand = {
-        start: -wall.thickness / 2 + faceThickness - offset - layer.thickness,
-        end: -wall.thickness / 2 + faceThickness - offset
-      }
+      const leftBand = this.getLayerBand(wall, faceThickness, offset, layer.thickness, 'left')
+      const rightBand = this.getLayerBand(wall, faceThickness, offset, layer.thickness, 'right')
       const leftExtension = computeLayerExtension(wall, extension.layerClipping.left, leftBand)
       const rightExtension = computeLayerExtension(wall, extension.layerClipping.right, rightBand)
 
-      const leftPolygon = createLayerPolygon(leftExtension)
+      const leftArea = this.createLayerArea(wall, leftExtension, leftBand, height, storeyContext).withZAdjustment(
+        finishedFloorZLevel
+      )
       yield* this.buildSideLayer(
-        leftPolygon,
+        { outer: leftArea.getSideProfilePolygon(), holes: openingHoles },
         leftExtension,
         leftBand.start,
         layer,
@@ -328,9 +328,11 @@ export abstract class BaseInteriorWallAssembly<
         storeyContext
       )
 
-      const rightPolygon = createLayerPolygon(rightExtension)
+      const rightArea = this.createLayerArea(wall, rightExtension, rightBand, height, storeyContext).withZAdjustment(
+        finishedFloorZLevel
+      )
       yield* this.buildSideLayer(
-        rightPolygon,
+        { outer: rightArea.getSideProfilePolygon(), holes: openingHoles },
         rightExtension,
         rightBand.start,
         layer,
@@ -343,6 +345,58 @@ export abstract class BaseInteriorWallAssembly<
 
       if (!layer.overlap) offset += layer.thickness
     }
+  }
+
+  private getLayerBand(
+    wall: IntermediateWallWithGeometry,
+    faceThickness: Length,
+    offset: Length,
+    thickness: Length,
+    side: 'left' | 'right'
+  ): { start: Length; end: Length } {
+    if (side === 'left') {
+      return {
+        start: wall.thickness / 2 - faceThickness + offset,
+        end: wall.thickness / 2 - faceThickness + offset + thickness
+      }
+    }
+
+    return {
+      start: -wall.thickness / 2 + faceThickness - offset - thickness,
+      end: -wall.thickness / 2 + faceThickness - offset
+    }
+  }
+
+  private createLayerArea(
+    wall: IntermediateWallWithGeometry,
+    layerExtension: LayerExtension,
+    layerBand: { start: Length; end: Length },
+    height: Length,
+    storeyContext: StoreyContext
+  ): WallConstructionArea {
+    const layerLength = wall.wallLength + layerExtension.startExtension + layerExtension.endExtension
+    const start = scaleAddVec2(wall.entityReferenceLine.start, wall.direction, -layerExtension.startExtension)
+    const end = scaleAddVec2(wall.entityReferenceLine.end, wall.direction, layerExtension.endExtension)
+    const startLine = {
+      start: scaleAddVec2(start, wall.leftDirection, layerBand.start),
+      end: scaleAddVec2(end, wall.leftDirection, layerBand.start)
+    }
+    const endLine = {
+      start: scaleAddVec2(start, wall.leftDirection, layerBand.end),
+      end: scaleAddVec2(end, wall.leftDirection, layerBand.end)
+    }
+    const roofHeightLine = getRoofHeightLineCached(storeyContext.storeyId, [startLine, endLine])
+    const ceilingOffset = storeyContext.roofBottom - storeyContext.ceilingConstructionBottom
+    const roofOffsets = convertHeightLineToWallOffsets(roofHeightLine, layerLength) ?? [
+      newVec2(0, -ceilingOffset),
+      newVec2(layerLength, -ceilingOffset)
+    ]
+
+    return new WallConstructionArea(
+      newVec3(-layerExtension.startExtension, layerBand.start, 0),
+      newVec3(layerLength, layerBand.end - layerBand.start, height),
+      roofOffsets
+    )
   }
 
   private *buildSideLayer(
