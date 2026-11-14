@@ -317,6 +317,8 @@ export function createInteriorWallGeometry(
   const { getIntermediateWallsByPerimeter, getWallNodesByPerimeter } = getModelActions()
   const { getInteriorWallAssemblyById } = getConfigActions()
   const walls = getIntermediateWallsByPerimeter(perimeter.id)
+  const nodes = getWallNodesByPerimeter(perimeter.id)
+  const nodesById = new Map(nodes.map(node => [node.id, node]))
   const wallGeometry = new Map<IntermediateWallId, InteriorWallGeometry>()
   const nodePolygons = new Map<WallNodeId, Polygon2D>()
   const polygons: Polygon2D[] = []
@@ -334,7 +336,7 @@ export function createInteriorWallGeometry(
     })
   }
 
-  for (const node of getWallNodesByPerimeter(perimeter.id)) {
+  for (const node of nodes) {
     if (node.type === 'perimeter') {
       const insideLine = linesByWallId[node.wallId]
       if (!insideLine) continue
@@ -374,9 +376,21 @@ export function createInteriorWallGeometry(
   for (const wall of walls) {
     const wallEndpoint = wallGeometry.get(wall.id)
     if (!wallEndpoint?.start || !wallEndpoint.end) continue
+
+    const config = getInteriorWallAssemblyById(wall.wallAssemblyId)
+    const layerThickness = resolveLayerSetThickness(config?.layerSetId)
+    const startNode = nodesById.get(wall.start.nodeId)
+    const endNode = nodesById.get(wall.end.nodeId)
+    const start = startNode?.incidentWalls.length === 1
+      ? shortenTerminalEndpoint(wallEndpoint.start, wall, layerThickness, 'start')
+      : wallEndpoint.start
+    const end = endNode?.incidentWalls.length === 1
+      ? shortenTerminalEndpoint(wallEndpoint.end, wall, layerThickness, 'end')
+      : wallEndpoint.end
+
     polygons.push(
       ensurePolygonIsClockwise({
-        points: [wallEndpoint.start.left, wallEndpoint.end.left, wallEndpoint.end.right, wallEndpoint.start.right]
+        points: [start.left, end.left, end.right, start.right]
       })
     )
   }
@@ -397,6 +411,20 @@ interface WallEndpoint {
   nodeId: WallNodeId
   left: Vec2
   right: Vec2
+}
+
+function shortenTerminalEndpoint(
+  endpoint: WallEndpoint,
+  wall: IntermediateWallWithGeometry,
+  layerThickness: Length,
+  side: 'start' | 'end'
+): WallEndpoint {
+  const distance = side === 'start' ? layerThickness : -layerThickness
+  return {
+    ...endpoint,
+    left: scaleAddVec2(endpoint.left, wall.direction, distance),
+    right: scaleAddVec2(endpoint.right, wall.direction, distance)
+  }
 }
 
 function setWallEndpoint(
