@@ -8,6 +8,7 @@ import type { LayerSetConfig, LayerSetUse } from '@/construction/assemblies/laye
 import { useFormatters } from '@/shared/i18n/useFormatters'
 import { Button } from '@/shared/ui/components/button'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/ui/components/select'
+import { cn } from '@/shared/ui/utils'
 
 import { getLayerSetUseIcon } from './icons'
 
@@ -16,8 +17,15 @@ export interface LayerSetSelectProps {
   onValueChange: (value: LayerSetId | undefined) => void
   use?: LayerSetUse
   placeholder?: string
+  size?: 'sm' | 'base' | 'lg'
   disabled?: boolean
   allowNone?: boolean
+}
+
+const sizeClasses = {
+  sm: 'h-7 text-xs',
+  base: 'h-9 text-sm',
+  lg: 'h-10 text-base'
 }
 
 export function LayerSetSelect({
@@ -25,6 +33,7 @@ export function LayerSetSelect({
   onValueChange,
   use,
   placeholder,
+  size = 'base',
   disabled,
   allowNone = false
 }: LayerSetSelectProps): React.JSX.Element {
@@ -53,7 +62,7 @@ export function LayerSetSelect({
       }}
       disabled={disabled}
     >
-      <SelectTrigger>
+      <SelectTrigger className={cn(sizeClasses[size])}>
         <SelectValue placeholder={placeholder ?? t($ => $.common.placeholder)} />
       </SelectTrigger>
       <SelectContent>

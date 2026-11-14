@@ -61,6 +61,7 @@ export function CommonConfigForm({ assemblyId, config }: CommonConfigFormProps):
             }}
             use="wall"
             placeholder={t($ => $.walls.noInsideLayers)}
+            size="sm"
           />
 
           <div className="flex items-center gap-1">
@@ -77,6 +78,7 @@ export function CommonConfigForm({ assemblyId, config }: CommonConfigFormProps):
             }}
             use="wall"
             placeholder={t($ => $.walls.noOutsideLayers)}
+            size="sm"
           />
         </div>
 

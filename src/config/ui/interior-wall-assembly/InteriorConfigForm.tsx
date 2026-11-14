@@ -64,7 +64,7 @@ export function InteriorConfigForm({ assembly }: InteriorConfigFormProps): React
       <div className="grid grid-cols-2 gap-4">
         <div className="flex flex-col gap-3">
           {assembly.type === 'monolithic' && (
-            <ConfigSection title={t($ => $.walls.monolithicConfiguration)}>
+            <ConfigSection isFirst title={t($ => $.walls.monolithicConfiguration)}>
               <MaterialField
                 label={t($ => $.walls.material)}
                 value={assembly.material}
@@ -92,49 +92,33 @@ export function InteriorConfigForm({ assembly }: InteriorConfigFormProps): React
                 }}
                 preferredTypes={['dimensional']}
               />
-              <MaterialField
-                label={t($ => $.common.infillMaterial)}
-                value={assembly.fillMaterial ?? null}
-                allowEmpty
-                onChange={fillMaterial => {
-                  updateConfig({ fillMaterial: fillMaterial ?? undefined })
-                }}
-              />
-            </ConfigSection>
-          )}
-          {assembly.type === 'monolithic-stud' && (
-            <ConfigSection title={t($ => $.walls.fillConfiguration)}>
-              <MaterialField
-                label={t($ => $.common.infillMaterial)}
-                value={assembly.fillMaterial}
-                onChange={fillMaterial => {
-                  if (fillMaterial) updateConfig({ fillMaterial })
-                }}
-              />
             </ConfigSection>
           )}
         </div>
-        <ConfigSection title={t($ => $.walls.wallConfiguration)}>
-          <SelectField label={t($ => $.walls.layerSet)}>
-            <LayerSetSelectWithEdit
-              value={assembly.layerSetId}
-              onValueChange={layerSetId => {
-                if (layerSetId) updateConfig({ layerSetId })
-              }}
-              use="wall"
-            />
-          </SelectField>
-          <SelectField label={t($ => $.walls.openingAssembly)}>
-            <OpeningAssemblySelectWithEdit
-              value={assembly.openingAssemblyId}
-              allowDefault
-              onValueChange={openingAssemblyId => {
-                updateConfig({ openingAssemblyId })
-              }}
-              size="sm"
-            />
-          </SelectField>
-        </ConfigSection>
+        <div className="flex flex-col gap-3">
+          <ConfigSection isFirst title={t($ => $.walls.wallConfiguration)}>
+            <SelectField label={t($ => $.walls.layerSet)}>
+              <LayerSetSelectWithEdit
+                value={assembly.layerSetId}
+                onValueChange={layerSetId => {
+                  if (layerSetId) updateConfig({ layerSetId })
+                }}
+                use="wall"
+                size="sm"
+              />
+            </SelectField>
+            <SelectField label={t($ => $.walls.openingAssembly)}>
+              <OpeningAssemblySelectWithEdit
+                value={assembly.openingAssemblyId}
+                allowDefault
+                onValueChange={openingAssemblyId => {
+                  updateConfig({ openingAssemblyId })
+                }}
+                size="sm"
+              />
+            </SelectField>
+          </ConfigSection>
+        </div>
       </div>
     </Card>
   )
@@ -150,15 +134,22 @@ function StudFields({
   const { t } = useTranslation('config')
   return (
     <>
-      <ConfigSection title={t($ => $.walls.studConfiguration)}>
+      <ConfigSection isFirst title={t($ => $.walls.studConfiguration)}>
+        <MaterialField
+          label={t($ => $.walls.studMaterial)}
+          value={assembly.studMaterial}
+          onChange={studMaterial => {
+            if (studMaterial) updateConfig({ studMaterial })
+          }}
+          preferredTypes={['dimensional']}
+        />
         <LengthField
-          label={t($ => $.walls.minStudSpacing)}
-          value={assembly.minStudSpacing}
-          onChange={minStudSpacing => {
-            updateConfig({ minStudSpacing })
+          label={t($ => $.walls.studWidth)}
+          value={assembly.studWidth}
+          onChange={studWidth => {
+            updateConfig({ studWidth })
           }}
           min={0}
-          max={assembly.desiredStudSpacing}
         />
         <LengthField
           label={t($ => $.walls.desiredStudSpacing)}
@@ -169,6 +160,22 @@ function StudFields({
           min={assembly.minStudSpacing}
           max={assembly.maxStudSpacing}
         />
+        <BooleanField
+          label={t($ => $.walls.equidistantStuds)}
+          checked={assembly.equidistantStuds}
+          onCheckedChange={equidistantStuds => {
+            updateConfig({ equidistantStuds })
+          }}
+        />
+        <LengthField
+          label={t($ => $.walls.minStudSpacing)}
+          value={assembly.minStudSpacing}
+          onChange={minStudSpacing => {
+            updateConfig({ minStudSpacing })
+          }}
+          min={0}
+          max={assembly.desiredStudSpacing}
+        />
         <LengthField
           label={t($ => $.walls.maxStudSpacing)}
           value={assembly.maxStudSpacing}
@@ -177,27 +184,14 @@ function StudFields({
           }}
           min={assembly.desiredStudSpacing}
         />
-        <LengthField
-          label={t($ => $.walls.studWidth)}
-          value={assembly.studWidth}
-          onChange={studWidth => {
-            updateConfig({ studWidth })
-          }}
-          min={0}
-        />
+      </ConfigSection>
+      <ConfigSection title={t($ => $.walls.fillConfiguration)}>
         <MaterialField
-          label={t($ => $.walls.studMaterial)}
-          value={assembly.studMaterial}
-          onChange={studMaterial => {
-            if (studMaterial) updateConfig({ studMaterial })
-          }}
-          preferredTypes={['dimensional']}
-        />
-        <BooleanField
-          label={t($ => $.walls.equidistantStuds)}
-          checked={assembly.equidistantStuds}
-          onCheckedChange={equidistantStuds => {
-            updateConfig({ equidistantStuds })
+          label={t($ => $.common.infillMaterial)}
+          value={assembly.fillMaterial ?? null}
+          allowEmpty={assembly.type === 'planked-stud'}
+          onChange={fillMaterial => {
+            if (fillMaterial) updateConfig({ fillMaterial })
           }}
         />
       </ConfigSection>
@@ -240,13 +234,14 @@ function StudFields({
         />
       </ConfigSection>
       <ConfigSection title={t($ => $.walls.nogginConfiguration)}>
-        <LengthField
-          label={t($ => $.common.spacing)}
-          value={assembly.nogginSpacing}
-          onChange={nogginSpacing => {
-            updateConfig({ nogginSpacing })
+        <MaterialField
+          label={t($ => $.walls.material)}
+          value={assembly.nogginMaterial}
+          allowEmpty
+          onChange={nogginMaterial => {
+            updateConfig({ nogginMaterial: nogginMaterial ?? undefined })
           }}
-          min={0}
+          preferredTypes={['dimensional']}
         />
         <LengthField
           label={t($ => $.common.thickness)}
@@ -256,14 +251,13 @@ function StudFields({
           }}
           min={0}
         />
-        <MaterialField
-          label={t($ => $.walls.material)}
-          value={assembly.nogginMaterial}
-          allowEmpty
-          onChange={nogginMaterial => {
-            updateConfig({ nogginMaterial: nogginMaterial ?? undefined })
+        <LengthField
+          label={t($ => $.common.spacing)}
+          value={assembly.nogginSpacing}
+          onChange={nogginSpacing => {
+            updateConfig({ nogginSpacing })
           }}
-          preferredTypes={['dimensional']}
+          min={0}
         />
         <BooleanField
           label={t($ => $.walls.equidistantNoggins)}
@@ -284,12 +278,23 @@ function StudFields({
   )
 }
 
-function ConfigSection({ title, children }: { title: string; children: React.ReactNode }): React.JSX.Element {
+function ConfigSection({
+  title,
+  children,
+  isFirst
+}: {
+  title: string
+  children: React.ReactNode
+  isFirst?: boolean
+}): React.JSX.Element {
   return (
-    <div className="flex flex-col gap-3">
-      <h2>{title}</h2>
-      <div className="grid grid-cols-2 gap-2 gap-x-3">{children}</div>
-    </div>
+    <>
+      {isFirst ? <></> : <Separator />}
+      <div className="flex flex-col gap-3">
+        <h2>{title}</h2>
+        <div className="grid grid-cols-2 gap-2 gap-x-3">{children}</div>
+      </div>
+    </>
   )
 }
 
