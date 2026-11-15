@@ -34,6 +34,8 @@ export class WallConstructionArea {
       topOffsets = topOffsets.map(o => newVec2(o[0], o[1] - maxOffset))
       const adjustedHeight = Math.max(size[2] + maxOffset, 0)
       size = newVec3(size[0], size[1], adjustedHeight)
+      // Deduplicate offsets
+      topOffsets = topOffsets.filter((o, i, a) => i === 0 || !eqVec2(o, a[i - 1]))
       // Simplify flat top by removing offsets
       if (topOffsets.length === 2 && eqVec2(topOffsets[0], ZERO_VEC2) && eqVec2(topOffsets[1], newVec2(size[0], 0))) {
         topOffsets = undefined
@@ -206,7 +208,7 @@ export class WallConstructionArea {
    */
   public withXAdjustment(xOffset: Length, newWidth?: Length): WallConstructionArea {
     xOffset = Math.max(xOffset, 0)
-    newWidth = Math.min(newWidth ?? this.size[0] - xOffset, this.size[0] - xOffset)
+    newWidth = Math.max(Math.min(newWidth ?? this.size[0] - xOffset, this.size[0] - xOffset), 0)
     const newPosition = newVec3(this.position[0] + xOffset, this.position[1], this.position[2])
     const newSize = newVec3(newWidth, this.size[1], this.size[2])
 

@@ -151,6 +151,16 @@ export const TAG_WALL_PLANKING: PredefinedTag = {
   category: 'wall-part'
 }
 
+export const TAG_WALL_STUD: PredefinedTag = {
+  id: 'wall-part_stud',
+  category: 'wall-part'
+}
+
+export const TAG_WALL_NOGGIN: PredefinedTag = {
+  id: 'wall-part_noggin',
+  category: 'wall-part'
+}
+
 // Wall assembly type tags
 export const TAG_INFILL_CONSTRUCTION: PredefinedTag = {
   id: 'wall-assembly_infill',
@@ -245,6 +255,16 @@ export const TAG_OPENING_DOOR: PredefinedTag = {
 // Measurement tags
 export const TAG_POST_SPACING: PredefinedTag = {
   id: 'wall-measurement_post-spacing',
+  category: 'wall-measurement'
+}
+
+export const TAG_STUD_SPACING: PredefinedTag = {
+  id: 'wall-measurement_stud-spacing',
+  category: 'wall-measurement'
+}
+
+export const TAG_NOGGIN_SPACING: PredefinedTag = {
+  id: 'wall-measurement_noggin-spacing',
   category: 'wall-measurement'
 }
 

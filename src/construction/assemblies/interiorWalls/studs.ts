@@ -1,179 +1,165 @@
+import type { MonolithicStudWallConfig, PlankedStudWallConfig } from '@/construction/assemblies/interiorWalls/types'
 import { WallConstructionArea } from '@/construction/assemblies/utils/WallConstructionArea'
-import { type ConstructionResult, yieldElement, yieldMeasurement } from '@/construction/model/results'
-import { TAG_INFILL, TAG_POST, TAG_POST_SPACING, TAG_WALL_REINFORCEMENT } from '@/construction/model/tags'
-import type { MaterialId } from '@/materials/types'
+import type { GroupOrElement } from '@/construction/model/elements'
+import {
+  type ConstructionResult,
+  yieldAndCollectElements,
+  yieldElement,
+  yieldError
+} from '@/construction/model/results'
+import {
+  TAG_INFILL,
+  TAG_NOGGIN_SPACING,
+  TAG_STUD_SPACING,
+  TAG_WALL_NOGGIN,
+  TAG_WALL_STUD
+} from '@/construction/model/tags'
 import type { Length } from '@/shared/geometry'
-import { newVec3 } from '@/shared/geometry'
 
-export interface StudLayoutConfig {
-  minStudSpacing: Length
-  desiredStudSpacing: Length
-  maxStudSpacing: Length
-  studWidth: Length
-  studMaterial: MaterialId
-  equidistantStuds: boolean
-  fillMaterial?: MaterialId
-  nogginMaterial?: MaterialId
-  nogginThickness: Length
-  nogginSpacing: Length
-  equidistantNoggins: boolean
-  staggerNoggins: boolean
-}
+type StudLayoutConfig = PlankedStudWallConfig | MonolithicStudWallConfig
 
-export interface NogginBand {
-  start: Length
-  thickness: Length
-}
-
-export function getStudPositions(
-  width: Length,
-  studWidth: Length,
-  desiredSpacing: Length,
-  minSpacing: Length,
-  maxSpacing: Length,
-  startsWithStand: boolean,
-  endsWithStand: boolean,
-  equidistant: boolean
-): Length[] {
-  if (width <= 0 || studWidth > width) return []
-  if (width <= maxSpacing && !startsWithStand && !endsWithStand) return []
-
-  const lastStart = width - studWidth
-  const firstStart = startsWithStand ? 0 : Math.min(desiredSpacing, lastStart)
-  const finalStart = endsWithStand ? lastStart : Math.max(firstStart, lastStart - desiredSpacing)
-  if (finalStart <= firstStart) return [firstStart]
-
-  const span = finalStart - firstStart
-  const minimumIntervals = Math.max(1, Math.ceil(span / maxSpacing))
-  const maximumIntervals = Math.max(minimumIntervals, Math.floor(span / minSpacing))
-  const intervals = Math.min(maximumIntervals, Math.max(minimumIntervals, Math.round(span / desiredSpacing)))
-  if (equidistant) {
-    return Array.from({ length: intervals + 1 }, (_, index) => firstStart + (span * index) / intervals)
-  }
-
-  const positions = [firstStart]
-  while (positions[positions.length - 1] + desiredSpacing < finalStart) {
-    positions.push(positions[positions.length - 1] + desiredSpacing)
-  }
-  if (endsWithStand && positions[positions.length - 1] !== finalStart) positions.push(finalStart)
-  return positions
-}
-
-export function getNogginBands(
-  height: Length,
-  thickness: Length,
-  spacing: Length,
-  equidistant: boolean,
-  stagger: boolean,
-  columnIndex: number
-): NogginBand[] {
-  if (height <= thickness || thickness <= 0 || spacing <= 0) return []
-
-  let starts: Length[]
-  if (equidistant) {
-    const count = Math.max(0, Math.ceil(height / spacing) - 1)
-    const clearGap = (height - count * thickness) / (count + 1)
-    starts = Array.from({ length: count }, (_, index) => clearGap + index * (clearGap + thickness))
-  } else {
-    starts = []
-    for (let start = spacing; start + thickness <= height; start += spacing) starts.push(start)
-  }
-
-  const offset = stagger && columnIndex % 2 === 1 ? thickness : 0
-  return starts
-    .map(start => ({ start: start + offset, thickness }))
-    .filter(band => band.start >= 0 && band.start + band.thickness <= height)
-}
-
-export function* constructStudSegment(
+export function* constructStudWallSegment(
   area: WallConstructionArea,
   config: StudLayoutConfig,
-  startsWithStand: boolean,
-  endsWithStand: boolean
+  startsWithStud: boolean,
+  endsWithStud: boolean
 ): Generator<ConstructionResult> {
-  const positions = getStudPositions(
-    area.size[0],
-    config.studWidth,
-    config.desiredStudSpacing,
-    config.minStudSpacing,
-    config.maxStudSpacing,
-    startsWithStand,
-    endsWithStand,
-    config.equidistantStuds
-  )
+  const { studWidth, maxStudSpacing } = config
 
-  const studAreas = positions.map(position => area.withXAdjustment(position, config.studWidth))
-  for (const studArea of studAreas) {
-    const element = studArea.extrude(config.studMaterial, [TAG_POST], {
-      type: 'post',
-      requiresSinglePiece: true
-    })
-    if (element) yield* yieldElement(element)
+  if (startsWithStud) {
+    let firstStud
+    ;[firstStud, area] = area.splitInX(studWidth)
+
+    const studElements: GroupOrElement[] = []
+    yield* yieldAndCollectElements(constructStud(firstStud, config), studElements)
+    if (firstStud.size[0] < studWidth && !firstStud.isEmpty) {
+      yield yieldError($ => $.construction.infill.notEnoughSpaceForPost, undefined, studElements)
+    }
   }
 
-  for (let index = 0; index <= positions.length; index++) {
-    const next = positions[index]
-    const gapStart = index === 0 ? 0 : positions[index - 1] + config.studWidth
-    const gapEnd = index < positions.length ? next : area.size[0]
-    const gapWidth = gapEnd - gapStart
-    if (gapWidth <= 0) continue
+  if (endsWithStud) {
+    let lastStud
+    ;[area, lastStud] = area.splitInX(area.size[0] - studWidth)
 
-    const gapArea = area.withXAdjustment(gapStart, gapWidth)
-    const bands =
-      index > 0 && index < positions.length && config.nogginMaterial
-        ? getNogginBands(
-            gapArea.minTopHeight,
-            config.nogginThickness,
-            config.nogginSpacing,
-            config.equidistantNoggins,
-            config.staggerNoggins,
-            index - 1
-          )
-        : []
+    const studElements: GroupOrElement[] = []
+    yield* yieldAndCollectElements(constructStud(lastStud, config), studElements)
+    if (lastStud.size[0] < studWidth && !lastStud.isEmpty) {
+      yield yieldError($ => $.construction.infill.notEnoughSpaceForPost, undefined, studElements)
+    }
+  }
+
+  if (area.size[0] <= maxStudSpacing) {
+    yield* constructStudInfill(area, config, false)
+    return
+  }
+
+  if (config.equidistantStuds) {
+    const span = area.size[0] - config.desiredStudSpacing
+    const studCount = calculateIntervalCount(
+      span,
+      config.minStudSpacing,
+      config.desiredStudSpacing,
+      config.maxStudSpacing
+    )
+    const totalInfillWidth = area.size[0] - studCount * config.studWidth
+    const infillWidth = Math.floor(totalInfillWidth / (studCount + 1))
+    for (let i = 0; i < studCount; i++) {
+      let stud, infill
+      ;[infill, area] = area.splitInX(infillWidth)
+      yield* constructStudInfill(infill, config, i % 2 === 1)
+      ;[stud, area] = area.splitInX(config.studWidth)
+      yield* constructStud(stud, config)
+    }
+    yield* constructStudInfill(area, config, studCount % 2 === 1)
+  } else {
+    const fullInfillAndStud = config.desiredStudSpacing + config.studWidth
+    let stagger = false
+    while (area.size[0] > config.maxStudSpacing) {
+      let infillWidth = config.desiredStudSpacing
+
+      // Not enough space for full infill + stud + minimal infill, but more than a single full bale + post
+      // -> Shorten the first infill so that a stud and a minimal infill fit after
+      if (area.size[0] < fullInfillAndStud + config.minStudSpacing && area.size[0] > fullInfillAndStud) {
+        infillWidth = Math.max(area.size[0] - config.minStudSpacing - config.studWidth, 0)
+      }
+
+      // More space than a full infill, but not enough for full infill and post
+      // -> Shorten bale to fit a post
+      if (area.size[0] < fullInfillAndStud) {
+        infillWidth = Math.max(area.size[0] - config.studWidth, 0)
+      }
+
+      let stud, infill
+      ;[infill, area] = area.splitInX(infillWidth)
+      yield* constructStudInfill(infill, config, stagger)
+      ;[stud, area] = area.splitInX(studWidth)
+      yield* constructStud(stud, config)
+
+      stagger = !stagger
+    }
+
+    yield* constructStudInfill(area, config, stagger)
+  }
+}
+
+export function* constructStudInfill(
+  area: WallConstructionArea,
+  config: StudLayoutConfig,
+  stagger: boolean
+): Generator<ConstructionResult> {
+  if (area.isEmpty) return
+  yield* area.yieldMeasurement('width', [TAG_STUD_SPACING])
+
+  if (!config.nogginMaterial) {
+    if (config.fillMaterial) {
+      yield* yieldElement(area.extrude(config.fillMaterial, [TAG_INFILL]))
+    }
+    return
+  }
+
+  let infillHeight = config.nogginSpacing
+  if (config.equidistantNoggins) {
+    const nogginCount = Math.ceil(
+      (area.size[2] - config.nogginSpacing) / (config.nogginSpacing + config.nogginThickness)
+    )
+    const totalInfillHeight = area.size[2] - nogginCount * config.nogginThickness
+    infillHeight = Math.round(totalInfillHeight / (nogginCount + 1))
+  }
+
+  while (area.size[2] > infillHeight) {
+    let noggin, infill
+    const staggerOffset = stagger && config.staggerNoggins ? config.nogginThickness : 0
+    ;[infill, area] = area.splitInZ(infillHeight - staggerOffset)
 
     if (config.fillMaterial) {
-      let fillStart = 0
-      for (const band of bands) {
-        if (band.start > fillStart) {
-          const fill = gapArea
-            .withZAdjustment(fillStart, band.start - fillStart)
-            .extrude(config.fillMaterial, [TAG_INFILL])
-          if (fill) yield* yieldElement(fill)
-        }
-        fillStart = band.start + band.thickness
-      }
-      if (fillStart < gapArea.minTopHeight) {
-        const fill = gapArea.withZAdjustment(fillStart).extrude(config.fillMaterial, [TAG_INFILL])
-        if (fill) yield* yieldElement(fill)
-      }
+      yield* yieldElement(infill.extrude(config.fillMaterial, [TAG_INFILL]))
     }
-
-    if (config.nogginMaterial) {
-      for (const band of bands) {
-        const noggin = gapArea
-          .withZAdjustment(band.start, band.thickness)
-          .extrude(config.nogginMaterial, [TAG_WALL_REINFORCEMENT], {
-            type: 'noggin',
-            requiresSinglePiece: true
-          })
-        if (noggin) yield* yieldElement(noggin)
-      }
-    }
-  }
-
-  for (let index = 1; index < positions.length; index++) {
-    const start = newVec3(
-      area.position[0] + positions[index - 1] + config.studWidth,
-      area.position[1],
-      area.position[2]
+    yield* infill.yieldMeasurement('height', [TAG_NOGGIN_SPACING])
+    ;[noggin, area] = area.splitInZ(config.nogginThickness)
+    yield* yieldElement(
+      noggin.extrude(config.nogginMaterial, [TAG_WALL_NOGGIN], { type: 'noggin', requiresSinglePiece: true })
     )
-    const end = newVec3(area.position[0] + positions[index], area.position[1], area.position[2])
-    yield yieldMeasurement({
-      startPoint: start,
-      endPoint: end,
-      length: end[0] - start[0],
-      offset: 0,
-      tags: [TAG_POST_SPACING]
-    })
+    stagger = false
   }
+
+  if (config.fillMaterial) {
+    yield* yieldElement(area.extrude(config.fillMaterial, [TAG_INFILL]))
+  }
+  yield* area.yieldMeasurement('height', [TAG_NOGGIN_SPACING])
+}
+
+function constructStud(stud: WallConstructionArea, config: StudLayoutConfig): Generator<ConstructionResult> {
+  return yieldElement(
+    stud.extrude(config.studMaterial, [TAG_WALL_STUD], {
+      type: 'stud',
+      requiresSinglePiece: true
+    })
+  )
+}
+
+function calculateIntervalCount(span: Length, min: Length, desired: Length, max: Length) {
+  const minStudCount = Math.max(1, Math.ceil(span / max))
+  const maxStudCount = Math.max(minStudCount, Math.floor(span / min))
+  const desiredStudCount = Math.round(span / desired)
+  return Math.min(maxStudCount, Math.max(minStudCount, desiredStudCount))
 }

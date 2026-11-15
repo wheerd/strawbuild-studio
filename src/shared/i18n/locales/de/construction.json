@@ -345,7 +345,9 @@
     "wall-measurement_module-height": "Modulehöhe",
     "wall-measurement_module-width": "Modulbreite",
     "wall-measurement_opening-spacing": "Öffnungsabstand",
+    "wall-measurement_noggin-spacing": "Querholzabstand",
     "wall-measurement_post-spacing": "Ständerabstand",
+    "wall-measurement_stud-spacing": "Ständerabstand",
     "wall-measurement_wall-construction-height": "Wandkonstruktionshöhe",
     "wall-measurement_wall-construction-length-inside": "Wandkonstruktionslänge innen",
     "wall-measurement_wall-construction-length-outside": "Wandkonstruktionslänge außen",
@@ -358,6 +360,8 @@
     "wall-part_post": "Ständer",
     "wall-part_reinforcement": "Verstärkende Beplankung",
     "wall-part_sill": "Schwelle",
+    "wall-part_stud": "Ständer",
+    "wall-part_noggin": "Querholz",
     "wall-part_triangular-batten": "Dreiecksleiste"
   },
   "tagVisibility": {

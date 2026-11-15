@@ -2,7 +2,7 @@ import type { IntermediateWallWithGeometry, OpeningWithGeometry } from '@/buildi
 import type { MonolithicStudWallAssemblyConfig, PlankedStudWallAssemblyConfig } from '@/config/types'
 import { BaseInteriorWallAssembly } from '@/construction/assemblies/interiorWalls/base'
 import { constructInteriorWallSegments } from '@/construction/assemblies/interiorWalls/segmentation'
-import { constructStudSegment } from '@/construction/assemblies/interiorWalls/studs'
+import { constructStudWallSegment } from '@/construction/assemblies/interiorWalls/studs'
 import type { WallConstructionArea } from '@/construction/assemblies/utils/WallConstructionArea'
 import type { PerimeterConstructionContext } from '@/construction/context/perimeter'
 import type { StoreyContext } from '@/construction/context/storeys'
@@ -20,13 +20,6 @@ import type { MaterialId } from '@/materials/types'
 import { type Polygon2D, fromTrans, newVec3, subtractPolygons } from '@/shared/geometry'
 
 import type { WallExtension } from './geometry'
-
-function* constructStudInfill(
-  area: WallConstructionArea,
-  config: MonolithicStudWallAssemblyConfig | PlankedStudWallAssemblyConfig
-): Generator<ConstructionResult> {
-  yield* constructStudSegment(area, config, false, false)
-}
 
 function* constructPlanking(
   area: WallConstructionArea,
@@ -113,8 +106,8 @@ function* constructFramedCore(
     const startsWithStand = index === 0
     const endsWithStand = index === studAreas.length - 1
     const segment = (segmentArea: WallConstructionArea, starts: boolean, ends: boolean) =>
-      constructStudSegment(segmentArea, config, starts, ends)
-    const infill = (infillArea: WallConstructionArea) => constructStudInfill(infillArea, config)
+      constructStudWallSegment(segmentArea, config, starts, ends)
+    const infill = (infillArea: WallConstructionArea) => constructStudWallSegment(infillArea, config, false, false)
     yield* constructInteriorWallSegments(
       wall,
       studArea,
