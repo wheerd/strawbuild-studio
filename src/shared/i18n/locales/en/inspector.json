@@ -53,9 +53,9 @@
   "intermediateWall": {
     "deleteWall": "Delete Wall",
     "fitToView": "Fit to View",
+    "selectAssemblyPlaceholder": "Select assembly",
     "thickness": "Thickness",
     "wallAssembly": "Wall Assembly",
-    "selectAssemblyPlaceholder": "Select assembly",
     "wallLength": "Length"
   },
   "opening": {

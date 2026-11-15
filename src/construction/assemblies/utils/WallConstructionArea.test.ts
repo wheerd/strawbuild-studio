@@ -135,6 +135,41 @@ describe('splitAtTop', () => {
     expect(remainder.getBottomOffsetsAt(0)[0]).toBe(100)
     expect(remainder.getBottomOffsetsAt(3000)[0]).toBe(0)
   })
+
+  it('preserves absolute contours when splitting a stepped top into sections', () => {
+    const area = new WallConstructionArea(newVec3(0, 0, 0), newVec3(3000, 300, 3000), [
+      newVec2(0, 0),
+      newVec2(1000, 0),
+      newVec2(1000, -500),
+      newVec2(3000, -500)
+    ])
+
+    const [headPlate] = area.splitAtTop(100)
+    const sections = headPlate.splitAtHeightJumps()
+
+    expect(sections).toHaveLength(2)
+    expect(sections[0].position[2]).toBe(2900)
+    expect(sections[0].size[2]).toBe(100)
+    expect(sections[1].position[2]).toBe(2400)
+    expect(sections[1].size[2]).toBe(100)
+    expect(sections[0].position[2] + sections[0].getTopAtStart()).toBe(3000)
+    expect(sections[1].position[2] + sections[1].getTopAtStart()).toBe(2500)
+  })
+})
+
+describe('yieldExtrudeWithHoles', () => {
+  it('yields every polygon created by subtracting holes', () => {
+    const area = new WallConstructionArea(newVec3(0, 0, 0), newVec3(3000, 300, 2400), undefined, undefined, [
+      {
+        points: [newVec2(1000, 0), newVec2(2000, 0), newVec2(2000, 2400), newVec2(1000, 2400)]
+      }
+    ])
+
+    const results = Array.from(area.yieldExtrudeWithHoles('material' as never))
+
+    expect(results).toHaveLength(2)
+    expect(results.every(result => result.type === 'element')).toBe(true)
+  })
 })
 
 describe('bottomOffsets', () => {

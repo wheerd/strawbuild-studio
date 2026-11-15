@@ -56,47 +56,28 @@ export function InteriorWallAssemblyContent(props?: InteriorWallAssemblyContentP
       const config: InteriorWallConfig =
         type === 'monolithic'
           ? { type, material: clayBrick.id, layerSetId: LAYER_SET_CLAY_PLASTER.id }
-          : type === 'planked-stud'
-            ? {
-                type,
-                minStudSpacing: 70,
-                desiredStudSpacing: 800,
-                maxStudSpacing: 900,
-                studWidth: 40,
-                studMaterial: roughWood.id,
-                equidistantStuds: true,
-                plankThickness: 25,
-                plankMaterial: roughWood.id,
-                fillMaterial: strawbale.id,
-                headPlateThickness: 60,
-                solePlateThickness: 60,
-                nogginThickness: 60,
-                nogginSpacing: 1500,
-                equidistantNoggins: false,
-                staggerNoggins: false,
-                layerSetId: LAYER_SET_CLAY_PLASTER.id
-              }
-            : {
-                type,
-                minStudSpacing: 70,
-                desiredStudSpacing: 800,
-                maxStudSpacing: 900,
-                studWidth: 40,
-                studMaterial: roughWood.id,
-                fillMaterial: clayBrick.id,
-                equidistantStuds: true,
-                headPlateThickness: 60,
-                solePlateThickness: 60,
-                nogginThickness: 60,
-                nogginSpacing: 1500,
-                equidistantNoggins: false,
-                staggerNoggins: false,
-                layerSetId: LAYER_SET_CLAY_PLASTER.id
-              }
+          : {
+              type,
+              minStudSpacing: 70,
+              desiredStudSpacing: 800,
+              maxStudSpacing: 900,
+              studWidth: 40,
+              studMaterial: roughWood.id,
+              equidistantStuds: true,
+              plankThickness: 25,
+              plankMaterial: roughWood.id,
+              fillMaterial: strawbale.id,
+              headPlateThickness: 60,
+              solePlateThickness: 60,
+              nogginThickness: 60,
+              nogginSpacing: 1500,
+              equidistantNoggins: false,
+              staggerNoggins: false,
+              layerSetId: LAYER_SET_CLAY_PLASTER.id
+            }
       const names = {
         monolithic: t($ => $.walls.newName_interiorMonolithic),
-        'planked-stud': t($ => $.walls.newName_interiorPlankedStud),
-        'monolithic-stud': t($ => $.walls.newName_interiorMonolithicStud)
+        stud: t($ => $.walls.newName_interiorStud)
       }
       const assembly = addInteriorWallAssembly(names[type], config)
       setSelectedAssemblyId(assembly.id)
@@ -129,7 +110,7 @@ export function InteriorWallAssemblyContent(props?: InteriorWallAssemblyContentP
     }
   }, [assemblies, resetInteriorWallAssembliesToDefaults, selectedAssemblyId])
 
-  const types: InteriorWallAssemblyType[] = ['monolithic', 'planked-stud', 'monolithic-stud']
+  const types: InteriorWallAssemblyType[] = ['monolithic', 'stud']
 
   return (
     <div className="flex w-full flex-col gap-4">

@@ -37,11 +37,13 @@ export class WallConstructionArea {
     bottomOffsets?: readonly Vec2[],
     holes?: readonly Polygon2D[]
   ) {
-    if (topOffsets) {
-      const maxOffset = Math.max(...topOffsets.map(o => o[1]))
-      topOffsets = topOffsets.map(o => newVec2(o[0], o[1] - maxOffset))
-      const adjustedHeight = Math.max(size[2] + maxOffset, 0)
-      size = newVec3(size[0], size[1], adjustedHeight)
+    const maxTopOffset = topOffsets?.length ? Math.max(...topOffsets.map(o => o[1])) : 0
+    const minBottomOffset = bottomOffsets?.length ? Math.min(...bottomOffsets.map(o => o[1])) : 0
+    position = newVec3(position[0], position[1], position[2] + minBottomOffset)
+    size = newVec3(size[0], size[1], Math.max(size[2] + maxTopOffset - minBottomOffset, 0))
+
+    if (topOffsets?.length) {
+      topOffsets = topOffsets.map(o => newVec2(o[0], o[1] - maxTopOffset))
       // Deduplicate offsets
       topOffsets = topOffsets.filter((o, i, a) => i === 0 || !eqVec2(o, a[i - 1]))
       // Simplify flat top by removing offsets
@@ -49,9 +51,8 @@ export class WallConstructionArea {
         topOffsets = undefined
       }
     }
-    if (bottomOffsets) {
-      const minOffset = Math.min(...bottomOffsets.map(o => o[1]))
-      bottomOffsets = bottomOffsets.map(o => newVec2(o[0], o[1] - minOffset))
+    if (bottomOffsets?.length) {
+      bottomOffsets = bottomOffsets.map(o => newVec2(o[0], o[1] - minBottomOffset))
       // Simplify flat bottom by removing offsets
       if (
         bottomOffsets.length === 2 &&

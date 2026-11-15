@@ -782,7 +782,8 @@ interface Resources {
       "interiorTypes": {
         "monolithic": "Monolithic",
         "monolithic-stud": "Monolithic Stud",
-        "planked-stud": "Planked Stud"
+        "planked-stud": "Planked Stud",
+        "stud": "Stud"
       },
       "layerSet": "Layer Set",
       "layers": {
@@ -804,8 +805,7 @@ interface Resources {
       "monolithicConfiguration": "Monolithic Configuration",
       "newName_infill": "New Infill Assembly",
       "newName_interiorMonolithic": "New Monolithic Interior Assembly",
-      "newName_interiorMonolithicStud": "New Monolithic Stud Interior Assembly",
-      "newName_interiorPlankedStud": "New Planked Stud Interior Assembly",
+      "newName_interiorStud": "New Stud Interior Assembly",
       "newName_modules": "New Modules Assembly",
       "newName_nonStrawbale": "New Non-Strawbale Assembly",
       "newName_prefab": "New Prefab Modules Assembly",
@@ -1164,6 +1164,7 @@ interface Resources {
       "interior-wall-assembly_monolithic": "Type: Monolithic",
       "interior-wall-assembly_monolithic-stud": "Type: Monolithic Stud",
       "interior-wall-assembly_planked-stud": "Type: Planked Stud",
+      "interior-wall-assembly_stud": "Type: Stud",
       "module-part_frame": "Frame",
       "module-part_infill": "Infill",
       "module-part_spacer": "Spacer",
@@ -1180,6 +1181,7 @@ interface Resources {
       "ring-beam-part_infill": "Infill",
       "ring-beam-part_insulation": "Insulation",
       "ring-beam-part_plate": "Plate",
+      "ring-beam-part_stem-wall": "Stem Wall",
       "ring-beam-part_stud-wall": "Stud Wall",
       "ring-beam-part_waterproofing": "Waterproofing Layer",
       "roof-assembly_monolithic": "Type: Monolithic",

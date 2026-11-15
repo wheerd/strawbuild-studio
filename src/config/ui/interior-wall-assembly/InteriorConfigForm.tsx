@@ -74,26 +74,7 @@ export function InteriorConfigForm({ assembly }: InteriorConfigFormProps): React
               />
             </ConfigSection>
           )}
-          {assembly.type !== 'monolithic' && <StudFields assembly={assembly} updateConfig={updateConfig} />}
-          {assembly.type === 'planked-stud' && (
-            <ConfigSection title={t($ => $.walls.plankingConfiguration)}>
-              <LengthField
-                label={t($ => $.walls.plankThickness)}
-                value={assembly.plankThickness}
-                onChange={plankThickness => {
-                  updateConfig({ plankThickness })
-                }}
-              />
-              <MaterialField
-                label={t($ => $.walls.plankMaterial)}
-                value={assembly.plankMaterial}
-                onChange={plankMaterial => {
-                  if (plankMaterial) updateConfig({ plankMaterial })
-                }}
-                preferredTypes={['dimensional']}
-              />
-            </ConfigSection>
-          )}
+          {assembly.type === 'stud' && <StudFields assembly={assembly} updateConfig={updateConfig} />}
         </div>
         <div className="flex flex-col gap-3">
           <ConfigSection isFirst title={t($ => $.walls.wallConfiguration)}>
@@ -128,7 +109,7 @@ function StudFields({
   assembly,
   updateConfig
 }: {
-  assembly: Extract<InteriorWallAssemblyConfig, { type: 'planked-stud' | 'monolithic-stud' }>
+  assembly: Extract<InteriorWallAssemblyConfig, { type: 'stud' }>
   updateConfig: (updates: Parameters<ConfigActions['updateInteriorWallAssemblyConfig']>[1]) => void
 }): React.JSX.Element {
   const { t } = useTranslation('config')
@@ -149,7 +130,7 @@ function StudFields({
           onChange={studWidth => {
             updateConfig({ studWidth })
           }}
-          min={0}
+          min={1}
         />
         <LengthField
           label={t($ => $.walls.desiredStudSpacing)}
@@ -189,9 +170,9 @@ function StudFields({
         <MaterialField
           label={t($ => $.common.infillMaterial)}
           value={assembly.fillMaterial ?? null}
-          allowEmpty={assembly.type === 'planked-stud'}
+          allowEmpty
           onChange={fillMaterial => {
-            if (fillMaterial) updateConfig({ fillMaterial })
+            updateConfig({ fillMaterial: fillMaterial ?? undefined })
           }}
         />
       </ConfigSection>
@@ -202,7 +183,7 @@ function StudFields({
           onChange={headPlateThickness => {
             updateConfig({ headPlateThickness })
           }}
-          min={0}
+          min={1}
         />
         <MaterialField
           label={t($ => $.walls.material)}
@@ -221,7 +202,7 @@ function StudFields({
           onChange={solePlateThickness => {
             updateConfig({ solePlateThickness })
           }}
-          min={0}
+          min={1}
         />
         <MaterialField
           label={t($ => $.walls.material)}
@@ -249,7 +230,7 @@ function StudFields({
           onChange={nogginThickness => {
             updateConfig({ nogginThickness })
           }}
-          min={0}
+          min={1}
         />
         <LengthField
           label={t($ => $.common.spacing)}
@@ -257,7 +238,7 @@ function StudFields({
           onChange={nogginSpacing => {
             updateConfig({ nogginSpacing })
           }}
-          min={0}
+          min={1}
         />
         <BooleanField
           label={t($ => $.walls.equidistantNoggins)}
@@ -272,6 +253,25 @@ function StudFields({
           onCheckedChange={staggerNoggins => {
             updateConfig({ staggerNoggins })
           }}
+        />
+      </ConfigSection>
+      <ConfigSection title={t($ => $.walls.plankingConfiguration)}>
+        <LengthField
+          label={t($ => $.walls.plankThickness)}
+          value={assembly.plankThickness}
+          onChange={plankThickness => {
+            updateConfig({ plankThickness })
+          }}
+          min={1}
+        />
+        <MaterialField
+          label={t($ => $.walls.plankMaterial)}
+          value={assembly.plankMaterial}
+          onChange={plankMaterial => {
+            updateConfig({ plankMaterial: plankMaterial ?? undefined })
+          }}
+          allowEmpty
+          preferredTypes={['dimensional']}
         />
       </ConfigSection>
     </>

@@ -76,6 +76,11 @@ export const validateInteriorWallConfig = (config: InteriorWallConfig): void => 
       ensurePositive(config.desiredStudSpacing, 'Desired stud spacing must be greater than 0')
       ensurePositive(config.maxStudSpacing, 'Maximum stud spacing must be greater than 0')
       ensurePositive(config.studWidth, 'Stud width must be greater than 0')
+      ensurePositive(config.headPlateThickness, 'Head plate thickness must be greater than 0')
+      ensurePositive(config.solePlateThickness, 'Sole plate thickness must be greater than 0')
+      ensurePositive(config.nogginThickness, 'Noggin thickness must be greater than 0')
+      ensurePositive(config.nogginSpacing, 'Noggin spacing must be greater than 0')
+      ensurePositive(config.plankThickness, 'Plank thickness must be greater than 0')
       if (config.maxStudSpacing < config.minStudSpacing) {
         throw new Error('Minimum stud spacing must not be bigger than maximum stud spacing')
       }

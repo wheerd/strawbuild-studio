@@ -55,9 +55,9 @@
   "intermediateWall": {
     "deleteWall": "Supprimer le mur",
     "fitToView": "Ajuster à la vue",
+    "selectAssemblyPlaceholder": "Sélectionner une composition",
     "thickness": "Épaisseur",
     "wallAssembly": "Composition du mur",
-    "selectAssemblyPlaceholder": "Sélectionner une composition",
     "wallLength": "Longueur"
   },
   "opening": {

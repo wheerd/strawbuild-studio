@@ -51,9 +51,9 @@
   "intermediateWall": {
     "deleteWall": "Wand löschen",
     "fitToView": "Auf Ansicht anpassen",
+    "selectAssemblyPlaceholder": "Aufbau auswählen",
     "thickness": "Dicke",
     "wallAssembly": "Wandaufbau",
-    "selectAssemblyPlaceholder": "Aufbau auswählen",
     "wallLength": "Länge"
   },
   "opening": {
