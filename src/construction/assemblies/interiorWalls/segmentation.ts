@@ -3,7 +3,6 @@ import { isOpeningId, isWallPostId } from '@/building/model/ids'
 import { getModelActions } from '@/building/store'
 import { resolveOpeningAssembly, resolveOpeningConfig } from '@/construction/assemblies/openings'
 import { constructWallPost } from '@/construction/assemblies/perimeterWalls/posts'
-import type { SegmentInfillMethod } from '@/construction/assemblies/perimeterWalls/types'
 import { WallConstructionArea } from '@/construction/assemblies/utils/WallConstructionArea'
 import { type ConstructionResult, yieldArea, yieldMeasurement } from '@/construction/model/results'
 import { TAG_OPENING_DOOR, TAG_OPENING_SPACING, TAG_OPENING_WINDOW } from '@/construction/model/tags'
@@ -12,8 +11,8 @@ import { fromTrans, newVec3 } from '@/shared/geometry'
 
 export type InteriorWallSegmentConstruction = (
   area: WallConstructionArea,
-  startsWithStand: boolean,
-  endsWithStand: boolean,
+  startsWithStud: boolean,
+  endsWithStud: boolean,
   startAtEnd: boolean
 ) => Generator<ConstructionResult>
 
@@ -95,45 +94,36 @@ function createWallItems(wall: IntermediateWallWithGeometry, openingAssemblyId?:
 
 export function* constructInteriorWallSegments(
   wall: IntermediateWallWithGeometry,
-  overallArea: WallConstructionArea,
-  startsWithStand: boolean,
-  endsWithStand: boolean,
+  area: WallConstructionArea,
+  startsWithStud: boolean,
+  endsWithStud: boolean,
   segmentConstruction: InteriorWallSegmentConstruction,
-  infillMethod: SegmentInfillMethod,
   openingAssemblyId?: OpeningAssemblyId
 ): Generator<ConstructionResult> {
   const items = createWallItems(wall, openingAssemblyId)
   if (items.length === 0) {
-    yield* segmentConstruction(overallArea, startsWithStand, endsWithStand, true)
+    yield* segmentConstruction(area, startsWithStud, endsWithStud, true)
     return
   }
 
-  const start = overallArea.position[0]
-  const end = overallArea.position[0] + overallArea.size[0]
-  let currentX = overallArea.position[0]
-  let startsWithCurrentStand = startsWithStand
+  const start = area.position[0]
+  const end = area.position[0] + area.size[0]
+  let currentX = area.position[0]
+  let startsWithCurrentStud = startsWithStud
   let previousOpeningEnd = currentX
   for (const item of items) {
     if (item.start > currentX) {
       yield* segmentConstruction(
-        overallArea.withXAdjustment(currentX - start, item.start - currentX),
-        startsWithCurrentStand,
+        area.withXAdjustment(currentX - start, item.start - currentX),
+        startsWithCurrentStud,
         item.needsWallStands,
         currentX === start
       )
       if (item.type === 'opening-group') {
         yield yieldMeasurement({
-          startPoint: newVec3(
-            overallArea.position[0] + previousOpeningEnd,
-            overallArea.position[1],
-            overallArea.position[2]
-          ),
-          endPoint: newVec3(overallArea.position[0] + item.start, overallArea.position[1], overallArea.position[2]),
-          extend1: newVec3(
-            overallArea.position[0] + previousOpeningEnd,
-            overallArea.position[1],
-            overallArea.position[2] + overallArea.size[2]
-          ),
+          startPoint: newVec3(area.position[0] + previousOpeningEnd, area.position[1], area.position[2]),
+          endPoint: newVec3(area.position[0] + item.start, area.position[1], area.position[2]),
+          extend1: newVec3(area.position[0] + previousOpeningEnd, area.position[1], area.position[2] + area.size[2]),
           tags: [TAG_OPENING_SPACING]
         })
         previousOpeningEnd = item.end
@@ -141,14 +131,20 @@ export function* constructInteriorWallSegments(
     }
 
     if (item.type === 'opening-group') {
-      const openingArea = overallArea.withXAdjustment(item.start - start, item.end - item.start)
+      const openingArea = area.withXAdjustment(item.start - start, item.end - item.start)
       const first = item.openings[0]
       const sill = Math.max(first.sillHeight ?? 0) - openingArea.position[2]
-      yield* item.assembly.construct(openingArea, sill + first.height, sill, infillMethod, item.openings)
+      yield* item.assembly.construct(
+        openingArea,
+        sill + first.height,
+        sill,
+        area => segmentConstruction(area, false, false, false),
+        item.openings
+      )
 
       for (const opening of item.openings) {
         const config = resolveOpeningConfig(opening, { openingAssemblyId })
-        const area = overallArea
+        const openingArea = area
           .withXAdjustment(
             opening.centerOffsetFromWallStart - opening.width / 2 + config.padding - start,
             opening.width - 2 * config.padding
@@ -164,44 +160,32 @@ export function* constructInteriorWallSegments(
           type: 'cuboid',
           areaType: opening.openingType,
           sourceId: opening.id,
-          size: area.size,
-          bounds: area.bounds,
-          transform: fromTrans(area.position),
+          size: openingArea.size,
+          bounds: openingArea.bounds,
+          transform: fromTrans(openingArea.position),
           tags,
           renderPosition: 'bottom'
         })
       }
     } else {
-      yield* constructWallPost(overallArea.withXAdjustment(item.start - start, item.end - item.start), item.post)
+      yield* constructWallPost(area.withXAdjustment(item.start - start, item.end - item.start), item.post)
     }
 
     currentX = Math.max(currentX, item.end)
-    startsWithCurrentStand = item.needsWallStands
+    startsWithCurrentStud = item.needsWallStands
   }
 
   if (currentX < end) {
     yield* segmentConstruction(
-      overallArea.withXAdjustment(currentX - start),
-      startsWithCurrentStand,
-      endsWithStand,
+      area.withXAdjustment(currentX - start),
+      startsWithCurrentStud,
+      endsWithStud,
       currentX === start
     )
     yield yieldMeasurement({
-      startPoint: newVec3(
-        overallArea.position[0] + previousOpeningEnd,
-        overallArea.position[1],
-        overallArea.position[2]
-      ),
-      endPoint: newVec3(
-        overallArea.position[0] + overallArea.size[0],
-        overallArea.position[1],
-        overallArea.position[2]
-      ),
-      extend1: newVec3(
-        overallArea.position[0] + previousOpeningEnd,
-        overallArea.position[1],
-        overallArea.position[2] + overallArea.size[2]
-      ),
+      startPoint: newVec3(area.position[0] + previousOpeningEnd, area.position[1], area.position[2]),
+      endPoint: newVec3(area.position[0] + area.size[0], area.position[1], area.position[2]),
+      extend1: newVec3(area.position[0] + previousOpeningEnd, area.position[1], area.position[2] + area.size[2]),
       tags: [TAG_OPENING_SPACING]
     })
   }

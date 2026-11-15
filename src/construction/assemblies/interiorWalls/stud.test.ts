@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
+import type { StudWallAssemblyConfig } from '@/config/types'
 import { WallConstructionArea } from '@/construction/assemblies/utils/WallConstructionArea'
 import {
   TAG_INFILL,
@@ -10,9 +11,11 @@ import {
 } from '@/construction/model/tags'
 import { newVec3 } from '@/shared/geometry'
 
-import { constructStudInfill, constructStudWallSegment } from './studs'
+import { StudInteriorWallAssembly } from './stud'
 
-const config = {
+const config: StudWallAssemblyConfig = {
+  id: 'test-stud-assembly' as never,
+  name: 'Test Stud Assembly',
   minStudSpacing: 200,
   desiredStudSpacing: 800,
   maxStudSpacing: 900,
@@ -31,10 +34,21 @@ const config = {
   staggerNoggins: false
 }
 
-describe('constructStudWallSegment', () => {
+class TestStudAssembly extends StudInteriorWallAssembly {
+  public constructSegment(area: WallConstructionArea, startsWithStud: boolean, endsWithStud: boolean) {
+    return this.constructStudWallSegment(area, startsWithStud, endsWithStud)
+  }
+
+  public constructInfill(area: WallConstructionArea, stagger: boolean) {
+    return this.constructStudInfill(area, stagger)
+  }
+}
+
+describe('StudInteriorWallAssembly.constructStudWallSegment', () => {
   it('constructs boundary and intermediate studs within the spacing limits', () => {
     const area = new WallConstructionArea(newVec3(0, 0, 0), newVec3(2000, 100, 2400))
-    const results = Array.from(constructStudWallSegment(area, config, true, true))
+    const assembly = new TestStudAssembly(config)
+    const results = Array.from(assembly.constructSegment(area, true, true))
 
     const studs = results.filter(result => result.type === 'element' && result.element.tags?.includes(TAG_WALL_STUD))
     const spacingMeasurements = results.filter(
@@ -47,7 +61,8 @@ describe('constructStudWallSegment', () => {
 
   it('constructs filled infill without boundary studs when the segment is short', () => {
     const area = new WallConstructionArea(newVec3(0, 0, 0), newVec3(500, 100, 2400))
-    const results = Array.from(constructStudWallSegment(area, config, false, false))
+    const assembly = new TestStudAssembly(config)
+    const results = Array.from(assembly.constructSegment(area, false, false))
 
     expect(results.some(result => result.type === 'element' && result.element.tags?.includes(TAG_INFILL))).toBe(true)
     expect(results.some(result => result.type === 'element' && result.element.tags?.includes(TAG_WALL_STUD))).toBe(
@@ -57,25 +72,18 @@ describe('constructStudWallSegment', () => {
 
   it('reports an error when a boundary stud does not fit', () => {
     const area = new WallConstructionArea(newVec3(0, 0, 0), newVec3(20, 100, 2400))
-    const results = Array.from(constructStudWallSegment(area, config, true, false))
+    const assembly = new TestStudAssembly(config)
+    const results = Array.from(assembly.constructSegment(area, true, false))
 
     expect(results.some(result => result.type === 'error')).toBe(true)
   })
 })
 
-describe('constructStudInfill', () => {
+describe('StudInteriorWallAssembly.constructStudInfill', () => {
   it('constructs and measures noggins separately from infill', () => {
     const area = new WallConstructionArea(newVec3(0, 0, 0), newVec3(500, 100, 2400))
-    const results = Array.from(
-      constructStudInfill(
-        area,
-        {
-          ...config,
-          nogginMaterial: 'material_noggin' as never
-        },
-        false
-      )
-    )
+    const assembly = new TestStudAssembly({ ...config, nogginMaterial: 'material_noggin' as never })
+    const results = Array.from(assembly.constructInfill(area, false))
 
     const noggins = results.filter(
       result => result.type === 'element' && result.element.tags?.includes(TAG_WALL_NOGGIN)
