@@ -573,8 +573,8 @@
       "defaultModule": "Default Module",
       "ecococonModules": "Ecococon Modules",
       "standardInfill": "Standard Infill",
-      "strawhengeModule": "Strawhenge Module"
-      ,"standardStrawFilled": "Standard Straw-Filled",
+      "strawhengeModule": "Strawhenge Module",
+      "standardStrawFilled": "Standard Straw-Filled",
       "woodStudClayBrick": "Wood Studs with Clay Brick Infill"
     },
     "defaultWallAssembly": "Default Wall Assembly",

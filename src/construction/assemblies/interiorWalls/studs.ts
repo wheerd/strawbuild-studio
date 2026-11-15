@@ -1,4 +1,4 @@
-import type { MonolithicStudWallConfig, PlankedStudWallConfig } from '@/construction/assemblies/interiorWalls/types'
+import type { StudWallConfig } from '@/construction/assemblies/interiorWalls/types'
 import { WallConstructionArea } from '@/construction/assemblies/utils/WallConstructionArea'
 import type { GroupOrElement } from '@/construction/model/elements'
 import {
@@ -16,11 +16,9 @@ import {
 } from '@/construction/model/tags'
 import type { Length } from '@/shared/geometry'
 
-type StudLayoutConfig = PlankedStudWallConfig | MonolithicStudWallConfig
-
 export function* constructStudWallSegment(
   area: WallConstructionArea,
-  config: StudLayoutConfig,
+  config: StudWallConfig,
   startsWithStud: boolean,
   endsWithStud: boolean
 ): Generator<ConstructionResult> {
@@ -104,7 +102,7 @@ export function* constructStudWallSegment(
 
 export function* constructStudInfill(
   area: WallConstructionArea,
-  config: StudLayoutConfig,
+  config: StudWallConfig,
   stagger: boolean
 ): Generator<ConstructionResult> {
   if (area.isEmpty) return
@@ -148,7 +146,7 @@ export function* constructStudInfill(
   yield* area.yieldMeasurement('height', [TAG_NOGGIN_SPACING])
 }
 
-function constructStud(stud: WallConstructionArea, config: StudLayoutConfig): Generator<ConstructionResult> {
+function constructStud(stud: WallConstructionArea, config: StudWallConfig): Generator<ConstructionResult> {
   return yieldElement(
     stud.extrude(config.studMaterial, [TAG_WALL_STUD], {
       type: 'stud',

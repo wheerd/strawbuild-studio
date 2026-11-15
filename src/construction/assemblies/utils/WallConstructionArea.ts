@@ -1,6 +1,6 @@
 import { type ConstructionElement, createConstructionElement, createCuboidElement } from '@/construction/model/elements'
 import type { RawMeasurement } from '@/construction/model/measurements'
-import { type ConstructionResult, yieldMeasurement } from '@/construction/model/results'
+import { type ConstructionResult, yieldElement, yieldMeasurement } from '@/construction/model/results'
 import { createExtrudedPolygon } from '@/construction/model/shapes'
 import type { Tag } from '@/construction/model/tags'
 import type { MaterialId } from '@/materials/types'
@@ -17,7 +17,8 @@ import {
   fromTrans,
   intersectPolygon,
   newVec2,
-  newVec3
+  newVec3,
+  subtractPolygons
 } from '@/shared/geometry'
 
 export type AreaMeasurement = 'minHeight' | 'maxHeight' | 'width' | 'thickness'
@@ -27,8 +28,15 @@ export class WallConstructionArea {
   public readonly size: Vec3
   public readonly topOffsets?: readonly Vec2[]
   public readonly bottomOffsets?: readonly Vec2[]
+  public readonly holes?: readonly Polygon2D[]
 
-  constructor(position: Vec3, size: Vec3, topOffsets?: readonly Vec2[], bottomOffsets?: readonly Vec2[]) {
+  constructor(
+    position: Vec3,
+    size: Vec3,
+    topOffsets?: readonly Vec2[],
+    bottomOffsets?: readonly Vec2[],
+    holes?: readonly Polygon2D[]
+  ) {
     if (topOffsets) {
       const maxOffset = Math.max(...topOffsets.map(o => o[1]))
       topOffsets = topOffsets.map(o => newVec2(o[0], o[1] - maxOffset))
@@ -57,6 +65,7 @@ export class WallConstructionArea {
     this.size = size
     this.topOffsets = topOffsets
     this.bottomOffsets = bottomOffsets
+    this.holes = holes
   }
 
   public getTopOffsetsAt(position: Length, tolerance: Length = 0): [Length, Length] {
@@ -200,7 +209,7 @@ export class WallConstructionArea {
     newDepth = Math.min(newDepth ?? this.size[1], this.size[1] - yOffset)
     const newPosition = newVec3(this.position[0], this.position[1] + yOffset, this.position[2])
     const newSize = newVec3(this.size[0], newDepth, this.size[2])
-    return new WallConstructionArea(newPosition, newSize, this.topOffsets, this.bottomOffsets)
+    return new WallConstructionArea(newPosition, newSize, this.topOffsets, this.bottomOffsets, this.holes)
   }
 
   /**
@@ -213,7 +222,7 @@ export class WallConstructionArea {
     const newSize = newVec3(newWidth, this.size[1], this.size[2])
 
     if (!this.topOffsets && !this.bottomOffsets) {
-      return new WallConstructionArea(newPosition, newSize)
+      return new WallConstructionArea(newPosition, newSize, undefined, undefined, this.holes)
     }
 
     let newTopOffsets: Vec2[] | undefined
@@ -242,11 +251,15 @@ export class WallConstructionArea {
       ]
     }
 
-    return new WallConstructionArea(newPosition, newSize, newTopOffsets, newBottomOffsets)
+    return new WallConstructionArea(newPosition, newSize, newTopOffsets, newBottomOffsets, this.holes)
   }
 
   public splitInX(xOffset: Length): [WallConstructionArea, WallConstructionArea] {
     return [this.withXAdjustment(0, xOffset), this.withXAdjustment(xOffset)]
+  }
+
+  public splitInY(yOffset: Length): [WallConstructionArea, WallConstructionArea] {
+    return [this.withYAdjustment(0, yOffset), this.withYAdjustment(yOffset)]
   }
 
   /**
@@ -285,7 +298,19 @@ export class WallConstructionArea {
     }
 
     const top = this.getAbsoluteTopPoints()
-    const offsetBottom = offsetContour(top, thickness)
+    const segments: Vec2[][] = [[]]
+    for (let i = 0; i < top.length - 1; i++) {
+      const current = top[i]
+      const next = top[i + 1]
+      segments[segments.length - 1].push(current)
+
+      if (Math.abs(current[0] - next[0]) < 0.0001 && Math.abs(current[1] - next[1]) > 0.0001) {
+        segments.push([])
+      }
+    }
+    segments[segments.length - 1].push(top[top.length - 1])
+
+    const offsetBottom = segments.filter(s => s.length >= 2).flatMap(s => offsetContour(s, thickness))
     const bottom = this.getAbsoluteBottomPoints()
 
     return [this.createAreaFromBoundaries(offsetBottom, top), this.createAreaFromBoundaries(bottom, offsetBottom)]
@@ -302,7 +327,7 @@ export class WallConstructionArea {
     const newSize = newVec3(this.size[0], this.size[1], newHeight)
 
     if (!this.topOffsets && !this.bottomOffsets) {
-      return new WallConstructionArea(newPosition, newSize)
+      return new WallConstructionArea(newPosition, newSize, undefined, undefined, this.holes)
     }
 
     const oldBase = this.position[2]
@@ -422,7 +447,8 @@ export class WallConstructionArea {
       newPosition,
       newSize,
       newTopOffsets && newTopOffsets.length > 0 ? newTopOffsets : undefined,
-      newBottomOffsets && newBottomOffsets.length > 0 ? newBottomOffsets : undefined
+      newBottomOffsets && newBottomOffsets.length > 0 ? newBottomOffsets : undefined,
+      this.holes
     )
   }
 
@@ -465,7 +491,8 @@ export class WallConstructionArea {
       newVec3(this.position[0], this.position[1], baseZ),
       newVec3(this.size[0], this.size[1], Math.max(topZ - baseZ, 0)),
       topOffsets,
-      bottomOffsets
+      bottomOffsets,
+      this.holes
     )
   }
 
@@ -544,6 +571,28 @@ export class WallConstructionArea {
     const transform = fromTrans(newVec3(0, this.position[1], 0))
 
     return createConstructionElement(materialId, shape, transform, tags, partInfo)
+  }
+
+  public *yieldExtrudeWithHoles(
+    materialId: MaterialId,
+    tags?: Tag[],
+    partInfo?: InitialPartInfo
+  ): Generator<ConstructionResult> {
+    if (this.isEmpty) return
+
+    if (this.isFlat && !this.holes?.length) {
+      yield* yieldElement(createCuboidElement(materialId, this.position, this.size, tags, partInfo))
+      return
+    }
+
+    const polygons = subtractPolygons([this.getSideProfilePolygon()], this.holes ?? [])
+
+    for (const polygon of polygons) {
+      const shape = createExtrudedPolygon(polygon, 'xz', this.size[1])
+      const transform = fromTrans(newVec3(0, this.position[1], 0))
+
+      yield* yieldElement(createConstructionElement(materialId, shape, transform, tags, partInfo))
+    }
   }
 
   public createMeasurement(type: AreaMeasurement, tags?: Tag[], offset?: Length, useMin = true): RawMeasurement | null {

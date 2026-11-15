@@ -1,128 +1,21 @@
 import type { IntermediateWallWithGeometry, OpeningWithGeometry } from '@/building/model'
-import type { MonolithicStudWallAssemblyConfig, PlankedStudWallAssemblyConfig } from '@/config/types'
+import type { StudWallAssemblyConfig } from '@/config/types'
 import { BaseInteriorWallAssembly } from '@/construction/assemblies/interiorWalls/base'
 import { constructInteriorWallSegments } from '@/construction/assemblies/interiorWalls/segmentation'
 import { constructStudWallSegment } from '@/construction/assemblies/interiorWalls/studs'
 import type { WallConstructionArea } from '@/construction/assemblies/utils/WallConstructionArea'
 import type { PerimeterConstructionContext } from '@/construction/context/perimeter'
 import type { StoreyContext } from '@/construction/context/storeys'
-import { createConstructionElement } from '@/construction/model/elements'
-import { type ConstructionResult, yieldElement } from '@/construction/model/results'
-import { createExtrudedPolygon } from '@/construction/model/shapes'
-import {
-  TAG_BASE_PLATE,
-  TAG_MONOLITHIC_STUD_WALL,
-  TAG_PLANKED_STUD_WALL,
-  TAG_TOP_PLATE,
-  TAG_WALL_PLANKING
-} from '@/construction/model/tags'
-import type { MaterialId } from '@/materials/types'
-import { type Polygon2D, fromTrans, newVec3, subtractPolygons } from '@/shared/geometry'
+import { type ConstructionResult } from '@/construction/model/results'
+import { TAG_BASE_PLATE, TAG_STUD_WALL, TAG_TOP_PLATE, TAG_WALL_PLANKING } from '@/construction/model/tags'
+import { type Polygon2D } from '@/shared/geometry'
 
 import type { WallExtension } from './geometry'
 
-function* constructPlanking(
-  area: WallConstructionArea,
-  openingHoles: Polygon2D[],
-  config: PlankedStudWallAssemblyConfig
-): Generator<ConstructionResult> {
-  if (config.plankThickness <= 0 || config.plankThickness * 2 > area.size[1]) return
+export class StudInteriorWallAssembly extends BaseInteriorWallAssembly<StudWallAssemblyConfig> {
+  readonly assemblyTypeTag = TAG_STUD_WALL
 
-  const polygon = {
-    outer: area.getSideProfilePolygon(),
-    holes: openingHoles
-  }
-  const shape = createExtrudedPolygon(polygon, 'xz', config.plankThickness)
-  const left = createConstructionElement(
-    config.plankMaterial,
-    shape,
-    fromTrans(newVec3(0, area.position[1], 0)),
-    [TAG_WALL_PLANKING],
-    { type: 'wall-plank', requiresSinglePiece: true }
-  )
-  const right = createConstructionElement(
-    config.plankMaterial,
-    shape,
-    fromTrans(newVec3(0, area.position[1] + area.size[1] - config.plankThickness, 0)),
-    [TAG_WALL_PLANKING],
-    { type: 'wall-plank', requiresSinglePiece: true }
-  )
-  yield* yieldElement(left)
-  yield* yieldElement(right)
-}
-
-function* constructPlate(
-  area: WallConstructionArea,
-  openingHoles: Polygon2D[],
-  material: MaterialId,
-  tags: (typeof TAG_BASE_PLATE)[],
-  partType: 'head-plate' | 'sole-plate'
-): Generator<ConstructionResult> {
-  if (area.isEmpty) return
-  const polygons = subtractPolygons([area.getSideProfilePolygon()], openingHoles)
-  for (const polygon of polygons) {
-    const shape = createExtrudedPolygon({ outer: polygon.outer, holes: polygon.holes }, 'xz', area.size[1])
-    yield* yieldElement(
-      createConstructionElement(material, shape, fromTrans(newVec3(0, area.position[1], 0)), tags, {
-        type: partType,
-        requiresSinglePiece: true
-      })
-    )
-  }
-}
-
-function* constructFramedCore(
-  wall: IntermediateWallWithGeometry,
-  area: WallConstructionArea,
-  openingHoles: Polygon2D[],
-  extension: WallExtension,
-  config: MonolithicStudWallAssemblyConfig | PlankedStudWallAssemblyConfig
-): Generator<ConstructionResult> {
-  let workingArea = area
-  if (config.solePlateMaterial) {
-    yield* constructPlate(
-      workingArea.withZAdjustment(0, config.solePlateThickness),
-      openingHoles,
-      config.solePlateMaterial,
-      [TAG_BASE_PLATE],
-      'sole-plate'
-    )
-    workingArea = workingArea.withZAdjustment(config.solePlateThickness)
-  }
-
-  let studAreas = [workingArea]
-  if (config.headPlateMaterial) {
-    studAreas = []
-    for (const continuousArea of workingArea.splitAtHeightJumps()) {
-      const [headPlate, remaining] = continuousArea.splitAtTop(config.headPlateThickness)
-      yield* constructPlate(headPlate, openingHoles, config.headPlateMaterial, [TAG_TOP_PLATE], 'head-plate')
-      if (!remaining.isEmpty) studAreas.push(remaining)
-    }
-  }
-
-  for (const [index, studArea] of studAreas.entries()) {
-    const areaStartOffset = studArea.position[0] - area.position[0]
-    const localExtensionStart = extension.startExtension - areaStartOffset
-    const startsWithStand = index === 0
-    const endsWithStand = index === studAreas.length - 1
-    const segment = (segmentArea: WallConstructionArea, starts: boolean, ends: boolean) =>
-      constructStudWallSegment(segmentArea, config, starts, ends)
-    const infill = (infillArea: WallConstructionArea) => constructStudWallSegment(infillArea, config, false, false)
-    yield* constructInteriorWallSegments(
-      wall,
-      studArea,
-      localExtensionStart,
-      startsWithStand,
-      endsWithStand,
-      segment,
-      infill,
-      config.openingAssemblyId
-    )
-  }
-}
-
-export class MonolithicStudInteriorWallAssembly extends BaseInteriorWallAssembly<MonolithicStudWallAssemblyConfig> {
-  readonly assemblyTypeTag = TAG_MONOLITHIC_STUD_WALL
+  protected area!: WallConstructionArea
 
   protected *constructCore(
     wall: IntermediateWallWithGeometry,
@@ -131,27 +24,57 @@ export class MonolithicStudInteriorWallAssembly extends BaseInteriorWallAssembly
     _openingHoles: Polygon2D[],
     _storeyContext: StoreyContext,
     _perimeterContext: PerimeterConstructionContext,
-    extension: WallExtension
+    _extension: WallExtension
   ): Generator<ConstructionResult> {
-    yield* constructFramedCore(wall, area, _openingHoles, extension, this.config)
+    this.area = area
+
+    yield* this.constructPlanking()
+    yield* this.constructSolePlate()
+    yield* this.constructHeadPlate()
+    yield* this.constructFramedCore(wall)
   }
-}
 
-export class PlankedStudInteriorWallAssembly extends BaseInteriorWallAssembly<PlankedStudWallAssemblyConfig> {
-  readonly assemblyTypeTag = TAG_PLANKED_STUD_WALL
+  protected *constructPlanking(): Generator<ConstructionResult> {
+    const { plankMaterial, plankThickness } = this.config
 
-  protected *constructCore(
-    wall: IntermediateWallWithGeometry,
-    area: WallConstructionArea,
-    _openings: OpeningWithGeometry[],
-    openingHoles: Polygon2D[],
-    _storeyContext: StoreyContext,
-    _perimeterContext: PerimeterConstructionContext,
-    extension: WallExtension
-  ): Generator<ConstructionResult> {
-    yield* constructPlanking(area, openingHoles, this.config)
+    if (!plankMaterial) return
 
-    const studArea = area.withYAdjustment(this.config.plankThickness, area.size[1] - 2 * this.config.plankThickness)
-    yield* constructFramedCore(wall, studArea, openingHoles, extension, this.config)
+    let leftPlank, rightPlank
+    ;[leftPlank, this.area] = this.area.splitInY(plankThickness)
+    ;[this.area, rightPlank] = this.area.splitInY(this.area.size[1] - plankThickness)
+
+    yield* leftPlank.yieldExtrudeWithHoles(plankMaterial, [TAG_WALL_PLANKING])
+    yield* rightPlank.yieldExtrudeWithHoles(plankMaterial, [TAG_WALL_PLANKING])
+  }
+
+  protected *constructSolePlate(): Generator<ConstructionResult> {
+    const { solePlateMaterial, solePlateThickness } = this.config
+
+    if (!solePlateMaterial) return
+
+    let solePlate
+    ;[solePlate, this.area] = this.area.splitInZ(solePlateThickness)
+
+    yield* solePlate.yieldExtrudeWithHoles(solePlateMaterial, [TAG_BASE_PLATE])
+  }
+
+  protected *constructHeadPlate(): Generator<ConstructionResult> {
+    const { headPlateMaterial, headPlateThickness } = this.config
+
+    if (!headPlateMaterial) return
+
+    let headPlate
+    ;[headPlate, this.area] = this.area.splitAtTop(headPlateThickness)
+
+    for (const headPlatePart of headPlate.splitAtHeightJumps()) {
+      yield* headPlatePart.yieldExtrudeWithHoles(headPlateMaterial, [TAG_TOP_PLATE])
+    }
+  }
+
+  protected *constructFramedCore(wall: IntermediateWallWithGeometry): Generator<ConstructionResult> {
+    const segment = (segmentArea: WallConstructionArea, starts: boolean, ends: boolean) =>
+      constructStudWallSegment(segmentArea, this.config, starts, ends)
+    const infill = (infillArea: WallConstructionArea) => constructStudWallSegment(infillArea, this.config, false, false)
+    yield* constructInteriorWallSegments(wall, this.area, true, true, segment, infill, this.config.openingAssemblyId)
   }
 }

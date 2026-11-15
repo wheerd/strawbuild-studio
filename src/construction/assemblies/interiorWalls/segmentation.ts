@@ -55,11 +55,7 @@ function mergeAdjacentOpenings(openings: Opening[]): Opening[][] {
   return groups
 }
 
-function createWallItems(
-  wall: IntermediateWallWithGeometry,
-  extensionStart: Length,
-  openingAssemblyId?: OpeningAssemblyId
-): WallItem[] {
+function createWallItems(wall: IntermediateWallWithGeometry, openingAssemblyId?: OpeningAssemblyId): WallItem[] {
   const { getWallOpeningById, getWallPostById } = getModelActions()
   const openings = wall.entityIds
     .filter(isOpeningId)
@@ -76,14 +72,14 @@ function createWallItems(
       type: 'opening-group',
       openings: group,
       assembly,
-      start: extensionStart + first.centerOffsetFromWallStart - first.width / 2 - padding,
-      end: extensionStart + last.centerOffsetFromWallStart + last.width / 2 + padding,
+      start: first.centerOffsetFromWallStart - first.width / 2 - padding,
+      end: last.centerOffsetFromWallStart + last.width / 2 + padding,
       needsWallStands: assembly.needsWallStands(group)
     })
   }
 
   for (const post of wall.entityIds.filter(isWallPostId).map(getWallPostById)) {
-    const center = extensionStart + post.centerOffsetFromWallStart
+    const center = post.centerOffsetFromWallStart
     const start = Math.max(0, center - post.width / 2)
     items.push({
       type: 'post',
@@ -100,29 +96,30 @@ function createWallItems(
 export function* constructInteriorWallSegments(
   wall: IntermediateWallWithGeometry,
   overallArea: WallConstructionArea,
-  extensionStart: Length,
   startsWithStand: boolean,
   endsWithStand: boolean,
   segmentConstruction: InteriorWallSegmentConstruction,
   infillMethod: SegmentInfillMethod,
   openingAssemblyId?: OpeningAssemblyId
 ): Generator<ConstructionResult> {
-  const items = createWallItems(wall, extensionStart, openingAssemblyId)
+  const items = createWallItems(wall, openingAssemblyId)
   if (items.length === 0) {
-    yield* segmentConstruction(overallArea, startsWithStand, endsWithStand, extensionStart > 0)
+    yield* segmentConstruction(overallArea, startsWithStand, endsWithStand, true)
     return
   }
 
-  let currentX = 0
+  const start = overallArea.position[0]
+  const end = overallArea.position[0] + overallArea.size[0]
+  let currentX = overallArea.position[0]
   let startsWithCurrentStand = startsWithStand
-  let previousOpeningEnd = 0
+  let previousOpeningEnd = currentX
   for (const item of items) {
     if (item.start > currentX) {
       yield* segmentConstruction(
-        overallArea.withXAdjustment(currentX, item.start - currentX),
+        overallArea.withXAdjustment(currentX - start, item.start - currentX),
         startsWithCurrentStand,
         item.needsWallStands,
-        currentX === 0 && extensionStart > 0
+        currentX === start
       )
       if (item.type === 'opening-group') {
         yield yieldMeasurement({
@@ -144,7 +141,7 @@ export function* constructInteriorWallSegments(
     }
 
     if (item.type === 'opening-group') {
-      const openingArea = overallArea.withXAdjustment(item.start, item.end - item.start)
+      const openingArea = overallArea.withXAdjustment(item.start - start, item.end - item.start)
       const first = item.openings[0]
       const sill = Math.max(first.sillHeight ?? 0) - openingArea.position[2]
       yield* item.assembly.construct(openingArea, sill + first.height, sill, infillMethod, item.openings)
@@ -153,7 +150,7 @@ export function* constructInteriorWallSegments(
         const config = resolveOpeningConfig(opening, { openingAssemblyId })
         const area = overallArea
           .withXAdjustment(
-            extensionStart + opening.centerOffsetFromWallStart - opening.width / 2 + config.padding,
+            opening.centerOffsetFromWallStart - opening.width / 2 + config.padding - start,
             opening.width - 2 * config.padding
           )
           .withZAdjustment(sill + config.padding, opening.height - 2 * config.padding)
@@ -175,19 +172,19 @@ export function* constructInteriorWallSegments(
         })
       }
     } else {
-      yield* constructWallPost(overallArea.withXAdjustment(item.start, item.end - item.start), item.post)
+      yield* constructWallPost(overallArea.withXAdjustment(item.start - start, item.end - item.start), item.post)
     }
 
     currentX = Math.max(currentX, item.end)
     startsWithCurrentStand = item.needsWallStands
   }
 
-  if (currentX < overallArea.size[0]) {
+  if (currentX < end) {
     yield* segmentConstruction(
-      overallArea.withXAdjustment(currentX),
+      overallArea.withXAdjustment(currentX - start),
       startsWithCurrentStand,
       endsWithStand,
-      currentX === 0 && extensionStart > 0
+      currentX === start
     )
     yield yieldMeasurement({
       startPoint: newVec3(

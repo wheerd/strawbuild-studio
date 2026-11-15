@@ -317,8 +317,8 @@ export const TAG_PLATE: PredefinedTag = {
   category: 'ring-beam-part'
 }
 
-export const TAG_STUD_WALL: PredefinedTag = {
-  id: 'ring-beam-part_stud-wall',
+export const TAG_STEM_WALL: PredefinedTag = {
+  id: 'ring-beam-part_stem-wall',
   category: 'ring-beam-part'
 }
 
@@ -609,12 +609,7 @@ export const TAG_MONOLITHIC_WALL: PredefinedTag = {
   category: 'interior-wall-assembly'
 }
 
-export const TAG_PLANKED_STUD_WALL: PredefinedTag = {
-  id: 'interior-wall-assembly_planked-stud',
-  category: 'interior-wall-assembly'
-}
-
-export const TAG_MONOLITHIC_STUD_WALL: PredefinedTag = {
-  id: 'interior-wall-assembly_monolithic-stud',
+export const TAG_STUD_WALL: PredefinedTag = {
+  id: 'interior-wall-assembly_stud',
   category: 'interior-wall-assembly'
 }

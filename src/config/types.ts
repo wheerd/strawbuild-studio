@@ -14,11 +14,7 @@ import type {
   JoistFloorConfig,
   MonolithicFloorConfig
 } from '@/construction/assemblies/floors/types'
-import type {
-  MonolithicStudWallConfig,
-  MonolithicWallConfig,
-  PlankedStudWallConfig
-} from '@/construction/assemblies/interiorWalls/types'
+import type { MonolithicWallConfig, StudWallConfig } from '@/construction/assemblies/interiorWalls/types'
 import type {
   EmptyOpeningConfig,
   PlankedOpeningConfig,
@@ -74,13 +70,9 @@ export interface InteriorWallAssemblyIdPart extends NamedAssembly {
 }
 
 export type MonolithicWallAssemblyConfig = MonolithicWallConfig & InteriorWallAssemblyIdPart
-export type PlankedStudWallAssemblyConfig = PlankedStudWallConfig & InteriorWallAssemblyIdPart
-export type MonolithicStudWallAssemblyConfig = MonolithicStudWallConfig & InteriorWallAssemblyIdPart
+export type StudWallAssemblyConfig = StudWallConfig & InteriorWallAssemblyIdPart
 
-export type InteriorWallAssemblyConfig =
-  | MonolithicWallAssemblyConfig
-  | PlankedStudWallAssemblyConfig
-  | MonolithicStudWallAssemblyConfig
+export type InteriorWallAssemblyConfig = MonolithicWallAssemblyConfig | StudWallAssemblyConfig
 
 // Ring beams
 

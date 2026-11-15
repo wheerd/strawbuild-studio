@@ -1,18 +1,14 @@
 import { type InteriorWallAssemblyId } from '@/building/model/ids'
-import type {
-  MonolithicStudWallAssemblyConfig,
-  MonolithicWallAssemblyConfig,
-  PlankedStudWallAssemblyConfig
-} from '@/config/types'
+import type { MonolithicWallAssemblyConfig, StudWallAssemblyConfig } from '@/config/types'
 import { clayBrick, concrete, roughWood, strawbale } from '@/materials/defaults'
 
 import { LAYER_SET_CLAY_PLASTER } from './layers.defaults'
 
-const plankedStudAssembly: PlankedStudWallAssemblyConfig = {
+const plankedStudAssembly: StudWallAssemblyConfig = {
   id: 'iwa_planked_default' as InteriorWallAssemblyId,
   name: 'Standard Straw-Filled',
   nameKey: $ => $.walls.defaults.standardStrawFilled,
-  type: 'planked-stud',
+  type: 'stud',
   maxStudSpacing: 900,
   desiredStudSpacing: 800,
   minStudSpacing: 70,
@@ -51,11 +47,11 @@ const concreteAssembly: MonolithicWallAssemblyConfig = {
   layerSetId: LAYER_SET_CLAY_PLASTER.id
 }
 
-const woodStudClayBrickAssembly: MonolithicStudWallAssemblyConfig = {
+const woodStudClayBrickAssembly: StudWallAssemblyConfig = {
   id: 'iwa_wood_stud_clay_brick_default' as InteriorWallAssemblyId,
   name: 'Wood Studs with Clay Brick Infill',
   nameKey: $ => $.walls.defaults.woodStudClayBrick,
-  type: 'monolithic-stud',
+  type: 'stud',
   maxStudSpacing: 900,
   desiredStudSpacing: 800,
   minStudSpacing: 200,
@@ -69,7 +65,8 @@ const woodStudClayBrickAssembly: MonolithicStudWallAssemblyConfig = {
   nogginSpacing: 1500,
   equidistantNoggins: false,
   staggerNoggins: false,
-  layerSetId: LAYER_SET_CLAY_PLASTER.id
+  layerSetId: LAYER_SET_CLAY_PLASTER.id,
+  plankThickness: 10
 }
 
 export const DEFAULT_INTERIOR_WALL_ASSEMBLIES = [

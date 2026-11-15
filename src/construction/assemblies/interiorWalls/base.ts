@@ -100,13 +100,6 @@ export abstract class BaseInteriorWallAssembly<
       newVec2(extension.totalLength, -ceilingOffset)
     ]
 
-    // Create overall wall construction area ONCE with roof offsets
-    const wallArea = new WallConstructionArea(
-      newVec3(-extension.startExtension, -halfCoreThickness, wallBottom),
-      newVec3(extension.totalLength, coreThickness, wallHeight),
-      roofOffsets
-    )
-
     const openings = wall.entityIds.filter(isOpeningId).map(getWallOpeningById)
     const wallTop = storeyContext.ceilingConstructionBottom - storeyContext.finishedFloorTop
 
@@ -123,6 +116,15 @@ export abstract class BaseInteriorWallAssembly<
           ]
         : []
     })
+
+    // Create overall wall construction area ONCE with roof offsets
+    const wallArea = new WallConstructionArea(
+      newVec3(-extension.startExtension, -halfCoreThickness, wallBottom),
+      newVec3(extension.totalLength, coreThickness, wallHeight),
+      roofOffsets,
+      undefined,
+      openingHoles
+    )
 
     const debugPlaneEntries: { endpoint: 'start' | 'end'; plane: typeof extension.startClipPlane }[] = [
       { endpoint: 'start', plane: extension.startClipPlane },
