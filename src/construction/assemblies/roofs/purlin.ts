@@ -122,6 +122,12 @@ export class PurlinRoofAssembly extends BaseRoofAssembly<PurlinRoofConfig> {
     const ceilingClippingVolume = this.getCeilingPolygons(roof, true)
       .map(c => this.createExtrudedVolume(c, roof.ridgeLine, minZ, maxZ))
       .reduce((a, b) => a.add(b))
+    const interiorWallClippingVolume = this.createInteriorWallClippingVolume(
+      perimeterContexts,
+      roof.ridgeLine,
+      minZ,
+      maxZ
+    )
 
     // STEP 2: For each side, build all layers
     const roofModels = roofSides.map(roofSide => {
@@ -143,6 +149,9 @@ export class PurlinRoofAssembly extends BaseRoofAssembly<PurlinRoofConfig> {
       const infillClip = transformManifold(outerConstructionClippingVolume, roofSideInverseRotate)
       const sheathingClip = transformManifold(innerConstructionClippingVolume, roofSideInverseRotate)
       const ceilingClip = transformManifold(ceilingClippingVolume, roofSideInverseRotate)
+      const interiorWallClip = interiorWallClippingVolume
+        ? transformManifold(interiorWallClippingVolume, roofSideInverseRotate)
+        : null
 
       const results = Array.from(
         mergeResults(
@@ -159,7 +168,9 @@ export class PurlinRoofAssembly extends BaseRoofAssembly<PurlinRoofConfig> {
           ),
           yieldAndClip(this.constructTopLayers(roof, roofSide), m => m.intersect(roofSideClip)),
           yieldAndClip(this.constructCeilingLayers(roof, roofSide), m =>
-            m.intersect(roofSideClip).intersect(ceilingClip).subtract(purlinClip)
+            interiorWallClip
+              ? m.intersect(roofSideClip).intersect(ceilingClip).subtract(purlinClip).subtract(interiorWallClip)
+              : m.intersect(roofSideClip).intersect(ceilingClip).subtract(purlinClip)
           ),
           yieldAndClip(this.constructOverhangLayers(roof, roofSide), m => m.intersect(roofSideClip))
         )
