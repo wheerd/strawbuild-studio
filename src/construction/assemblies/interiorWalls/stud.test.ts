@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
+import type { IntermediateWallWithGeometry } from '@/building/model'
 import type { StudWallAssemblyConfig } from '@/config/types'
 import { WallConstructionArea } from '@/construction/assemblies/utils/WallConstructionArea'
 import {
@@ -7,9 +8,12 @@ import {
   TAG_NOGGIN_SPACING,
   TAG_STUD_SPACING,
   TAG_WALL_NOGGIN,
+  TAG_WALL_PLANKING,
   TAG_WALL_STUD
 } from '@/construction/model/tags'
+import type { Bounds3D } from '@/shared/geometry'
 import { newVec3 } from '@/shared/geometry'
+import { partial } from '@/test/helpers'
 
 import { StudInteriorWallAssembly } from './stud'
 
@@ -42,6 +46,18 @@ class TestStudAssembly extends StudInteriorWallAssembly {
   public constructInfill(area: WallConstructionArea, stagger: boolean) {
     return this.constructStudInfill(area, stagger)
   }
+
+  public constructCoreForTest(wall: IntermediateWallWithGeometry, area: WallConstructionArea) {
+    return this.constructCore(wall, area, [], [], undefined as never, undefined as never, undefined as never)
+  }
+
+  public intervalCount(span: number) {
+    return this.calculateIntervalCount(span)
+  }
+}
+
+function elementYSize(result: { bounds: Bounds3D }) {
+  return result.bounds.max[1] - result.bounds.min[1]
 }
 
 describe('StudInteriorWallAssembly.constructStudWallSegment', () => {
@@ -77,6 +93,27 @@ describe('StudInteriorWallAssembly.constructStudWallSegment', () => {
 
     expect(results.some(result => result.type === 'error')).toBe(true)
   })
+
+  it('uses one infill section when the segment is at the maximum spacing', () => {
+    const area = new WallConstructionArea(newVec3(0, 0, 0), newVec3(900, 100, 2400))
+    const assembly = new TestStudAssembly(config)
+    const results = Array.from(assembly.constructSegment(area, false, false))
+
+    expect(results.filter(result => result.type === 'measurement')).toHaveLength(1)
+    expect(results.some(result => result.type === 'element' && result.element.tags?.includes(TAG_WALL_STUD))).toBe(
+      false
+    )
+  })
+
+  it('shortens the first infill when the remaining segment cannot fit two minimum intervals', () => {
+    const area = new WallConstructionArea(newVec3(0, 0, 0), newVec3(1010, 100, 2400))
+    const assembly = new TestStudAssembly({ ...config, equidistantStuds: false })
+    const results = Array.from(assembly.constructSegment(area, false, false))
+
+    const measurements = results.filter(result => result.type === 'measurement')
+    expect(measurements).toHaveLength(2)
+    expect(measurements[0].measurement.endPoint[0] - measurements[0].measurement.startPoint[0]).toBe(770)
+  })
 })
 
 describe('StudInteriorWallAssembly.constructStudInfill', () => {
@@ -94,5 +131,73 @@ describe('StudInteriorWallAssembly.constructStudInfill', () => {
 
     expect(noggins).toHaveLength(2)
     expect(nogginMeasurements).toHaveLength(3)
+  })
+
+  it('creates only a spacing measurement when no infill or noggin material is configured', () => {
+    const area = new WallConstructionArea(newVec3(0, 0, 0), newVec3(500, 100, 2400))
+    const assembly = new TestStudAssembly({ ...config, fillMaterial: undefined, nogginMaterial: undefined })
+    const results = Array.from(assembly.constructInfill(area, false))
+
+    expect(results).toHaveLength(1)
+    expect(results[0].type).toBe('measurement')
+  })
+
+  it('distributes equidistant noggins across the infill height', () => {
+    const area = new WallConstructionArea(newVec3(0, 0, 0), newVec3(500, 100, 2400))
+    const assembly = new TestStudAssembly({
+      ...config,
+      nogginMaterial: 'material_noggin' as never,
+      equidistantNoggins: true,
+      nogginSpacing: 800
+    })
+    const results = Array.from(assembly.constructInfill(area, false))
+
+    const noggins = results.filter(
+      result => result.type === 'element' && result.element.tags?.includes(TAG_WALL_NOGGIN)
+    )
+    expect(noggins).toHaveLength(2)
+    expect(noggins.every(result => result.type === 'element' && elementYSize(result.element) === 100)).toBe(true)
+  })
+})
+
+describe('StudInteriorWallAssembly.calculateIntervalCount', () => {
+  it('clamps the desired interval count to the configured spacing limits', () => {
+    const assembly = new TestStudAssembly(config)
+
+    expect(assembly.intervalCount(100)).toBe(1)
+    expect(assembly.intervalCount(1700)).toBe(2)
+    expect(assembly.intervalCount(2000)).toBe(3)
+  })
+})
+
+describe('StudInteriorWallAssembly.constructCore', () => {
+  it('reduces stud depth by the two applied planks', () => {
+    const wall = partial<IntermediateWallWithGeometry>({ entityIds: [] })
+    const area = new WallConstructionArea(newVec3(0, 0, 0), newVec3(2000, 100, 2400))
+    const withoutPlanking = new TestStudAssembly({ ...config, plankMaterial: undefined })
+    const withPlanking = new TestStudAssembly({ ...config, plankMaterial: 'material_plank' as never })
+
+    const withoutPlankingStud = Array.from(withoutPlanking.constructCoreForTest(wall, area)).find(
+      result => result.type === 'element' && result.element.tags?.includes(TAG_WALL_STUD)
+    )
+    const withPlankingResults = Array.from(withPlanking.constructCoreForTest(wall, area))
+    const withPlankingStud = withPlankingResults.find(
+      result => result.type === 'element' && result.element.tags?.includes(TAG_WALL_STUD)
+    )
+    const planks = withPlankingResults.filter(
+      result => result.type === 'element' && result.element.tags?.includes(TAG_WALL_PLANKING)
+    )
+
+    expect(withoutPlankingStud?.type).toBe('element')
+    expect(withPlankingStud?.type).toBe('element')
+    if (withoutPlankingStud?.type !== 'element' || withPlankingStud?.type !== 'element') return
+
+    expect(planks).toHaveLength(2)
+    expect(
+      planks.every(result => result.type === 'element' && elementYSize(result.element) === config.plankThickness)
+    ).toBe(true)
+    expect(elementYSize(withPlankingStud.element)).toBe(
+      elementYSize(withoutPlankingStud.element) - 2 * config.plankThickness
+    )
   })
 })
