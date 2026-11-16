@@ -1,8 +1,25 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 
-import { newVec2, newVec3 } from '@/shared/geometry'
+import { type Polygon2D, type PolygonWithHoles2D, newVec2, newVec3 } from '@/shared/geometry'
 
 import { WallConstructionArea } from './WallConstructionArea'
+
+vi.mock('@/shared/geometry', async importOriginal => {
+  const geometry = await importOriginal<typeof import('@/shared/geometry')>()
+
+  return {
+    ...geometry,
+    intersectPolygon: vi.fn((polygon: PolygonWithHoles2D) => [polygon]),
+    subtractPolygons: vi.fn((subjects: readonly Polygon2D[]) => {
+      if (subjects.length === 0) return []
+
+      return [
+        { outer: subjects[0], holes: [] },
+        { outer: subjects[0], holes: [] }
+      ]
+    })
+  }
+})
 
 describe('withZAdjustment', () => {
   it('should adjust area without roof offsets', () => {
