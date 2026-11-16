@@ -1,4 +1,4 @@
-import type { PerimeterId, PerimeterWallId, RoofId, StoreyId } from '@/building/model'
+import type { IntermediateWallId, PerimeterId, PerimeterWallId, RoofId, StoreyId } from '@/building/model'
 import type { ConstructionModel } from '@/construction/model/model'
 import type { Tag } from '@/construction/model/tags'
 import type { InitialPartInfo } from '@/parts/types'
@@ -13,7 +13,14 @@ export type BasePlateId = `rb_base_${PerimeterId}`
 export type FullPerimeterId = `pfull_${PerimeterId}`
 export type PerimeterMeasurementsId = `meas_${PerimeterId}`
 
-export type CoreModelId = RoofId | PerimeterWallId | FloorId | TopPlateId | BasePlateId | PerimeterMeasurementsId
+export type CoreModelId =
+  | RoofId
+  | PerimeterWallId
+  | IntermediateWallId
+  | FloorId
+  | TopPlateId
+  | BasePlateId
+  | PerimeterMeasurementsId
 
 export type CompositeModelId = typeof BUILDING_ID | StoreyId | PerimeterId | FullPerimeterId | ColinearWallId
 
@@ -51,7 +58,7 @@ export function isCompositeModel(entry: ModelEntry): entry is CompositeModel {
 }
 
 export interface ConstructionStoreState {
-  conlinearMapping: Partial<Record<PerimeterWallId, ColinearWallId>>
+  conlinearMapping: Partial<Record<PerimeterWallId | IntermediateWallId, ColinearWallId>>
   models: Partial<Record<ModelId, ModelEntry>>
   cache: Partial<Record<ModelId, ConstructionModel>>
   generatedAt: number

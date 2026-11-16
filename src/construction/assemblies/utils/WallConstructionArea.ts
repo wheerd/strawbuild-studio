@@ -1,6 +1,6 @@
 import { type ConstructionElement, createConstructionElement, createCuboidElement } from '@/construction/model/elements'
 import type { RawMeasurement } from '@/construction/model/measurements'
-import { type ConstructionResult, yieldMeasurement } from '@/construction/model/results'
+import { type ConstructionResult, yieldElement, yieldMeasurement } from '@/construction/model/results'
 import { createExtrudedPolygon } from '@/construction/model/shapes'
 import type { Tag } from '@/construction/model/tags'
 import type { MaterialId } from '@/materials/types'
@@ -17,7 +17,8 @@ import {
   fromTrans,
   intersectPolygon,
   newVec2,
-  newVec3
+  newVec3,
+  subtractPolygons
 } from '@/shared/geometry'
 
 export type AreaMeasurement = 'minHeight' | 'maxHeight' | 'width' | 'thickness'
@@ -27,21 +28,31 @@ export class WallConstructionArea {
   public readonly size: Vec3
   public readonly topOffsets?: readonly Vec2[]
   public readonly bottomOffsets?: readonly Vec2[]
+  public readonly holes?: readonly Polygon2D[]
 
-  constructor(position: Vec3, size: Vec3, topOffsets?: readonly Vec2[], bottomOffsets?: readonly Vec2[]) {
-    if (topOffsets) {
-      const maxOffset = Math.max(...topOffsets.map(o => o[1]))
-      topOffsets = topOffsets.map(o => newVec2(o[0], o[1] - maxOffset))
-      const adjustedHeight = Math.max(size[2] + maxOffset, 0)
-      size = newVec3(size[0], size[1], adjustedHeight)
+  constructor(
+    position: Vec3,
+    size: Vec3,
+    topOffsets?: readonly Vec2[],
+    bottomOffsets?: readonly Vec2[],
+    holes?: readonly Polygon2D[]
+  ) {
+    const maxTopOffset = topOffsets?.length ? Math.max(...topOffsets.map(o => o[1])) : 0
+    const minBottomOffset = bottomOffsets?.length ? Math.min(...bottomOffsets.map(o => o[1])) : 0
+    position = newVec3(position[0], position[1], position[2] + minBottomOffset)
+    size = newVec3(size[0], size[1], Math.max(size[2] + maxTopOffset - minBottomOffset, 0))
+
+    if (topOffsets?.length) {
+      topOffsets = topOffsets.map(o => newVec2(o[0], o[1] - maxTopOffset))
+      // Deduplicate offsets
+      topOffsets = topOffsets.filter((o, i, a) => i === 0 || !eqVec2(o, a[i - 1]))
       // Simplify flat top by removing offsets
       if (topOffsets.length === 2 && eqVec2(topOffsets[0], ZERO_VEC2) && eqVec2(topOffsets[1], newVec2(size[0], 0))) {
         topOffsets = undefined
       }
     }
-    if (bottomOffsets) {
-      const minOffset = Math.min(...bottomOffsets.map(o => o[1]))
-      bottomOffsets = bottomOffsets.map(o => newVec2(o[0], o[1] - minOffset))
+    if (bottomOffsets?.length) {
+      bottomOffsets = bottomOffsets.map(o => newVec2(o[0], o[1] - minBottomOffset))
       // Simplify flat bottom by removing offsets
       if (
         bottomOffsets.length === 2 &&
@@ -55,6 +66,7 @@ export class WallConstructionArea {
     this.size = size
     this.topOffsets = topOffsets
     this.bottomOffsets = bottomOffsets
+    this.holes = holes
   }
 
   public getTopOffsetsAt(position: Length, tolerance: Length = 0): [Length, Length] {
@@ -198,7 +210,7 @@ export class WallConstructionArea {
     newDepth = Math.min(newDepth ?? this.size[1], this.size[1] - yOffset)
     const newPosition = newVec3(this.position[0], this.position[1] + yOffset, this.position[2])
     const newSize = newVec3(this.size[0], newDepth, this.size[2])
-    return new WallConstructionArea(newPosition, newSize, this.topOffsets, this.bottomOffsets)
+    return new WallConstructionArea(newPosition, newSize, this.topOffsets, this.bottomOffsets, this.holes)
   }
 
   /**
@@ -206,12 +218,12 @@ export class WallConstructionArea {
    */
   public withXAdjustment(xOffset: Length, newWidth?: Length): WallConstructionArea {
     xOffset = Math.max(xOffset, 0)
-    newWidth = Math.min(newWidth ?? this.size[0] - xOffset, this.size[0] - xOffset)
+    newWidth = Math.max(Math.min(newWidth ?? this.size[0] - xOffset, this.size[0] - xOffset), 0)
     const newPosition = newVec3(this.position[0] + xOffset, this.position[1], this.position[2])
     const newSize = newVec3(newWidth, this.size[1], this.size[2])
 
     if (!this.topOffsets && !this.bottomOffsets) {
-      return new WallConstructionArea(newPosition, newSize)
+      return new WallConstructionArea(newPosition, newSize, undefined, undefined, this.holes)
     }
 
     let newTopOffsets: Vec2[] | undefined
@@ -240,11 +252,69 @@ export class WallConstructionArea {
       ]
     }
 
-    return new WallConstructionArea(newPosition, newSize, newTopOffsets, newBottomOffsets)
+    return new WallConstructionArea(newPosition, newSize, newTopOffsets, newBottomOffsets, this.holes)
   }
 
   public splitInX(xOffset: Length): [WallConstructionArea, WallConstructionArea] {
     return [this.withXAdjustment(0, xOffset), this.withXAdjustment(xOffset)]
+  }
+
+  public splitInY(yOffset: Length): [WallConstructionArea, WallConstructionArea] {
+    return [this.withYAdjustment(0, yOffset), this.withYAdjustment(yOffset)]
+  }
+
+  /**
+   * Split the area into continuous top-contour segments at height jumps.
+   */
+  public splitAtHeightJumps(): WallConstructionArea[] {
+    if (!this.topOffsets || this.topOffsets.length === 0) return [this]
+
+    const segments: WallConstructionArea[] = []
+    let start = 0
+    for (let index = 0; index < this.topOffsets.length - 1; index++) {
+      const current = this.topOffsets[index]
+      const next = this.topOffsets[index + 1]
+      if (Math.abs(current[0] - next[0]) < 0.0001 && Math.abs(current[1] - next[1]) > 0.0001) {
+        const segment = this.withXAdjustment(start, current[0] - start)
+        if (!segment.isEmpty) segments.push(segment)
+        start = current[0]
+      }
+    }
+
+    if (segments.length === 0) return [this]
+    const finalSegment = this.withXAdjustment(start)
+    if (!finalSegment.isEmpty) segments.push(finalSegment)
+    return segments
+  }
+
+  /**
+   * Split off a strip following the top contour. The first result is the top
+   * strip and the second result is the remaining area below it.
+   */
+  public splitAtTop(thickness: Length): [WallConstructionArea, WallConstructionArea] {
+    if (thickness <= 0) throw new Error('Top split thickness must be greater than 0')
+    if (this.isEmpty) return [this, this]
+    if (thickness >= this.minTopHeight) {
+      return [this, new WallConstructionArea(this.position, newVec3(this.size[0], this.size[1], 0))]
+    }
+
+    const top = this.getAbsoluteTopPoints()
+    const segments: Vec2[][] = [[]]
+    for (let i = 0; i < top.length - 1; i++) {
+      const current = top[i]
+      const next = top[i + 1]
+      segments[segments.length - 1].push(current)
+
+      if (Math.abs(current[0] - next[0]) < 0.0001 && Math.abs(current[1] - next[1]) > 0.0001) {
+        segments.push([])
+      }
+    }
+    segments[segments.length - 1].push(top[top.length - 1])
+
+    const offsetBottom = segments.filter(s => s.length >= 2).flatMap(s => offsetContour(s, thickness))
+    const bottom = this.getAbsoluteBottomPoints()
+
+    return [this.createAreaFromBoundaries(offsetBottom, top), this.createAreaFromBoundaries(bottom, offsetBottom)]
   }
 
   /**
@@ -258,7 +328,7 @@ export class WallConstructionArea {
     const newSize = newVec3(this.size[0], this.size[1], newHeight)
 
     if (!this.topOffsets && !this.bottomOffsets) {
-      return new WallConstructionArea(newPosition, newSize)
+      return new WallConstructionArea(newPosition, newSize, undefined, undefined, this.holes)
     }
 
     const oldBase = this.position[2]
@@ -378,7 +448,8 @@ export class WallConstructionArea {
       newPosition,
       newSize,
       newTopOffsets && newTopOffsets.length > 0 ? newTopOffsets : undefined,
-      newBottomOffsets && newBottomOffsets.length > 0 ? newBottomOffsets : undefined
+      newBottomOffsets && newBottomOffsets.length > 0 ? newBottomOffsets : undefined,
+      this.holes
     )
   }
 
@@ -395,6 +466,35 @@ export class WallConstructionArea {
     // Linear interpolation to find X where Z = targetZ
     const t = (targetZ - z1) / (z2 - z1)
     return x1 + t * (x2 - x1)
+  }
+
+  private getAbsoluteTopPoints(): Vec2[] {
+    if (!this.topOffsets || this.topOffsets.length === 0) {
+      return [newVec2(0, this.position[2] + this.size[2]), newVec2(this.size[0], this.position[2] + this.size[2])]
+    }
+    return this.topOffsets.map(offset => newVec2(offset[0], this.position[2] + this.size[2] + offset[1]))
+  }
+
+  private getAbsoluteBottomPoints(): Vec2[] {
+    if (!this.bottomOffsets || this.bottomOffsets.length === 0) {
+      return [newVec2(0, this.position[2]), newVec2(this.size[0], this.position[2])]
+    }
+    return this.bottomOffsets.map(offset => newVec2(offset[0], this.position[2] + offset[1]))
+  }
+
+  private createAreaFromBoundaries(bottom: Vec2[], top: Vec2[]): WallConstructionArea {
+    const baseZ = Math.min(...bottom.map(point => point[1]))
+    const topZ = Math.max(...top.map(point => point[1]))
+    const topOffsets = top.map(point => newVec2(point[0], point[1] - topZ))
+    const bottomOffsets = bottom.map(point => newVec2(point[0], point[1] - baseZ))
+
+    return new WallConstructionArea(
+      newVec3(this.position[0], this.position[1], baseZ),
+      newVec3(this.size[0], this.size[1], Math.max(topZ - baseZ, 0)),
+      topOffsets,
+      bottomOffsets,
+      this.holes
+    )
   }
 
   /**
@@ -472,6 +572,28 @@ export class WallConstructionArea {
     const transform = fromTrans(newVec3(0, this.position[1], 0))
 
     return createConstructionElement(materialId, shape, transform, tags, partInfo)
+  }
+
+  public *yieldExtrudeWithHoles(
+    materialId: MaterialId,
+    tags?: Tag[],
+    partInfo?: InitialPartInfo
+  ): Generator<ConstructionResult> {
+    if (this.isEmpty) return
+
+    if (this.isFlat && !this.holes?.length) {
+      yield* yieldElement(createCuboidElement(materialId, this.position, this.size, tags, partInfo))
+      return
+    }
+
+    const polygons = subtractPolygons([this.getSideProfilePolygon()], this.holes ?? [])
+
+    for (const polygon of polygons) {
+      const shape = createExtrudedPolygon(polygon, 'xz', this.size[1])
+      const transform = fromTrans(newVec3(0, this.position[1], 0))
+
+      yield* yieldElement(createConstructionElement(materialId, shape, transform, tags, partInfo))
+    }
   }
 
   public createMeasurement(type: AreaMeasurement, tags?: Tag[], offset?: Length, useMin = true): RawMeasurement | null {
@@ -579,4 +701,53 @@ export class WallConstructionArea {
   public get isFlat() {
     return this.isTopFlat && this.isBottomFlat
   }
+}
+
+function offsetContour(contour: Vec2[], distance: Length): Vec2[] {
+  if (contour.length < 2) return contour
+
+  const lines = contour.slice(0, -1).map((start, index) => {
+    const end = contour[index + 1]
+    const dx = end[0] - start[0]
+    const dz = end[1] - start[1]
+    const length = Math.hypot(dx, dz)
+    if (length < 0.0001) throw new Error('Cannot offset a zero-length top contour segment')
+
+    const normal = newVec2((dz / length) * distance, (-dx / length) * distance)
+    return {
+      point: newVec2(start[0] + normal[0], start[1] + normal[1]),
+      direction: newVec2(dx, dz)
+    }
+  })
+
+  const first = intersectLineWithVertical(lines[0].point, lines[0].direction, contour[0][0])
+  const lastLine = lines[lines.length - 1]
+  const last = intersectLineWithVertical(lastLine.point, lastLine.direction, contour[contour.length - 1][0])
+  const result = [first]
+
+  for (let index = 0; index < lines.length - 1; index++) {
+    result.push(
+      intersectLines(lines[index].point, lines[index].direction, lines[index + 1].point, lines[index + 1].direction)
+    )
+  }
+  result.push(last)
+  return result
+}
+
+function intersectLineWithVertical(point: Vec2, direction: Vec2, x: number): Vec2 {
+  if (Math.abs(direction[0]) < 0.0001) return newVec2(x, point[1])
+  const ratio = (x - point[0]) / direction[0]
+  return newVec2(x, point[1] + ratio * direction[1])
+}
+
+function intersectLines(firstPoint: Vec2, firstDirection: Vec2, secondPoint: Vec2, secondDirection: Vec2): Vec2 {
+  const determinant = firstDirection[0] * secondDirection[1] - firstDirection[1] * secondDirection[0]
+  if (Math.abs(determinant) < 0.0001) {
+    return newVec2(secondPoint[0], (firstPoint[1] + secondPoint[1]) / 2)
+  }
+
+  const dx = secondPoint[0] - firstPoint[0]
+  const dz = secondPoint[1] - firstPoint[1]
+  const ratio = (dx * secondDirection[1] - dz * secondDirection[0]) / determinant
+  return newVec2(firstPoint[0] + ratio * firstDirection[0], firstPoint[1] + ratio * firstDirection[1])
 }

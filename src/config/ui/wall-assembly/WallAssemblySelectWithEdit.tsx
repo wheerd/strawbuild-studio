@@ -22,7 +22,7 @@ export function WallAssemblySelectWithEdit(props: WallAssemblySelectProps): Reac
         title={t($ => $.walls.configure)}
         variant="ghost"
         onClick={() => {
-          void navigateToConfig('walls', props.value ?? undefined)
+          void navigateToConfig('perimeter-walls', props.value ?? undefined)
         }}
       >
         <Pencil />

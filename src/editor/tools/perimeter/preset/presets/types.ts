@@ -1,7 +1,7 @@
 import type { Resources } from 'i18next'
 
 import type { PerimeterReferenceSide } from '@/building/model'
-import type { RingBeamAssemblyId, WallAssemblyId } from '@/building/model/ids'
+import type { PerimeterWallAssemblyId, RingBeamAssemblyId } from '@/building/model/ids'
 import { type Length, type Vec2 } from '@/shared/geometry'
 import type { IconProps } from '@/shared/ui/icons/types'
 
@@ -10,7 +10,7 @@ import type { IconProps } from '@/shared/ui/icons/types'
  */
 export interface BasePresetConfig {
   thickness: Length
-  wallAssemblyId: WallAssemblyId
+  wallAssemblyId: PerimeterWallAssemblyId
   baseRingBeamAssemblyId?: RingBeamAssemblyId
   topRingBeamAssemblyId?: RingBeamAssemblyId
   referenceSide: PerimeterReferenceSide

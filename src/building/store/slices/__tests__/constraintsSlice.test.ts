@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import type { Constraint } from '@/building/model'
 import type { PerimeterId, PerimeterWallId, StoreyId } from '@/building/model/ids'
-import { createStoreyId, createWallAssemblyId } from '@/building/model/ids'
+import { createPerimeterWallAssemblyId, createStoreyId } from '@/building/model/ids'
 import type { ConstraintsSlice } from '@/building/store/slices/constraintsSlice'
 import { createConstraintsSlice } from '@/building/store/slices/constraintsSlice'
 import { createIntermediateWallsSlice } from '@/building/store/slices/intermediateWallsSlice'
@@ -109,7 +109,7 @@ describe('constraintsSlice - topology constraint transfer', () => {
 
     beforeEach(() => {
       const boundary = createRectangularBoundary(10000, 5000)
-      const wallAssemblyId = createWallAssemblyId()
+      const wallAssemblyId = createPerimeterWallAssemblyId()
       const perimeter = slice.actions.addPerimeter(testStoreyId, boundary, wallAssemblyId, 420)
       perimeterId = perimeter.id
       wallIds = [...perimeter.wallIds]
@@ -319,7 +319,7 @@ describe('constraintsSlice - topology constraint transfer', () => {
 
     beforeEach(() => {
       const boundary = createRectangularBoundary(10000, 5000)
-      const wallAssemblyId = createWallAssemblyId()
+      const wallAssemblyId = createPerimeterWallAssemblyId()
       const perimeter = slice.actions.addPerimeter(testStoreyId, boundary, wallAssemblyId, 420)
       perimeterId = perimeter.id
       wallIds = [...perimeter.wallIds]
@@ -378,7 +378,7 @@ describe('constraintsSlice - topology constraint transfer', () => {
 
     it('should not transfer constraints on non-colinear merge', () => {
       const lBoundary = createLShapedBoundary()
-      const wallAssemblyId = createWallAssemblyId()
+      const wallAssemblyId = createPerimeterWallAssemblyId()
       const lPerimeter = slice.actions.addPerimeter(testStoreyId, lBoundary, wallAssemblyId, 420)
       const lWallIds = [...lPerimeter.wallIds]
 
@@ -509,7 +509,7 @@ describe('constraintsSlice - topology constraint transfer', () => {
 
     beforeEach(() => {
       const boundary = createLShapedBoundary()
-      const wallAssemblyId = createWallAssemblyId()
+      const wallAssemblyId = createPerimeterWallAssemblyId()
       const perimeter = slice.actions.addPerimeter(testStoreyId, boundary, wallAssemblyId, 420)
       perimeterId = perimeter.id
       wallIds = [...perimeter.wallIds]
@@ -518,7 +518,7 @@ describe('constraintsSlice - topology constraint transfer', () => {
     it('should transfer constraints when both corners are 180° (colinear)', () => {
       // Create a rectangle, then do two splits on the same wall to get a wall between two 180° corners
       const rectBoundary = createRectangularBoundary(10000, 5000)
-      const wallAssemblyId = createWallAssemblyId()
+      const wallAssemblyId = createPerimeterWallAssemblyId()
       const rectPerimeter = slice.actions.addPerimeter(testStoreyId, rectBoundary, wallAssemblyId, 420)
       const rectWallIds = [...rectPerimeter.wallIds]
 
@@ -578,7 +578,7 @@ describe('constraintsSlice - topology constraint transfer', () => {
 
     beforeEach(() => {
       const boundary = createRectangularBoundary(10000, 5000)
-      const wallAssemblyId = createWallAssemblyId()
+      const wallAssemblyId = createPerimeterWallAssemblyId()
       const perimeter = slice.actions.addPerimeter(testStoreyId, boundary, wallAssemblyId, 420)
       perimeterId = perimeter.id
       wallIds = [...perimeter.wallIds]

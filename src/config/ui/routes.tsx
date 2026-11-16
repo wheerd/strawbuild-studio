@@ -15,9 +15,14 @@ const LayerSetsContent = lazy(async () => {
   return { default: module.LayerSetsContent }
 })
 
-const WallAssemblyContent = lazy(async () => {
+const PerimeterWallAssemblyContent = lazy(async () => {
   const module = await import('./wall-assembly/WallAssemblyContent')
   return { default: module.WallAssemblyContent }
+})
+
+const InteriorWallAssemblyContent = lazy(async () => {
+  const module = await import('./interior-wall-assembly/InteriorWallAssemblyContent')
+  return { default: module.InteriorWallAssemblyContent }
 })
 
 const OpeningAssemblyContent = lazy(async () => {
@@ -74,10 +79,22 @@ export const configRoutes = {
       )
     },
     {
-      path: 'walls/:itemId?',
+      path: 'perimeter-walls/:itemId?',
       element: (
         <Suspense fallback={<ConfigContentSkeleton />}>
-          <WallAssemblyContent />
+          <PerimeterWallAssemblyContent />
+        </Suspense>
+      )
+    },
+    {
+      path: 'walls/:itemId?',
+      element: <Navigate to="../perimeter-walls" replace />
+    },
+    {
+      path: 'interior-walls/:itemId?',
+      element: (
+        <Suspense fallback={<ConfigContentSkeleton />}>
+          <InteriorWallAssemblyContent />
         </Suspense>
       )
     },

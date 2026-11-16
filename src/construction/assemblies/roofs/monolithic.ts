@@ -30,7 +30,7 @@ import { IDENTITY, type Length, negVec2 } from '@/shared/geometry'
 import type { MonolithicRoofConfig } from './types'
 
 export class MonolithicRoofAssembly extends BaseRoofAssembly<MonolithicRoofConfig> {
-  construct = (roof: Roof, _contexts: PerimeterConstructionContext[]): ConstructionModel => {
+  construct = (roof: Roof, contexts: PerimeterConstructionContext[]): ConstructionModel => {
     const ridgeHeight = this.calculateRidgeHeight(roof)
     const roofSides = this.splitRoofPolygon(roof, ridgeHeight)
 
@@ -40,6 +40,7 @@ export class MonolithicRoofAssembly extends BaseRoofAssembly<MonolithicRoofConfi
     const ceilingClippingVolume = this.getCeilingPolygons(roof)
       .map(c => this.createExtrudedVolume(c, roof.ridgeLine, minZ, maxZ))
       .reduce((a, b) => a.add(b))
+    const interiorWallClippingVolume = this.createInteriorWallClippingVolume(contexts, roof.ridgeLine, minZ, maxZ)
 
     const roofModels = roofSides.map(roofSide => {
       const roofSideVolume = this.createExtrudedVolume(roofSide.polygon, roof.ridgeLine, minZ, maxZ)
@@ -50,6 +51,9 @@ export class MonolithicRoofAssembly extends BaseRoofAssembly<MonolithicRoofConfi
       )
       const roofSideClip = transformManifold(roofSideVolume, roofSideInverseRotate)
       const ceilingClip = transformManifold(ceilingClippingVolume, roofSideInverseRotate)
+      const interiorWallClip = interiorWallClippingVolume
+        ? transformManifold(interiorWallClippingVolume, roofSideInverseRotate)
+        : null
       const clip = (m: Manifold) => m.intersect(roofSideClip)
 
       const results = Array.from(
@@ -57,7 +61,9 @@ export class MonolithicRoofAssembly extends BaseRoofAssembly<MonolithicRoofConfi
           yieldAndClip(this.constructRoofElements(roof, roofSide), clip),
           yieldAndClip(this.constructTopLayers(roof, roofSide), clip),
           yieldAndClip(this.constructCeilingLayers(roof, roofSide), m =>
-            m.intersect(roofSideClip).intersect(ceilingClip)
+            interiorWallClip
+              ? m.intersect(roofSideClip).intersect(ceilingClip).subtract(interiorWallClip)
+              : m.intersect(roofSideClip).intersect(ceilingClip)
           ),
           yieldAndClip(this.constructOverhangLayers(roof, roofSide), clip)
         )

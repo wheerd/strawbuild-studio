@@ -37,6 +37,7 @@ export function LayersConfigForm({ assemblyId, config }: LayersConfigFormProps):
           }}
           use="ceiling"
           placeholder={t($ => $.roofs.noInsideLayers)}
+          size="sm"
         />
 
         <div className="flex items-center gap-1">
@@ -53,6 +54,7 @@ export function LayersConfigForm({ assemblyId, config }: LayersConfigFormProps):
           }}
           use="roof"
           placeholder={t($ => $.roofs.noTopLayers)}
+          size="sm"
         />
 
         <div className="flex items-center gap-1">
@@ -69,6 +71,7 @@ export function LayersConfigForm({ assemblyId, config }: LayersConfigFormProps):
           }}
           use="roof"
           placeholder={t($ => $.roofs.noOverhangLayers)}
+          size="sm"
         />
       </div>
 

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
 import type { PerimeterWallGeometry } from '@/building/model'
-import { createStoreyId, createWallAssemblyId } from '@/building/model/ids'
+import { createPerimeterWallAssemblyId, createStoreyId } from '@/building/model/ids'
 import { updateEntityGeometry } from '@/building/store/slices/perimeterGeometry'
 import { eqVec2, newVec2 } from '@/shared/geometry'
 
@@ -20,7 +20,7 @@ describe('perimeterGeometry', () => {
         const { slice } = setupPerimeterSlice()
         const testStoreyId = createStoreyId()
         const boundary = createRectangularBoundary()
-        const wallAssemblyId = createWallAssemblyId()
+        const wallAssemblyId = createPerimeterWallAssemblyId()
 
         const perimeter = slice.actions.addPerimeter(testStoreyId, boundary, wallAssemblyId, 420)
         const corners = slice.actions.getPerimeterCornersById(perimeter.id)
@@ -36,7 +36,7 @@ describe('perimeterGeometry', () => {
         const { slice } = setupPerimeterSlice()
         const testStoreyId = createStoreyId()
         const boundary = createRectangularBoundary(10000, 5000)
-        const wallAssemblyId = createWallAssemblyId()
+        const wallAssemblyId = createPerimeterWallAssemblyId()
         const thickness = 420
 
         const perimeter = slice.actions.addPerimeter(testStoreyId, boundary, wallAssemblyId, thickness)
@@ -61,7 +61,7 @@ describe('perimeterGeometry', () => {
         const { slice } = setupPerimeterSlice()
         const testStoreyId = createStoreyId()
         const boundary = createTriangularBoundary()
-        const wallAssemblyId = createWallAssemblyId()
+        const wallAssemblyId = createPerimeterWallAssemblyId()
 
         const perimeter = slice.actions.addPerimeter(testStoreyId, boundary, wallAssemblyId, 420)
         const corners = slice.actions.getPerimeterCornersById(perimeter.id)
@@ -75,7 +75,7 @@ describe('perimeterGeometry', () => {
         const { slice } = setupPerimeterSlice()
         const testStoreyId = createStoreyId()
         const boundary = createTriangularBoundary()
-        const wallAssemblyId = createWallAssemblyId()
+        const wallAssemblyId = createPerimeterWallAssemblyId()
 
         const perimeter = slice.actions.addPerimeter(testStoreyId, boundary, wallAssemblyId, 420)
         const corners = slice.actions.getPerimeterCornersById(perimeter.id)
@@ -98,7 +98,7 @@ describe('perimeterGeometry', () => {
         const { slice } = setupPerimeterSlice()
         const testStoreyId = createStoreyId()
         const boundary = createLShapedBoundary()
-        const wallAssemblyId = createWallAssemblyId()
+        const wallAssemblyId = createPerimeterWallAssemblyId()
 
         const perimeter = slice.actions.addPerimeter(testStoreyId, boundary, wallAssemblyId, 420)
         const corners = slice.actions.getPerimeterCornersById(perimeter.id)
@@ -115,7 +115,7 @@ describe('perimeterGeometry', () => {
         const { slice } = setupPerimeterSlice()
         const testStoreyId = createStoreyId()
         const boundary = createLShapedBoundary()
-        const wallAssemblyId = createWallAssemblyId()
+        const wallAssemblyId = createPerimeterWallAssemblyId()
 
         const perimeter = slice.actions.addPerimeter(testStoreyId, boundary, wallAssemblyId, 420)
         const corners = slice.actions.getPerimeterCornersById(perimeter.id)
@@ -143,7 +143,7 @@ describe('perimeterGeometry', () => {
         ]
 
         testCases.forEach(({ boundary, expectedSum }) => {
-          const wallAssemblyId = createWallAssemblyId()
+          const wallAssemblyId = createPerimeterWallAssemblyId()
           const perimeter = slice.actions.addPerimeter(testStoreyId, boundary, wallAssemblyId, 420)
           const corners = slice.actions.getPerimeterCornersById(perimeter.id)
 
@@ -162,7 +162,7 @@ describe('perimeterGeometry', () => {
         const { slice } = setupPerimeterSlice()
         const testStoreyId = createStoreyId()
         const boundary = createRectangularBoundary(10000, 5000)
-        const wallAssemblyId = createWallAssemblyId()
+        const wallAssemblyId = createPerimeterWallAssemblyId()
 
         const perimeter = slice.actions.addPerimeter(testStoreyId, boundary, wallAssemblyId, 420)
         const walls = slice.actions.getPerimeterWallsById(perimeter.id)
@@ -181,7 +181,7 @@ describe('perimeterGeometry', () => {
         const { slice } = setupPerimeterSlice()
         const testStoreyId = createStoreyId()
         const boundary = createRectangularBoundary(10000, 5000)
-        const wallAssemblyId = createWallAssemblyId()
+        const wallAssemblyId = createPerimeterWallAssemblyId()
 
         const perimeter = slice.actions.addPerimeter(testStoreyId, boundary, wallAssemblyId, 420)
         const walls = slice.actions.getPerimeterWallsById(perimeter.id)
@@ -197,7 +197,7 @@ describe('perimeterGeometry', () => {
         const { slice } = setupPerimeterSlice()
         const testStoreyId = createStoreyId()
         const boundary = createRectangularBoundary(10000, 5000)
-        const wallAssemblyId = createWallAssemblyId()
+        const wallAssemblyId = createPerimeterWallAssemblyId()
 
         const perimeter = slice.actions.addPerimeter(testStoreyId, boundary, wallAssemblyId, 420)
         const walls = slice.actions.getPerimeterWallsById(perimeter.id)
@@ -212,7 +212,7 @@ describe('perimeterGeometry', () => {
         const { slice } = setupPerimeterSlice()
         const testStoreyId = createStoreyId()
         const boundary = createRectangularBoundary(10000, 5000)
-        const wallAssemblyId = createWallAssemblyId()
+        const wallAssemblyId = createPerimeterWallAssemblyId()
 
         const perimeter = slice.actions.addPerimeter(testStoreyId, boundary, wallAssemblyId, 420)
         const walls = slice.actions.getPerimeterWallsById(perimeter.id)
@@ -240,7 +240,7 @@ describe('perimeterGeometry', () => {
         const { slice } = setupPerimeterSlice()
         const testStoreyId = createStoreyId()
         const boundary = createRectangularBoundary()
-        const wallAssemblyId = createWallAssemblyId()
+        const wallAssemblyId = createPerimeterWallAssemblyId()
 
         const perimeter = slice.actions.addPerimeter(testStoreyId, boundary, wallAssemblyId, 420)
         const walls = slice.actions.getPerimeterWallsById(perimeter.id)
@@ -263,7 +263,7 @@ describe('perimeterGeometry', () => {
         const { slice } = setupPerimeterSlice()
         const testStoreyId = createStoreyId()
         const boundary = createRectangularBoundary()
-        const wallAssemblyId = createWallAssemblyId()
+        const wallAssemblyId = createPerimeterWallAssemblyId()
 
         const perimeter = slice.actions.addPerimeter(testStoreyId, boundary, wallAssemblyId, 420)
         const wallId = perimeter.wallIds[0]
@@ -286,7 +286,7 @@ describe('perimeterGeometry', () => {
         const { slice } = setupPerimeterSlice()
         const testStoreyId = createStoreyId()
         const boundary = createRectangularBoundary(10000, 5000)
-        const wallAssemblyId = createWallAssemblyId()
+        const wallAssemblyId = createPerimeterWallAssemblyId()
 
         const perimeter = slice.actions.addPerimeter(testStoreyId, boundary, wallAssemblyId, 420)
 
@@ -305,7 +305,7 @@ describe('perimeterGeometry', () => {
         const { slice } = setupPerimeterSlice()
         const testStoreyId = createStoreyId()
         const boundary = createRectangularBoundary(10000, 5000)
-        const wallAssemblyId = createWallAssemblyId()
+        const wallAssemblyId = createPerimeterWallAssemblyId()
         const thickness = 420
 
         const perimeter = slice.actions.addPerimeter(testStoreyId, boundary, wallAssemblyId, thickness)
@@ -331,7 +331,7 @@ describe('perimeterGeometry', () => {
         const { slice } = setupPerimeterSlice()
         const testStoreyId = createStoreyId()
         const boundary = createRectangularBoundary()
-        const wallAssemblyId = createWallAssemblyId()
+        const wallAssemblyId = createPerimeterWallAssemblyId()
 
         const perimeter = slice.actions.addPerimeter(testStoreyId, boundary, wallAssemblyId, 420)
         const originalCorners = slice.actions.getPerimeterCornersById(perimeter.id).map(c => ({ ...c }))
@@ -352,7 +352,7 @@ describe('perimeterGeometry', () => {
         const { slice } = setupPerimeterSlice()
         const testStoreyId = createStoreyId()
         const boundary = createRectangularBoundary()
-        const wallAssemblyId = createWallAssemblyId()
+        const wallAssemblyId = createPerimeterWallAssemblyId()
 
         const perimeter = slice.actions.addPerimeter(testStoreyId, boundary, wallAssemblyId, 420)
 
@@ -372,7 +372,7 @@ describe('perimeterGeometry', () => {
         const { slice } = setupPerimeterSlice()
         const testStoreyId = createStoreyId()
         const boundary = createRectangularBoundary(10000, 5000)
-        const wallAssemblyId = createWallAssemblyId()
+        const wallAssemblyId = createPerimeterWallAssemblyId()
 
         const perimeter = slice.actions.addPerimeter(testStoreyId, boundary, wallAssemblyId, 420)
         const wallId = perimeter.wallIds[0]
@@ -393,7 +393,7 @@ describe('perimeterGeometry', () => {
         const { slice } = setupPerimeterSlice()
         const testStoreyId = createStoreyId()
         const boundary = createRectangularBoundary(10000, 5000)
-        const wallAssemblyId = createWallAssemblyId()
+        const wallAssemblyId = createPerimeterWallAssemblyId()
 
         const perimeter = slice.actions.addPerimeter(testStoreyId, boundary, wallAssemblyId, 420)
         const wallId = perimeter.wallIds[0]
@@ -418,7 +418,7 @@ describe('perimeterGeometry', () => {
         const { slice } = setupPerimeterSlice()
         const testStoreyId = createStoreyId()
         const boundary = createRectangularBoundary()
-        const wallAssemblyId = createWallAssemblyId()
+        const wallAssemblyId = createPerimeterWallAssemblyId()
 
         const perimeter = slice.actions.addPerimeter(testStoreyId, boundary, wallAssemblyId, 420)
         const wallId = perimeter.wallIds[0]
@@ -447,7 +447,7 @@ describe('perimeterGeometry', () => {
         const { slice } = setupPerimeterSlice()
         const testStoreyId = createStoreyId()
         const boundary = createRectangularBoundary(10000, 5000)
-        const wallAssemblyId = createWallAssemblyId()
+        const wallAssemblyId = createPerimeterWallAssemblyId()
 
         const perimeter = slice.actions.addPerimeter(testStoreyId, boundary, wallAssemblyId, 420)
         const wallId = perimeter.wallIds[0]
@@ -469,7 +469,7 @@ describe('perimeterGeometry', () => {
         const { slice } = setupPerimeterSlice()
         const testStoreyId = createStoreyId()
         const boundary = createRectangularBoundary(10000, 5000)
-        const wallAssemblyId = createWallAssemblyId()
+        const wallAssemblyId = createPerimeterWallAssemblyId()
 
         const perimeter = slice.actions.addPerimeter(testStoreyId, boundary, wallAssemblyId, 420)
         const wallId = perimeter.wallIds[0]
@@ -497,7 +497,7 @@ describe('perimeterGeometry', () => {
         const { slice } = setupPerimeterSlice()
         const testStoreyId = createStoreyId()
         const boundary = createRectangularBoundary(10000, 5000)
-        const wallAssemblyId = createWallAssemblyId()
+        const wallAssemblyId = createPerimeterWallAssemblyId()
 
         const perimeter = slice.actions.addPerimeter(testStoreyId, boundary, wallAssemblyId, 420)
         const wallId = perimeter.wallIds[0]
@@ -517,7 +517,7 @@ describe('perimeterGeometry', () => {
         const { slice } = setupPerimeterSlice()
         const testStoreyId = createStoreyId()
         const boundary = createRectangularBoundary(10000, 5000)
-        const wallAssemblyId = createWallAssemblyId()
+        const wallAssemblyId = createPerimeterWallAssemblyId()
 
         const perimeter = slice.actions.addPerimeter(testStoreyId, boundary, wallAssemblyId, 420)
         const wallId = perimeter.wallIds[0]
@@ -580,7 +580,7 @@ describe('perimeterGeometry', () => {
       const { slice } = setupPerimeterSlice()
       const testStoreyId = createStoreyId()
       const boundary = createRectangularBoundary()
-      const wallAssemblyId = createWallAssemblyId()
+      const wallAssemblyId = createPerimeterWallAssemblyId()
 
       const perimeter = slice.actions.addPerimeter(testStoreyId, boundary, wallAssemblyId, 420)
 
@@ -623,7 +623,7 @@ describe('perimeterGeometry', () => {
       const { slice } = setupPerimeterSlice()
       const testStoreyId = createStoreyId()
       const boundary = createRectangularBoundary()
-      const wallAssemblyId = createWallAssemblyId()
+      const wallAssemblyId = createPerimeterWallAssemblyId()
 
       const perimeter = slice.actions.addPerimeter(testStoreyId, boundary, wallAssemblyId, 420)
       const walls = slice.actions.getPerimeterWallsById(perimeter.id)

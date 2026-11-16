@@ -5,10 +5,10 @@ import {
   type OpeningId,
   type PerimeterCornerId,
   type PerimeterId,
+  type PerimeterWallAssemblyId,
   type PerimeterWallId,
   type RingBeamAssemblyId,
   type RoofAssemblyId,
-  type WallAssemblyId,
   type WallId,
   type WallPostId
 } from '@/building/model/ids'
@@ -17,9 +17,9 @@ import { getConfigActions, setConfigState } from '@/config/store'
 import { applyMigrations } from '@/config/store/migrations'
 import type {
   FloorAssemblyConfig,
+  PerimeterWallAssemblyConfig,
   RingBeamAssemblyConfig,
-  RoofAssemblyConfig,
-  WallAssemblyConfig
+  RoofAssemblyConfig
 } from '@/config/types'
 import { resolveFloorAssembly } from '@/construction/assemblies/floors'
 import { resolveOpeningConfig } from '@/construction/assemblies/openings'
@@ -144,12 +144,12 @@ interface ExportData {
   configStore: {
     defaultStrawMaterial?: MaterialId
     ringBeamAssemblyConfigs: Record<RingBeamAssemblyId, RingBeamAssemblyConfig>
-    wallAssemblyConfigs: Record<WallAssemblyId, WallAssemblyConfig>
+    wallAssemblyConfigs: Record<PerimeterWallAssemblyId, PerimeterWallAssemblyConfig>
     floorAssemblyConfigs?: Record<FloorAssemblyId, FloorAssemblyConfig>
     roofAssemblyConfigs?: Record<RoofAssemblyId, RoofAssemblyConfig>
     defaultBaseRingBeamAssemblyId?: RingBeamAssemblyId
     defaultTopRingBeamAssemblyId?: RingBeamAssemblyId
-    defaultWallAssemblyId: WallAssemblyId
+    defaultWallAssemblyId: PerimeterWallAssemblyId
     defaultFloorAssemblyId?: FloorAssemblyId
     defaultRoofAssemblyId?: RoofAssemblyId
   }
@@ -292,7 +292,7 @@ class LegacyProjectImportServiceImpl {
           points: boundaryPoints
         }
 
-        const wallAssemblyId = exportedPerimeter.walls[0]?.wallAssemblyId as WallAssemblyId
+        const wallAssemblyId = exportedPerimeter.walls[0]?.wallAssemblyId as PerimeterWallAssemblyId
         const thickness = exportedPerimeter.walls[0]?.thickness || 200
 
         const perimeter = modelActions.addPerimeter(
@@ -327,7 +327,7 @@ class LegacyProjectImportServiceImpl {
           const wallId = perimeter.wallIds[wallIndex]
 
           modelActions.updatePerimeterWallThickness(wallId, exportedWall.thickness)
-          modelActions.updatePerimeterWallAssembly(wallId, exportedWall.wallAssemblyId as WallAssemblyId)
+          modelActions.updatePerimeterWallAssembly(wallId, exportedWall.wallAssemblyId as PerimeterWallAssemblyId)
 
           const baseRingBeam = exportedWall.baseRingBeamAssemblyId ?? exportedPerimeter.baseRingBeamAssemblyId
           const topRingBeam = exportedWall.topRingBeamAssemblyId ?? exportedPerimeter.topRingBeamAssemblyId
@@ -339,7 +339,9 @@ class LegacyProjectImportServiceImpl {
             modelActions.setWallTopRingBeam(wallId, topRingBeam as RingBeamAssemblyId)
           }
 
-          const wallAssembly = getConfigActions().getWallAssemblyById(exportedWall.wallAssemblyId as WallAssemblyId)
+          const wallAssembly = getConfigActions().getPerimeterWallAssemblyById(
+            exportedWall.wallAssemblyId as PerimeterWallAssemblyId
+          )
 
           exportedWall.openings.forEach(exportedOpening => {
             const openingConfig = resolveOpeningConfig(

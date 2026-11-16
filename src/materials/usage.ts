@@ -2,16 +2,18 @@ import { useMemo } from 'react'
 
 import type {
   FloorAssemblyId,
+  InteriorWallAssemblyId,
   LayerSetId,
   OpeningAssemblyId,
+  PerimeterWallAssemblyId,
   RingBeamAssemblyId,
-  RoofAssemblyId,
-  WallAssemblyId
+  RoofAssemblyId
 } from '@/building/model/ids'
 import { useWallPosts } from '@/building/store'
 import {
   useDefaultStrawMaterialId,
   useFloorAssemblies,
+  useInteriorWallAssemblies,
   useLayerSets,
   useOpeningAssemblies,
   useRingBeamAssemblies,
@@ -20,10 +22,11 @@ import {
 } from '@/config/store'
 import type {
   FloorAssemblyConfig,
+  InteriorWallAssemblyConfig,
   OpeningAssemblyConfig,
+  PerimeterWallAssemblyConfig,
   RingBeamAssemblyConfig,
-  RoofAssemblyConfig,
-  WallAssemblyConfig
+  RoofAssemblyConfig
 } from '@/config/types'
 import type { LayerConfig } from '@/construction/assemblies/layers/types'
 import { assertUnreachable } from '@/shared/utils'
@@ -32,7 +35,8 @@ import type { MaterialId } from './types'
 
 export type MaterialUsageId =
   | RingBeamAssemblyId
-  | WallAssemblyId
+  | PerimeterWallAssemblyId
+  | InteriorWallAssemblyId
   | FloorAssemblyId
   | RoofAssemblyId
   | OpeningAssemblyId
@@ -53,6 +57,7 @@ export function useMaterialUsage(materialId: MaterialId): MaterialUsage {
   const ringBeamAssemblies = useRingBeamAssemblies()
   const wallAssemblies = useWallAssemblies()
   const floorAssemblies = useFloorAssemblies()
+  const interiorWallAssemblies = useInteriorWallAssemblies()
   const roofAssemblies = useRoofAssemblies()
   const openingAssemblies = useOpeningAssemblies()
   const layerSets = useLayerSets()
@@ -73,6 +78,13 @@ export function useMaterialUsage(materialId: MaterialId): MaterialUsage {
     // Check wall assemblies
     wallAssemblies.forEach(assembly => {
       if (isMaterialUsedInWall(materialId, assembly)) {
+        assemblyIdSet.add(assembly.id)
+      }
+    })
+
+    // Check interior wall assemblies
+    interiorWallAssemblies.forEach(assembly => {
+      if (isMaterialUsedInInteriorWall(materialId, assembly)) {
         assemblyIdSet.add(assembly.id)
       }
     })
@@ -125,6 +137,7 @@ export function useMaterialUsage(materialId: MaterialId): MaterialUsage {
     materialId,
     ringBeamAssemblies,
     wallAssemblies,
+    interiorWallAssemblies,
     floorAssemblies,
     roofAssemblies,
     openingAssemblies,
@@ -155,7 +168,7 @@ function isMaterialUsedInRingBeam(materialId: MaterialId, assembly: RingBeamAsse
   return false
 }
 
-function isMaterialUsedInWall(materialId: MaterialId, assembly: WallAssemblyConfig): boolean {
+function isMaterialUsedInWall(materialId: MaterialId, assembly: PerimeterWallAssemblyConfig): boolean {
   switch (assembly.type) {
     case 'infill':
       if (assembly.posts.material === materialId) return true
@@ -195,6 +208,21 @@ function isMaterialUsedInWall(materialId: MaterialId, assembly: WallAssemblyConf
   }
 
   return false
+}
+
+function isMaterialUsedInInteriorWall(materialId: MaterialId, assembly: InteriorWallAssemblyConfig): boolean {
+  if (assembly.type === 'monolithic') {
+    return assembly.material === materialId
+  }
+
+  return (
+    assembly.studMaterial === materialId ||
+    assembly.headPlateMaterial === materialId ||
+    assembly.solePlateMaterial === materialId ||
+    assembly.nogginMaterial === materialId ||
+    assembly.plankMaterial === materialId ||
+    assembly.fillMaterial === materialId
+  )
 }
 
 function isMaterialUsedInFloor(materialId: MaterialId, assembly: FloorAssemblyConfig): boolean {

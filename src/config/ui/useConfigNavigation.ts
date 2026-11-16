@@ -1,6 +1,14 @@
 import { useNavigate } from 'react-router-dom'
 
-export type ConfigTab = 'materials' | 'layers' | 'ringbeams' | 'walls' | 'floors' | 'roofs' | 'openings'
+export type ConfigTab =
+  | 'materials'
+  | 'layers'
+  | 'ringbeams'
+  | 'perimeter-walls'
+  | 'interior-walls'
+  | 'floors'
+  | 'roofs'
+  | 'openings'
 
 export function useConfigNavigation() {
   const navigate = useNavigate()

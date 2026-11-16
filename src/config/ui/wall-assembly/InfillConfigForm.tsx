@@ -3,7 +3,7 @@ import { Info } from 'lucide-react'
 import React from 'react'
 import { useTranslation } from 'react-i18next'
 
-import type { InfillWallSegmentConfig } from '@/construction/assemblies/walls/types'
+import type { InfillWallSegmentConfig } from '@/construction/assemblies/perimeterWalls/types'
 import { MaterialSelectWithEdit } from '@/materials/ui/MaterialSelectWithEdit'
 import { LengthField } from '@/shared/ui/LengthField/LengthField'
 import { Separator } from '@/shared/ui/components/separator'

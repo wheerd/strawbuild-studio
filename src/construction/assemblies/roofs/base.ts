@@ -276,6 +276,19 @@ export abstract class BaseRoofAssembly<T extends RoofAssemblyConfigBase> impleme
     return transformManifold(shape.manifold, translateToMinZ)
   }
 
+  protected createInteriorWallClippingVolume(
+    contexts: PerimeterConstructionContext[],
+    ridgeLine: LineSegment2D,
+    minZ: Length,
+    maxZ: Length
+  ): Manifold | null {
+    const wallVolumes = contexts.flatMap(context =>
+      context.interiorWallAreas.map(area => this.createExtrudedVolume(area, ridgeLine, minZ, maxZ))
+    )
+
+    return wallVolumes.length > 0 ? wallVolumes.reduce((combined, volume) => combined.add(volume)) : null
+  }
+
   /**
    * Expand, offset toward ridge, and translate polygon to origin
    * This prepares the polygon for construction by:

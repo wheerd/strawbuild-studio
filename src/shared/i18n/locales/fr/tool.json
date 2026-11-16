@@ -88,6 +88,7 @@
     "referenceSide": "Côté d'alignement",
     "referenceSideLeft": "Gauche",
     "referenceSideRight": "Droite",
+    "wallAssembly": "Composition du mur",
     "wallThickness": "Épaisseur du mur"
   },
   "keyboard": {

@@ -21,6 +21,7 @@ import type {
   WallPostGeometry
 } from '@/building/model'
 import type { IntermediateWallId, OpeningId, PerimeterCornerId, WallNodeId, WallPostId } from '@/building/model/ids'
+import { DEFAULT_INTERIOR_WALL_ASSEMBLY_ID } from '@/config/store/slices/interiorWalls.defaults'
 import { newVec2 } from '@/shared/geometry'
 
 // --- Mock state ---
@@ -665,7 +666,8 @@ describe('GcsSyncService', () => {
         entityIds: entityIds as IntermediateWall['entityIds'],
         start: { nodeId: 'wallnode_start' as WallNodeId, axis: 'left' },
         end: { nodeId: 'wallnode_end' as WallNodeId, axis: 'right' },
-        thickness
+        thickness,
+        wallAssemblyId: DEFAULT_INTERIOR_WALL_ASSEMBLY_ID
       }
     }
 

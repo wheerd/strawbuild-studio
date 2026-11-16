@@ -1,9 +1,10 @@
 import { DEFAULT_FLOOR_ASSEMBLIES } from './slices/floors.defaults'
+import { DEFAULT_INTERIOR_WALL_ASSEMBLIES } from './slices/interiorWalls.defaults'
 import { DEFAULT_LAYER_SETS } from './slices/layers.defaults'
 import { DEFAULT_OPENING_ASSEMBLIES } from './slices/opening.defaults'
+import { DEFAULT_PERIMETER_WALL_ASSEMBLIES } from './slices/perimeterWalls.defaults'
 import { DEFAULT_RING_BEAM_ASSEMBLIES } from './slices/ringBeams.defaults'
 import { DEFAULT_ROOF_ASSEMBLIES } from './slices/roofs.defaults'
-import { DEFAULT_WALL_ASSEMBLIES } from './slices/walls.defaults'
 import type { ConfigState } from './types'
 
 interface HasNameAndKey {
@@ -31,7 +32,14 @@ function mergeWithDefaults<T extends HasNameAndKey>(
 
 export function mergeStateWithDefaults(state: ConfigState): void {
   state.layerSetConfigs = mergeWithDefaults(state.layerSetConfigs, DEFAULT_LAYER_SETS)
-  state.wallAssemblyConfigs = mergeWithDefaults(state.wallAssemblyConfigs, DEFAULT_WALL_ASSEMBLIES)
+  state.perimeterWallAssemblyConfigs = mergeWithDefaults(
+    state.perimeterWallAssemblyConfigs,
+    DEFAULT_PERIMETER_WALL_ASSEMBLIES
+  )
+  state.interiorWallAssemblyConfigs = mergeWithDefaults(
+    state.interiorWallAssemblyConfigs,
+    DEFAULT_INTERIOR_WALL_ASSEMBLIES
+  )
   state.floorAssemblyConfigs = mergeWithDefaults(state.floorAssemblyConfigs, DEFAULT_FLOOR_ASSEMBLIES)
   state.roofAssemblyConfigs = mergeWithDefaults(state.roofAssemblyConfigs, DEFAULT_ROOF_ASSEMBLIES)
   state.openingAssemblyConfigs = mergeWithDefaults(state.openingAssemblyConfigs, DEFAULT_OPENING_ASSEMBLIES)

@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 
 import type { PerimeterReferenceSide, PerimeterWallWithGeometry, RoofType } from '@/building/model'
-import type { PerimeterId, RingBeamAssemblyId, WallAssemblyId } from '@/building/model/ids'
+import type { PerimeterId, PerimeterWallAssemblyId, RingBeamAssemblyId } from '@/building/model/ids'
 import {
   useModelActions,
   usePerimeterById,
@@ -16,7 +16,7 @@ import {
 import { useDefaultRoofAssemblyId, useWallAssemblyById } from '@/config/store'
 import { RingBeamAssemblySelectWithEdit } from '@/config/ui/ring-beam-assembly/RingBeamAssemblySelectWithEdit'
 import { WallAssemblySelectWithEdit } from '@/config/ui/wall-assembly/WallAssemblySelectWithEdit'
-import { resolveWallAssembly } from '@/construction/assemblies/walls'
+import { resolveWallAssembly } from '@/construction/assemblies/perimeterWalls'
 import { replaceSelection } from '@/editor/canvas/state/selectionStore'
 import { useViewModeActions } from '@/editor/canvas/state/viewModeStore'
 import { useViewportActions } from '@/editor/canvas/state/viewportStore'
@@ -43,7 +43,7 @@ interface MixedState<T> {
   value: T | null
 }
 
-function detectMixedAssemblies(walls: PerimeterWallWithGeometry[]): MixedState<WallAssemblyId> {
+function detectMixedAssemblies(walls: PerimeterWallWithGeometry[]): MixedState<PerimeterWallAssemblyId> {
   if (walls.length === 0) return { isMixed: false, value: null }
 
   const firstAssembly = walls[0].wallAssemblyId
@@ -290,8 +290,10 @@ export function PerimeterInspector({ selectedId }: PerimeterInspectorProps): Rea
             </Label.Root>
           </div>
           <WallAssemblySelectWithEdit
-            value={wallAssemblyState.isMixed ? undefined : (wallAssemblyState.value as WallAssemblyId | undefined)}
-            onValueChange={(value: WallAssemblyId) => {
+            value={
+              wallAssemblyState.isMixed ? undefined : (wallAssemblyState.value as PerimeterWallAssemblyId | undefined)
+            }
+            onValueChange={(value: PerimeterWallAssemblyId) => {
               updateAllPerimeterWallsAssembly(selectedId, value)
             }}
             placeholder={

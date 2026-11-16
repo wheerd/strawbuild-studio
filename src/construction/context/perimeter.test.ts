@@ -1,13 +1,22 @@
 import { describe, expect, it, vi } from 'vitest'
 
-import type { PerimeterCornerWithGeometry, PerimeterWallWithGeometry, PerimeterWithGeometry } from '@/building/model'
 import type {
+  IntermediateWallWithGeometry,
+  PerimeterCornerWithGeometry,
+  PerimeterWallWithGeometry,
+  PerimeterWithGeometry,
+  WallNodeWithGeometry
+} from '@/building/model'
+import type {
+  InteriorWallAssemblyId,
+  IntermediateWallId,
   LayerSetId,
   PerimeterCornerId,
   PerimeterId,
+  PerimeterWallAssemblyId,
   PerimeterWallId,
   StoreyId,
-  WallAssemblyId
+  WallNodeId
 } from '@/building/model/ids'
 import { type StoreActions, getModelActions } from '@/building/store'
 import { getConfigActions } from '@/config/store'
@@ -22,7 +31,7 @@ import {
 } from '@/shared/geometry'
 import { partial, partialMock } from '@/test/helpers'
 
-import { computePerimeterConstructionPolygon } from './perimeter'
+import { computePerimeterConstructionPolygon, createInteriorWallGeometry } from './perimeter'
 
 const outsideThicknessByLayerSetId = new Map<LayerSetId, number>()
 
@@ -37,7 +46,8 @@ vi.mock('@/config/store', () => ({
 const mockedGetWallAssemblyById = vi.fn()
 
 vi.mocked(getConfigActions).mockReturnValue({
-  getWallAssemblyById: mockedGetWallAssemblyById
+  getPerimeterWallAssemblyById: mockedGetWallAssemblyById,
+  getInteriorWallAssemblyById: vi.fn()
 } as any)
 
 vi.mock('@/building/store', () => ({
@@ -46,11 +56,15 @@ vi.mock('@/building/store', () => ({
 
 const mockedGetPerimeterWallById = vi.fn()
 const mockedGetPerimeterCornerById = vi.fn()
+const mockedGetIntermediateWallsByPerimeter = vi.fn()
+const mockedGetWallNodesByPerimeter = vi.fn()
 
 vi.mocked(getModelActions).mockReturnValue(
   partialMock<StoreActions>({
     getPerimeterWallById: mockedGetPerimeterWallById,
-    getPerimeterCornerById: mockedGetPerimeterCornerById
+    getPerimeterCornerById: mockedGetPerimeterCornerById,
+    getIntermediateWallsByPerimeter: mockedGetIntermediateWallsByPerimeter,
+    getWallNodesByPerimeter: mockedGetWallNodesByPerimeter
   })
 )
 
@@ -80,7 +94,7 @@ describe('computePerimeterConstructionPolygon', () => {
       return partial<PerimeterWallWithGeometry>({
         id: `wall-${index}` as PerimeterWallId,
         thickness,
-        wallAssemblyId: `assembly-${index}` as WallAssemblyId,
+        wallAssemblyId: `assembly-${index}` as PerimeterWallAssemblyId,
         insideLength: distVec2(insideStart, insideEnd),
         outsideLength: distVec2(outsideLineStart, outsideLineEnd),
         wallLength: distVec2(insideStart, insideEnd),
@@ -122,14 +136,14 @@ describe('computePerimeterConstructionPolygon', () => {
       cornerIds: corners.map(c => c.id)
     })
 
-    const outsideThicknessByAssembly = new Map<WallAssemblyId, number>()
+    const outsideThicknessByAssembly = new Map<PerimeterWallAssemblyId, number>()
     outsideLayerThicknesses.forEach((value, index) => {
       outsideThicknessByAssembly.set(walls[index].wallAssemblyId, value)
     })
 
     outsideThicknessByLayerSetId.clear()
 
-    mockedGetWallAssemblyById.mockImplementation((id: WallAssemblyId) => {
+    mockedGetWallAssemblyById.mockImplementation((id: PerimeterWallAssemblyId) => {
       const outsideThickness = outsideThicknessByAssembly.get(id)
       if (outsideThickness == null) {
         return null
@@ -144,5 +158,109 @@ describe('computePerimeterConstructionPolygon', () => {
     const result = computePerimeterConstructionPolygon(perimeter)
 
     expect(result.polygon.points).toEqual(expectedPoints)
+  })
+
+  it('keeps retained construction lines associated with their wall IDs', () => {
+    const walls = [
+      { id: 'wall-0', point: newVec2(0, 0), direction: newVec2(1, 0) },
+      { id: 'wall-1', point: newVec2(100, 0), direction: newVec2(1, 0) },
+      { id: 'wall-2', point: newVec2(100, 0), direction: newVec2(0, 1) },
+      { id: 'wall-3', point: newVec2(100, 100), direction: newVec2(-1, 0) },
+      { id: 'wall-4', point: newVec2(0, 100), direction: newVec2(0, -1) }
+    ].map(({ id, point, direction: wallDirection }) =>
+      partial<PerimeterWallWithGeometry>({
+        id: id as PerimeterWallId,
+        wallAssemblyId: `assembly-${id}` as PerimeterWallAssemblyId,
+        insideLine: { start: point, end: scaleAddVec2(point, wallDirection, 100) },
+        outsideLine: { start: point, end: scaleAddVec2(point, wallDirection, 100) },
+        direction: wallDirection,
+        outsideDirection: perpendicularCCW(wallDirection)
+      })
+    )
+
+    mockedGetPerimeterWallById.mockImplementation(id => walls.find(wall => wall.id === id))
+    mockedGetWallAssemblyById.mockReturnValue(null)
+
+    const result = computePerimeterConstructionPolygon(
+      partial<PerimeterWithGeometry>({ wallIds: walls.map(wall => wall.id) })
+    )
+
+    expect(result.linesByWallId['wall-1' as PerimeterWallId]).toEqual({
+      point: newVec2(100, 0),
+      direction: newVec2(1, 0)
+    })
+    expect(result.linesByWallId['wall-2' as PerimeterWallId]).toEqual({
+      point: newVec2(100, 0),
+      direction: newVec2(0, 1)
+    })
+  })
+})
+
+describe('createInteriorWallGeometry', () => {
+  it('shortens terminal subtraction areas without shortening core endpoints', () => {
+    const wallId = 'intermediate_wall' as IntermediateWallId
+    const startNodeId = 'start-node' as WallNodeId
+    const endNodeId = 'end-node' as WallNodeId
+    const layerSetId = 'interior-layer-set' as LayerSetId
+    const wall = partial<IntermediateWallWithGeometry>({
+      id: wallId,
+      perimeterId: 'perimeter-1' as PerimeterId,
+      wallAssemblyId: 'interior-assembly' as InteriorWallAssemblyId,
+      wallLength: 100,
+      direction: newVec2(1, 0),
+      leftLine: { start: newVec2(0, 0), end: newVec2(100, 0) },
+      rightLine: { start: newVec2(0, 100), end: newVec2(100, 100) },
+      entityReferenceLine: { start: newVec2(0, 50), end: newVec2(100, 50) },
+      start: { nodeId: startNodeId, axis: 'left' },
+      end: { nodeId: endNodeId, axis: 'left' }
+    })
+    const makeNode = (id: WallNodeId, x: number, perimeterWallId: PerimeterWallId): WallNodeWithGeometry =>
+      partial<WallNodeWithGeometry>({
+        id,
+        type: 'perimeter',
+        wallId: perimeterWallId,
+        connectedWallIds: [wallId],
+        incidentWalls: [
+          {
+            id: wallId,
+            direction: newVec2(1, 0),
+            leftPoint: newVec2(x, 0),
+            rightPoint: newVec2(x, 100),
+            side: id === startNodeId ? 'start' : 'end'
+          }
+        ],
+        insideLine: { start: newVec2(x, -100), end: newVec2(x, 200) },
+        outsideLine: { start: newVec2(x, -100), end: newVec2(x, 200) }
+      })
+
+    mockedGetIntermediateWallsByPerimeter.mockReturnValue([wall])
+    const startPerimeterWallId = 'perimeter-wall-start' as PerimeterWallId
+    const endPerimeterWallId = 'perimeter-wall-end' as PerimeterWallId
+    mockedGetWallNodesByPerimeter.mockReturnValue([
+      makeNode(startNodeId, 0, startPerimeterWallId),
+      makeNode(endNodeId, 100, endPerimeterWallId)
+    ])
+    vi.mocked(getConfigActions).mockReturnValue({
+      getInteriorWallAssemblyById: vi.fn(() => ({ layerSetId })),
+      getPerimeterWallAssemblyById: mockedGetWallAssemblyById
+    } as any)
+    outsideThicknessByLayerSetId.set(layerSetId, 20)
+
+    const result = createInteriorWallGeometry(partial<PerimeterWithGeometry>({ id: 'perimeter-1' as PerimeterId }), {
+      [startPerimeterWallId]: {
+        point: newVec2(0, 0),
+        direction: newVec2(0, 1)
+      },
+      [endPerimeterWallId]: {
+        point: newVec2(100, 0),
+        direction: newVec2(0, 1)
+      }
+    })
+
+    const points = result.areas[0].points
+    expect(Math.min(...points.map(point => point[0]))).toBeCloseTo(20)
+    expect(Math.max(...points.map(point => point[0]))).toBeCloseTo(80)
+    expect(result.wallGeometry.get(wallId)?.start?.left[0]).toBeCloseTo(0)
+    expect(result.wallGeometry.get(wallId)?.end?.left[0]).toBeCloseTo(100)
   })
 })

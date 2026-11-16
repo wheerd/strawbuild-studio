@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 
 import { setupIntermediateWallsSlice } from '@/building/store/slices/__tests__/testHelpers'
 import type { StoreActions } from '@/building/store/types'
+import { DEFAULT_INTERIOR_WALL_ASSEMBLY_ID } from '@/config/store/slices/interiorWalls.defaults'
 import { dotVec2, newVec2 } from '@/shared/geometry'
 
 import { OpeningMovementBehavior } from './OpeningMovementBehavior'
@@ -16,7 +17,8 @@ describe('OpeningMovementBehavior', () => {
       perimeterId,
       { nodeId: start.id, axis: 'left' },
       { nodeId: end.id, axis: 'right' },
-      120
+      120,
+      DEFAULT_INTERIOR_WALL_ASSEMBLY_ID
     )
     const opening = state.actions.addWallOpening(wall.id, {
       openingType: 'door',

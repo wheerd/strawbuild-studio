@@ -2,10 +2,19 @@ import type { PerimeterId, StoreyId } from '@/building/model/ids'
 import {
   getModelActions,
   subscribeToFloorOpenings,
+  subscribeToIntermediateWallGeometry,
+  subscribeToIntermediateWalls,
   subscribeToPerimeterGeometries,
+  subscribeToWallNodeGeometry,
+  subscribeToWallNodes,
   subscribeToWalls
 } from '@/building/store'
-import { getConfigActions, subscribeToLayerSets, subscribeToWallAssemblies } from '@/config/store'
+import {
+  getConfigActions,
+  subscribeToInteriorWallAssemblies,
+  subscribeToLayerSets,
+  subscribeToWallAssemblies
+} from '@/config/store'
 import { computePerimeterConstructionContext } from '@/construction/context/perimeter'
 import type { PerimeterConstructionContext } from '@/construction/context/perimeter'
 
@@ -53,7 +62,7 @@ export class PerimeterContextCacheService {
 
   private setupSubscriptions(): void {
     const { getPerimetersByStorey, getAllPerimeters, getPerimeterWallsById } = getModelActions()
-    const { getWallAssemblyById } = getConfigActions()
+    const { getInteriorWallAssemblyById, getPerimeterWallAssemblyById } = getConfigActions()
 
     subscribeToPerimeterGeometries(perimeterId => {
       this.invalidate(perimeterId)
@@ -63,6 +72,40 @@ export class PerimeterContextCacheService {
       const perimeterId = current?.perimeterId ?? previous?.perimeterId
       if (perimeterId) {
         this.invalidate(perimeterId)
+      }
+    })
+
+    subscribeToIntermediateWalls((_id, current, previous) => {
+      const perimeterId = current?.perimeterId ?? previous?.perimeterId
+      if (perimeterId) this.invalidate(perimeterId)
+    })
+
+    subscribeToIntermediateWallGeometry(id => {
+      for (const perimeter of getAllPerimeters()) {
+        if (
+          getModelActions()
+            .getIntermediateWallsByPerimeter(perimeter.id)
+            .some(wall => wall.id === id)
+        ) {
+          this.invalidate(perimeter.id)
+        }
+      }
+    })
+
+    subscribeToWallNodes((_id, current, previous) => {
+      const perimeterId = current?.perimeterId ?? previous?.perimeterId
+      if (perimeterId) this.invalidate(perimeterId)
+    })
+
+    subscribeToWallNodeGeometry(id => {
+      for (const perimeter of getAllPerimeters()) {
+        if (
+          getModelActions()
+            .getWallNodesByPerimeter(perimeter.id)
+            .some(node => node.id === id)
+        ) {
+          this.invalidate(perimeter.id)
+        }
       }
     })
 
@@ -85,13 +128,25 @@ export class PerimeterContextCacheService {
       }
     })
 
+    subscribeToInteriorWallAssemblies(assemblyId => {
+      for (const perimeter of getAllPerimeters()) {
+        const usesAssembly = getModelActions()
+          .getIntermediateWallsByPerimeter(perimeter.id)
+          .some(wall => wall.wallAssemblyId === assemblyId)
+        if (usesAssembly) this.invalidate(perimeter.id)
+      }
+    })
+
     subscribeToLayerSets(layerSetId => {
       for (const perimeter of getAllPerimeters()) {
         const usesLayerSet = getPerimeterWallsById(perimeter.id).some(wall => {
-          const assembly = getWallAssemblyById(wall.wallAssemblyId)
+          const assembly = getPerimeterWallAssemblyById(wall.wallAssemblyId)
           return assembly?.insideLayerSetId === layerSetId || assembly?.outsideLayerSetId === layerSetId
         })
-        if (usesLayerSet) {
+        const usesInteriorLayerSet = getModelActions()
+          .getIntermediateWallsByPerimeter(perimeter.id)
+          .some(wall => getInteriorWallAssemblyById(wall.wallAssemblyId)?.layerSetId === layerSetId)
+        if (usesLayerSet || usesInteriorLayerSet) {
           this.invalidate(perimeter.id)
         }
       }

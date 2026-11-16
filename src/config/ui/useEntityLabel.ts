@@ -2,24 +2,27 @@ import { useTranslation } from 'react-i18next'
 
 import {
   type FloorAssemblyId,
+  type InteriorWallAssemblyId,
   type LayerSetId,
   type OpeningAssemblyId,
+  type PerimeterWallAssemblyId,
   type RingBeamAssemblyId,
   type RoofAssemblyId,
   type StoreyId,
-  type WallAssemblyId,
   isFloorAssemblyId,
+  isInteriorWallAssemblyId,
   isLayerSetId,
   isOpeningAssemblyId,
+  isPerimeterWallAssemblyId,
   isRingBeamAssemblyId,
   isRoofAssemblyId,
-  isStoreyId,
-  isWallAssemblyId
+  isStoreyId
 } from '@/building/model/ids'
 import { useStoreyById } from '@/building/store'
 import { useStoreyName } from '@/building/ui/useStoreyName'
 import {
   useFloorAssemblyById,
+  useInteriorWallAssemblyById,
   useLayerSetById,
   useOpeningAssemblyById,
   useRingBeamAssemblyById,
@@ -32,7 +35,8 @@ import { type MaterialId, isMaterialId } from '@/materials/types'
 export type EntityId =
   | StoreyId
   | RingBeamAssemblyId
-  | WallAssemblyId
+  | PerimeterWallAssemblyId
+  | InteriorWallAssemblyId
   | FloorAssemblyId
   | RoofAssemblyId
   | OpeningAssemblyId
@@ -61,8 +65,14 @@ export function useEntityLabel(id: EntityId | undefined): string {
     return t($ => $.usage.usedInRingBeam, { label: assemblyName })
   }
 
-  if (isWallAssemblyId(id)) {
+  if (isPerimeterWallAssemblyId(id)) {
     const assembly = useWallAssemblyById(id)
+    const assemblyName = assembly?.nameKey ? t(assembly.nameKey) : assembly?.name
+    return t($ => $.usage.usedInWall, { label: assemblyName })
+  }
+
+  if (isInteriorWallAssemblyId(id)) {
+    const assembly = useInteriorWallAssemblyById(id)
     const assemblyName = assembly?.nameKey ? t(assembly.nameKey) : assembly?.name
     return t($ => $.usage.usedInWall, { label: assemblyName })
   }

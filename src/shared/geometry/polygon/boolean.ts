@@ -143,7 +143,7 @@ export const collectPolygonsWithHolesFromPolyTree = (root: PolyPathD): PolygonWi
   return result
 }
 
-export function subtractPolygons(subject: Polygon2D[], clips: Polygon2D[]): PolygonWithHoles2D[] {
+export function subtractPolygons(subject: readonly Polygon2D[], clips: readonly Polygon2D[]): PolygonWithHoles2D[] {
   if (subject.length === 0) {
     return []
   }

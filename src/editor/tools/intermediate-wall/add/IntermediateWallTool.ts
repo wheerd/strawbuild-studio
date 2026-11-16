@@ -1,5 +1,6 @@
 import { generateIntermediateWallConstraints } from '@/building/gcs/constraintGenerator'
 import {
+  type InteriorWallAssemblyId,
   type IntermediateWallId,
   type IntermediateWallWithGeometry,
   type PerimeterId,
@@ -10,6 +11,7 @@ import {
   isWallNodeId
 } from '@/building/model'
 import { getModelActions } from '@/building/store'
+import { getConfigActions } from '@/config/store'
 import { type SnapResult, SnappingService } from '@/editor/canvas/services/SnappingService'
 import {
   type LengthInputPosition,
@@ -54,6 +56,7 @@ interface IntermediateWallToolState {
   lengthOverride: Length | null
   segmentLengthOverrides: (Length | null)[]
   thickness: Length
+  wallAssemblyId: InteriorWallAssemblyId
   alignment: IntermediateWallAlignment
 }
 
@@ -82,12 +85,18 @@ export class IntermediateWallTool extends BaseTool implements ToolImplementation
       lengthOverride: null,
       segmentLengthOverrides: [] as (Length | null)[],
       thickness: 120,
+      wallAssemblyId: '' as InteriorWallAssemblyId,
       alignment: 'left'
     }
   }
 
   public setThickness(thickness: Length): void {
     this.state.thickness = thickness
+    this.triggerRender()
+  }
+
+  public setAssembly(assemblyId: InteriorWallAssemblyId): void {
+    this.state.wallAssemblyId = assemblyId
     this.triggerRender()
   }
 
@@ -210,6 +219,7 @@ export class IntermediateWallTool extends BaseTool implements ToolImplementation
 
   onActivate(): void {
     getViewModeActions().ensureMode('walls')
+    this.state.wallAssemblyId = getConfigActions().getDefaultInteriorWallAssemblyId()
     this.setupContext()
   }
 
@@ -346,7 +356,8 @@ export class IntermediateWallTool extends BaseTool implements ToolImplementation
         perimeterId,
         { nodeId: startNode.id, axis: this.state.alignment },
         { nodeId: endNode.id, axis: this.state.alignment },
-        this.state.thickness
+        this.state.thickness,
+        this.state.wallAssemblyId
       )
       createdWalls.push(wall)
       lengthOverrides.set(wall.id, this.state.segmentLengthOverrides[index] ?? null)
@@ -472,8 +483,9 @@ export class IntermediateWallTool extends BaseTool implements ToolImplementation
   }
 
   private checkValidation(): boolean {
+    const currentPos = this.getPreviewPosition()
     const isInsideValidationPolygons = Object.values(this.validationPolygons).some(polygon =>
-      isPointInPolygon(this.state.pointer, polygon)
+      isPointInPolygon(currentPos, polygon)
     )
     if (!isInsideValidationPolygons) {
       return false
@@ -481,7 +493,6 @@ export class IntermediateWallTool extends BaseTool implements ToolImplementation
 
     if (this.state.points.length > 0) {
       const lastPoint = this.state.points[this.state.points.length - 1]
-      const currentPos = this.state.snapResult?.position ?? this.state.pointer
       const snapMeta = this.state.snapResult?.meta
       const snapEntityId = snapMeta !== 'origin' ? snapMeta : undefined
       const snapWallIds = this.resolveEntityToWallIds(snapEntityId)
@@ -492,7 +503,7 @@ export class IntermediateWallTool extends BaseTool implements ToolImplementation
         for (const wallId of startWallIds) excludedWallIds.add(wallId)
       }
 
-      const perimeterId = this.findPerimeterContainingPoint(this.state.pointer)
+      const perimeterId = this.findPerimeterContainingPoint(currentPos)
       if (!perimeterId) return false
 
       const existingLines = Object.entries(this.validationLines).flatMap(([wallId, lines]) =>
@@ -526,6 +537,7 @@ export class IntermediateWallTool extends BaseTool implements ToolImplementation
 
   public setLengthOverride(length: Length | null): void {
     this.state.lengthOverride = length
+    this.state.isValid = this.checkValidation()
     this.triggerRender()
   }
 

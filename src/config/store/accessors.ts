@@ -1,18 +1,20 @@
 import type {
   AssemblyId,
   FloorAssemblyId,
+  InteriorWallAssemblyId,
   LayerSetId,
   OpeningAssemblyId,
+  PerimeterWallAssemblyId,
   RingBeamAssemblyId,
-  RoofAssemblyId,
-  WallAssemblyId
+  RoofAssemblyId
 } from '@/building/model/ids'
 import type {
   FloorAssemblyConfig,
+  InteriorWallAssemblyConfig,
   OpeningAssemblyConfig,
+  PerimeterWallAssemblyConfig,
   RingBeamAssemblyConfig,
-  RoofAssemblyConfig,
-  WallAssemblyConfig
+  RoofAssemblyConfig
 } from '@/config/types'
 import type { LayerConfig, LayerSetConfig } from '@/construction/assemblies/layers/types'
 import type { MaterialId } from '@/materials/types'
@@ -40,14 +42,16 @@ export const getConfigState = () => {
   return {
     defaultStrawMaterial: state.defaultStrawMaterial,
     ringBeamAssemblyConfigs: state.ringBeamAssemblyConfigs,
-    wallAssemblyConfigs: state.wallAssemblyConfigs,
+    perimeterWallAssemblyConfigs: state.perimeterWallAssemblyConfigs,
+    interiorWallAssemblyConfigs: state.interiorWallAssemblyConfigs,
     floorAssemblyConfigs: state.floorAssemblyConfigs,
     roofAssemblyConfigs: state.roofAssemblyConfigs,
     openingAssemblyConfigs: state.openingAssemblyConfigs,
     layerSetConfigs: state.layerSetConfigs,
     defaultBaseRingBeamAssemblyId: state.defaultBaseRingBeamAssemblyId,
     defaultTopRingBeamAssemblyId: state.defaultTopRingBeamAssemblyId,
-    defaultWallAssemblyId: state.defaultWallAssemblyId,
+    defaultPerimeterWallAssemblyId: state.defaultPerimeterWallAssemblyId,
+    defaultInteriorWallAssemblyId: state.defaultInteriorWallAssemblyId,
     defaultFloorAssemblyId: state.defaultFloorAssemblyId,
     defaultRoofAssemblyId: state.defaultRoofAssemblyId,
     defaultOpeningAssemblyId: state.defaultOpeningAssemblyId,
@@ -59,14 +63,16 @@ export const getConfigState = () => {
 export const setConfigState = (data: {
   defaultStrawMaterial?: MaterialId
   ringBeamAssemblyConfigs: Record<RingBeamAssemblyId, RingBeamAssemblyConfig>
-  wallAssemblyConfigs: Record<WallAssemblyId, WallAssemblyConfig>
+  perimeterWallAssemblyConfigs: Record<PerimeterWallAssemblyId, PerimeterWallAssemblyConfig>
+  interiorWallAssemblyConfigs: Record<InteriorWallAssemblyId, InteriorWallAssemblyConfig>
   floorAssemblyConfigs?: Record<FloorAssemblyId, FloorAssemblyConfig>
   roofAssemblyConfigs?: Record<RoofAssemblyId, RoofAssemblyConfig>
   openingAssemblyConfigs?: Record<OpeningAssemblyId, OpeningAssemblyConfig>
   layerSetConfigs?: Record<LayerSetId, LayerSetConfig>
   defaultBaseRingBeamAssemblyId?: RingBeamAssemblyId
   defaultTopRingBeamAssemblyId?: RingBeamAssemblyId
-  defaultWallAssemblyId: WallAssemblyId
+  defaultPerimeterWallAssemblyId: PerimeterWallAssemblyId
+  defaultInteriorWallAssemblyId: InteriorWallAssemblyId
   defaultFloorAssemblyId?: FloorAssemblyId
   defaultRoofAssemblyId?: RoofAssemblyId
   defaultOpeningAssemblyId?: OpeningAssemblyId
@@ -77,14 +83,16 @@ export const setConfigState = (data: {
   useConfigStore.setState({
     defaultStrawMaterial: data.defaultStrawMaterial ?? state.defaultStrawMaterial,
     ringBeamAssemblyConfigs: data.ringBeamAssemblyConfigs,
-    wallAssemblyConfigs: data.wallAssemblyConfigs,
+    perimeterWallAssemblyConfigs: data.perimeterWallAssemblyConfigs,
+    interiorWallAssemblyConfigs: data.interiorWallAssemblyConfigs,
     floorAssemblyConfigs: data.floorAssemblyConfigs ?? state.floorAssemblyConfigs,
     roofAssemblyConfigs: data.roofAssemblyConfigs ?? state.roofAssemblyConfigs,
     openingAssemblyConfigs: data.openingAssemblyConfigs ?? state.openingAssemblyConfigs,
     layerSetConfigs: data.layerSetConfigs ?? state.layerSetConfigs,
     defaultBaseRingBeamAssemblyId: data.defaultBaseRingBeamAssemblyId,
     defaultTopRingBeamAssemblyId: data.defaultTopRingBeamAssemblyId,
-    defaultWallAssemblyId: data.defaultWallAssemblyId,
+    defaultPerimeterWallAssemblyId: data.defaultPerimeterWallAssemblyId,
+    defaultInteriorWallAssemblyId: data.defaultInteriorWallAssemblyId,
     defaultFloorAssemblyId: data.defaultFloorAssemblyId ?? state.defaultFloorAssemblyId,
     defaultRoofAssemblyId: data.defaultRoofAssemblyId ?? state.defaultRoofAssemblyId,
     defaultOpeningAssemblyId: data.defaultOpeningAssemblyId ?? state.defaultOpeningAssemblyId,
@@ -94,8 +102,16 @@ export const setConfigState = (data: {
 
 // Subscription helpers for derived state invalidation
 export const subscribeToWallAssemblies = (
-  cb: (id: WallAssemblyId, current?: WallAssemblyConfig, previous?: WallAssemblyConfig) => void
-) => subscribeRecords(useConfigStore, s => s.wallAssemblyConfigs, cb)
+  cb: (
+    id: PerimeterWallAssemblyId,
+    current?: PerimeterWallAssemblyConfig,
+    previous?: PerimeterWallAssemblyConfig
+  ) => void
+) => subscribeRecords(useConfigStore, s => s.perimeterWallAssemblyConfigs, cb)
+
+export const subscribeToInteriorWallAssemblies = (
+  cb: (id: InteriorWallAssemblyId, current?: InteriorWallAssemblyConfig, previous?: InteriorWallAssemblyConfig) => void
+) => subscribeRecords(useConfigStore, s => s.interiorWallAssemblyConfigs, cb)
 
 export const subscribeToFloorAssemblies = (
   cb: (id: FloorAssemblyId, current?: FloorAssemblyConfig, previous?: FloorAssemblyConfig) => void

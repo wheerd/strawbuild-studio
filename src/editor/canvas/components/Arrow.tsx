@@ -40,3 +40,21 @@ export function Arrow({ arrowStart, arrowEnd, strokeWidth, pointerLength, pointe
 
   return <path d={d} fill={color} stroke={color} strokeWidth={strokeWidth} {...props} />
 }
+
+export interface BidirectionalArrowProps extends Omit<ArrowProps, 'arrowStart' | 'arrowEnd' | 'direction'> {
+  center: Vec2
+  direction: Vec2
+  length: number
+}
+
+export function BidirectionalArrow({ center, direction: arrowDirection, length, ...props }: BidirectionalArrowProps) {
+  const start = scaleAddVec2(center, arrowDirection, -length)
+  const end = scaleAddVec2(center, arrowDirection, length)
+
+  return (
+    <g>
+      <Arrow arrowStart={center} arrowEnd={start} {...props} />
+      <Arrow arrowStart={center} arrowEnd={end} {...props} />
+    </g>
+  )
+}

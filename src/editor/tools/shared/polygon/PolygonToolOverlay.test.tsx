@@ -1,6 +1,6 @@
 import { beforeEach, vi } from 'vitest'
 
-import { createWallAssemblyId } from '@/building/model/ids'
+import { createPerimeterWallAssemblyId } from '@/building/model/ids'
 import type { SnapResult, SnappingService } from '@/editor/canvas/services/SnappingService'
 import { PerimeterTool } from '@/editor/tools/perimeter/add/PerimeterTool'
 import { ToolSystem } from '@/editor/tools/system/ToolSystem'
@@ -45,7 +45,7 @@ describe('PolygonToolOverlay', () => {
       isCurrentSegmentValid: true,
       isClosingSegmentValid: true,
       segmentLengthOverrides: [],
-      wallAssemblyId: createWallAssemblyId(),
+      wallAssemblyId: createPerimeterWallAssemblyId(),
       wallThickness: 420,
       lengthOverride: null,
       baseRingBeamAssemblyId: undefined,

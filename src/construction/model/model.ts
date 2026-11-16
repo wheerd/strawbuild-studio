@@ -8,9 +8,12 @@ import {
   type Polygon2D,
   type Transform,
   type Vec3,
+  addVec3,
   composeTransform,
+  dotVec3,
   newVec2,
   newVec3,
+  subVec3,
   transform
 } from '@/shared/geometry'
 import { simplifyPolygon, unionPolygons } from '@/shared/geometry/polygon'
@@ -33,6 +36,32 @@ export interface ConstructionModel {
   errors: ConstructionIssue[]
   warnings: ConstructionIssue[]
   bounds: Bounds3D
+  debugClippingPlanes?: DebugClippingPlane[]
+}
+
+export interface DebugClippingPlane {
+  id: string
+  sourceWallId: string
+  endpoint: 'start' | 'end'
+  normal: Vec3
+  originOffset: Length
+}
+
+export function transformDebugClippingPlane(plane: DebugClippingPlane, t: Transform): DebugClippingPlane {
+  const normalLengthSquared = dotVec3(plane.normal, plane.normal)
+  const point = newVec3(
+    (plane.normal[0] * plane.originOffset) / normalLengthSquared,
+    (plane.normal[1] * plane.originOffset) / normalLengthSquared,
+    (plane.normal[2] * plane.originOffset) / normalLengthSquared
+  )
+  const transformedPoint = transform(point, t)
+  const transformedNormal = subVec3(transform(addVec3(point, plane.normal), t), transformedPoint)
+
+  return {
+    ...plane,
+    normal: transformedNormal,
+    originOffset: dotVec3(transformedNormal, transformedPoint)
+  }
 }
 
 export type HighlightedAreaType =
@@ -189,7 +218,8 @@ export function mergeModels(...models: ConstructionModel[]): ConstructionModel {
     areas: [...areasWithoutMergeKey, ...mergedAreas],
     errors: mergeConstructionIssues(models.flatMap(m => m.errors)),
     warnings: mergeConstructionIssues(models.flatMap(m => m.warnings)),
-    bounds: Bounds3D.merge(...models.map(m => m.bounds))
+    bounds: Bounds3D.merge(...models.map(m => m.bounds)),
+    debugClippingPlanes: models.flatMap(m => m.debugClippingPlanes ?? [])
   }
 }
 
@@ -218,7 +248,8 @@ export function transformModel(
     areas: model.areas.map(a => transformArea(a, t)),
     errors: model.errors, // Issues don't need transformation - they're attached to elements
     warnings: model.warnings, // Issues don't need transformation - they're attached to elements
-    bounds: transformBounds(model.bounds, t)
+    bounds: transformBounds(model.bounds, t),
+    debugClippingPlanes: model.debugClippingPlanes?.map(plane => transformDebugClippingPlane(plane, t))
   }
 }
 

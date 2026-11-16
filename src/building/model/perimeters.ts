@@ -4,11 +4,11 @@ import type {
   IntermediateWallId,
   PerimeterCornerId,
   PerimeterId,
+  PerimeterWallAssemblyId,
   PerimeterWallId,
   RingBeamAssemblyId,
   RoomId,
   StoreyId,
-  WallAssemblyId,
   WallEntityId,
   WallNodeId
 } from './ids'
@@ -44,7 +44,7 @@ export interface PerimeterWall {
   wallNodeIds: WallNodeId[]
 
   thickness: Length
-  wallAssemblyId: WallAssemblyId
+  wallAssemblyId: PerimeterWallAssemblyId
 
   baseRingBeamAssemblyId?: RingBeamAssemblyId
   topRingBeamAssemblyId?: RingBeamAssemblyId

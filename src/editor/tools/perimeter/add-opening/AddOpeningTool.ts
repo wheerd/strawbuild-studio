@@ -106,7 +106,7 @@ export class AddOpeningTool extends BaseTool implements ToolImplementation {
     // Resolve the opening assembly padding for this wall
     const configActions = getConfigActions()
     const wallAssembly = isPerimeterWallId(wallId)
-      ? configActions.getWallAssemblyById((wall as PerimeterWallWithGeometry).wallAssemblyId)
+      ? configActions.getPerimeterWallAssemblyById((wall as PerimeterWallWithGeometry).wallAssemblyId)
       : undefined
     const openingAssembly = wallAssembly?.openingAssemblyId
       ? configActions.getOpeningAssemblyById(wallAssembly.openingAssemblyId)

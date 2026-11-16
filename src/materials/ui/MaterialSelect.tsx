@@ -4,10 +4,17 @@ import { useTranslation } from 'react-i18next'
 import { useMaterials } from '@/materials/store'
 import type { Material, MaterialId, MaterialType } from '@/materials/types'
 import { Select, SelectValue } from '@/shared/ui/components/select'
+import { cn } from '@/shared/ui/utils'
 
 import { getMaterialTypeIcon } from './icons'
 
 const NONE_VALUE = '__material_none__'
+
+const sizeClasses = {
+  sm: 'h-7 text-xs',
+  base: 'h-9 text-sm',
+  lg: 'h-10 text-base'
+}
 
 export interface MaterialSelectProps {
   value: MaterialId | null | undefined
@@ -46,6 +53,7 @@ export function MaterialSelect({
   value,
   onValueChange,
   placeholder,
+  size = 'base',
   disabled = false,
   materials: materialsProp,
   allowEmpty = false,
@@ -96,7 +104,7 @@ export function MaterialSelect({
       }}
       disabled={disabled}
     >
-      <Select.Trigger>
+      <Select.Trigger className={cn(sizeClasses[size])}>
         <SelectValue placeholder={<span className="text-muted-foreground">{translatedPlaceholder}</span>} />
       </Select.Trigger>
       <Select.Content>

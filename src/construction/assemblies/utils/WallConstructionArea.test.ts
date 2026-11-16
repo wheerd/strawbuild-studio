@@ -1,8 +1,25 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 
-import { newVec2, newVec3 } from '@/shared/geometry'
+import { type Polygon2D, type PolygonWithHoles2D, newVec2, newVec3 } from '@/shared/geometry'
 
 import { WallConstructionArea } from './WallConstructionArea'
+
+vi.mock('@/shared/geometry', async importOriginal => {
+  const geometry = await importOriginal<typeof import('@/shared/geometry')>()
+
+  return {
+    ...geometry,
+    intersectPolygon: vi.fn((polygon: PolygonWithHoles2D) => [polygon]),
+    subtractPolygons: vi.fn((subjects: readonly Polygon2D[]) => {
+      if (subjects.length === 0) return []
+
+      return [
+        { outer: subjects[0], holes: [] },
+        { outer: subjects[0], holes: [] }
+      ]
+    })
+  }
+})
 
 describe('withZAdjustment', () => {
   it('should adjust area without roof offsets', () => {
@@ -55,6 +72,120 @@ describe('withZAdjustment', () => {
     // New top (1100) and top offsets are removed
     expect(adjusted.size[2]).toEqual(1100)
     expect(adjusted.topOffsets).toBeUndefined()
+  })
+})
+
+describe('splitAtHeightJumps', () => {
+  it('returns the original area when the top contour is continuous', () => {
+    const area = new WallConstructionArea(newVec3(0, 0, 0), newVec3(3000, 300, 3000), [
+      newVec2(0, 0),
+      newVec2(3000, -300)
+    ])
+
+    expect(area.splitAtHeightJumps()).toEqual([area])
+  })
+
+  it('splits the area into continuous sections at height jumps', () => {
+    const area = new WallConstructionArea(newVec3(0, 0, 0), newVec3(3000, 300, 3000), [
+      newVec2(0, 0),
+      newVec2(1000, 0),
+      newVec2(1000, -500),
+      newVec2(3000, -500)
+    ])
+
+    const sections = area.splitAtHeightJumps()
+
+    expect(sections).toHaveLength(2)
+    expect(sections[0].position[0]).toBe(0)
+    expect(sections[0].size[0]).toBe(1000)
+    expect(sections[1].position[0]).toBe(1000)
+    expect(sections[1].size[0]).toBe(2000)
+    expect(
+      sections.every(
+        section =>
+          section.topOffsets == null ||
+          section.topOffsets.every((offset, index, offsets) => index === 0 || offset[0] > offsets[index - 1][0])
+      )
+    ).toBe(true)
+  })
+})
+
+describe('splitAtTop', () => {
+  it('splits a flat top by the requested thickness', () => {
+    const area = new WallConstructionArea(newVec3(0, 0, 0), newVec3(3000, 300, 3000))
+
+    const [top, remainder] = area.splitAtTop(100)
+
+    expect(top.position[2]).toBe(2900)
+    expect(top.size[2]).toBe(100)
+    expect(remainder.position[2]).toBe(0)
+    expect(remainder.size[2]).toBe(2900)
+  })
+
+  it('keeps a sloped top strip perpendicular to the contour', () => {
+    const area = new WallConstructionArea(newVec3(0, 0, 0), newVec3(3000, 300, 3000), [
+      newVec2(0, 0),
+      newVec2(3000, -300)
+    ])
+
+    const [top] = area.splitAtTop(100)
+    const bottomAtStart = top.position[2] + top.getBottomOffsetsAt(0)[0]
+    const topAtStart = area.position[2] + area.size[2]
+    const slope = -300 / 3000
+    const verticalDistance = topAtStart - bottomAtStart
+
+    expect(verticalDistance / Math.sqrt(1 + slope * slope)).toBeCloseTo(100)
+    expect(top.getBottomOffsetsAt(0)[0]).toBeGreaterThan(0)
+    expect(top.getBottomOffsetsAt(3000)[0]).toBeCloseTo(0)
+  })
+
+  it('preserves the source bottom contour in the remainder', () => {
+    const area = new WallConstructionArea(
+      newVec3(0, 0, 0),
+      newVec3(3000, 300, 3000),
+      [newVec2(0, 0), newVec2(3000, -300)],
+      [newVec2(0, 100), newVec2(3000, 0)]
+    )
+
+    const [, remainder] = area.splitAtTop(100)
+
+    expect(remainder.getBottomOffsetsAt(0)[0]).toBe(100)
+    expect(remainder.getBottomOffsetsAt(3000)[0]).toBe(0)
+  })
+
+  it('preserves absolute contours when splitting a stepped top into sections', () => {
+    const area = new WallConstructionArea(newVec3(0, 0, 0), newVec3(3000, 300, 3000), [
+      newVec2(0, 0),
+      newVec2(1000, 0),
+      newVec2(1000, -500),
+      newVec2(3000, -500)
+    ])
+
+    const [headPlate] = area.splitAtTop(100)
+    const sections = headPlate.splitAtHeightJumps()
+
+    expect(sections).toHaveLength(2)
+    expect(sections[0].position[2]).toBe(2900)
+    expect(sections[0].size[2]).toBe(100)
+    expect(sections[1].position[2]).toBe(2400)
+    expect(sections[1].size[2]).toBe(100)
+    expect(sections[0].position[2] + sections[0].getTopAtStart()).toBe(3000)
+    expect(sections[1].position[2] + sections[1].getTopAtStart()).toBe(2500)
+  })
+})
+
+describe('yieldExtrudeWithHoles', () => {
+  it('yields every polygon created by subtracting holes', () => {
+    const area = new WallConstructionArea(newVec3(0, 0, 0), newVec3(3000, 300, 2400), undefined, undefined, [
+      {
+        points: [newVec2(1000, 0), newVec2(2000, 0), newVec2(2000, 2400), newVec2(1000, 2400)]
+      }
+    ])
+
+    const results = Array.from(area.yieldExtrudeWithHoles('material' as never))
+
+    expect(results).toHaveLength(2)
+    expect(results.every(result => result.type === 'element')).toBe(true)
   })
 })
 

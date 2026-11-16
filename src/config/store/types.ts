@@ -1,17 +1,19 @@
 import type { FloorAssembliesActions, FloorAssembliesState } from './slices/floors'
+import type { InteriorWallAssembliesActions, InteriorWallAssembliesState } from './slices/interiorWalls'
 import type { LayerSetsActions, LayerSetsState } from './slices/layers'
 import type { OpeningAssembliesActions, OpeningAssembliesState } from './slices/openings'
+import type { PerimeterWallAssembliesActions, PerimeterWallAssembliesState } from './slices/perimeterWalls'
 import type { RingBeamAssembliesActions, RingBeamAssembliesState } from './slices/ringBeams'
 import type { RoofAssembliesActions, RoofAssembliesState } from './slices/roofs'
 import type { StrawActions, StrawState } from './slices/straw'
 import type { TimestampsActions, TimestampsState } from './slices/timestampsSlice'
-import type { WallAssembliesActions, WallAssembliesState } from './slices/walls'
 
 export interface ConfigState
   extends
     StrawState,
     RingBeamAssembliesState,
-    WallAssembliesState,
+    PerimeterWallAssembliesState,
+    InteriorWallAssembliesState,
     FloorAssembliesState,
     RoofAssembliesState,
     OpeningAssembliesState,
@@ -22,7 +24,8 @@ export interface ConfigActions
   extends
     StrawActions,
     RingBeamAssembliesActions,
-    WallAssembliesActions,
+    PerimeterWallAssembliesActions,
+    InteriorWallAssembliesActions,
     FloorAssembliesActions,
     RoofAssembliesActions,
     OpeningAssembliesActions,

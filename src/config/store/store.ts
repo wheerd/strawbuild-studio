@@ -3,13 +3,14 @@ import { persist, subscribeWithSelector } from 'zustand/middleware'
 import { immer } from 'zustand/middleware/immer'
 
 import { createFloorAssembliesSlice } from '@/config/store/slices/floors'
+import { createInteriorWallAssembliesSlice } from '@/config/store/slices/interiorWalls'
 import { createLayerSetsSlice } from '@/config/store/slices/layers'
 import { createOpeningAssembliesSlice } from '@/config/store/slices/openings'
+import { createPerimeterWallAssembliesSlice } from '@/config/store/slices/perimeterWalls'
 import { createRingBeamAssembliesSlice } from '@/config/store/slices/ringBeams'
 import { createRoofAssembliesSlice } from '@/config/store/slices/roofs'
 import { createStrawSlice } from '@/config/store/slices/straw'
 import { createTimestampsSlice } from '@/config/store/slices/timestampsSlice'
-import { createWallAssembliesSlice } from '@/config/store/slices/walls'
 import type { ConfigState, ConfigStore } from '@/config/store/types'
 
 import { mergeStateWithDefaults } from './mergeDefaults'
@@ -21,7 +22,8 @@ export const useConfigStore = create<ConfigStore>()(
       (set, get, store) => {
         const strawSlice = immer(createStrawSlice)(set, get, store)
         const ringBeamSlice = immer(createRingBeamAssembliesSlice)(set, get, store)
-        const wallSlice = immer(createWallAssembliesSlice)(set, get, store)
+        const perimeterWallSlice = immer(createPerimeterWallAssembliesSlice)(set, get, store)
+        const interiorWallSlice = immer(createInteriorWallAssembliesSlice)(set, get, store)
         const floorSlice = immer(createFloorAssembliesSlice)(set, get, store)
         const roofSlice = immer(createRoofAssembliesSlice)(set, get, store)
         const openingSlice = immer(createOpeningAssembliesSlice)(set, get, store)
@@ -31,7 +33,8 @@ export const useConfigStore = create<ConfigStore>()(
         return {
           ...strawSlice,
           ...ringBeamSlice,
-          ...wallSlice,
+          ...perimeterWallSlice,
+          ...interiorWallSlice,
           ...floorSlice,
           ...roofSlice,
           ...openingSlice,
@@ -40,7 +43,8 @@ export const useConfigStore = create<ConfigStore>()(
           actions: {
             ...strawSlice.actions,
             ...ringBeamSlice.actions,
-            ...wallSlice.actions,
+            ...perimeterWallSlice.actions,
+            ...interiorWallSlice.actions,
             ...floorSlice.actions,
             ...roofSlice.actions,
             ...openingSlice.actions,
@@ -58,14 +62,16 @@ export const useConfigStore = create<ConfigStore>()(
         partialize: state => ({
           defaultStrawMaterial: state.defaultStrawMaterial,
           ringBeamAssemblyConfigs: state.ringBeamAssemblyConfigs,
-          wallAssemblyConfigs: state.wallAssemblyConfigs,
+          perimeterWallAssemblyConfigs: state.perimeterWallAssemblyConfigs,
+          interiorWallAssemblyConfigs: state.interiorWallAssemblyConfigs,
           floorAssemblyConfigs: state.floorAssemblyConfigs,
           roofAssemblyConfigs: state.roofAssemblyConfigs,
           openingAssemblyConfigs: state.openingAssemblyConfigs,
           layerSetConfigs: state.layerSetConfigs,
           defaultBaseRingBeamAssemblyId: state.defaultBaseRingBeamAssemblyId,
           defaultTopRingBeamAssemblyId: state.defaultTopRingBeamAssemblyId,
-          defaultWallAssemblyId: state.defaultWallAssemblyId,
+          defaultPerimeterWallAssemblyId: state.defaultPerimeterWallAssemblyId,
+          defaultInteriorWallAssemblyId: state.defaultInteriorWallAssemblyId,
           defaultFloorAssemblyId: state.defaultFloorAssemblyId,
           defaultRoofAssemblyId: state.defaultRoofAssemblyId,
           defaultOpeningAssemblyId: state.defaultOpeningAssemblyId,
@@ -97,7 +103,8 @@ export const useConfigStore = create<ConfigStore>()(
 export const _clearAllAssemblies = () =>
   useConfigStore.setState({
     ringBeamAssemblyConfigs: {},
-    wallAssemblyConfigs: {},
+    perimeterWallAssemblyConfigs: {},
+    interiorWallAssemblyConfigs: {},
     floorAssemblyConfigs: {},
     roofAssemblyConfigs: {},
     openingAssemblyConfigs: {}

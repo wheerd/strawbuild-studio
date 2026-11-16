@@ -53,7 +53,9 @@
   "intermediateWall": {
     "deleteWall": "Delete Wall",
     "fitToView": "Fit to View",
+    "selectAssemblyPlaceholder": "Select assembly",
     "thickness": "Thickness",
+    "wallAssembly": "Wall Assembly",
     "wallLength": "Length"
   },
   "opening": {
@@ -199,7 +201,8 @@
   },
   "wallNode": {
     "deleteNode": "Delete Node",
-    "fitToView": "Fit to View"
+    "fitToView": "Fit to View",
+    "switchConstruction": "Switch constructing wall"
   },
   "wallPost": {
     "actsAsPost": "Acts as Post",

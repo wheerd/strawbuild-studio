@@ -12,6 +12,7 @@ export default defineConfig({
       'config:*.defaults.*',
       'config:*.presets.*',
       'config:*.types.*',
+      'config:walls.interiorTypes.*',
       'config:layers.orientation.after.*',
       'config:layerSets.uses.*',
       'config:tabs.*',

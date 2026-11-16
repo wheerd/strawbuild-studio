@@ -1,7 +1,7 @@
 import { BaseOpeningAssembly } from '@/construction/assemblies/openings/base'
 import type { PlankedOpeningConfig } from '@/construction/assemblies/openings/types'
+import type { SegmentInfillMethod } from '@/construction/assemblies/perimeterWalls/types'
 import { type WallConstructionArea } from '@/construction/assemblies/utils/WallConstructionArea'
-import type { SegmentInfillMethod } from '@/construction/assemblies/walls/types'
 import { type ConstructionResult, yieldElement, yieldError } from '@/construction/model/results'
 import {
   TAG_HEADER,
@@ -30,7 +30,7 @@ export class PlankedOpeningAssembly extends BaseOpeningAssembly<PlankedOpeningCo
 
     const [belowHeader, topPart] = area.splitInZ(adjustedHeader)
     const [bottomPart, rawOpeningArea] = belowHeader.splitInZ(adjustedSill)
-    const [belowSill, sillArea] = bottomPart.splitInZ(sillBottom)
+    const [belowSill, sillArea] = bottomPart.splitInZ(Math.max(sillBottom, 0))
     const [headerArea, aboveHeader] = topPart.splitInZ(this.config.headerThickness)
 
     const [leftPlank, rest] = rawOpeningArea.splitInX(this.config.plankThickness)

@@ -19,9 +19,9 @@ describe('config migrations', () => {
           }
         }
       }
-    }) as { wallAssemblyConfigs: Record<string, { module: Record<string, unknown> }> }
+    }) as { perimeterWallAssemblyConfigs: Record<string, { module: Record<string, unknown> }> }
 
-    const module = migrated.wallAssemblyConfigs.missingFields.module
+    const module = migrated.perimeterWallAssemblyConfigs.missingFields.module
     expect(module.spacerSize).toBe(120)
     expect(module.spacerCount).toBe(3)
     expect(module.spacerMaterial).toBe(roughWood.id)
@@ -46,9 +46,9 @@ describe('config migrations', () => {
           }
         }
       }
-    }) as { wallAssemblyConfigs: Record<string, { module: Record<string, unknown> }> }
+    }) as { perimeterWallAssemblyConfigs: Record<string, { module: Record<string, unknown> }> }
 
-    const module = migrated.wallAssemblyConfigs.withStrings.module
+    const module = migrated.perimeterWallAssemblyConfigs.withStrings.module
     expect(module.spacerSize).toBe(150)
     expect(module.spacerCount).toBe(4)
     expect(module.spacerMaterial).toBe('custom-spacer')
@@ -97,7 +97,7 @@ describe('config migrations', () => {
         }
       }
     }) as {
-      wallAssemblyConfigs: Record<
+      perimeterWallAssemblyConfigs: Record<
         string,
         {
           insideLayerSetId?: string
@@ -108,7 +108,7 @@ describe('config migrations', () => {
       layerSetConfigs: Record<string, { layers: { material: string; thickness: number; name: string }[] }>
     }
 
-    const assembly = migrated.wallAssemblyConfigs.test
+    const assembly = migrated.perimeterWallAssemblyConfigs.test
     expect(assembly.insideLayerSetId).toBeDefined()
     expect(assembly.outsideLayerSetId).toBeDefined()
     expect(assembly.layers).toBeUndefined()
@@ -302,7 +302,7 @@ describe('config migrations', () => {
         }
       }
     }) as {
-      wallAssemblyConfigs: Record<
+      perimeterWallAssemblyConfigs: Record<
         string,
         {
           triangularBattens?: Record<string, unknown>
@@ -313,7 +313,7 @@ describe('config migrations', () => {
     }
 
     // Check infill assembly
-    const infill = migrated.wallAssemblyConfigs.infillWithoutBattens
+    const infill = migrated.perimeterWallAssemblyConfigs.infillWithoutBattens
     expect(infill.triangularBattens).toBeDefined()
     expect(infill.triangularBattens?.size).toBe(30)
     expect(infill.triangularBattens?.inside).toBe(false)
@@ -321,7 +321,7 @@ describe('config migrations', () => {
     expect(infill.triangularBattens?.minLength).toBe(100)
 
     // Check strawhenge module battens
-    const strawhenge = migrated.wallAssemblyConfigs.strawhengeWithoutBattens
+    const strawhenge = migrated.perimeterWallAssemblyConfigs.strawhengeWithoutBattens
     expect(strawhenge.module?.triangularBattens).toBeDefined()
     expect(strawhenge.module?.triangularBattens?.size).toBe(30)
     expect(strawhenge.module?.triangularBattens?.inside).toBe(false)
@@ -331,7 +331,7 @@ describe('config migrations', () => {
     expect(strawhenge.infill?.triangularBattens?.outside).toBe(false)
 
     // Check modules assembly
-    const modules = migrated.wallAssemblyConfigs.modulesWithoutBattens
+    const modules = migrated.perimeterWallAssemblyConfigs.modulesWithoutBattens
     expect(modules.module?.triangularBattens).toBeDefined()
     expect(modules.infill?.triangularBattens).toBeDefined()
   })

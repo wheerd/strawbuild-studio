@@ -5,9 +5,9 @@ import type {
   LayerSetId,
   PerimeterCornerId,
   PerimeterId,
+  PerimeterWallAssemblyId,
   PerimeterWallId,
-  StoreyId,
-  WallAssemblyId
+  StoreyId
 } from '@/building/model/ids'
 import { type StoreActions, getModelActions } from '@/building/store'
 import { getConfigActions } from '@/config/store'
@@ -32,7 +32,7 @@ vi.mock('@/config/store', () => ({
 const mockedGetWallAssemblyById = vi.fn()
 
 vi.mocked(getConfigActions).mockReturnValue({
-  getWallAssemblyById: mockedGetWallAssemblyById
+  getPerimeterWallAssemblyById: mockedGetWallAssemblyById
 } as any)
 
 vi.mock('@/building/store', () => ({
@@ -73,7 +73,7 @@ function createRectangularPerimeter(width: number, height: number, wallThickness
       startCornerId: `corner-${index}` as PerimeterCornerId,
       endCornerId: `corner-${(index + 1) % 4}` as PerimeterCornerId,
       thickness: wallThickness,
-      wallAssemblyId: `assembly-${index}` as WallAssemblyId,
+      wallAssemblyId: `assembly-${index}` as PerimeterWallAssemblyId,
       insideLength: distVec2(start, end),
       outsideLength: distVec2(outsideStart, outsideEnd),
       wallLength: distVec2(start, end),

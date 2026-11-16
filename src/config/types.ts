@@ -2,10 +2,11 @@ import type { Resources, SelectorFn, SelectorOptions } from 'i18next'
 
 import type {
   FloorAssemblyId,
+  InteriorWallAssemblyId,
   OpeningAssemblyId,
+  PerimeterWallAssemblyId,
   RingBeamAssemblyId,
-  RoofAssemblyId,
-  WallAssemblyId
+  RoofAssemblyId
 } from '@/building/model'
 import type {
   FilledFloorConfig,
@@ -13,6 +14,7 @@ import type {
   JoistFloorConfig,
   MonolithicFloorConfig
 } from '@/construction/assemblies/floors/types'
+import type { MonolithicWallConfig, StudWallConfig } from '@/construction/assemblies/interiorWalls/types'
 import type {
   EmptyOpeningConfig,
   PlankedOpeningConfig,
@@ -21,18 +23,18 @@ import type {
   ThresholdAssemblyConfig
 } from '@/construction/assemblies/openings/types'
 import type {
-  BrickRingBeamConfig,
-  DoubleRingBeamConfig,
-  FullRingBeamConfig
-} from '@/construction/assemblies/ringBeams/types'
-import type { MonolithicRoofConfig, PurlinRoofConfig } from '@/construction/assemblies/roofs/types'
-import type {
   InfillWallConfig,
   ModulesWallConfig,
   NonStrawbaleWallConfig,
   PrefabModulesWallConfig,
   StrawhengeWallConfig
-} from '@/construction/assemblies/walls/types'
+} from '@/construction/assemblies/perimeterWalls/types'
+import type {
+  BrickRingBeamConfig,
+  DoubleRingBeamConfig,
+  FullRingBeamConfig
+} from '@/construction/assemblies/ringBeams/types'
+import type { MonolithicRoofConfig, PurlinRoofConfig } from '@/construction/assemblies/roofs/types'
 
 export type AssemblyNameKey = SelectorFn<Resources['config'], string, SelectorOptions<'config'>>
 
@@ -42,24 +44,35 @@ export interface NamedAssembly {
   nameKey?: AssemblyNameKey
 }
 
-// Walls
+// Perimeter Walls
 
-export interface WallAssemblyIdPart extends NamedAssembly {
-  id: WallAssemblyId
+export interface PerimeterWallAssemblyIdPart extends NamedAssembly {
+  id: PerimeterWallAssemblyId
 }
 
-export type InfillWallAssemblyConfig = InfillWallConfig & WallAssemblyIdPart
-export type ModulesWallAssemblyConfig = ModulesWallConfig & WallAssemblyIdPart
-export type StrawhengeWallAssemblyConfig = StrawhengeWallConfig & WallAssemblyIdPart
-export type NonStrawbaleWallAssemblyConfig = NonStrawbaleWallConfig & WallAssemblyIdPart
-export type PrefabModulesWallAssemblyConfig = PrefabModulesWallConfig & WallAssemblyIdPart
+export type InfillWallAssemblyConfig = InfillWallConfig & PerimeterWallAssemblyIdPart
+export type ModulesWallAssemblyConfig = ModulesWallConfig & PerimeterWallAssemblyIdPart
+export type StrawhengeWallAssemblyConfig = StrawhengeWallConfig & PerimeterWallAssemblyIdPart
+export type NonStrawbaleWallAssemblyConfig = NonStrawbaleWallConfig & PerimeterWallAssemblyIdPart
+export type PrefabModulesWallAssemblyConfig = PrefabModulesWallConfig & PerimeterWallAssemblyIdPart
 
-export type WallAssemblyConfig =
+export type PerimeterWallAssemblyConfig =
   | InfillWallAssemblyConfig
   | ModulesWallAssemblyConfig
   | StrawhengeWallAssemblyConfig
   | NonStrawbaleWallAssemblyConfig
   | PrefabModulesWallAssemblyConfig
+
+// Interior Walls
+
+export interface InteriorWallAssemblyIdPart extends NamedAssembly {
+  id: InteriorWallAssemblyId
+}
+
+export type MonolithicWallAssemblyConfig = MonolithicWallConfig & InteriorWallAssemblyIdPart
+export type StudWallAssemblyConfig = StudWallConfig & InteriorWallAssemblyIdPart
+
+export type InteriorWallAssemblyConfig = MonolithicWallAssemblyConfig | StudWallAssemblyConfig
 
 // Ring beams
 

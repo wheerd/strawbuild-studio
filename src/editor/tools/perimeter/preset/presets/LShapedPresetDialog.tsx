@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import type { PerimeterReferenceSide } from '@/building/model'
-import type { WallAssemblyId } from '@/building/model/ids'
+import type { PerimeterWallAssemblyId } from '@/building/model/ids'
 import {
   useDefaultBaseRingBeamAssemblyId,
   useDefaultTopRingBeamAssemblyId,
@@ -218,7 +218,7 @@ export function LShapedPresetDialog({
                 </div>
                 <WallAssemblySelectWithEdit
                   value={config.wallAssemblyId}
-                  onValueChange={(value: WallAssemblyId) => {
+                  onValueChange={(value: PerimeterWallAssemblyId) => {
                     setConfig(prev => ({ ...prev, wallAssemblyId: value }))
                   }}
                   placeholder={t($ => $.presetDialogs.lShaped.selectAssembly)}

@@ -6,8 +6,9 @@ import { migrateToVersion12 } from './toVersion12'
 import { migrateToVersion13 } from './toVersion13'
 import { migrateToVersion14 } from './toVersion14'
 import { migrateToVersion15 } from './toVersion15'
+import { migrateToVersion16 } from './toVersion16'
 
-export const MODEL_STORE_VERSION = 15
+export const MODEL_STORE_VERSION = 16
 
 const migrations: Migration[] = [
   migrateToVersion9,
@@ -16,7 +17,8 @@ const migrations: Migration[] = [
   migrateToVersion12,
   migrateToVersion13,
   migrateToVersion14,
-  migrateToVersion15
+  migrateToVersion15,
+  migrateToVersion16
 ]
 
 export function applyMigrations(state: unknown, version: number): unknown {

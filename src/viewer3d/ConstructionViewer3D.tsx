@@ -16,6 +16,7 @@ import { Code } from '@/shared/ui/components/code'
 import { isDebug } from '@/shared/ui/hooks/useDebug'
 import { matAppToThree, toThreeTransform } from '@/viewer3d/utils/geometry'
 
+import { ClippingPlanesDebug3D } from './components/ClippingPlanesDebug3D'
 import ConstructionElement3D from './components/ConstructionElement3D'
 import ConstructionGroup3D from './components/ConstructionGroup3D'
 import { type ExportFormat } from './components/ExportButton'
@@ -155,6 +156,7 @@ function ConstructionViewer3D({ model, containerSize, onExportReady }: Construct
           )}
 
           {isDebug && offsetMap && <OffsetMapDebug3D storeyId={activeStoreyId} map={offsetMap} />}
+          {isDebug && model.debugClippingPlanes && <ClippingPlanesDebug3D model={model} />}
         </group>
 
         <OrbitControls target={[centerX, centerZ, -centerY]} makeDefault />

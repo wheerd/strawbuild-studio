@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next'
 
 import type { IntermediateWallId } from '@/building/model/ids'
 import { useIntermediateWallById, useModelActions } from '@/building/store'
+import { InteriorWallAssemblySelectWithEdit } from '@/config/ui/interior-wall-assembly/InteriorWallAssemblySelectWithEdit'
 import { useViewportActions } from '@/editor/canvas/state/viewportStore'
 import { Bounds2D } from '@/shared/geometry'
 import { useFormatters } from '@/shared/i18n/useFormatters'
@@ -18,7 +19,7 @@ export function IntermediateWallInspector({ wallId }: { wallId: IntermediateWall
   const { t } = useTranslation('inspector')
   const { formatLength } = useFormatters()
   const wall = useIntermediateWallById(wallId)
-  const { removeIntermediateWall, updateIntermediateWallThickness } = useModelActions()
+  const { removeIntermediateWall, updateIntermediateWallAssembly, updateIntermediateWallThickness } = useModelActions()
   const { fitToView } = useViewportActions()
 
   const handleFitToView = useCallback(() => {
@@ -34,6 +35,18 @@ export function IntermediateWallInspector({ wallId }: { wallId: IntermediateWall
     <div className="p-2">
       <div className="flex flex-col gap-3">
         <div className="grid grid-cols-[auto_1fr] gap-3">
+          <Label.Root>
+            <span className="text-sm font-medium">{t($ => $.intermediateWall.wallAssembly)}</span>
+          </Label.Root>
+          <InteriorWallAssemblySelectWithEdit
+            value={wall.wallAssemblyId}
+            onValueChange={assemblyId => {
+              updateIntermediateWallAssembly(wallId, assemblyId)
+            }}
+            placeholder={t($ => $.intermediateWall.selectAssemblyPlaceholder)}
+            size="sm"
+          />
+
           <Label.Root htmlFor="intermediate-wall-thickness">
             <span className="text-sm font-medium">{t($ => $.intermediateWall.thickness)}</span>
           </Label.Root>

@@ -4,13 +4,13 @@ import React, { useCallback, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useParams } from 'react-router-dom'
 
-import type { OpeningAssemblyId, WallAssemblyId } from '@/building/model/ids'
+import type { OpeningAssemblyId, PerimeterWallAssemblyId } from '@/building/model/ids'
 import { usePerimeterWalls } from '@/building/store'
 import { useConfigActions, useDefaultWallAssemblyId, useWallAssemblies } from '@/config/store'
 import { type EntityId, useEntityLabel } from '@/config/ui/useEntityLabel'
 import { WallAssemblySelect } from '@/config/ui/wall-assembly/WallAssemblySelect'
 import { type WallAssemblyUsage, getWallAssemblyUsage } from '@/config/usage'
-import type { WallAssemblyType, WallConfig } from '@/construction/assemblies/walls/types'
+import type { PerimeterWallAssemblyType, PerimeterWallConfig } from '@/construction/assemblies/perimeterWalls/types'
 import {
   battens,
   ecococonBox,
@@ -38,11 +38,11 @@ export function WallAssemblyContent(props?: WallAssemblyContentProps): React.JSX
   const wallAssemblies = useWallAssemblies()
   const walls = usePerimeterWalls()
   const {
-    addWallAssembly,
-    duplicateWallAssembly,
-    removeWallAssembly,
-    setDefaultWallAssembly,
-    resetWallAssembliesToDefaults
+    addPerimeterWallAssembly: addWallAssembly,
+    duplicatePerimeterWallAssembly: duplicateWallAssembly,
+    removePerimeterWallAssembly: removeWallAssembly,
+    setDefaultPerimeterWallAssembly: setDefaultWallAssembly,
+    resetPerimeterWallAssembliesToDefaults: resetWallAssembliesToDefaults
   } = useConfigActions()
 
   const defaultAssemblyId = useDefaultWallAssemblyId()
@@ -69,11 +69,11 @@ export function WallAssemblyContent(props?: WallAssemblyContentProps): React.JSX
   )
 
   const handleAddNew = useCallback(
-    (type: WallAssemblyType) => {
+    (type: PerimeterWallAssemblyType) => {
       const defaultMaterial = '' as MaterialId
 
       let name: string
-      let config: WallConfig
+      let config: PerimeterWallConfig
 
       switch (type) {
         case 'infill':
@@ -264,7 +264,7 @@ export function WallAssemblyContent(props?: WallAssemblyContentProps): React.JSX
           <div className="flex items-end gap-2">
             <div className="flex grow flex-col gap-1">
               <WallAssemblySelect
-                value={selectedAssemblyId as WallAssemblyId | undefined}
+                value={selectedAssemblyId as PerimeterWallAssemblyId | undefined}
                 onValueChange={setSelectedAssemblyId}
                 showDefaultIndicator
                 defaultAssemblyId={defaultAssemblyId}

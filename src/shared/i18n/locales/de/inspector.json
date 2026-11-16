@@ -51,7 +51,9 @@
   "intermediateWall": {
     "deleteWall": "Wand löschen",
     "fitToView": "Auf Ansicht anpassen",
+    "selectAssemblyPlaceholder": "Aufbau auswählen",
     "thickness": "Dicke",
+    "wallAssembly": "Wandaufbau",
     "wallLength": "Länge"
   },
   "opening": {
@@ -197,7 +199,8 @@
   },
   "wallNode": {
     "deleteNode": "Knoten löschen",
-    "fitToView": "Auf Ansicht anpassen"
+    "fitToView": "Auf Ansicht anpassen",
+    "switchConstruction": "Konstruktionswand wechseln"
   },
   "wallPost": {
     "actsAsPost": "Fungiert als Ständer",

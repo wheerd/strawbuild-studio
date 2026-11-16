@@ -1,4 +1,4 @@
-import type { PerimeterId, PerimeterWallId } from '@/building/model'
+import type { IntermediateWallId, PerimeterId, PerimeterWallId } from '@/building/model'
 
 import type {
   BasePlateId,
@@ -20,7 +20,8 @@ export const createFloorId = (perimeterId: PerimeterId): FloorId => `floor_${per
 export const createTopPlateId = (perimeterId: PerimeterId): TopPlateId => `rb_top_${perimeterId}`
 export const createBasePlateId = (perimeterId: PerimeterId): BasePlateId => `rb_base_${perimeterId}`
 export const createFullPerimeterId = (perimeterId: PerimeterId): FullPerimeterId => `pfull_${perimeterId}`
-export const createColinearWallId = (wallId: PerimeterWallId): ColinearWallId => `colinear_${wallId}`
+export const createColinearWallId = (wallId: PerimeterWallId | IntermediateWallId): ColinearWallId =>
+  `colinear_${wallId}`
 export const createPerimeterMeasurementsId = (perimeterId: PerimeterId): PerimeterMeasurementsId =>
   `meas_${perimeterId}`
 

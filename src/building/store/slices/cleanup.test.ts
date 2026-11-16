@@ -1,11 +1,12 @@
 import { describe, expect, it, vi } from 'vitest'
 
-import type { Perimeter, WallAssemblyId } from '@/building/model'
+import type { Perimeter, PerimeterWallAssemblyId } from '@/building/model'
 import { createConstraintsSlice } from '@/building/store/slices/constraintsSlice'
 import { createIntermediateWallsSlice } from '@/building/store/slices/intermediateWallsSlice'
 import { createPerimetersSlice } from '@/building/store/slices/perimeterSlice'
 import { createWallEntitiesSlice } from '@/building/store/slices/wallEntitiesSlice'
 import type { Store } from '@/building/store/types'
+import { DEFAULT_INTERIOR_WALL_ASSEMBLY_ID } from '@/config/store/slices/interiorWalls.defaults'
 import { newVec2 } from '@/shared/geometry'
 
 import {
@@ -59,11 +60,16 @@ describe('cleanUpOrphaned', () => {
   beforeEach(() => {
     store = setupMockStore()
 
-    perimeter = store.actions.addPerimeter('storey_1', createRectangularBoundary(), 'wa_test' as WallAssemblyId, 300)
+    perimeter = store.actions.addPerimeter(
+      'storey_1',
+      createRectangularBoundary(),
+      'wa_test' as PerimeterWallAssemblyId,
+      300
+    )
     otherPerimeter = store.actions.addPerimeter(
       'storey_1',
       createTriangularBoundary(),
-      'wa_test' as WallAssemblyId,
+      'wa_test' as PerimeterWallAssemblyId,
       300
     )
     const node1 = store.actions.addInnerWallNode(perimeter.id, newVec2(3000, 0))
@@ -73,7 +79,8 @@ describe('cleanUpOrphaned', () => {
       perimeter.id,
       { axis: 'left', nodeId: node1.id },
       { axis: 'left', nodeId: node2.id },
-      300
+      300,
+      DEFAULT_INTERIOR_WALL_ASSEMBLY_ID
     )
   })
 
@@ -119,7 +126,8 @@ describe('cleanUpOrphaned', () => {
         perimeter.id,
         { axis: 'left', nodeId: nodeA.id },
         { axis: 'left', nodeId: nodeB.id },
-        120
+        120,
+        DEFAULT_INTERIOR_WALL_ASSEMBLY_ID
       )
       const opening = store.actions.addWallOpening(wall.id, {
         openingType: 'door',
@@ -153,7 +161,8 @@ describe('cleanUpOrphaned', () => {
         perimeter.id,
         { axis: 'left', nodeId: wn1 },
         { axis: 'left', nodeId: wn2 },
-        10
+        10,
+        DEFAULT_INTERIOR_WALL_ASSEMBLY_ID
       ).id
 
       delete store.perimeters[perimeter.id]
@@ -174,7 +183,8 @@ describe('cleanUpOrphaned', () => {
         perimeter.id,
         { axis: 'left', nodeId: wn1 },
         { axis: 'left', nodeId: wn2 },
-        120
+        120,
+        DEFAULT_INTERIOR_WALL_ASSEMBLY_ID
       ).id
 
       const ow1 = store.actions.addInnerWallNode(otherPerimeter.id, newVec2(500, 500)).id
@@ -183,7 +193,8 @@ describe('cleanUpOrphaned', () => {
         otherPerimeter.id,
         { axis: 'left', nodeId: ow1 },
         { axis: 'left', nodeId: ow2 },
-        120
+        120,
+        DEFAULT_INTERIOR_WALL_ASSEMBLY_ID
       ).id
 
       delete store.perimeters[perimeter.id]
@@ -203,7 +214,8 @@ describe('cleanUpOrphaned', () => {
         perimeter.id,
         { axis: 'left', nodeId: wn1 },
         { axis: 'left', nodeId: wn2 },
-        120
+        120,
+        DEFAULT_INTERIOR_WALL_ASSEMBLY_ID
       ).id
 
       delete store.wallNodes[wn1]
@@ -224,7 +236,8 @@ describe('cleanUpOrphaned', () => {
         perimeter.id,
         { axis: 'left', nodeId: wn1 },
         { axis: 'left', nodeId: wn2 },
-        120
+        120,
+        DEFAULT_INTERIOR_WALL_ASSEMBLY_ID
       ).id
 
       const wallNodeCountBefore = Object.keys(store.wallNodes).length
@@ -245,7 +258,8 @@ describe('cleanUpOrphaned', () => {
         perimeter.id,
         { axis: 'left', nodeId: wn1 },
         { axis: 'left', nodeId: wn2 },
-        120
+        120,
+        DEFAULT_INTERIOR_WALL_ASSEMBLY_ID
       ).id
       const wid = perimeter.wallIds[0]
 
@@ -267,13 +281,15 @@ describe('cleanUpOrphaned', () => {
         perimeter.id,
         { axis: 'left', nodeId: wn1 },
         { axis: 'left', nodeId: wn2 },
-        120
+        120,
+        DEFAULT_INTERIOR_WALL_ASSEMBLY_ID
       ).id
       const iw2 = store.actions.addIntermediateWall(
         perimeter.id,
         { axis: 'left', nodeId: wn2 },
         { axis: 'left', nodeId: wn3 },
-        120
+        120,
+        DEFAULT_INTERIOR_WALL_ASSEMBLY_ID
       ).id
 
       delete store.intermediateWalls[iw2]
@@ -296,13 +312,15 @@ describe('cleanUpOrphaned', () => {
         perimeter.id,
         { axis: 'left', nodeId: wn1 },
         { axis: 'left', nodeId: wn2 },
-        120
+        120,
+        DEFAULT_INTERIOR_WALL_ASSEMBLY_ID
       ).id
       const iw2 = store.actions.addIntermediateWall(
         perimeter.id,
         { axis: 'left', nodeId: wn2 },
         { axis: 'left', nodeId: wn3 },
-        120
+        120,
+        DEFAULT_INTERIOR_WALL_ASSEMBLY_ID
       ).id
 
       delete store.wallNodes[wn2]
@@ -326,7 +344,8 @@ describe('cleanUpOrphaned', () => {
         perimeter.id,
         { axis: 'left', nodeId: wn1 },
         { axis: 'left', nodeId: wn2 },
-        120
+        120,
+        DEFAULT_INTERIOR_WALL_ASSEMBLY_ID
       ).id
 
       const p = store.perimeters[perimeter.id]
@@ -351,13 +370,15 @@ describe('cleanUpOrphaned', () => {
         perimeter.id,
         { axis: 'left', nodeId: wn1 },
         { axis: 'left', nodeId: wn2 },
-        120
+        120,
+        DEFAULT_INTERIOR_WALL_ASSEMBLY_ID
       ).id
       const iw2 = store.actions.addIntermediateWall(
         perimeter.id,
         { axis: 'left', nodeId: wn2 },
         { axis: 'left', nodeId: wn3 },
-        120
+        120,
+        DEFAULT_INTERIOR_WALL_ASSEMBLY_ID
       ).id
 
       const p = store.perimeters[perimeter.id]
@@ -411,7 +432,8 @@ describe('cleanUpOrphaned', () => {
         perimeter.id,
         { axis: 'left', nodeId: wn1 },
         { axis: 'left', nodeId: wn2 },
-        120
+        120,
+        DEFAULT_INTERIOR_WALL_ASSEMBLY_ID
       ).id
 
       delete store.intermediateWalls[iw1]
@@ -438,7 +460,13 @@ describe('cleanUpOrphaned', () => {
     it('should handle full perimeter deletion with perimeter-wall nodes', () => {
       const wn1 = store.actions.addPerimeterWallNode(perimeter.id, perimeter.wallIds[0], 3000).id
       const wn2 = store.actions.addInnerWallNode(perimeter.id, newVec2(3000, 0)).id
-      store.actions.addIntermediateWall(perimeter.id, { axis: 'left', nodeId: wn1 }, { axis: 'left', nodeId: wn2 }, 120)
+      store.actions.addIntermediateWall(
+        perimeter.id,
+        { axis: 'left', nodeId: wn1 },
+        { axis: 'left', nodeId: wn2 },
+        120,
+        DEFAULT_INTERIOR_WALL_ASSEMBLY_ID
+      )
 
       delete store.perimeters[perimeter.id]
       cleanUpOrphaned(store)
@@ -454,7 +482,13 @@ describe('cleanUpOrphaned', () => {
     it('should maintain consistent references after perimeter deletion', () => {
       const wn1 = store.actions.addInnerWallNode(perimeter.id, newVec2(2000, 0)).id
       const wn2 = store.actions.addInnerWallNode(perimeter.id, newVec2(8000, 0)).id
-      store.actions.addIntermediateWall(perimeter.id, { axis: 'left', nodeId: wn1 }, { axis: 'left', nodeId: wn2 }, 120)
+      store.actions.addIntermediateWall(
+        perimeter.id,
+        { axis: 'left', nodeId: wn1 },
+        { axis: 'left', nodeId: wn2 },
+        120,
+        DEFAULT_INTERIOR_WALL_ASSEMBLY_ID
+      )
 
       delete store.perimeters[perimeter.id]
       cleanUpOrphaned(store)
@@ -466,12 +500,19 @@ describe('cleanUpOrphaned', () => {
       const wn1 = store.actions.addInnerWallNode(perimeter.id, newVec2(2000, 0)).id
       const wn2 = store.actions.addInnerWallNode(perimeter.id, newVec2(5000, 0)).id
       const wn3 = store.actions.addInnerWallNode(perimeter.id, newVec2(8000, 0)).id
-      store.actions.addIntermediateWall(perimeter.id, { axis: 'left', nodeId: wn1 }, { axis: 'left', nodeId: wn2 }, 120)
+      store.actions.addIntermediateWall(
+        perimeter.id,
+        { axis: 'left', nodeId: wn1 },
+        { axis: 'left', nodeId: wn2 },
+        120,
+        DEFAULT_INTERIOR_WALL_ASSEMBLY_ID
+      )
       const iw2 = store.actions.addIntermediateWall(
         perimeter.id,
         { axis: 'left', nodeId: wn2 },
         { axis: 'left', nodeId: wn3 },
-        120
+        120,
+        DEFAULT_INTERIOR_WALL_ASSEMBLY_ID
       ).id
 
       delete store.intermediateWalls[iw2]

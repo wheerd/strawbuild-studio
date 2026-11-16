@@ -3,7 +3,7 @@ import type { PolygonWithBoundingRect } from '@/construction/assemblies/utils/Po
 import type { PerimeterConstructionContext } from '@/construction/context/perimeter'
 import type { StoreyContext } from '@/construction/context/storeys'
 import { type ConstructionResult } from '@/construction/model/results'
-import { TAG_PLATE, TAG_RB_INSULATION, TAG_STUD_WALL, TAG_WATERPROOFING } from '@/construction/model/tags'
+import { TAG_PLATE, TAG_RB_INSULATION, TAG_STEM_WALL, TAG_WATERPROOFING } from '@/construction/model/tags'
 import { getMaterialById } from '@/materials/store'
 import type { Material } from '@/materials/types'
 import { type Transform, fromTrans, newVec3 } from '@/shared/geometry'
@@ -38,13 +38,13 @@ export class BrickRingBeamAssembly extends BaseRingBeamAssembly<BrickRingBeamCon
   private *constructWall(wallMaterial: Material | null, polygon: PolygonWithBoundingRect) {
     if (wallMaterial?.type === 'dimensional') {
       for (const brick of polygon.tiled(wallMaterial.lengths[0], this.config.wallWidth)) {
-        yield* brick.extrude(wallMaterial.id, this.config.wallHeight, 'xy', undefined, [TAG_STUD_WALL], {
+        yield* brick.extrude(wallMaterial.id, this.config.wallHeight, 'xy', undefined, [TAG_STEM_WALL], {
           type: 'brick'
         })
       }
     } else {
-      yield* polygon.extrude(this.config.wallMaterial, this.config.wallHeight, 'xy', undefined, [TAG_STUD_WALL], {
-        type: 'stud-wall'
+      yield* polygon.extrude(this.config.wallMaterial, this.config.wallHeight, 'xy', undefined, [TAG_STEM_WALL], {
+        type: 'stem-wall'
       })
     }
   }
