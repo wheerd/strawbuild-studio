@@ -224,17 +224,13 @@ export function buildFloorCoreModel(perimeterId: PerimeterId): CoreModel {
   const storeyBelow = getStoreyBelow(perimeter.storeyId)
   if (storeyBelow) {
     const belowPerimeters = getPerimetersByStorey(storeyBelow.id)
-    const belowInnerPolygons = belowPerimeters.map(p => {
-      const ctx = getPerimeterContextCached(p.id)
-      return ctx.innerFinishedPolygon
-    })
+    const belowContexts = belowPerimeters.map(p => getPerimeterContextCached(p.id))
+    const belowInnerPolygons = belowContexts.map(ctx => ctx.innerFinishedPolygon)
+    const belowInteriorWallAreas = belowContexts.flatMap(ctx => ctx.interiorWallAreas)
     const belowInnerUnion = unionPolygons(belowInnerPolygons)
 
     const ceilingPolygons = intersectPolygons([perimeterContext.outerFinishedPolygon], belowInnerUnion)
-    const finalCeilingPolygons = subtractPolygons(ceilingPolygons, [
-      ...floorHoles,
-      ...perimeterContext.interiorWallAreas
-    ])
+    const finalCeilingPolygons = subtractPolygons(ceilingPolygons, [...floorHoles, ...belowInteriorWallAreas])
 
     if (finalCeilingPolygons.length > 0) {
       const ceilingLayerResults = storeyContext.floorAssembly.constructCeilingLayers(
