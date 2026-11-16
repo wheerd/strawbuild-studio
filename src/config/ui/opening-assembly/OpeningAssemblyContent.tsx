@@ -5,7 +5,13 @@ import { useTranslation } from 'react-i18next'
 import { useParams } from 'react-router-dom'
 
 import type { OpeningAssemblyId } from '@/building/model/ids'
-import { useConfigActions, useDefaultOpeningAssemblyId, useOpeningAssemblies, useWallAssemblies } from '@/config/store'
+import {
+  useConfigActions,
+  useDefaultOpeningAssemblyId,
+  useInteriorWallAssemblies,
+  useOpeningAssemblies,
+  useWallAssemblies
+} from '@/config/store'
 import { OpeningAssemblySelect } from '@/config/ui/opening-assembly/OpeningAssemblySelect'
 import { type EntityId, useEntityLabel } from '@/config/ui/useEntityLabel'
 import { type OpeningAssemblyUsage, getOpeningAssemblyUsage } from '@/config/usage'
@@ -31,6 +37,7 @@ export function OpeningAssemblyContent(props?: OpeningAssemblyContentProps): Rea
 
   const openingAssemblies = useOpeningAssemblies()
   const wallAssemblies = useWallAssemblies()
+  const interiorWallAssemblies = useInteriorWallAssemblies()
   const {
     addOpeningAssembly,
     removeOpeningAssembly,
@@ -57,8 +64,15 @@ export function OpeningAssemblyContent(props?: OpeningAssemblyContentProps): Rea
     () =>
       selectedAssembly
         ? getOpeningAssemblyUsage(selectedAssembly.id)
-        : { isUsed: false, isDefault: false, wallAssemblyIds: [], openingAssemblyIds: [], storeyIds: [] },
-    [selectedAssembly, wallAssemblyArray, defaultId]
+        : {
+            isUsed: false,
+            isDefault: false,
+            wallAssemblyIds: [],
+            interiorWallAssemblyIds: [],
+            openingAssemblyIds: [],
+            storeyIds: []
+          },
+    [selectedAssembly, wallAssemblyArray, interiorWallAssemblies, defaultId]
   )
 
   const handleAddNew = useCallback(
@@ -338,6 +352,9 @@ function UsageDisplay({ usage }: { usage: OpeningAssemblyUsage }): React.JSX.Ele
           <UsageBadge key={id} id={id} />
         ))}
         {usage.wallAssemblyIds.map(id => (
+          <UsageBadge key={id} id={id} />
+        ))}
+        {usage.interiorWallAssemblyIds.map(id => (
           <UsageBadge key={id} id={id} />
         ))}
         {usage.storeyIds.map(id => (

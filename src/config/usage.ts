@@ -62,6 +62,7 @@ export interface OpeningAssemblyUsage {
   isUsed: boolean
   isDefault: boolean
   wallAssemblyIds: PerimeterWallAssemblyId[]
+  interiorWallAssemblyIds: InteriorWallAssemblyId[]
   openingAssemblyIds: OpeningAssemblyId[]
   storeyIds: StoreyId[]
 }
@@ -204,14 +205,21 @@ export function getRoofAssemblyUsage(
  * - By individual openings that override to use this assembly
  */
 export function getOpeningAssemblyUsage(assemblyId: OpeningAssemblyId): OpeningAssemblyUsage {
-  const { getDefaultOpeningAssemblyId, getAllPerimeterWallAssemblies, getAllOpeningAssemblies } = getConfigActions()
+  const {
+    getDefaultOpeningAssemblyId,
+    getAllPerimeterWallAssemblies,
+    getAllInteriorWallAssemblies,
+    getAllOpeningAssemblies
+  } = getConfigActions()
   const { getPerimeterById, getAllWallOpenings } = getModelActions()
   const wallAssemblies = getAllPerimeterWallAssemblies()
+  const interiorWallAssemblies = getAllInteriorWallAssemblies()
   const openingAssemblies = getAllOpeningAssemblies()
   const openings = getAllWallOpenings()
 
   const isDefault = assemblyId === getDefaultOpeningAssemblyId()
   const wallAssemblyIdSet = new Set<PerimeterWallAssemblyId>()
+  const interiorWallAssemblyIdSet = new Set<InteriorWallAssemblyId>()
   const openingAssemblyIdSet = new Set<OpeningAssemblyId>()
   const storeyIdSet = new Set<StoreyId>()
 
@@ -219,6 +227,13 @@ export function getOpeningAssemblyUsage(assemblyId: OpeningAssemblyId): OpeningA
   wallAssemblies.forEach(wallAssembly => {
     if (wallAssembly.openingAssemblyId === assemblyId) {
       wallAssemblyIdSet.add(wallAssembly.id)
+    }
+  })
+
+  // Check interior wall assemblies that reference this opening assembly
+  interiorWallAssemblies.forEach(wallAssembly => {
+    if (wallAssembly.openingAssemblyId === assemblyId) {
+      interiorWallAssemblyIdSet.add(wallAssembly.id)
     }
   })
 
@@ -241,9 +256,15 @@ export function getOpeningAssemblyUsage(assemblyId: OpeningAssemblyId): OpeningA
   })
 
   return {
-    isUsed: isDefault || wallAssemblyIdSet.size > 0 || storeyIdSet.size > 0 || openingAssemblyIdSet.size > 0,
+    isUsed:
+      isDefault ||
+      wallAssemblyIdSet.size > 0 ||
+      interiorWallAssemblyIdSet.size > 0 ||
+      storeyIdSet.size > 0 ||
+      openingAssemblyIdSet.size > 0,
     isDefault,
     wallAssemblyIds: Array.from(wallAssemblyIdSet),
+    interiorWallAssemblyIds: Array.from(interiorWallAssemblyIdSet),
     openingAssemblyIds: Array.from(openingAssemblyIdSet),
     storeyIds: Array.from(storeyIdSet)
   }

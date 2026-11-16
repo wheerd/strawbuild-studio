@@ -39,6 +39,7 @@ vi.mocked(getModelActions).mockReturnValue({
 vi.mocked(getConfigActions).mockReturnValue({
   getDefaultOpeningAssemblyId: vi.fn(() => createOpeningAssemblyId()),
   getAllPerimeterWallAssemblies: vi.fn(() => []),
+  getAllInteriorWallAssemblies: vi.fn(() => []),
   getAllOpeningAssemblies: vi.fn(() => [])
 } as any)
 
@@ -212,6 +213,7 @@ describe('Assembly Usage Detection', () => {
       vi.mocked(getConfigActions).mockReturnValue({
         getDefaultOpeningAssemblyId: vi.fn(() => createOpeningAssemblyId()),
         getAllPerimeterWallAssemblies: vi.fn(() => []),
+        getAllInteriorWallAssemblies: vi.fn(() => []),
         getAllOpeningAssemblies: vi.fn(() => [])
       } as any)
     })
@@ -222,6 +224,7 @@ describe('Assembly Usage Detection', () => {
       vi.mocked(getConfigActions).mockReturnValue({
         getDefaultOpeningAssemblyId: vi.fn(() => createOpeningAssemblyId()),
         getAllPerimeterWallAssemblies: vi.fn(() => []),
+        getAllInteriorWallAssemblies: vi.fn(() => []),
         getAllOpeningAssemblies: vi.fn(() => [])
       } as any)
 
@@ -245,6 +248,7 @@ describe('Assembly Usage Detection', () => {
       vi.mocked(getConfigActions).mockReturnValue({
         getDefaultOpeningAssemblyId: vi.fn(() => assemblyId),
         getAllPerimeterWallAssemblies: vi.fn(() => []),
+        getAllInteriorWallAssemblies: vi.fn(() => []),
         getAllOpeningAssemblies: vi.fn(() => [])
       } as any)
 
@@ -260,6 +264,37 @@ describe('Assembly Usage Detection', () => {
       expect(usage.wallAssemblyIds).toEqual([])
       expect(usage.openingAssemblyIds).toEqual([])
       expect(usage.storeyIds).toEqual([])
+    })
+
+    it('should detect opening assembly referenced by an interior wall assembly', () => {
+      const assemblyId = createOpeningAssemblyId()
+      const interiorWallAssemblyId = createInteriorWallAssemblyId()
+
+      vi.mocked(getConfigActions).mockReturnValue({
+        getDefaultOpeningAssemblyId: vi.fn(() => createOpeningAssemblyId()),
+        getAllPerimeterWallAssemblies: vi.fn(() => []),
+        getAllInteriorWallAssemblies: vi.fn(() => [
+          {
+            id: interiorWallAssemblyId,
+            name: 'Interior Wall',
+            type: 'monolithic',
+            layerSetId: 'layer-set',
+            material: 'material',
+            openingAssemblyId: assemblyId
+          }
+        ]),
+        getAllOpeningAssemblies: vi.fn(() => [])
+      } as any)
+
+      vi.mocked(getModelActions).mockReturnValue({
+        getPerimeterById: mockedGetPerimeterById,
+        getAllWallOpenings: vi.fn(() => [])
+      } as any)
+
+      const usage = getOpeningAssemblyUsage(assemblyId)
+
+      expect(usage.isUsed).toBe(true)
+      expect(usage.interiorWallAssemblyIds).toEqual([interiorWallAssemblyId])
     })
 
     it('should detect opening assembly used in threshold default', () => {
@@ -278,6 +313,7 @@ describe('Assembly Usage Detection', () => {
       vi.mocked(getConfigActions).mockReturnValue({
         getDefaultOpeningAssemblyId: vi.fn(() => createOpeningAssemblyId()),
         getAllPerimeterWallAssemblies: vi.fn(() => []),
+        getAllInteriorWallAssemblies: vi.fn(() => []),
         getAllOpeningAssemblies: vi.fn(() => [thresholdAssembly])
       } as any)
 
@@ -309,6 +345,7 @@ describe('Assembly Usage Detection', () => {
       vi.mocked(getConfigActions).mockReturnValue({
         getDefaultOpeningAssemblyId: vi.fn(() => createOpeningAssemblyId()),
         getAllPerimeterWallAssemblies: vi.fn(() => []),
+        getAllInteriorWallAssemblies: vi.fn(() => []),
         getAllOpeningAssemblies: vi.fn(() => [thresholdAssembly])
       } as any)
 

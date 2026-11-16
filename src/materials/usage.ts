@@ -2,6 +2,7 @@ import { useMemo } from 'react'
 
 import type {
   FloorAssemblyId,
+  InteriorWallAssemblyId,
   LayerSetId,
   OpeningAssemblyId,
   PerimeterWallAssemblyId,
@@ -12,6 +13,7 @@ import { useWallPosts } from '@/building/store'
 import {
   useDefaultStrawMaterialId,
   useFloorAssemblies,
+  useInteriorWallAssemblies,
   useLayerSets,
   useOpeningAssemblies,
   useRingBeamAssemblies,
@@ -20,6 +22,7 @@ import {
 } from '@/config/store'
 import type {
   FloorAssemblyConfig,
+  InteriorWallAssemblyConfig,
   OpeningAssemblyConfig,
   PerimeterWallAssemblyConfig,
   RingBeamAssemblyConfig,
@@ -33,6 +36,7 @@ import type { MaterialId } from './types'
 export type MaterialUsageId =
   | RingBeamAssemblyId
   | PerimeterWallAssemblyId
+  | InteriorWallAssemblyId
   | FloorAssemblyId
   | RoofAssemblyId
   | OpeningAssemblyId
@@ -53,6 +57,7 @@ export function useMaterialUsage(materialId: MaterialId): MaterialUsage {
   const ringBeamAssemblies = useRingBeamAssemblies()
   const wallAssemblies = useWallAssemblies()
   const floorAssemblies = useFloorAssemblies()
+  const interiorWallAssemblies = useInteriorWallAssemblies()
   const roofAssemblies = useRoofAssemblies()
   const openingAssemblies = useOpeningAssemblies()
   const layerSets = useLayerSets()
@@ -73,6 +78,13 @@ export function useMaterialUsage(materialId: MaterialId): MaterialUsage {
     // Check wall assemblies
     wallAssemblies.forEach(assembly => {
       if (isMaterialUsedInWall(materialId, assembly)) {
+        assemblyIdSet.add(assembly.id)
+      }
+    })
+
+    // Check interior wall assemblies
+    interiorWallAssemblies.forEach(assembly => {
+      if (isMaterialUsedInInteriorWall(materialId, assembly)) {
         assemblyIdSet.add(assembly.id)
       }
     })
@@ -125,6 +137,7 @@ export function useMaterialUsage(materialId: MaterialId): MaterialUsage {
     materialId,
     ringBeamAssemblies,
     wallAssemblies,
+    interiorWallAssemblies,
     floorAssemblies,
     roofAssemblies,
     openingAssemblies,
@@ -195,6 +208,21 @@ function isMaterialUsedInWall(materialId: MaterialId, assembly: PerimeterWallAss
   }
 
   return false
+}
+
+function isMaterialUsedInInteriorWall(materialId: MaterialId, assembly: InteriorWallAssemblyConfig): boolean {
+  if (assembly.type === 'monolithic') {
+    return assembly.material === materialId
+  }
+
+  return (
+    assembly.studMaterial === materialId ||
+    assembly.headPlateMaterial === materialId ||
+    assembly.solePlateMaterial === materialId ||
+    assembly.nogginMaterial === materialId ||
+    assembly.plankMaterial === materialId ||
+    assembly.fillMaterial === materialId
+  )
 }
 
 function isMaterialUsedInFloor(materialId: MaterialId, assembly: FloorAssemblyConfig): boolean {

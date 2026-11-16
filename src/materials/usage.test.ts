@@ -2,8 +2,13 @@ import { renderHook } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import type { WallPostWithGeometry } from '@/building/model'
-import { createLayerSetId, createPerimeterWallAssemblyId, createRingBeamAssemblyId } from '@/building/model/ids'
-import type { PerimeterWallAssemblyConfig, RingBeamAssemblyConfig } from '@/config/types'
+import {
+  createInteriorWallAssemblyId,
+  createLayerSetId,
+  createPerimeterWallAssemblyId,
+  createRingBeamAssemblyId
+} from '@/building/model/ids'
+import type { InteriorWallAssemblyConfig, PerimeterWallAssemblyConfig, RingBeamAssemblyConfig } from '@/config/types'
 import type { LayerSetConfig } from '@/construction/assemblies/layers/types'
 import { partial } from '@/test/helpers'
 
@@ -15,6 +20,7 @@ const defaultStrawMaterialId = strawbale.id
 
 const mockUseRingBeamAssemblies: any = vi.fn(() => [])
 const mockUseWallAssemblies: any = vi.fn(() => [])
+const mockUseInteriorWallAssemblies: any = vi.fn(() => [])
 const mockUseFloorAssemblies: any = vi.fn(() => [])
 const mockUseRoofAssemblies: any = vi.fn(() => [])
 const mockUseOpeningAssemblies: any = vi.fn(() => [])
@@ -25,6 +31,7 @@ const mockUseWallPosts: any = vi.fn(() => [])
 vi.mock('@/config/store', () => ({
   useRingBeamAssemblies: () => mockUseRingBeamAssemblies(),
   useWallAssemblies: () => mockUseWallAssemblies(),
+  useInteriorWallAssemblies: () => mockUseInteriorWallAssemblies(),
   useFloorAssemblies: () => mockUseFloorAssemblies(),
   useRoofAssemblies: () => mockUseRoofAssemblies(),
   useOpeningAssemblies: () => mockUseOpeningAssemblies(),
@@ -41,6 +48,7 @@ describe('Material Usage Detection', () => {
     beforeEach(() => {
       mockUseRingBeamAssemblies.mockReturnValue([])
       mockUseWallAssemblies.mockReturnValue([])
+      mockUseInteriorWallAssemblies.mockReturnValue([])
       mockUseFloorAssemblies.mockReturnValue([])
       mockUseRoofAssemblies.mockReturnValue([])
       mockUseOpeningAssemblies.mockReturnValue([])
@@ -122,6 +130,31 @@ describe('Material Usage Detection', () => {
       expect(result.current.isDefaultStraw).toBe(false)
       expect(result.current.assemblyIds).toEqual([wallAssembly.id])
       expect(result.current.usedInWallPosts).toBe(false) // No actual posts in building model
+    })
+
+    it('detects interior wall assembly materials', () => {
+      const monolithicAssembly = partial<InteriorWallAssemblyConfig>({
+        id: createInteriorWallAssemblyId(),
+        type: 'monolithic',
+        material: roughWood.id
+      })
+      const studAssembly = partial<InteriorWallAssemblyConfig>({
+        id: createInteriorWallAssemblyId(),
+        type: 'stud',
+        studMaterial: concrete.id,
+        headPlateMaterial: woodwool.id,
+        fillMaterial: strawbale.id
+      })
+
+      mockUseInteriorWallAssemblies.mockReturnValue([monolithicAssembly, studAssembly])
+
+      const { result: monolithicResult } = renderHook(() => useMaterialUsage(roughWood.id))
+      expect(monolithicResult.current.isUsed).toBe(true)
+      expect(monolithicResult.current.assemblyIds).toEqual([monolithicAssembly.id])
+
+      const { result: studResult } = renderHook(() => useMaterialUsage(woodwool.id))
+      expect(studResult.current.isUsed).toBe(true)
+      expect(studResult.current.assemblyIds).toEqual([studAssembly.id])
     })
 
     it('detects strawhenge module usage', () => {
