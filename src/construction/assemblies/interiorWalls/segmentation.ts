@@ -1,7 +1,8 @@
-import type { IntermediateWallWithGeometry, Opening, OpeningAssemblyId, WallPost } from '@/building/model'
+import type { Opening, OpeningAssemblyId, WallEntityId, WallPost } from '@/building/model'
 import { isOpeningId, isWallPostId } from '@/building/model/ids'
 import { getModelActions } from '@/building/store'
 import { resolveOpeningAssembly, resolveOpeningConfig } from '@/construction/assemblies/openings'
+import type { OpeningAssembly } from '@/construction/assemblies/openings/types'
 import { constructWallPost } from '@/construction/assemblies/perimeterWalls/posts'
 import { WallConstructionArea } from '@/construction/assemblies/utils/WallConstructionArea'
 import { type ConstructionResult, yieldArea, yieldMeasurement } from '@/construction/model/results'
@@ -22,7 +23,7 @@ type WallItem =
       openings: Opening[]
       start: Length
       end: Length
-      assembly: ReturnType<typeof resolveOpeningAssembly>
+      assembly: OpeningAssembly
       needsWallStands: boolean
     }
   | {
@@ -54,9 +55,9 @@ function mergeAdjacentOpenings(openings: Opening[]): Opening[][] {
   return groups
 }
 
-function createWallItems(wall: IntermediateWallWithGeometry, openingAssemblyId?: OpeningAssemblyId): WallItem[] {
+function createWallItems(entityIds: readonly WallEntityId[], openingAssemblyId?: OpeningAssemblyId): WallItem[] {
   const { getWallOpeningById, getWallPostById } = getModelActions()
-  const openings = wall.entityIds
+  const openings = entityIds
     .filter(isOpeningId)
     .map(getWallOpeningById)
     .sort((a, b) => a.centerOffsetFromWallStart - b.centerOffsetFromWallStart)
@@ -77,7 +78,7 @@ function createWallItems(wall: IntermediateWallWithGeometry, openingAssemblyId?:
     })
   }
 
-  for (const post of wall.entityIds.filter(isWallPostId).map(getWallPostById)) {
+  for (const post of entityIds.filter(isWallPostId).map(getWallPostById)) {
     const center = post.centerOffsetFromWallStart
     const start = Math.max(0, center - post.width / 2)
     items.push({
@@ -93,14 +94,14 @@ function createWallItems(wall: IntermediateWallWithGeometry, openingAssemblyId?:
 }
 
 export function* constructInteriorWallSegments(
-  wall: IntermediateWallWithGeometry,
   area: WallConstructionArea,
   startsWithStud: boolean,
   endsWithStud: boolean,
   segmentConstruction: InteriorWallSegmentConstruction,
+  entityIds: readonly WallEntityId[],
   openingAssemblyId?: OpeningAssemblyId
 ): Generator<ConstructionResult> {
-  const items = createWallItems(wall, openingAssemblyId)
+  const items = createWallItems(entityIds, openingAssemblyId)
   if (items.length === 0) {
     yield* segmentConstruction(area, startsWithStud, endsWithStud, true)
     return

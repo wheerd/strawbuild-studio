@@ -48,11 +48,11 @@ export class StudInteriorWallAssembly extends BaseInteriorWallAssembly<StudWallA
     yield* this.constructHeadPlate()
 
     yield* constructInteriorWallSegments(
-      wall,
       this.area,
       true,
       true,
       this.constructStudWallSegment.bind(this),
+      wall.entityIds,
       this.config.openingAssemblyId
     )
   }
@@ -147,14 +147,14 @@ export class StudInteriorWallAssembly extends BaseInteriorWallAssembly<StudWallA
       while (area.size[0] > this.config.maxStudSpacing) {
         let infillWidth = this.config.desiredStudSpacing
 
-        // Not enough space for full infill + stud + minimal infill, but more than a single full bale + post
+        // Not enough space for full infill + stud + minimal infill, but more than a single full infill + stud
         // -> Shorten the first infill so that a stud and a minimal infill fit after
         if (area.size[0] < fullInfillAndStud + this.config.minStudSpacing && area.size[0] > fullInfillAndStud) {
           infillWidth = Math.max(area.size[0] - this.config.minStudSpacing - this.config.studWidth, 0)
         }
 
-        // More space than a full infill, but not enough for full infill and post
-        // -> Shorten bale to fit a post
+        // More space than a full infill, but not enough for full infill and stud
+        // -> Shorten infill to fit a stud
         if (area.size[0] < fullInfillAndStud) {
           infillWidth = Math.max(area.size[0] - this.config.studWidth, 0)
         }
