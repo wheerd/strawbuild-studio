@@ -44,7 +44,7 @@ export class PostOpeningAssembly extends BaseOpeningAssembly<PostOpeningConfig> 
     yield* constructPost(rightPost, this.config.posts)
 
     const [bottomPart, rawOpeningArea] = belowHeader.splitInZ(adjustedSill)
-    const [belowSill, sillArea] = bottomPart.splitInZ(sillBottom)
+    const [belowSill, sillArea] = bottomPart.splitInZ(Math.max(sillBottom, 0))
     const [headerArea, aboveHeader] = topPart.splitInZ(this.config.headerThickness)
 
     if (adjustedHeader > wallTop) {

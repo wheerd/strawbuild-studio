@@ -28,7 +28,7 @@ export class SimpleOpeningAssembly extends BaseOpeningAssembly<SimpleOpeningConf
 
     const [belowHeader, topPart] = area.splitInZ(adjustedHeader)
     const [bottomPart, rawOpeningArea] = belowHeader.splitInZ(adjustedSill)
-    const [belowSill, sillArea] = bottomPart.splitInZ(sillBottom)
+    const [belowSill, sillArea] = bottomPart.splitInZ(Math.max(sillBottom, 0))
     const [headerArea, aboveHeader] = topPart.splitInZ(this.config.headerThickness)
 
     if (adjustedHeader > wallTop) {
