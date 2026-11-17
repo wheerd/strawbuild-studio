@@ -58,7 +58,8 @@
     "selectAssemblyPlaceholder": "Sélectionner une composition",
     "thickness": "Épaisseur",
     "wallAssembly": "Composition du mur",
-    "wallLength": "Longueur"
+    "wallLength": "Longueur",
+    "viewConstructionPlan": "Voir le plan de construction"
   },
   "opening": {
     "confirmDelete": "Êtes-vous sûr de vouloir supprimer cette ouverture ?",

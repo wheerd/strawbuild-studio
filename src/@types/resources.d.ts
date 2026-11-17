@@ -986,6 +986,7 @@ interface Resources {
         "widthM": "Width (m)"
       },
       "focus": {
+        "interiorWall": "Focus: Interior Wall",
         "perimeter": "Focus: Perimeter",
         "roof": "Focus: Roof",
         "storey": "Focus: Storey",
@@ -1047,6 +1048,7 @@ interface Resources {
     "plan": {
       "clearFocus": "Clear focus",
       "focus": {
+        "interiorWall": "Focus: Interior Wall",
         "perimeter": "Focus: Perimeter",
         "roof": "Focus: Roof",
         "wall": "Focus: Wall"
@@ -1085,7 +1087,9 @@ interface Resources {
         "front": "Front",
         "inside": "Inside",
         "left": "Left",
+        "leftSide": "Left side",
         "outside": "Outside",
+        "rightSide": "Right side",
         "roof": "Roof",
         "top": "Top",
         "walls": "Walls"
@@ -1377,6 +1381,7 @@ interface Resources {
       "fitToView": "Fit to View",
       "selectAssemblyPlaceholder": "Select assembly",
       "thickness": "Thickness",
+      "viewConstructionPlan": "View Construction Plan",
       "wallAssembly": "Wall Assembly",
       "wallLength": "Length"
     },

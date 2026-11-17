@@ -24,6 +24,8 @@ export function PartsListControls(): React.JSX.Element | null {
         return t($ => $.partsList.focus.perimeter)
       case 'wall':
         return t($ => $.partsList.focus.wall)
+      case 'interiorWall':
+        return t($ => $.partsList.focus.interiorWall)
       case 'roof':
         return t($ => $.partsList.focus.roof)
       default:

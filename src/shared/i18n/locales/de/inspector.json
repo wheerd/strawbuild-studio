@@ -54,7 +54,8 @@
     "selectAssemblyPlaceholder": "Aufbau auswählen",
     "thickness": "Dicke",
     "wallAssembly": "Wandaufbau",
-    "wallLength": "Länge"
+    "wallLength": "Länge",
+    "viewConstructionPlan": "Konstruktionsplan anzeigen"
   },
   "opening": {
     "confirmDelete": "Möchtest du diese Öffnung wirklich entfernen?",

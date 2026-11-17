@@ -56,7 +56,8 @@
     "selectAssemblyPlaceholder": "Select assembly",
     "thickness": "Thickness",
     "wallAssembly": "Wall Assembly",
-    "wallLength": "Length"
+    "wallLength": "Length",
+    "viewConstructionPlan": "View Construction Plan"
   },
   "opening": {
     "confirmDelete": "Are you sure you want to remove this opening?",

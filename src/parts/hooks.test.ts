@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import type { PerimeterId, RoofId, StoreyId, WallId } from '@/building/model/ids'
+import type { IntermediateWallId, PerimeterId, RoofId, StoreyId, WallId } from '@/building/model/ids'
 import type { ConstructionElementId } from '@/construction/model/elements'
 import type { MaterialId } from '@/materials/types'
 import { newVec3 } from '@/shared/geometry'
@@ -14,6 +14,7 @@ const createElementId = (id: string): ConstructionElementId => id as Constructio
 const createStoreyId = (id: string): StoreyId => `storey_${id}`
 const createPerimeterId = (id: string): PerimeterId => `perimeter_${id}`
 const createWallId = (id: string): WallId => `wall_${id}` as WallId
+const createIntermediateWallId = (id: string): IntermediateWallId => `intermediate_${id}`
 const createRoofId = (id: string): RoofId => `roof_${id}`
 
 const createOccurrence = (partial: Partial<PartOccurrence>): PartOccurrence => ({
@@ -246,6 +247,23 @@ describe('aggregateParts', () => {
       const partId = createPartId('p1')
       const wall1 = createWallId('1')
       const wall2 = createWallId('2')
+      const occurrences = [
+        createOccurrence({ elementId: createElementId('e1'), partId, wallId: wall1 }),
+        createOccurrence({ elementId: createElementId('e2'), partId, wallId: wall2 })
+      ]
+      const definitions = { p1: createDefinition({ partId }) }
+      const filter: PartsFilter = { wallId: wall1 }
+
+      const result = aggregateParts(occurrences, filter, definitions, {})
+
+      expect(result).toHaveLength(1)
+      expect(result[0].elementIds).toEqual(['e1'])
+    })
+
+    it('filters by intermediate wallId', () => {
+      const partId = createPartId('p1')
+      const wall1 = createIntermediateWallId('1')
+      const wall2 = createIntermediateWallId('2')
       const occurrences = [
         createOccurrence({ elementId: createElementId('e1'), partId, wallId: wall1 }),
         createOccurrence({ elementId: createElementId('e2'), partId, wallId: wall2 })

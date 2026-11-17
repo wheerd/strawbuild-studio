@@ -1,20 +1,20 @@
 import { rollup } from 'd3-array'
 import { useEffect, useMemo } from 'react'
 
-import type { PerimeterId, PerimeterWallId, RoofId, StoreyId } from '@/building/model/ids'
-import { isPerimeterId, isPerimeterWallId, isRoofId, isStoreyId } from '@/building/model/ids'
+import type { IntermediateWallId, PerimeterId, PerimeterWallId, RoofId, StoreyId } from '@/building/model/ids'
+import { isIntermediateWallId, isPerimeterId, isPerimeterWallId, isRoofId, isStoreyId } from '@/building/model/ids'
 
 import { ensurePartsLoaded, getLabelGroupId, usePartsStore } from './store'
 import type { AggregatedPartItem, PartDefinition, PartId, PartOccurrence, PartsFilter, PartsStoreState } from './types'
 
-export type ConstructionModelId = PerimeterId | PerimeterWallId | RoofId | StoreyId | undefined
+export type ConstructionModelId = IntermediateWallId | PerimeterId | PerimeterWallId | RoofId | StoreyId | undefined
 
 function deriveLocationFilter(modelId: ConstructionModelId): PartsFilter {
   if (!modelId) return {}
   if (isStoreyId(modelId)) return { storeyId: modelId }
   if (isRoofId(modelId)) return { roofId: modelId }
   if (isPerimeterId(modelId)) return { perimeterId: modelId }
-  if (isPerimeterWallId(modelId)) return { wallId: modelId }
+  if (isPerimeterWallId(modelId) || isIntermediateWallId(modelId)) return { wallId: modelId }
   return {}
 }
 

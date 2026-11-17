@@ -1,14 +1,14 @@
 import { useEffect, useMemo } from 'react'
 
-import type { PerimeterId, PerimeterWallId, RoofId, StoreyId } from '@/building/model/ids'
-import { isPerimeterId, isPerimeterWallId, isRoofId, isStoreyId } from '@/building/model/ids'
+import type { IntermediateWallId, PerimeterId, PerimeterWallId, RoofId, StoreyId } from '@/building/model/ids'
+import { isIntermediateWallId, isPerimeterId, isPerimeterWallId, isRoofId, isStoreyId } from '@/building/model/ids'
 import type { ConstructionModel } from '@/construction/model/model'
 
 import { ensureConstructionLoaded, getConstructionActions, useConstructionStore } from './store'
 import type { ConstructionStoreState, ModelId } from './types'
 import { createColinearWallId, createFullPerimeterId } from './utils'
 
-export type ConstructionModelId = PerimeterId | PerimeterWallId | RoofId | StoreyId | undefined
+export type ConstructionModelId = IntermediateWallId | PerimeterId | PerimeterWallId | RoofId | StoreyId | undefined
 
 function toInternalId(
   externalId: ConstructionModelId,
@@ -21,6 +21,7 @@ function toInternalId(
   if (isPerimeterWallId(externalId)) {
     return conlinearMapping[externalId] ?? createColinearWallId(externalId)
   }
+  if (isIntermediateWallId(externalId)) return externalId
   throw new Error(`Unknown external ID type: ${externalId}`)
 }
 

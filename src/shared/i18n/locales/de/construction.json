@@ -121,6 +121,7 @@
       "widthM": "Breite (m)"
     },
     "focus": {
+      "interiorWall": "Fokus: Innenwand",
       "perimeter": "Fokus: Gebäudekontur",
       "roof": "Fokus: Dach",
       "storey": "Fokus: Geschoss",
@@ -182,6 +183,7 @@
   "plan": {
     "clearFocus": "Fokus entfernen",
     "focus": {
+      "interiorWall": "Fokus: Innenwand",
       "perimeter": "Fokus: Gebäudekontur",
       "roof": "Fokus: Dach",
       "wall": "Fokus: Wand"
@@ -220,7 +222,9 @@
       "front": "Vorne",
       "inside": "Innen",
       "left": "Links",
+      "leftSide": "Linke Seite",
       "outside": "Außen",
+      "rightSide": "Rechte Seite",
       "roof": "Dach",
       "top": "Oben",
       "walls": "Wände"

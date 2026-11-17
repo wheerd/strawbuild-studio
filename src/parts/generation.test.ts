@@ -1,7 +1,7 @@
 import type { Manifold } from 'manifold-3d'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-import type { PerimeterId, PerimeterWallId, RoofId, StoreyId } from '@/building/model/ids'
+import type { IntermediateWallId, PerimeterId, PerimeterWallId, RoofId, StoreyId } from '@/building/model/ids'
 import type {
   ConstructionElement,
   ConstructionElementId,
@@ -60,6 +60,7 @@ const createPartId = (id: string): PartId => id as PartId
 const createStoreyId = (id: string): StoreyId => `storey_${id}`
 const createPerimeterId = (id: string): PerimeterId => `perimeter_${id}`
 const createWallId = (id: string): PerimeterWallId => `outwall_${id}`
+const createIntermediateWallId = (id: string): IntermediateWallId => `intermediate_${id}`
 const createRoofId = (id: string): RoofId => `roof_${id}`
 const createTag = (category: Tag['category'], id: string): Tag => ({
   id: `${category}_${id}`,
@@ -222,6 +223,17 @@ describe('generatePartsData', () => {
 
     it('sets occurrence location context from element sourceId (wallId)', () => {
       const wallId = createWallId('1')
+      setupElementMocks()
+      const element = createElement({ sourceId: wallId })
+      const model = createModel([element])
+
+      const result = generatePartsData(model)
+
+      expect(result.occurrences[0].wallId).toBe(wallId)
+    })
+
+    it('sets occurrence location context from element sourceId (intermediate wall ID)', () => {
+      const wallId = createIntermediateWallId('1')
       setupElementMocks()
       const element = createElement({ sourceId: wallId })
       const model = createModel([element])

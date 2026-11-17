@@ -121,6 +121,7 @@
       "widthM": "Largeur (m)"
     },
     "focus": {
+      "interiorWall": "Focus : Mur intérieur",
       "perimeter": "Focus : Périmètre",
       "roof": "Focus : Toiture",
       "storey": "Focus : Étage",
@@ -182,6 +183,7 @@
   "plan": {
     "clearFocus": "Effacer le focus",
     "focus": {
+      "interiorWall": "Focus : Mur intérieur",
       "perimeter": "Focus : Périmètre",
       "roof": "Focus : Toiture",
       "wall": "Focus : Mur"
@@ -222,7 +224,9 @@
       "front": "Face",
       "inside": "Intérieur",
       "left": "Gauche",
+      "leftSide": "Côté gauche",
       "outside": "Extérieur",
+      "rightSide": "Côté droit",
       "roof": "Toiture",
       "top": "Dessus",
       "walls": "Murs"

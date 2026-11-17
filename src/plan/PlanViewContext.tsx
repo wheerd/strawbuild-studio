@@ -1,8 +1,8 @@
 import React, { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 
-import type { PerimeterId, PerimeterWallId, RoofId } from '@/building/model/ids'
-import { isPerimeterId, isPerimeterWallId, isRoofId } from '@/building/model/ids'
+import type { IntermediateWallId, PerimeterId, PerimeterWallId, RoofId } from '@/building/model/ids'
+import { isIntermediateWallId, isPerimeterId, isPerimeterWallId, isRoofId } from '@/building/model/ids'
 import { useActiveStoreyId } from '@/building/store'
 import {
   TAG_BASE_PLATE,
@@ -18,7 +18,7 @@ import type { ConstructionModelId } from '@/construction/store'
 import type { ViewOption } from './ConstructionPlan'
 import { BACK_VIEW, FRONT_VIEW, LEFT_VIEW, TOP_VIEW } from './ConstructionPlan'
 
-export type FocusType = 'storey' | 'perimeter' | 'wall' | 'roof' | null
+export type FocusType = 'storey' | 'perimeter' | 'wall' | 'interiorWall' | 'roof' | null
 
 interface PlanViewContextValue {
   focusId: string | null
@@ -68,6 +68,12 @@ const WALL_VIEWS: ViewOption[] = [
   { view: TOP_VIEW, label: $ => $.plan.views.top, alwaysHiddenTags: ['wall-layer'] }
 ]
 
+const INTERIOR_WALL_VIEWS: ViewOption[] = [
+  { view: FRONT_VIEW, label: $ => $.plan.views.leftSide, alwaysHiddenTags: ['wall-layer'] },
+  { view: BACK_VIEW, label: $ => $.plan.views.rightSide, alwaysHiddenTags: ['wall-layer'] },
+  { view: TOP_VIEW, label: $ => $.plan.views.top, alwaysHiddenTags: ['wall-layer'] }
+]
+
 const ROOF_VIEWS: ViewOption[] = [
   { view: TOP_VIEW, label: $ => $.plan.views.top, toggleHideTags: [TAG_DECKING.id] },
   { view: FRONT_VIEW, label: $ => $.plan.views.front },
@@ -82,6 +88,7 @@ function determineFocusType(focusId: string | undefined): FocusType {
   if (!focusId) return null
   if (isPerimeterId(focusId)) return 'perimeter'
   if (isPerimeterWallId(focusId)) return 'wall'
+  if (isIntermediateWallId(focusId)) return 'interiorWall'
   if (isRoofId(focusId)) return 'roof'
   return null
 }
@@ -94,6 +101,12 @@ function getViewConfig(focusType: FocusType): {
   switch (focusType) {
     case 'wall':
       return { viewOptions: WALL_VIEWS, defaultHiddenTags: WALL_DEFAULT_HIDDEN, midCutActiveDefault: true }
+    case 'interiorWall':
+      return {
+        viewOptions: INTERIOR_WALL_VIEWS,
+        defaultHiddenTags: WALL_DEFAULT_HIDDEN,
+        midCutActiveDefault: true
+      }
     case 'roof':
       return { viewOptions: ROOF_VIEWS, defaultHiddenTags: ROOF_DEFAULT_HIDDEN, midCutActiveDefault: false }
     case 'perimeter':
@@ -119,6 +132,7 @@ export function PlanViewProvider({ children }: { children: React.ReactNode }): R
     if (focusType === null) return activeStoreyId
     if (focusType === 'perimeter') return focusId as PerimeterId
     if (focusType === 'wall') return focusId as PerimeterWallId
+    if (focusType === 'interiorWall') return focusId as IntermediateWallId
     if (focusType === 'roof') return focusId as RoofId
     return undefined
   }, [focusType, focusId, activeStoreyId])

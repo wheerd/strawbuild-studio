@@ -66,8 +66,8 @@ export class StudInteriorWallAssembly extends BaseInteriorWallAssembly<StudWallA
     ;[leftPlank, this.area] = this.area.splitInY(plankThickness)
     ;[this.area, rightPlank] = this.area.splitInY(this.area.size[1] - plankThickness)
 
-    yield* leftPlank.yieldExtrudeWithHoles(plankMaterial, [TAG_WALL_PLANKING])
-    yield* rightPlank.yieldExtrudeWithHoles(plankMaterial, [TAG_WALL_PLANKING])
+    yield* leftPlank.yieldExtrudeWithHoles(plankMaterial, [TAG_WALL_PLANKING], { type: 'planking' })
+    yield* rightPlank.yieldExtrudeWithHoles(plankMaterial, [TAG_WALL_PLANKING], { type: 'planking' })
   }
 
   protected *constructSolePlate(): Generator<ConstructionResult> {
@@ -78,7 +78,7 @@ export class StudInteriorWallAssembly extends BaseInteriorWallAssembly<StudWallA
     let solePlate
     ;[solePlate, this.area] = this.area.splitInZ(solePlateThickness)
 
-    yield* solePlate.yieldExtrudeWithHoles(solePlateMaterial, [TAG_BASE_PLATE])
+    yield* solePlate.yieldExtrudeWithHoles(solePlateMaterial, [TAG_BASE_PLATE], { type: 'base-plate' })
   }
 
   protected *constructHeadPlate(): Generator<ConstructionResult> {
@@ -90,7 +90,7 @@ export class StudInteriorWallAssembly extends BaseInteriorWallAssembly<StudWallA
     ;[headPlate, this.area] = this.area.splitAtTop(headPlateThickness)
 
     for (const headPlatePart of headPlate.splitAtHeightJumps()) {
-      yield* headPlatePart.yieldExtrudeWithHoles(headPlateMaterial, [TAG_TOP_PLATE])
+      yield* headPlatePart.yieldExtrudeWithHoles(headPlateMaterial, [TAG_TOP_PLATE], { type: 'head-plate' })
     }
   }
 

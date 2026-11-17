@@ -121,6 +121,7 @@
       "widthM": "Width (m)"
     },
     "focus": {
+      "interiorWall": "Focus: Interior Wall",
       "perimeter": "Focus: Perimeter",
       "roof": "Focus: Roof",
       "storey": "Focus: Storey",
@@ -182,6 +183,7 @@
   "plan": {
     "clearFocus": "Clear focus",
     "focus": {
+      "interiorWall": "Focus: Interior Wall",
       "perimeter": "Focus: Perimeter",
       "roof": "Focus: Roof",
       "wall": "Focus: Wall"
@@ -220,7 +222,9 @@
       "front": "Front",
       "inside": "Inside",
       "left": "Left",
+      "leftSide": "Left side",
       "outside": "Outside",
+      "rightSide": "Right side",
       "roof": "Roof",
       "top": "Top",
       "walls": "Walls"

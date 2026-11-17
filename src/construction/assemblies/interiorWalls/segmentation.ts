@@ -122,9 +122,9 @@ export function* constructInteriorWallSegments(
       )
       if (item.type === 'opening-group') {
         yield yieldMeasurement({
-          startPoint: newVec3(area.position[0] + previousOpeningEnd, area.position[1], area.position[2]),
-          endPoint: newVec3(area.position[0] + item.start, area.position[1], area.position[2]),
-          extend1: newVec3(area.position[0] + previousOpeningEnd, area.position[1], area.position[2] + area.size[2]),
+          startPoint: newVec3(previousOpeningEnd, area.position[1], area.position[2]),
+          endPoint: newVec3(item.start, area.position[1], area.position[2]),
+          extend1: newVec3(previousOpeningEnd, area.position[1], area.position[2] + area.size[2]),
           tags: [TAG_OPENING_SPACING]
         })
         previousOpeningEnd = item.end
@@ -184,9 +184,9 @@ export function* constructInteriorWallSegments(
       currentX === start
     )
     yield yieldMeasurement({
-      startPoint: newVec3(area.position[0] + previousOpeningEnd, area.position[1], area.position[2]),
+      startPoint: newVec3(previousOpeningEnd, area.position[1], area.position[2]),
       endPoint: newVec3(area.position[0] + area.size[0], area.position[1], area.position[2]),
-      extend1: newVec3(area.position[0] + previousOpeningEnd, area.position[1], area.position[2] + area.size[2]),
+      extend1: newVec3(previousOpeningEnd, area.position[1], area.position[2] + area.size[2]),
       tags: [TAG_OPENING_SPACING]
     })
   }

@@ -2,6 +2,7 @@ import * as Label from '@radix-ui/react-label'
 import { Trash } from 'lucide-react'
 import { useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
+import { useNavigate } from 'react-router-dom'
 
 import type { IntermediateWallId } from '@/building/model/ids'
 import { useIntermediateWallById, useModelActions } from '@/building/store'
@@ -13,10 +14,11 @@ import { LengthField } from '@/shared/ui/LengthField'
 import { Button } from '@/shared/ui/components/button'
 import { DataList } from '@/shared/ui/components/data-list'
 import { Separator } from '@/shared/ui/components/separator'
-import { FitToViewIcon } from '@/shared/ui/icons'
+import { ConstructionPlanIcon, FitToViewIcon } from '@/shared/ui/icons'
 
 export function IntermediateWallInspector({ wallId }: { wallId: IntermediateWallId }): React.JSX.Element {
   const { t } = useTranslation('inspector')
+  const navigate = useNavigate()
   const { formatLength } = useFormatters()
   const wall = useIntermediateWallById(wallId)
   const { removeIntermediateWall, updateIntermediateWallAssembly, updateIntermediateWallThickness } = useModelActions()
@@ -74,6 +76,15 @@ export function IntermediateWallInspector({ wallId }: { wallId: IntermediateWall
         <Separator />
 
         <div className="flex justify-end gap-2">
+          <Button
+            size="icon"
+            title={t($ => $.intermediateWall.viewConstructionPlan)}
+            onClick={() => {
+              void navigate(`/plan/${wallId}`)
+            }}
+          >
+            <ConstructionPlanIcon />
+          </Button>
           <Button size="icon" title={t($ => $.intermediateWall.fitToView)} onClick={handleFitToView}>
             <FitToViewIcon />
           </Button>

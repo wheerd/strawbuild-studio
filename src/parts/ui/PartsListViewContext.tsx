@@ -1,12 +1,12 @@
 import React, { createContext, useContext, useEffect, useMemo, useRef } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 
-import type { PerimeterId, PerimeterWallId, RoofId, StoreyId } from '@/building/model/ids'
-import { isPerimeterId, isPerimeterWallId, isRoofId, isStoreyId } from '@/building/model/ids'
+import type { IntermediateWallId, PerimeterId, PerimeterWallId, RoofId, StoreyId } from '@/building/model/ids'
+import { isIntermediateWallId, isPerimeterId, isPerimeterWallId, isRoofId, isStoreyId } from '@/building/model/ids'
 import { useActiveStoreyId } from '@/building/store'
 import type { ConstructionModelId } from '@/construction/store'
 
-export type PartsListFocusType = 'storey' | 'perimeter' | 'wall' | 'roof' | null
+export type PartsListFocusType = 'storey' | 'perimeter' | 'wall' | 'interiorWall' | 'roof' | null
 
 interface PartsListViewContextValue {
   focusId: string | null
@@ -22,6 +22,7 @@ function determineFocusType(focusId: string | undefined): PartsListFocusType {
   if (isStoreyId(focusId)) return 'storey'
   if (isPerimeterId(focusId)) return 'perimeter'
   if (isPerimeterWallId(focusId)) return 'wall'
+  if (isIntermediateWallId(focusId)) return 'interiorWall'
   if (isRoofId(focusId)) return 'roof'
   return null
 }
@@ -44,6 +45,8 @@ export function PartsListViewProvider({ children }: { children: React.ReactNode 
         return focusId as PerimeterId
       case 'wall':
         return focusId as PerimeterWallId
+      case 'interiorWall':
+        return focusId as IntermediateWallId
       case 'roof':
         return focusId as RoofId
     }

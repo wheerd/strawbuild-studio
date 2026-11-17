@@ -71,8 +71,8 @@ export function* geometryFaces(
         // Use closest point to camera for z-ordering of tilted faces (e.g., roof purlins/rafters)
         const closestPointDepth = Math.max(...f.polygon.outer.points.map(p => p[2]))
 
-        // Apply EPSILON nudging: front faces render above back faces at same depth
-        const zIndex = isFrontFace ? closestPointDepth + EPSILON : closestPointDepth - EPSILON
+        // Apply EPSILON nudging: back faces render above back front at same depth
+        const zIndex = isFrontFace ? closestPointDepth - EPSILON : closestPointDepth + EPSILON
 
         return {
           outer: { points: outerPoints },

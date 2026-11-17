@@ -24,6 +24,8 @@ export function PlanViewControls(): React.JSX.Element {
         return t($ => $.plan.focus.perimeter)
       case 'wall':
         return t($ => $.plan.focus.wall)
+      case 'interiorWall':
+        return t($ => $.plan.focus.interiorWall)
       case 'roof':
         return t($ => $.plan.focus.roof)
       default:

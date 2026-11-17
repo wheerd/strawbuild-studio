@@ -1,4 +1,4 @@
-import { isPerimeterId, isPerimeterWallId, isRoofId, isStoreyId } from '@/building/model'
+import { isIntermediateWallId, isPerimeterId, isPerimeterWallId, isRoofId, isStoreyId } from '@/building/model'
 import type { ConstructionElement, ConstructionGroup, GroupOrElement } from '@/construction/model/elements'
 import type { ConstructionModel } from '@/construction/model/model'
 import { type Tag, isCustomTag } from '@/construction/model/tags'
@@ -28,6 +28,7 @@ function updateContextFromSourceId(context: LocationFilter, sourceId: string | u
   if (isRoofId(sourceId)) return { ...context, roofId: sourceId }
   if (isPerimeterId(sourceId)) return { ...context, perimeterId: sourceId }
   if (isPerimeterWallId(sourceId)) return { ...context, wallId: sourceId }
+  if (isIntermediateWallId(sourceId)) return { ...context, wallId: sourceId }
   return context
 }
 
